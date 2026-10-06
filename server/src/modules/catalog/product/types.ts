@@ -1,0 +1,22 @@
+export type {
+  CreateProductInput,
+  CreateProductPayload,
+  CreateVariantInput,
+  GeneratedVariantSpec,
+  ImageRef,
+  ListProductsQuery,
+  NestedCreateVariantInput,
+  ProductImageInput,
+  ProductImageRow,
+  ProductStatus,
+  UpdateProductInput,
+  UpdateProductPayload,
+  UpdateVariantInput,
+  UpdateVariantPayload,
+  VariantDefaultsInput,
+  VariantImageInput,
+  VariantMatrixRow,
+  VariantOptionGroupInput,
+  VariantOverrideInput,
+} from "./types/product.types.ts";
+export { resolveProductStatus } from "./types/product.types.ts";
