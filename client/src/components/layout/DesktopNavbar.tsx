@@ -58,10 +58,10 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
       <div className="shrink-0 md:w-40">
         <Link href="/">
           <Image
-            src="/images/logo/logo.png"
+            src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
             alt="Logo"
             width={150}
-            height={40}
+            height={80}
             style={{ width: "auto", height: "auto" }} // <-- Add this to fix the warning
             className="h-8 w-auto" // Your scaling classes
           />

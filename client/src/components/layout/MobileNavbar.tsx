@@ -102,7 +102,7 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
         <div className="shrink-0">
           <Link href="/">
             <Image
-              src="/images/logo/logo.png"
+              src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
               alt="Logo"
               width={120}
               height={40}
@@ -182,7 +182,7 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
                 <div className="shrink-0">
                   <Link href="/" onClick={() => toggleDrawer(false)}>
                     <Image
-                      src="/images/logo/logo.png"
+                      src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
                       alt="Logo"
                       width={120}
                       height={40}

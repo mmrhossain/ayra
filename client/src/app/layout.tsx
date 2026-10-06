@@ -18,7 +18,7 @@ const jost = Jost({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://raangalay.com"),
-  title: "Raangalay | Modern Online Shopping in Bangladesh",
+  title: "Ayra | Modern Online Shopping in Bangladesh",
   description: "Bangladesh's premier modern e-commerce platform.",
 };
 

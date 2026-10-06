@@ -1,24 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  FolderTree,
-  Warehouse,
-  ShoppingCart,
+  Building2,
+  CircleHelp,
   CreditCard,
-  TicketPercent,
+  FolderTree,
+  Images,
+  LayoutDashboard,
+  Newspaper,
+  Package,
+  Scale,
+  ShoppingCart,
   Star,
   Store,
-  Users,
-  User,
-  Undo2,
-  Images,
+  Tags,
+  TicketPercent,
   Truck,
-  type LucideIcon, Tags, Building2, CircleHelp, Scale, Newspaper,
+  Undo2,
+  User,
+  Users,
+  Warehouse,
+  type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -67,9 +72,9 @@ const VENDOR_NAV: NavItem[] = [
 
 function navFor(pathname: string): { title: string; home: string; items: NavItem[] } {
   if (pathname.startsWith("/vendor")) {
-    return { title: "Rangalay", home: "/vendor", items: VENDOR_NAV };
+    return { title: "Ayra", home: "/vendor", items: VENDOR_NAV };
   }
-  return { title: "Rangalay", home: "/admin", items: ADMIN_NAV };
+  return { title: "Ayra", home: "/admin", items: ADMIN_NAV };
 }
 
 export function DashboardSidebar() {
@@ -81,7 +86,7 @@ export function DashboardSidebar() {
       <SidebarHeader className="px-3 py-4">
         <Link href={home} className="flex items-center gap-2 px-1">
           <span className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
-            R
+            A
           </span>
           <span className="truncate text-sm font-semibold group-data-[collapsible=icon]:hidden">
             {title}
@@ -94,9 +99,7 @@ export function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const active = item.exact
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
+                const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={active} tooltip={item.label}>

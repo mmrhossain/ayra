@@ -21,7 +21,7 @@ const Header: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-center md:justify-between items-center gap-2 sm:gap-0 py-1.5 container">
         {/* Left Section */}
         <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-          <span>Welcome to Raangalay Online Store</span>
+          <span>Welcome to Ayra Online Store</span>
 
           <div className="hidden sm:flex">
             <RxDividerVertical size={28} />
