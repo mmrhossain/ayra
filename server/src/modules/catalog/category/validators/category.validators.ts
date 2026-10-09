@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { paginationQuerySchema } from "../../../../common/validators/pagination.ts";
 import {
+  nullableCloudinaryImageUrlSchema,
+  nullableMediaPublicIdSchema,
   optionalCloudinaryImageUrlSchema,
   optionalMediaPublicIdSchema,
 } from "../../../media/media.validators.ts";
@@ -22,4 +24,7 @@ export const createCategorySchema = z.object({
   parentId: z.string().nullable().optional(),
 });
 
-export const updateCategorySchema = createCategorySchema.partial();
+export const updateCategorySchema = createCategorySchema.partial().extend({
+  image: nullableCloudinaryImageUrlSchema,
+  imagePublicId: nullableMediaPublicIdSchema,
+});

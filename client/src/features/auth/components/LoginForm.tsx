@@ -53,6 +53,7 @@ const LoginForm: React.FC = () => {
       const { error } = await authClient.signIn.email({
         email: data.identifier,
         password: data.password,
+        rememberMe: data.remember === true,
       });
 
       if (error) {

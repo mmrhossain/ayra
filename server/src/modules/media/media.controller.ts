@@ -4,9 +4,14 @@ import { AppError } from "../../common/errors/AppError.ts";
 import { asyncHandler } from "../../common/utils/asyncHandler.ts";
 import { successResponse } from "../../common/utils/response.ts";
 import { MAX_PRODUCT_IMAGES } from "./media.constants.ts";
-import { uploadMultipleImages, uploadSingleImage } from "./media.service.ts";
+import {
+  listMediaLibrary,
+  uploadMultipleImages,
+  uploadSingleImage,
+} from "./media.service.ts";
 import type { ImageFile } from "./media.types.ts";
 import {
+  listMediaQuerySchema,
   multipleUploadQuerySchema,
   singleUploadQuerySchema,
 } from "./media.validators.ts";
@@ -34,6 +39,14 @@ const unlinkFiles = async (files: Express.Multer.File[]) => {
     })
   );
 };
+
+export const listMediaHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = listMediaQuerySchema.parse(req.query);
+    const result = await listMediaLibrary(query);
+    successResponse(res, result, "Media library fetched");
+  }
+);
 
 export const uploadSingleImageHandler = asyncHandler(
   async (req: Request, res: Response) => {

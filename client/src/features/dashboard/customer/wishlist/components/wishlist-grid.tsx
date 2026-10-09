@@ -130,7 +130,7 @@ export function WishlistGrid({ initialData }: WishlistGridProps) {
                         alt={name}
                         fill
                         sizes="(max-width: 640px) 96px, 128px"
-                        className="object-cover"
+                        className="object-contain"
                       />
                     </Link>
                   </div>

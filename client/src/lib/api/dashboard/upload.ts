@@ -21,6 +21,22 @@ export type UploadedImage = {
   variants: string[];
 };
 
+export type MediaLibraryItem = UploadedImage & {
+  type: ImageType;
+  status: "PENDING" | "ATTACHED";
+  createdAt: string;
+};
+
+export type MediaLibraryResult = {
+  items: MediaLibraryItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 const FOLDER_TO_TYPE: Record<string, ImageType> = {
   products: "product",
   product: "product",
@@ -66,6 +82,17 @@ export async function uploadImages(
     "/media/uploads",
     { body, params: { type } }
   );
+  return res.data;
+}
+
+export async function listMediaLibrary(
+  type: ImageType,
+  page = 1,
+  limit = 24
+): Promise<MediaLibraryResult> {
+  const res = await dashboardApi.get<Envelope<MediaLibraryResult>>("/media", {
+    params: { type, page, limit },
+  });
   return res.data;
 }
 

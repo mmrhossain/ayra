@@ -7,6 +7,7 @@ import {
 } from "../../lib/openapi/common-schemas.ts";
 import { IMAGE_TYPE_VALUES } from "./media.types.ts";
 import {
+  listMediaQuerySchema,
   multipleUploadQuerySchema,
   singleUploadQuerySchema,
 } from "./media.validators.ts";
@@ -20,7 +21,9 @@ const multipartBody = (schema: z.ZodTypeAny) => ({
 });
 
 const uploadedImageSchema = z.object({
-  publicId: z.string(),
+  publicId: z.string().openapi({
+    description: "Unique Cloudinary public id. Files stay on Cloudinary CDN.",
+  }),
   url: z.string().url(),
   secure_url: z.string().url(),
   variants: z.array(z.string().url()).openapi({
@@ -51,6 +54,40 @@ const multipleImagesBodySchema = z.object({
     .openapi({
       description: "Product images (jpg, jpeg, png, webp). Max 5 files, 5MB each.",
     }),
+});
+
+const mediaLibraryItemSchema = uploadedImageSchema.extend({
+  type: z.enum(IMAGE_TYPE_VALUES),
+  status: z.enum(["PENDING", "ATTACHED"]),
+  createdAt: z.string().datetime(),
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/media",
+  tags: [TAG],
+  summary: "List media library images",
+  description:
+    "Returns Cloudinary CDN images of one type for the admin gallery. Images remain on Cloudinary; this lists unique public ids already uploaded. Excludes SOFT_DELETED. Newest first. Role-gated by type, same as upload.",
+  security: bearerAuth,
+  request: {
+    query: listMediaQuerySchema,
+  },
+  responses: {
+    200: successResponse(
+      "Media library fetched",
+      z.object({
+        items: z.array(mediaLibraryItemSchema),
+        pagination: z.object({
+          page: z.number().int(),
+          limit: z.number().int(),
+          total: z.number().int(),
+          totalPages: z.number().int(),
+        }),
+      })
+    ),
+    ...errorResponses(400, 401, 403),
+  },
 });
 
 registry.registerPath({

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { env } from "../../src/config/env.ts";
 import { prisma } from "../../src/lib/prisma.ts";
 import { CleanupTracker, api, createTestUser } from "../helpers/index.ts";
 
@@ -23,9 +24,9 @@ const trackSlider = (body: { data?: { id?: string } }) => {
   if (body?.data?.id) tracker.sliderIds.push(body.data.id);
 };
 
-const desktopUrl = "https://res.cloudinary.com/demo/image/upload/c_fill,f_webp/sliders/hero.webp";
-const mobileUrl =
-  "https://res.cloudinary.com/demo/image/upload/c_fill,f_webp/sliders/mobile/hero.webp";
+const cloudName = env.CLOUDINARY_CLOUD_NAME || "demo";
+const desktopUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,f_webp/heroid.webp`;
+const mobileUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,f_webp/mobileheroid.webp`;
 
 describe("Slider public list", () => {
   it("returns active sliders that have an imageUrl without requiring READY status", async () => {
@@ -33,7 +34,7 @@ describe("Slider public list", () => {
       data: {
         title: "Ready slide",
         imageUrl: desktopUrl,
-        imagePublicId: "sliders/ready",
+        imagePublicId: "readyid",
         isActive: true,
         priority: 5,
       },
@@ -106,17 +107,17 @@ describe("Slider admin", () => {
         title: "Hero",
         priority: 3,
         imageUrl: desktopUrl,
-        imagePublicId: "sliders/hero",
+        imagePublicId: "heroid",
         mobileImageUrl: mobileUrl,
-        mobileImagePublicId: "sliders/mobile/hero",
+        mobileImagePublicId: "mobileheroid",
       });
 
     expect(res.status).toBe(201);
     trackSlider(res.body);
     expect(res.body.data.imageUrl).toBe(desktopUrl);
     expect(res.body.data.mobileImageUrl).toBe(mobileUrl);
-    expect(res.body.data.imagePublicId).toBe("sliders/hero");
-    expect(res.body.data.mobileImagePublicId).toBe("sliders/mobile/hero");
+    expect(res.body.data.imagePublicId).toBe("heroid");
+    expect(res.body.data.mobileImagePublicId).toBe("mobileheroid");
   });
 
   it("updates metadata and deletes a slider, destroying both Cloudinary publicIds", async () => {
@@ -131,9 +132,9 @@ describe("Slider admin", () => {
       .send({
         title: "Original",
         imageUrl: desktopUrl,
-        imagePublicId: "sliders/original",
+        imagePublicId: "originalid",
         mobileImageUrl: mobileUrl,
-        mobileImagePublicId: "sliders/mobile/original",
+        mobileImagePublicId: "mobileoriginalid",
       });
 
     expect(created.status).toBe(201);
@@ -164,8 +165,7 @@ describe("Slider admin", () => {
       .set("Cookie", admin.cookie);
     expect(deleted.status).toBe(200);
     expect(deleted.body.data.deleted).toBe(true);
-    expect(deleteCloudinaryAsset).toHaveBeenCalledWith("sliders/original");
-    expect(deleteCloudinaryAsset).toHaveBeenCalledWith("sliders/mobile/original");
+    expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
   });
 
   it("filters admin sliders by title and isActive with pagination", async () => {

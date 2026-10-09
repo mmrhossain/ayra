@@ -5,6 +5,7 @@ import HeaderHeightObserver from "@/components/layout/HeaderHeightObserver"; // 
 import Navbar from "@/components/layout/Navbar";
 import StorefrontProvider from "@/components/providers/StorefrontProvider";
 import SocialContact from "@/components/shared/SocialContact";
+import StorefrontChat from "@/features/content/components/chat/StorefrontChat";
 import { getCategories } from "@/features/catalog/categories-api";
 import { CategoryListItem } from "@/features/catalog/types";
 
@@ -27,6 +28,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
         <Header />
         <Navbar categories={categories} />
         <SocialContact />
+        <StorefrontChat />
         {children}
         <Footer />
         <FooterNavigationMenu />

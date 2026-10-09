@@ -217,7 +217,9 @@ const RegistrationForm: React.FC = () => {
                   className="text-slate-600 text-sm leading-relaxed cursor-pointer select-none"
                 >
                   I have read and agree to the{" "}
-                  <span className="text-primary hover:underline">terms & conditions</span>
+                  <Link href="/terms" className="text-primary hover:underline">
+                    terms & conditions
+                  </Link>
                 </Label>
               </FormItem>
             )}

@@ -29,6 +29,7 @@ export type BlogListItem = {
   excerpt: string | null;
   content: string;
   featuredImage: string | null;
+  featuredImagePublicId?: string | null;
   status: BlogStatus;
   metaTitle: string | null;
   metaDescription: string | null;
@@ -72,6 +73,7 @@ export type CreateBlogBody = {
   excerpt?: string;
   content: string;
   featuredImage?: string;
+  featuredImagePublicId?: string;
   categoryId?: string | null;
   metaTitle?: string;
   metaDescription?: string;
@@ -84,6 +86,7 @@ export type UpdateBlogBody = {
   excerpt?: string | null;
   content?: string;
   featuredImage?: string | null;
+  featuredImagePublicId?: string | null;
   categoryId?: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;

@@ -34,7 +34,7 @@ export const ScrollToTop: React.FC = () => {
                     aria-label="Scroll to top"
                     className="
             fixed right-4 md:right-6
-            bottom-[calc(9.5rem+env(safe-area-inset-bottom,0px))] md:bottom-24
+            bottom-[calc(13.75rem+env(safe-area-inset-bottom,0px))] md:bottom-40
             rounded-full h-11 w-11 bg-gray-800 text-white shadow-lg
             flex items-center justify-center
             z-[9998] hover:bg-gray-700

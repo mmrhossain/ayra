@@ -38,7 +38,7 @@ const Header: React.FC = () => {
             <RxDividerVertical size={28} />
 
             <a
-              href="mailto:info@raangalay.com"
+              href="mailto:info.mmrhossain.com"
               onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
                 // Optional Gmail fallback
                 const isMailClientAvailable = true; // In browsers, usually true if mail client is registered

@@ -31,6 +31,7 @@ export type BlogMinAggregateOutputType = {
   excerpt: string | null
   content: string | null
   featuredImage: string | null
+  featuredImagePublicId: string | null
   status: $Enums.ContentStatus | null
   metaTitle: string | null
   metaDescription: string | null
@@ -49,6 +50,7 @@ export type BlogMaxAggregateOutputType = {
   excerpt: string | null
   content: string | null
   featuredImage: string | null
+  featuredImagePublicId: string | null
   status: $Enums.ContentStatus | null
   metaTitle: string | null
   metaDescription: string | null
@@ -67,6 +69,7 @@ export type BlogCountAggregateOutputType = {
   excerpt: number
   content: number
   featuredImage: number
+  featuredImagePublicId: number
   status: number
   metaTitle: number
   metaDescription: number
@@ -87,6 +90,7 @@ export type BlogMinAggregateInputType = {
   excerpt?: true
   content?: true
   featuredImage?: true
+  featuredImagePublicId?: true
   status?: true
   metaTitle?: true
   metaDescription?: true
@@ -105,6 +109,7 @@ export type BlogMaxAggregateInputType = {
   excerpt?: true
   content?: true
   featuredImage?: true
+  featuredImagePublicId?: true
   status?: true
   metaTitle?: true
   metaDescription?: true
@@ -123,6 +128,7 @@ export type BlogCountAggregateInputType = {
   excerpt?: true
   content?: true
   featuredImage?: true
+  featuredImagePublicId?: true
   status?: true
   metaTitle?: true
   metaDescription?: true
@@ -214,6 +220,7 @@ export type BlogGroupByOutputType = {
   excerpt: string | null
   content: string
   featuredImage: string | null
+  featuredImagePublicId: string | null
   status: $Enums.ContentStatus
   metaTitle: string | null
   metaDescription: string | null
@@ -253,6 +260,7 @@ export type BlogWhereInput = {
   excerpt?: Prisma.StringNullableFilter<"Blog"> | string | null
   content?: Prisma.StringFilter<"Blog"> | string
   featuredImage?: Prisma.StringNullableFilter<"Blog"> | string | null
+  featuredImagePublicId?: Prisma.StringNullableFilter<"Blog"> | string | null
   status?: Prisma.EnumContentStatusFilter<"Blog"> | $Enums.ContentStatus
   metaTitle?: Prisma.StringNullableFilter<"Blog"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Blog"> | string | null
@@ -272,6 +280,7 @@ export type BlogOrderByWithRelationInput = {
   excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.SortOrder
   featuredImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  featuredImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   metaTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   metaDescription?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -294,6 +303,7 @@ export type BlogWhereUniqueInput = Prisma.AtLeast<{
   excerpt?: Prisma.StringNullableFilter<"Blog"> | string | null
   content?: Prisma.StringFilter<"Blog"> | string
   featuredImage?: Prisma.StringNullableFilter<"Blog"> | string | null
+  featuredImagePublicId?: Prisma.StringNullableFilter<"Blog"> | string | null
   status?: Prisma.EnumContentStatusFilter<"Blog"> | $Enums.ContentStatus
   metaTitle?: Prisma.StringNullableFilter<"Blog"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Blog"> | string | null
@@ -313,6 +323,7 @@ export type BlogOrderByWithAggregationInput = {
   excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.SortOrder
   featuredImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  featuredImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   metaTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   metaDescription?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -337,6 +348,7 @@ export type BlogScalarWhereWithAggregatesInput = {
   excerpt?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
   content?: Prisma.StringWithAggregatesFilter<"Blog"> | string
   featuredImage?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
+  featuredImagePublicId?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
   status?: Prisma.EnumContentStatusWithAggregatesFilter<"Blog"> | $Enums.ContentStatus
   metaTitle?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
   metaDescription?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
@@ -355,6 +367,7 @@ export type BlogCreateInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -373,6 +386,7 @@ export type BlogUncheckedCreateInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -391,6 +405,7 @@ export type BlogUpdateInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -409,6 +424,7 @@ export type BlogUncheckedUpdateInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -427,6 +443,7 @@ export type BlogCreateManyInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -445,6 +462,7 @@ export type BlogUpdateManyMutationInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -462,6 +480,7 @@ export type BlogUncheckedUpdateManyInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -490,6 +509,7 @@ export type BlogCountOrderByAggregateInput = {
   excerpt?: Prisma.SortOrder
   content?: Prisma.SortOrder
   featuredImage?: Prisma.SortOrder
+  featuredImagePublicId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metaTitle?: Prisma.SortOrder
   metaDescription?: Prisma.SortOrder
@@ -508,6 +528,7 @@ export type BlogMaxOrderByAggregateInput = {
   excerpt?: Prisma.SortOrder
   content?: Prisma.SortOrder
   featuredImage?: Prisma.SortOrder
+  featuredImagePublicId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metaTitle?: Prisma.SortOrder
   metaDescription?: Prisma.SortOrder
@@ -526,6 +547,7 @@ export type BlogMinOrderByAggregateInput = {
   excerpt?: Prisma.SortOrder
   content?: Prisma.SortOrder
   featuredImage?: Prisma.SortOrder
+  featuredImagePublicId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   metaTitle?: Prisma.SortOrder
   metaDescription?: Prisma.SortOrder
@@ -586,6 +608,7 @@ export type BlogCreateWithoutCategoryInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -603,6 +626,7 @@ export type BlogUncheckedCreateWithoutCategoryInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -649,6 +673,7 @@ export type BlogScalarWhereInput = {
   excerpt?: Prisma.StringNullableFilter<"Blog"> | string | null
   content?: Prisma.StringFilter<"Blog"> | string
   featuredImage?: Prisma.StringNullableFilter<"Blog"> | string | null
+  featuredImagePublicId?: Prisma.StringNullableFilter<"Blog"> | string | null
   status?: Prisma.EnumContentStatusFilter<"Blog"> | $Enums.ContentStatus
   metaTitle?: Prisma.StringNullableFilter<"Blog"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Blog"> | string | null
@@ -667,6 +692,7 @@ export type BlogCreateManyCategoryInput = {
   excerpt?: string | null
   content: string
   featuredImage?: string | null
+  featuredImagePublicId?: string | null
   status?: $Enums.ContentStatus
   metaTitle?: string | null
   metaDescription?: string | null
@@ -684,6 +710,7 @@ export type BlogUpdateWithoutCategoryInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -701,6 +728,7 @@ export type BlogUncheckedUpdateWithoutCategoryInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -718,6 +746,7 @@ export type BlogUncheckedUpdateManyWithoutCategoryInput = {
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.StringFieldUpdateOperationsInput | string
   featuredImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featuredImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -737,6 +766,7 @@ export type BlogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   excerpt?: boolean
   content?: boolean
   featuredImage?: boolean
+  featuredImagePublicId?: boolean
   status?: boolean
   metaTitle?: boolean
   metaDescription?: boolean
@@ -756,6 +786,7 @@ export type BlogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   excerpt?: boolean
   content?: boolean
   featuredImage?: boolean
+  featuredImagePublicId?: boolean
   status?: boolean
   metaTitle?: boolean
   metaDescription?: boolean
@@ -775,6 +806,7 @@ export type BlogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   excerpt?: boolean
   content?: boolean
   featuredImage?: boolean
+  featuredImagePublicId?: boolean
   status?: boolean
   metaTitle?: boolean
   metaDescription?: boolean
@@ -794,6 +826,7 @@ export type BlogSelectScalar = {
   excerpt?: boolean
   content?: boolean
   featuredImage?: boolean
+  featuredImagePublicId?: boolean
   status?: boolean
   metaTitle?: boolean
   metaDescription?: boolean
@@ -805,7 +838,7 @@ export type BlogSelectScalar = {
   deletedAt?: boolean
 }
 
-export type BlogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "excerpt" | "content" | "featuredImage" | "status" | "metaTitle" | "metaDescription" | "metaKeywords" | "categoryId" | "publishedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["blog"]>
+export type BlogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "excerpt" | "content" | "featuredImage" | "featuredImagePublicId" | "status" | "metaTitle" | "metaDescription" | "metaKeywords" | "categoryId" | "publishedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["blog"]>
 export type BlogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.Blog$categoryArgs<ExtArgs>
 }
@@ -828,6 +861,7 @@ export type $BlogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     excerpt: string | null
     content: string
     featuredImage: string | null
+    featuredImagePublicId: string | null
     status: $Enums.ContentStatus
     metaTitle: string | null
     metaDescription: string | null
@@ -1267,6 +1301,7 @@ export interface BlogFieldRefs {
   readonly excerpt: Prisma.FieldRef<"Blog", 'String'>
   readonly content: Prisma.FieldRef<"Blog", 'String'>
   readonly featuredImage: Prisma.FieldRef<"Blog", 'String'>
+  readonly featuredImagePublicId: Prisma.FieldRef<"Blog", 'String'>
   readonly status: Prisma.FieldRef<"Blog", 'ContentStatus'>
   readonly metaTitle: Prisma.FieldRef<"Blog", 'String'>
   readonly metaDescription: Prisma.FieldRef<"Blog", 'String'>

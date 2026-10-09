@@ -1,4 +1,4 @@
-import Image from "next/image";
+import StoreImage from "@/components/shared/store-image";
 import { RichTextContent } from "@/components/shared/rich-text-content";
 import type { PublicBlogPost } from "@/features/content/types";
 
@@ -45,11 +45,12 @@ const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
             </header>
 
             <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 md:mb-12 shadow-sm">
-              <Image
+              <StoreImage
                 src={blog.featuredImage || PLACEHOLDER}
                 alt={blog.title}
                 fill
-                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                className="object-contain"
                 priority
               />
             </div>

@@ -158,7 +158,16 @@ export function BlogFormDialog({
                       mode="single"
                       folder="blog"
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(url) => {
+                        field.onChange(url);
+                        if (!url) {
+                          form.setValue("featuredImagePublicId", "");
+                        }
+                      }}
+                      onUploaded={(asset) => {
+                        form.setValue("featuredImage", asset.url);
+                        form.setValue("featuredImagePublicId", asset.publicId);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

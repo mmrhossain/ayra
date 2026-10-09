@@ -256,7 +256,6 @@ export type CategoryOrderByWithRelationInput = {
 
 export type CategoryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  parentId_slug?: Prisma.CategoryParentIdSlugCompoundUniqueInput
   AND?: Prisma.CategoryWhereInput | Prisma.CategoryWhereInput[]
   OR?: Prisma.CategoryWhereInput[]
   NOT?: Prisma.CategoryWhereInput | Prisma.CategoryWhereInput[]
@@ -274,7 +273,7 @@ export type CategoryWhereUniqueInput = Prisma.AtLeast<{
   products?: Prisma.ProductListRelationFilter
   couponCategories?: Prisma.CouponCategoryListRelationFilter
   parent?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
-}, "id" | "parentId_slug">
+}, "id">
 
 export type CategoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -432,11 +431,6 @@ export type CategoryNullableScalarRelationFilter = {
 
 export type CategoryOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
-}
-
-export type CategoryParentIdSlugCompoundUniqueInput = {
-  parentId: string
-  slug: string
 }
 
 export type CategoryCountOrderByAggregateInput = {

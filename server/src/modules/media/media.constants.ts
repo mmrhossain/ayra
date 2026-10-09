@@ -12,47 +12,52 @@ export const MASTER_MAX_DIMENSION = 2000;
 export const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 export const ALLOWED_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 
+export const CLOUDINARY_ROOT_FOLDER = "ayra";
+
 export const IMAGE_TYPE_PRESETS: Record<ImageType, UploadPreset> = {
   product: {
-    folder: "products",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/products`,
     masterMax: MASTER_MAX_DIMENSION,
-    variants: [{ width: 1200, height: 1200, crop: "fill", gravity: "center" }],
+    variants: [{ width: 1200, height: 1200, crop: "fill", gravity: "auto" }],
     maxFiles: MAX_PRODUCT_IMAGES,
     allowMultiple: true,
   },
   category: {
-    folder: "categories",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/categories`,
     masterMax: MASTER_MAX_DIMENSION,
-    variants: [{ width: 1920, height: 640, crop: "fit", gravity: "center" }],
+    variants: [
+      { width: 1920, height: 820, crop: "fill", gravity: "auto" },
+      { width: 960, height: 1200, crop: "fill", gravity: "auto" },
+    ],
     maxFiles: 1,
     allowMultiple: false,
   },
   slider: {
-    folder: "sliders",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/sliders`,
     masterMax: MASTER_MAX_DIMENSION,
     variants: [
       { width: 1920, height: 820, crop: "fill", gravity: "auto" },
-      { width: 960, height: 1080, crop: "fill", gravity: "auto" },
+      { width: 960, height: 1200, crop: "fill", gravity: "auto" },
     ],
     maxFiles: 1,
     allowMultiple: false,
   },
   blog: {
-    folder: "blogs",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/blogs`,
     masterMax: MASTER_MAX_DIMENSION,
-    variants: [{ width: 1600, height: 900, crop: "fill", gravity: "center" }],
+    variants: [{ width: 1600, height: 900, crop: "fill", gravity: "auto" }],
     maxFiles: 1,
     allowMultiple: false,
   },
   customer_avatar: {
-    folder: "avatars/customers",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/avatars/customers`,
     masterMax: MASTER_MAX_DIMENSION,
     variants: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
     maxFiles: 1,
     allowMultiple: false,
   },
   vendor_avatar: {
-    folder: "avatars/vendors",
+    folder: `${CLOUDINARY_ROOT_FOLDER}/avatars/vendors`,
     masterMax: MASTER_MAX_DIMENSION,
     variants: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
     maxFiles: 1,

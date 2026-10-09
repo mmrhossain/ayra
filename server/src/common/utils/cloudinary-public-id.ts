@@ -1,3 +1,12 @@
+export const uniquePublicId = (value?: string | null): string | null => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const last = trimmed.split("/").filter(Boolean).pop();
+  if (!last) return null;
+  return last.replace(/\.[a-z0-9]+$/i, "") || null;
+};
+
 export const extractCloudinaryPublicId = (
   url?: string | null
 ): string | null => {
@@ -18,14 +27,7 @@ export const extractCloudinaryPublicId = (
     );
     if (publicSegments.length === 0) return null;
 
-    const last = publicSegments[publicSegments.length - 1];
-    if (!last) return null;
-    publicSegments[publicSegments.length - 1] = last.replace(
-      /\.[a-z0-9]+$/i,
-      ""
-    );
-
-    return publicSegments.join("/") || null;
+    return uniquePublicId(publicSegments.join("/"));
   } catch {
     return null;
   }
@@ -35,7 +37,5 @@ export const resolveImagePublicId = (
   explicit?: string | null,
   url?: string | null
 ): string | null => {
-  const trimmed = explicit?.trim();
-  if (trimmed) return trimmed;
-  return extractCloudinaryPublicId(url);
+  return uniquePublicId(explicit) ?? extractCloudinaryPublicId(url);
 };

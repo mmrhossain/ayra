@@ -2,8 +2,10 @@ import { z } from "zod";
 import { paginationQuerySchema } from "../../../../common/validators/pagination.ts";
 import { slugSchema as baseSlugSchema } from "../../../../common/validators/slug.ts";
 import {
-  cloudinaryImageUrlSchema,
+  nullableCloudinaryImageUrlSchema,
+  nullableMediaPublicIdSchema,
   optionalCloudinaryImageUrlSchema,
+  optionalMediaPublicIdSchema,
 } from "../../../media/media.validators.ts";
 
 export const slugSchema = baseSlugSchema.max(200);
@@ -30,6 +32,7 @@ export const createBlogSchema = z.object({
   excerpt: z.string().trim().max(500).optional(),
   content: z.string().trim().min(1).max(200000),
   featuredImage: optionalCloudinaryImageUrlSchema,
+  featuredImagePublicId: optionalMediaPublicIdSchema,
   categoryId: uuidSchema.nullable().optional(),
   metaTitle: z.string().trim().max(200).optional(),
   metaDescription: z.string().trim().max(500).optional(),
@@ -42,7 +45,8 @@ export const updateBlogSchema = z
     slug: slugSchema.optional(),
     excerpt: z.string().trim().max(500).nullable().optional(),
     content: z.string().trim().min(1).max(200000).optional(),
-    featuredImage: cloudinaryImageUrlSchema.nullable().optional(),
+    featuredImage: nullableCloudinaryImageUrlSchema,
+    featuredImagePublicId: nullableMediaPublicIdSchema,
     categoryId: uuidSchema.nullable().optional(),
     metaTitle: z.string().trim().max(200).nullable().optional(),
     metaDescription: z.string().trim().max(500).nullable().optional(),

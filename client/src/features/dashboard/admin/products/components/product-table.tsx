@@ -150,7 +150,7 @@ export function ProductTable({ initialData }: ProductTableProps) {
                             alt={product.name}
                             fill
                             sizes="100px"
-                            className="object-cover object-top"
+                            className="object-contain"
                           />
                         </div>
                       </TableCell>

@@ -1,18 +1,28 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { Loader2, Upload, X } from "lucide-react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Images, Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useId, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  listMediaLibrary,
   resolveImageType,
   toUploadErrorMessage,
   uploadImage,
   uploadImages,
   type ImageType,
+  type MediaLibraryItem,
   type UploadedImage,
 } from "@/lib/api/dashboard/upload";
 import { cn } from "@/lib/utils";
@@ -22,6 +32,8 @@ const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 const ALLOWED_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const DEFAULT_MAX_FILES = 5;
+const GALLERY_PAGE_SIZE = 24;
+const GALLERY_TYPES = new Set<ImageType>(["product", "category", "slider", "blog"]);
 
 type PreviewItem = {
   id: string;
@@ -116,22 +128,49 @@ async function uploadFiles(files: File[], type: ImageType): Promise<UploadedImag
   return results;
 }
 
+function toAsset(item: UploadedImage, variantIndex?: number): UploadedAsset {
+  return {
+    url: pickUrl(item, variantIndex),
+    publicId: item.publicId,
+    variants: item.variants ?? [],
+  };
+}
+
 export function ImageUpload(props: ImageUploadProps) {
   const { mode, folder, disabled, className } = props;
   const maxFiles = mode === "multiple" ? (props.maxFiles ?? DEFAULT_MAX_FILES) : 1;
   const inputId = useId();
+  const type = resolveImageType(folder);
+  const useGallery = GALLERY_TYPES.has(type);
   const [dragOver, setDragOver] = useState(false);
   const [previews, setPreviews] = useState<PreviewItem[]>([]);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const committed = asUrls(props);
   const uploading = previews.some((p) => p.uploading);
   const visible = [...committed.map((url) => ({ id: url, url, uploading: false })), ...previews];
   const slotsLeft = Math.max(0, maxFiles - committed.length - previews.length);
   const canAdd = !disabled && !uploading && slotsLeft > 0;
-  const type = resolveImageType(folder);
 
   const mutation = useMutation({
     mutationFn: (files: File[]) => uploadFiles(files, type),
   });
+
+  const applyResults = useCallback(
+    (results: UploadedImage[]) => {
+      const variantIndex = props.mode === "single" ? props.variantIndex : undefined;
+      const assets: UploadedAsset[] = [];
+      const urls = [...committed];
+      for (const result of results) {
+        const asset = toAsset(result, variantIndex);
+        if (urls.includes(asset.url)) continue;
+        if (urls.length >= maxFiles) break;
+        urls.push(asset.url);
+        assets.push(asset);
+      }
+      emit(props, urls, assets);
+    },
+    [committed, maxFiles, props]
+  );
 
   const handleFiles = useCallback(
     (list: FileList | File[]) => {
@@ -163,16 +202,9 @@ export function ImageUpload(props: ImageUploadProps) {
 
       mutation.mutate(accepted, {
         onSuccess: (results) => {
-          const variantIndex = props.mode === "single" ? props.variantIndex : undefined;
-          const assets = results.map((r) => ({
-            url: pickUrl(r, variantIndex),
-            publicId: r.publicId,
-            variants: r.variants ?? [],
-          }));
-          const urls = assets.map((a) => a.url);
           local.forEach((item) => URL.revokeObjectURL(item.url));
           setPreviews((prev) => prev.filter((p) => !local.some((l) => l.id === p.id)));
-          emit(props, [...committed, ...urls].slice(0, maxFiles), assets);
+          applyResults(results);
         },
         onError: (err) => {
           local.forEach((item) => URL.revokeObjectURL(item.url));
@@ -181,7 +213,7 @@ export function ImageUpload(props: ImageUploadProps) {
         },
       });
     },
-    [canAdd, slotsLeft, maxFiles, mutation, props, committed]
+    [applyResults, canAdd, maxFiles, mutation, slotsLeft]
   );
 
   const removeAt = (url: string, isPreview: boolean) => {
@@ -194,50 +226,64 @@ export function ImageUpload(props: ImageUploadProps) {
     }
   };
 
+  const dropzone = (
+    <label
+      htmlFor={inputId}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        handleFiles(e.dataTransfer.files);
+      }}
+      className={cn(
+        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors",
+        dragOver
+          ? "border-primary bg-primary/5"
+          : "border-input hover:border-primary/50 hover:bg-accent/40"
+      )}
+    >
+      <Upload className="size-6 text-muted-foreground" />
+      <span className="text-sm font-medium">
+        Drop {mode === "single" ? "an image" : "images"} here or click to upload[cite: 1]
+      </span>
+      <span className="text-xs text-muted-foreground">
+        JPG, PNG, or WebP. Max 5MB[cite: 1]
+        {mode === "multiple" ? ` · up to ${maxFiles} files` : ""}
+      </span>
+      <input
+        id={inputId}
+        type="file"
+        accept={ACCEPT}
+        multiple={mode === "multiple"}
+        className="sr-only"
+        disabled={!canAdd}
+        onChange={(e) => {
+          if (e.target.files) handleFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+    </label>
+  );
+
   return (
     <div className={cn("space-y-3", className)}>
-      {canAdd ? (
-        <label
-          htmlFor={inputId}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-          className={cn(
-            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors",
-            dragOver
-              ? "border-primary bg-primary/5"
-              : "border-input hover:border-primary/50 hover:bg-accent/40"
-          )}
+      {canAdd && useGallery ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-center gap-2"
+          disabled={disabled || uploading}
+          onClick={() => setLibraryOpen(true)}
         >
-          <Upload className="size-6 text-muted-foreground" />
-          <span className="text-sm font-medium">
-            Drop {mode === "single" ? "an image" : "images"} here or click to upload
-          </span>
-          <span className="text-xs text-muted-foreground">
-            JPG, PNG, or WebP. Max 5MB
-            {mode === "multiple" ? ` · up to ${maxFiles} files` : ""}
-          </span>
-          <input
-            id={inputId}
-            type="file"
-            accept={ACCEPT}
-            multiple={mode === "multiple"}
-            className="sr-only"
-            disabled={!canAdd}
-            onChange={(e) => {
-              if (e.target.files) handleFiles(e.target.files);
-              e.target.value = "";
-            }}
-          />
-        </label>
+          <Images className="size-4" />
+          Choose image[cite: 1]
+        </Button>
       ) : null}
+      {canAdd && !useGallery ? dropzone : null}
 
       {visible.length > 0 ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -255,8 +301,9 @@ export function ImageUpload(props: ImageUploadProps) {
                 <Image
                   src={item.url}
                   alt=""
-                  fill
-                  className="object-cover w-auto h-auto"
+                  fill={true}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
                   loading="lazy"
                 />
                 {item.uploading ? (
@@ -294,6 +341,248 @@ export function ImageUpload(props: ImageUploadProps) {
           })}
         </ul>
       ) : null}
+
+      {useGallery ? (
+        <MediaLibraryDialog
+          open={libraryOpen}
+          onOpenChange={setLibraryOpen}
+          type={type}
+          mode={mode}
+          slotsLeft={slotsLeft}
+          maxFiles={maxFiles}
+          uploading={uploading}
+          onSelect={(items) => {
+            applyResults(items);
+            setLibraryOpen(false);
+          }}
+          onUpload={handleFiles}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function MediaLibraryDialog({
+  open,
+  onOpenChange,
+  type,
+  mode,
+  slotsLeft,
+  maxFiles,
+  uploading,
+  onSelect,
+  onUpload,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  type: ImageType;
+  mode: "single" | "multiple";
+  slotsLeft: number;
+  maxFiles: number;
+  uploading: boolean;
+  onSelect: (items: UploadedImage[]) => void;
+  onUpload: (files: FileList | File[]) => void;
+}) {
+  const queryClient = useQueryClient();
+  const inputId = useId();
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Record<string, MediaLibraryItem>>({});
+  const [dragOver, setDragOver] = useState(false);
+  const selectedList = Object.values(selected);
+  const canConfirm = selectedList.length > 0 && selectedList.length <= slotsLeft;
+
+  const query = useQuery({
+    queryKey: ["media-library", type, page],
+    queryFn: () => listMediaLibrary(type, page, GALLERY_PAGE_SIZE),
+    enabled: open,
+    placeholderData: keepPreviousData,
+  });
+
+  const items = query.data?.items ?? [];
+  const pagination = query.data?.pagination;
+  const totalPages = pagination?.totalPages ?? 0;
+
+  const toggle = (item: MediaLibraryItem) => {
+    setSelected((prev) => {
+      if (prev[item.publicId]) {
+        const next = { ...prev };
+        delete next[item.publicId];
+        return next;
+      }
+      if (mode === "single") {
+        return { [item.publicId]: item };
+      }
+      if (Object.keys(prev).length >= slotsLeft) {
+        toast.error(`A maximum of ${maxFiles} images is allowed`);
+        return prev;
+      }
+      return { ...prev, [item.publicId]: item };
+    });
+  };
+
+  const handleDeviceFiles = (files: FileList | File[]) => {
+    onUpload(files);
+    void queryClient.invalidateQueries({ queryKey: ["media-library", type] });
+    onOpenChange(false);
+    setSelected({});
+    setPage(1);
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) {
+          setSelected({});
+          setPage(1);
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Media library[cite: 1]</DialogTitle>
+          <DialogDescription>
+            Pick a Cloudinary image of this type, or upload from your device[cite: 1].
+          </DialogDescription>
+        </DialogHeader>
+
+        <label
+          htmlFor={inputId}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (!uploading) handleDeviceFiles(e.dataTransfer.files);
+          }}
+          className={cn(
+            "flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm transition-colors",
+            uploading && "pointer-events-none opacity-60",
+            dragOver
+              ? "border-primary bg-primary/5"
+              : "border-input hover:border-primary/50 hover:bg-accent/40"
+          )}
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <span>Uploading image...</span>
+            </>
+          ) : (
+            <>
+              <Upload className="size-4 text-muted-foreground" />
+              <span>Upload from device</span>
+            </>
+          )}
+          <input
+            id={inputId}
+            type="file"
+            accept={ACCEPT}
+            multiple={mode === "multiple"}
+            className="sr-only"
+            disabled={uploading || slotsLeft <= 0}
+            onChange={(e) => {
+              if (e.target.files) handleDeviceFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </label>
+
+        <div className="relative min-h-[12rem]">
+          {uploading ? (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-background/80 backdrop-blur-sm rounded-lg">
+              <Loader2 className="size-8 animate-spin text-primary" />
+              <p className="text-sm font-medium text-muted-foreground">
+                Uploading files to library...
+              </p>
+            </div>
+          ) : null}
+
+          {query.isLoading ? (
+            <div className="flex h-48 items-center justify-center">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : items.length === 0 ? (
+            <p className="text-muted-foreground py-12 text-center text-sm">
+              No images in this library yet. Upload from your device[cite: 1].
+            </p>
+          ) : (
+            <ul className="grid max-h-[50vh] grid-cols-3 gap-3 overflow-y-auto sm:grid-cols-4">
+              {items.map((item) => {
+                const isSelected = Boolean(selected[item.publicId]);
+                return (
+                  <li key={item.publicId}>
+                    <button
+                      type="button"
+                      onClick={() => toggle(item)}
+                      className={cn(
+                        "relative aspect-square w-full overflow-hidden rounded-lg border bg-muted/30",
+                        isSelected && "ring-2 ring-primary"
+                      )}
+                      aria-pressed={isSelected}
+                      aria-label="Select library image"
+                    >
+                      <Image
+                        src={item.secure_url || item.url}
+                        alt=""
+                        fill={true}
+                        style={{ objectFit: "cover" }}
+                        loading="lazy"
+                      />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {totalPages > 1 ? (
+          <div className="flex items-center justify-between text-sm">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Previous
+            </Button>
+            <span className="text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        ) : null}
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={!canConfirm || uploading}
+            onClick={() => {
+              onSelect(selectedList);
+              setSelected({});
+            }}
+          >
+            Use selected{selectedList.length ? ` (${selectedList.length})` : ""}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

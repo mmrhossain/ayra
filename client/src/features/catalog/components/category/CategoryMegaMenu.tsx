@@ -44,6 +44,48 @@ function categoryHref(categories: CategoryListItem[], category: CategoryListItem
   return `/shop/${path.map((item) => item.slug).join("/")}`;
 }
 
+interface CategoryTreeProps {
+  categories: CategoryListItem[];
+  allCategories: CategoryListItem[];
+  onSelect: (name: string) => void;
+  level?: number;
+}
+
+function CategoryTree({ categories, allCategories, onSelect, level = 0 }: CategoryTreeProps) {
+  return (
+    <div className={level === 0 ? "space-y-2" : "mt-1 space-y-1"}>
+      {categories.map((category) => {
+        const hasChildren = (category.children?.length ?? 0) > 0;
+
+        return (
+          <div key={category.id}>
+            <Link
+              href={categoryHref(allCategories, category)}
+              onClick={() => onSelect(category.name)}
+              className="flex items-center justify-between gap-2 rounded-sm px-3 py-2 text-[13px] font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary"
+            >
+              <span className="min-w-0 truncate">{category.name}</span>
+
+              {hasChildren && <ChevronRight size={13} className="shrink-0 text-slate-300" />}
+            </Link>
+
+            {hasChildren && (
+              <div className="ml-3 border-l border-primary-200 pl-2">
+                <CategoryTree
+                  categories={category.children ?? []}
+                  allCategories={allCategories}
+                  onSelect={onSelect}
+                  level={level + 1}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaMenuProps) {
   const [activeId, setActiveId] = useState<string | null>(categories[0]?.id ?? null);
 
@@ -127,18 +169,11 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
               </div>
 
               {children.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {children.map((child) => (
-                    <Link
-                      key={child.id}
-                      href={categoryHref(categories, child)}
-                      onClick={() => onSelect(child.name)}
-                      className="rounded-sm px-3 py-2 text-[13px] font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary truncate"
-                    >
-                      {child.name}
-                    </Link>
-                  ))}
-                </div>
+                <CategoryTree
+                  categories={children}
+                  allCategories={categories}
+                  onSelect={onSelect}
+                />
               ) : (
                 <p className="text-sm text-slate-400">Browse this collection.</p>
               )}

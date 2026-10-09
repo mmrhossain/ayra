@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.ts";
 import { UPLOAD_TYPE_ROLES } from "./media.constants.ts";
 import type { AuthRole, ImageType } from "./media.types.ts";
 import {
+  listMediaQuerySchema,
   multipleUploadQuerySchema,
   singleUploadQuerySchema,
 } from "./media.validators.ts";
@@ -58,6 +59,20 @@ export const requireMultipleUploadPermission = async (
 ) => {
   try {
     const type = resolveType(req, "multiple");
+    await assertUploadRole(req, type);
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const requireListMediaPermission = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { type } = listMediaQuerySchema.parse(req.query);
     await assertUploadRole(req, type);
     next();
   } catch (err) {

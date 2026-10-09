@@ -36,6 +36,7 @@ export function useProductReviews(productId: string) {
     defaultValues: { rating: 5, comment: "" },
   });
 
+  // ডেটা ফেচিং লজিক যা প্রয়োজন অনুযায়ী কল করা যাবে
   const loadReviews = async (nextPage: number, append = false) => {
     if (!productId) return;
 
@@ -68,12 +69,25 @@ export function useProductReviews(productId: string) {
     }
   };
 
+  // কম্পাইলারের সুবিধা নিতে ইনিশিয়াল ফেচ লজিকটি সরাসরি ইফেক্টের ভেতর রাখা হয়েছে
   useEffect(() => {
     let ignore = false;
 
     async function initFetch() {
       if (!productId || ignore) return;
-      await loadReviews(1, false);
+      setLoading(true);
+      try {
+        const result = await fetchProductReviews(productId, 1, PAGE_SIZE);
+        if (!ignore) {
+          setReviews(result.items);
+          setPage(result.pagination.page);
+          setTotalPages(Math.max(1, result.pagination.totalPages));
+        }
+      } catch (err) {
+        if (!ignore) errorToast(toProductReviewError(err));
+      } finally {
+        if (!ignore) setLoading(false);
+      }
     }
 
     void initFetch();
@@ -112,14 +126,12 @@ export function useProductReviews(productId: string) {
 
   let sortedReviews: ProductReview[] = [];
   if (reviews.length > 0) {
-    const list = [...reviews];
-
     if (sort === "highest") {
-      sortedReviews = list.sort((a, b) => b.rating - a.rating);
+      sortedReviews = [...reviews].sort((a, b) => b.rating - a.rating);
     } else if (sort === "lowest") {
-      sortedReviews = list.sort((a, b) => a.rating - b.rating);
+      sortedReviews = [...reviews].sort((a, b) => a.rating - b.rating);
     } else {
-      sortedReviews = list.sort((a, b) => {
+      sortedReviews = [...reviews].sort((a, b) => {
         const aTime = new Date(a.createdAt).getTime();
         const bTime = new Date(b.createdAt).getTime();
         return sort === "oldest" ? aTime - bTime : bTime - aTime;

@@ -96,9 +96,15 @@ export const updateVendorProfile = async (
 
   if (!profile) throw new AppError("Vendor profile not found", 404);
 
-  const nextLogo = input.logo !== undefined ? input.logo : profile.logo;
-  const nextPublicId =
-    input.logo !== undefined || input.logoPublicId !== undefined
+  const logoCleared = input.logo === null || input.logoPublicId === null;
+  const nextLogo = logoCleared
+    ? null
+    : input.logo !== undefined
+      ? input.logo
+      : profile.logo;
+  const nextPublicId = logoCleared
+    ? null
+    : input.logo !== undefined || input.logoPublicId !== undefined
       ? resolveImagePublicId(
           input.logoPublicId ?? profile.logoPublicId,
           nextLogo
@@ -112,8 +118,10 @@ export const updateVendorProfile = async (
       ...(input.description !== undefined && {
         description: input.description ?? null,
       }),
-      ...(input.logo !== undefined && { logo: input.logo }),
-      ...((input.logo !== undefined || input.logoPublicId !== undefined) && {
+      ...((input.logo !== undefined || logoCleared) && { logo: nextLogo }),
+      ...((input.logo !== undefined ||
+        input.logoPublicId !== undefined ||
+        logoCleared) && {
         logoPublicId: nextPublicId,
       }),
       ...(input.phone !== undefined && { phone: input.phone }),

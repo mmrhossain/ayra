@@ -22,7 +22,11 @@ export const registrationSchema = z
         password_confirmation: z.string().min(6, "Please confirm your password"),
         callbackURL: z.string().optional(),
 
-        remember: z.boolean().optional(),
+        remember: z
+            .boolean()
+            .refine((value) => value === true, {
+                message: "You must agree to the terms & conditions",
+            }),
     })
     .refine((data) => data.password === data.password_confirmation, {
         path: ["password_confirmation"],

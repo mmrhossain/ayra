@@ -105,6 +105,9 @@ export function useBlogFormMutation({
         excerpt: values.excerpt?.trim() || undefined,
         content: values.content.trim(),
         featuredImage: values.featuredImage?.trim() || undefined,
+        featuredImagePublicId: values.featuredImagePublicId?.trim()
+          ? values.featuredImagePublicId.trim()
+          : undefined,
         categoryId: values.categoryId ? values.categoryId : null,
         metaTitle: values.metaTitle?.trim() || undefined,
         metaDescription: values.metaDescription?.trim() || undefined,
@@ -116,6 +119,9 @@ export function useBlogFormMutation({
           ...body,
           excerpt: values.excerpt?.trim() ? values.excerpt.trim() : null,
           featuredImage: values.featuredImage?.trim() ? values.featuredImage.trim() : null,
+          featuredImagePublicId: values.featuredImagePublicId?.trim()
+            ? values.featuredImagePublicId.trim()
+            : null,
           metaTitle: values.metaTitle?.trim() ? values.metaTitle.trim() : null,
           metaDescription: values.metaDescription?.trim()
             ? values.metaDescription.trim()

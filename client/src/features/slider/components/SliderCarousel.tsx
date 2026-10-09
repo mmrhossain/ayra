@@ -1,7 +1,6 @@
 "use client";
 
 import CustomButton from "@/components/shared/CustomButton";
-import StoreImage from "@/components/shared/store-image";
 import {
   Carousel,
   CarouselContent,
@@ -13,6 +12,7 @@ import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
 
 interface HeroSliderProps {
@@ -55,7 +55,12 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
   if (!sliders?.length) return null;
 
   return (
-    <section className={cn("relative w-full overflow-hidden bg-neutral-900", className)}>
+    <section
+      className={cn(
+        "relative w-full overflow-hidden h-[60svh] min-h-[350px] sm:h-[calc(100dvh-var(--header-height,120px))] sm:min-h-[500px] ",
+        className
+      )}
+    >
       <Carousel
         plugins={[autoplay]}
         opts={{
@@ -72,46 +77,27 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
             return (
               <CarouselItem key={slider.id || index} className="relative min-w-full pl-0">
                 {/* Hero Container */}
-                <div
-                  className="
-                    relative
-                    h-[60svh]
-                    min-h-[350px]
-                    w-full
-                    overflow-hidden
-                    sm:h-[calc(100dvh-var(--header-height,120px))]
-                    sm:min-h-[500px]
-                  "
-                >
-                  {/* Overlay */}
-                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
+                <div className="relative">
                   {/* Mobile Image */}
-                  <div className="aspect-[4/5]">
-                    <StoreImage
-                      src={
-                        slider.mobileImageUrl || slider.imageUrl || "/fallbacks/hero-mobile.webp"
-                      }
-                      alt={slider.title || "Hero Banner"}
-                      priority={index === 0}
-                      loading={index === 0 ? "eager" : "lazy"}
-                      sizes="100vw"
-                      className="h-full w-full object-cover object-center sm:hidden"
-                      width={1080}
-                      height={1350}
-                    />
-                  </div>
+                  <Image
+                    src={slider.mobileImageUrl || "/fallbacks/hero-mobile.webp"}
+                    alt={slider.title || "Hero Banner"}
+                    priority={index === 0}
+                    loading={"eager"}
+                    width={960}
+                    height={1200}
+                    className="object-cover md:hidden"
+                  />
 
                   {/* Desktop Image */}
-                  <StoreImage
+                  <Image
                     src={slider.imageUrl || "/fallbacks/hero-desktop.webp"}
                     alt={slider.title || "Hero Banner"}
                     priority={index === 0}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    sizes="100vw"
-                    className="hidden h-full w-full object-cover object-center sm:block"
+                    loading={"eager"}
                     width={1920}
                     height={1080}
+                    className="w-[100%] h-auto object-cover hidden md:block"
                   />
                 </div>
 

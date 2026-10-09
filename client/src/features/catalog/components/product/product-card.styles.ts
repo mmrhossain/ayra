@@ -7,7 +7,7 @@ export const productCardMedia =
   "relative aspect-[4/5] overflow-hidden bg-slate-50";
 
 export const productCardImage =
-  "object-cover transition-transform duration-700 group-hover:scale-110";
+  "object-contain transition-transform duration-700 group-hover:scale-105";
 
 export const productCardBody =
   "flex flex-grow flex-col space-y-1.5 pt-3 sm:space-y-2 sm:pt-4";

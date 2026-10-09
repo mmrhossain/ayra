@@ -1,6 +1,7 @@
 "use client";
 
 import Newsletter from "@/components/shared/Newsletter";
+import Image from "next/image";
 import Link from "next/link";
 import { AiFillTikTok } from "react-icons/ai";
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
@@ -10,7 +11,7 @@ const TopFooter = () => {
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 py-12 lg:py-20 border-t border-slate-100">
         {/* 1. Brand Section */}
-        <div className="sm:col-span-2 lg:col-span-4 space-y-6">
+        <div className="sm:col-span-2 lg:col-span-3 space-y-6">
           <div>
             <h2 className="text-lg font-black uppercase tracking-[0.2em] text-slate-900 mb-3">
               About Us
@@ -52,7 +53,7 @@ const TopFooter = () => {
         </div>
 
         {/* 2. Info Section */}
-        <div className="lg:col-span-3 lg:ml-auto">
+        <div className="lg:col-span-2 lg:ml-auto">
           <h2 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 mb-6 lg:mb-8">
             Quick Links
           </h2>
@@ -71,8 +72,36 @@ const TopFooter = () => {
           </ul>
         </div>
 
-        {/* 3. Newsletter Section */}
-        <div className="sm:col-span-2 lg:col-span-5 bg-slate-50 p-6 lg:p-0 lg:bg-transparent rounded-2xl">
+        {/* 3. Social Gallery Section */}
+        <div className="lg:col-span-3 lg:ml-auto flex flex-col items-start sm:items-start lg:items-start">
+          <h2 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 mb-6 lg:mb-8">
+            Instagram Shop
+          </h2>
+          <div className="group relative overflow-hidden rounded-2xl border-4 border-slate-50 shadow-sm w-fit">
+            <a
+              href="https://www.instagram.com/ayra"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden bg-white p-2"
+            >
+              <Image
+                width={140}
+                height={140}
+                src={
+                  "https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791365873/qr_code_qwkeqc.png"
+                }
+                alt={"QR Code"}
+                className="transition-transform duration-700 group-hover:scale-105 w-auto h-auto"
+              />
+            </a>
+          </div>
+          <p className="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Scan to follow @ayra
+          </p>
+        </div>
+
+        {/* 4. Newsletter Section */}
+        <div className="sm:col-span-2 lg:col-span-4 bg-slate-50 p-6 lg:p-0 lg:bg-transparent rounded-2xl">
           <Newsletter />
         </div>
       </div>

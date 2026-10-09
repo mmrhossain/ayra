@@ -63,7 +63,7 @@ const CartItemRow = ({
           alt={item.productName || ""}
           fill
           sizes="(max-width: 640px) 99px, 124px"
-          className="object-cover"
+          className="object-contain"
         />
       </Link>
 

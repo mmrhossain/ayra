@@ -41,7 +41,7 @@ export default function OrderLineItem({
           alt={name}
           fill
           sizes="(max-width: 640px) 68px, 88px"
-          className="object-cover"
+          className="object-contain"
         />
       </div>
 

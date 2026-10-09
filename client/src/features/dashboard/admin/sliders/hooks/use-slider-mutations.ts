@@ -28,9 +28,11 @@ export function useSliderFormMutation({
       const body = {
         title: values.title.trim(),
         imageUrl: values.imageUrl,
-        imagePublicId: values.imagePublicId || undefined,
-        mobileImageUrl: values.mobileImageUrl || undefined,
-        mobileImagePublicId: values.mobileImagePublicId || undefined,
+        imagePublicId: values.imagePublicId?.trim() ? values.imagePublicId : null,
+        mobileImageUrl: values.mobileImageUrl?.trim() ? values.mobileImageUrl : null,
+        mobileImagePublicId: values.mobileImagePublicId?.trim()
+          ? values.mobileImagePublicId
+          : null,
         redirectUrl: values.redirectUrl?.trim() || undefined,
         startDate: toIso(values.startDate),
         endDate: toIso(values.endDate),

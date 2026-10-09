@@ -21,7 +21,7 @@ export type UploadedImage = {
 export type ImageVariant = {
   width: number;
   height: number;
-  crop: "fill" | "auto" | "fit";
+  crop: "fill" | "auto" | "fit" | "limit";
   gravity?: "auto" | "center" | "face";
 };
 
@@ -56,4 +56,16 @@ export type SingleUploadQuery = {
 
 export type MultipleUploadQuery = {
   type: "product";
+};
+
+export type MediaLibraryItem = UploadedImage & {
+  type: ImageType;
+  status: "PENDING" | "ATTACHED";
+  createdAt: Date;
+};
+
+export type ListMediaQuery = {
+  type: ImageType;
+  page: number;
+  limit: number;
 };

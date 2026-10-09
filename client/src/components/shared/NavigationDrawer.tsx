@@ -95,7 +95,7 @@ const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                         alt={category?.name}
                         width={250}
                         height={250}
-                        className="object-cover"
+                        className="object-contain"
                     />
                 </div>
 

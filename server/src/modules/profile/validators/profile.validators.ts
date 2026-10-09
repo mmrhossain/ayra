@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { bdPhoneSchema } from "../../../common/validators/bangladesh.ts";
 import {
-  optionalCloudinaryImageUrlSchema,
-  optionalMediaPublicIdSchema,
+  nullableCloudinaryImageUrlSchema,
+  nullableMediaPublicIdSchema,
 } from "../../media/media.validators.ts";
 
 export const updateCustomerProfileSchema = z.object({
@@ -14,8 +14,8 @@ export const updateVendorProfileSchema = z
   .object({
     shopName: z.string().min(1).optional(),
     description: z.string().optional(),
-    logo: optionalCloudinaryImageUrlSchema,
-    logoPublicId: optionalMediaPublicIdSchema,
+    logo: nullableCloudinaryImageUrlSchema,
+    logoPublicId: nullableMediaPublicIdSchema,
     phone: bdPhoneSchema.optional(),
     shopSlug: z
       .string()

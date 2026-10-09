@@ -1,19 +1,29 @@
 import { unlink } from "node:fs/promises";
 import { AppError } from "../../common/errors/AppError.ts";
 import { logger } from "../../common/looger/logger.ts";
+import { uniquePublicId } from "../../common/utils/cloudinary-public-id.ts";
 import { assertAllowedImageStream } from "../../common/utils/image-magic.ts";
 import {
   cloudinary,
   deleteCloudinaryAsset,
   uploadImageFileToCloudinary,
 } from "../../lib/cloudinary.ts";
+import { paginated } from "../../common/utils/paginate.ts";
 import { prisma } from "../../lib/prisma.ts";
 import {
   IMAGE_TYPE_PRESETS,
   MEDIA_PENDING_TTL_MS,
   MEDIA_SOFT_DELETE_RETENTION_MS,
 } from "./media.constants.ts";
-import type { ImageFile, ImageType, MediaOwner, UploadedImage } from "./media.types.ts";
+import {
+  IMAGE_TYPE_VALUES,
+  type ImageFile,
+  type ImageType,
+  type ListMediaQuery,
+  type MediaLibraryItem,
+  type MediaOwner,
+  type UploadedImage,
+} from "./media.types.ts";
 
 // Optimized: Removed heavy 2000x2000 synchronous scaling limit on ingest
 // to speed up Cloudinary upload response times. Variants handle presentation sizes.
@@ -36,13 +46,14 @@ const toUploadedImage = (
   type: ImageType,
   fallbackUrl?: string
 ): UploadedImage => {
-  const variants = buildImageUrls(publicId, type);
+  const storedId = uniquePublicId(publicId) ?? publicId;
+  const variants = buildImageUrls(storedId, type);
   const first = variants[0] ?? fallbackUrl;
   if (!first) {
     throw new AppError("Image transformation not found", 500);
   }
   return {
-    publicId,
+    publicId: storedId,
     url: fallbackUrl ?? first,
     secure_url: first,
     variants,
@@ -52,9 +63,11 @@ const toUploadedImage = (
 const uploadOptionsFor = (type: ImageType) => {
   const preset = IMAGE_TYPE_PRESETS[type];
   return {
-    folder: preset.folder,
+    asset_folder: preset.folder,
+    unique_filename: true,
+    use_filename: false,
     transformation: [MASTER_TRANSFORMATION],
-    timeout: 120000, // Explicit 2-minute timeout safeguard for large files/slow networks
+    timeout: 120000,
   };
 };
 
@@ -147,15 +160,76 @@ export const uploadMultipleImages = async (
   return uploaded;
 };
 
+const storedPublicIds = (
+  publicIds: Array<string | null | undefined>
+): string[] => [
+  ...new Set(
+    publicIds
+      .map((id) => uniquePublicId(id) ?? id?.trim())
+      .filter((id): id is string => Boolean(id))
+  ),
+];
+
+const isImageType = (value: string): value is ImageType =>
+  (IMAGE_TYPE_VALUES as readonly string[]).includes(value);
+
+const toLibraryItem = (asset: {
+  publicId: string;
+  url: string;
+  type: string;
+  status: "PENDING" | "ATTACHED" | "SOFT_DELETED";
+  createdAt: Date;
+}): MediaLibraryItem => {
+  const type = isImageType(asset.type) ? asset.type : "product";
+  const media = toUploadedImage(asset.publicId, type, asset.url);
+  return {
+    ...media,
+    type,
+    status: asset.status === "ATTACHED" ? "ATTACHED" : "PENDING",
+    createdAt: asset.createdAt,
+  };
+};
+
+export const listMediaLibrary = async (query: ListMediaQuery) => {
+  const where = {
+    type: query.type,
+    status: { in: ["PENDING" as const, "ATTACHED" as const] },
+  };
+  const [total, assets] = await Promise.all([
+    prisma.mediaAsset.count({ where }),
+    prisma.mediaAsset.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      select: {
+        publicId: true,
+        url: true,
+        type: true,
+        status: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+  return paginated(
+    assets.map(toLibraryItem),
+    query.page,
+    query.limit,
+    total
+  );
+};
+
 const destroyUploadedAsset = async (publicId: string) => {
-  await deleteCloudinaryAsset(publicId);
-  await prisma.mediaAsset.deleteMany({ where: { publicId } });
+  const storedId = uniquePublicId(publicId) ?? publicId;
+  await deleteCloudinaryAsset(storedId);
+  await prisma.mediaAsset.deleteMany({ where: { publicId: storedId } });
 };
 
 export const deleteImage = async (publicId: string, ownerUserId?: string): Promise<void> => {
+  const storedId = uniquePublicId(publicId) ?? publicId;
   if (ownerUserId) {
     const asset = await prisma.mediaAsset.findUnique({
-      where: { publicId },
+      where: { publicId: storedId },
       select: { ownerUserId: true },
     });
     if (!asset) {
@@ -165,14 +239,14 @@ export const deleteImage = async (publicId: string, ownerUserId?: string): Promi
       throw new AppError("Forbidden: you do not own this media asset", 403);
     }
   }
-  await destroyUploadedAsset(publicId);
+  await destroyUploadedAsset(storedId);
 };
 
 export const deleteImages = async (
   publicIds: Array<string | null | undefined>,
   ownerUserId?: string
 ): Promise<void> => {
-  const uniqueIds = [...new Set(publicIds.filter((id): id is string => Boolean(id)))];
+  const uniqueIds = storedPublicIds(publicIds);
   if (uniqueIds.length === 0) return;
 
   if (ownerUserId) {
@@ -205,10 +279,17 @@ export const attachMediaAssets = async (
   entityType: MediaOwner,
   entityId: string
 ): Promise<void> => {
-  const uniqueIds = [...new Set(publicIds.filter((id): id is string => Boolean(id)))];
+  const uniqueIds = storedPublicIds(publicIds);
   if (uniqueIds.length === 0) return;
   await prisma.mediaAsset.updateMany({
-    where: { publicId: { in: uniqueIds } },
+    where: {
+      publicId: { in: uniqueIds },
+      OR: [
+        { status: "PENDING" },
+        { entityType: null },
+        { entityId: null },
+      ],
+    },
     data: {
       status: "ATTACHED",
       entityType,
@@ -216,20 +297,21 @@ export const attachMediaAssets = async (
       detachedAt: null,
     },
   });
+  await prisma.mediaAsset.updateMany({
+    where: {
+      publicId: { in: uniqueIds },
+      status: { not: "SOFT_DELETED" },
+    },
+    data: {
+      status: "ATTACHED",
+      detachedAt: null,
+    },
+  });
 };
 
 export const detachMediaAssets = async (
-  publicIds: Array<string | null | undefined>
+  _publicIds: Array<string | null | undefined>
 ): Promise<void> => {
-  const uniqueIds = [...new Set(publicIds.filter((id): id is string => Boolean(id)))];
-  if (uniqueIds.length === 0) return;
-  await prisma.mediaAsset.updateMany({
-    where: { publicId: { in: uniqueIds } },
-    data: {
-      status: "SOFT_DELETED",
-      detachedAt: new Date(),
-    },
-  });
 };
 
 export const replaceAttachedAssets = async (input: {
@@ -238,8 +320,8 @@ export const replaceAttachedAssets = async (input: {
   entityType: MediaOwner;
   entityId: string;
 }): Promise<void> => {
-  const previous = [...new Set(input.previousPublicIds.filter((id): id is string => Boolean(id)))];
-  const next = [...new Set(input.nextPublicIds.filter((id): id is string => Boolean(id)))];
+  const previous = storedPublicIds(input.previousPublicIds);
+  const next = storedPublicIds(input.nextPublicIds);
   const nextSet = new Set(next);
   const stale = previous.filter((id) => !nextSet.has(id));
   await attachMediaAssets(next, input.entityType, input.entityId);
@@ -248,15 +330,16 @@ export const replaceAttachedAssets = async (input: {
 
 export const buildImageUrls = (publicId: string, type: ImageType): string[] => {
   const preset = IMAGE_TYPE_PRESETS[type];
+  const deliveryId = uniquePublicId(publicId) ?? publicId;
   return preset.variants.map((transformation) =>
-    cloudinary.url(publicId, {
+    cloudinary.url(deliveryId, {
       secure: true,
       transformation: [
         {
           width: transformation.width,
           height: transformation.height,
           crop: transformation.crop,
-          gravity: transformation.gravity,
+          ...(transformation.gravity ? { gravity: transformation.gravity } : {}),
           fetch_format: "auto",
           quality: "auto",
         },

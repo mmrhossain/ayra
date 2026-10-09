@@ -22,6 +22,7 @@ import { Suspense, useState, useSyncExternalStore } from "react";
 
 // Safe hydration check without useEffect
 const emptySubscribe = () => () => {};
+
 const useIsHydrated = () =>
   useSyncExternalStore(
     emptySubscribe,
@@ -58,9 +59,9 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
 
   const showSessionPlaceholder = !isHydrated || isPending;
 
-  // Imperative toggle handlers (eliminates useEffect for overflow control)
   const toggleDrawer = (isOpen: boolean) => {
     setOpen(isOpen);
+
     if (typeof window !== "undefined") {
       document.body.classList.toggle("overflow-hidden", isOpen);
     }
@@ -89,44 +90,39 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
   };
 
   return (
-    <div className="lg:hidden bg-white border-b border-gray-100 shadow-sm">
+    <div className="border-b border-gray-100 bg-white shadow-sm lg:hidden">
       <div className="container flex min-w-0 items-center justify-between gap-2 py-3">
+        {/* Left Menu Button */}
         <button
+          type="button"
           onClick={() => toggleDrawer(true)}
-          className="min-h-11 min-w-11 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex h-11 w-11 shrink-0 items-center justify-left rounded-md bg-white text-slate-700 transition-colors hover:text-primary"
           aria-label="Open navigation menu"
         >
           <TextAlignJustify size={22} strokeWidth={1.7} />
         </button>
 
-        <div className="shrink-0">
-          <Link href="/">
-            <Image
-              src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
-              alt="Logo"
-              width={120}
-              height={40}
-              style={{ width: "auto", height: "auto" }} // <-- Add this to fix the warning
-              className="h-8 w-auto" // Your scaling classes
-            />
-          </Link>
-        </div>
-
-        <div className="flex gap-2 items-center">
+        {/* Right Actions */}
+        <div className="ml-auto flex items-center gap-2">
+          {/* Search */}
           <button
+            type="button"
             onClick={() => setSearchDrawerOpen(true)}
-            className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white text-slate-700 transition-colors hover:bg-gray-50 hover:text-primary"
             aria-label="Open search"
           >
             <Search size={22} strokeWidth={1.7} />
           </button>
 
+          {/* Profile */}
           {showSessionPlaceholder ? (
-            <span className="h-8 w-8 rounded-full bg-gray-100 animate-pulse" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white">
+              <span className="h-8 w-8 animate-pulse rounded-full bg-gray-100" />
+            </div>
           ) : user ? (
             <Link
               href={getUserDashboardUrl(user.role as string)}
-              className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50"
               aria-label="View user profile"
             >
               <UserAvatar src={user.image} name={user.name} className="h-8 w-8" iconSize={18} />
@@ -134,7 +130,7 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
           ) : (
             <Link
               href="/login"
-              className="h-11 w-11 flex items-center justify-center text-slate-700 hover:text-primary transition-colors"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white text-slate-700 transition-colors hover:border-primary hover:bg-gray-50 hover:text-primary"
               aria-label="Sign in"
             >
               <CircleUserRound size={22} strokeWidth={1.7} />
@@ -151,7 +147,9 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
             aria-modal="true"
             aria-label="Mobile Navigation Menu"
             onKeyDown={(e) => {
-              if (e.key === "Escape") toggleDrawer(false);
+              if (e.key === "Escape") {
+                toggleDrawer(false);
+              }
             }}
           >
             {/* Backdrop */}
@@ -161,13 +159,15 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
               animate="visible"
               exit="hidden"
               variants={backdropVariants}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.2,
+              }}
               onClick={() => toggleDrawer(false)}
             />
 
-            {/* Sidebar Content */}
+            {/* Sidebar */}
             <motion.div
-              className="absolute top-0 left-0 flex h-dvh max-h-dvh w-[min(88%,24rem)] max-w-sm flex-col bg-white shadow-2xl"
+              className="absolute left-0 top-0 flex h-dvh max-h-dvh w-[min(88%,24rem)] max-w-sm flex-col bg-white shadow-2xl"
               initial="hidden"
               animate="visible"
               exit="hidden"
@@ -175,24 +175,37 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
               transition={
                 shouldReduceMotion
                   ? { duration: 0 }
-                  : { type: "spring", damping: 25, stiffness: 200 }
+                  : {
+                      type: "spring",
+                      damping: 25,
+                      stiffness: 200,
+                    }
               }
             >
-              <div className="flex justify-between items-center p-5 border-b">
-                <div className="shrink-0">
-                  <Link href="/" onClick={() => toggleDrawer(false)}>
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 p-5">
+                {/* Drawer Logo */}
+                <div className="flex h-8 w-[120px] items-center overflow-hidden">
+                  <Link
+                    href="/"
+                    onClick={() => toggleDrawer(false)}
+                    className="relative block h-8 w-full"
+                  >
                     <Image
-                      src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
-                      alt="Logo"
-                      width={120}
-                      height={40}
-                      style={{ width: "auto", height: "auto" }} // <-- Add this to fix the warning
-                      className="h-8 w-auto" // Your scaling classes
+                      src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791311194/logo_oqjaqh.png"
+                      alt="Ayra"
+                      fill
+                      sizes="120px"
+                      priority
+                      className="object-contain object-left"
                     />
                   </Link>
                 </div>
+
+                {/* Close */}
                 <button
-                  className="p-2 bg-gray-50 rounded-full text-gray-500 hover:text-black transition-colors"
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-primary hover:bg-primary hover:text-white"
                   onClick={() => toggleDrawer(false)}
                   aria-label="Close menu"
                 >
@@ -200,27 +213,31 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
                 </button>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain custom-scrollbar">
+              {/* Scrollable Content */}
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+                {/* User */}
                 {user && (
-                  <div className="bg-slate-50 p-5 border-b flex items-center gap-3">
+                  <div className="flex items-center gap-3 border-b border-gray-100 bg-slate-50 p-5">
                     <UserAvatar
                       src={user.image}
                       name={user.name}
                       className="h-10 w-10"
                       iconSize={20}
                     />
+
                     <Link
                       href={getUserDashboardUrl(user.role as string)}
                       onClick={() => toggleDrawer(false)}
-                      className="font-bold text-sm text-slate-900 uppercase tracking-tight hover:underline"
+                      className="text-sm font-bold uppercase tracking-tight text-slate-900 hover:underline"
                     >
                       {user.role === "ADMIN" ? "Dashboard" : "My Account"}
                     </Link>
                   </div>
                 )}
 
+                {/* Categories */}
                 <ul className="flex flex-col text-slate-800">
-                  <li className="px-5 pt-6 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                  <li className="px-5 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
                     Collections
                   </li>
 
@@ -234,14 +251,18 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
                 </ul>
               </div>
 
-              <div className="space-y-4 border-t p-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
+              {/* Footer */}
+              <div className="space-y-4 border-t border-gray-100 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
+                {/* Region */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-slate-600">
                     <Globe size={16} />
+
                     <span className="text-xs font-bold uppercase tracking-wider">Region</span>
                   </div>
+
                   <Select value={language} onValueChange={(val) => setLanguage(val)}>
-                    <SelectTrigger className="w-[120px] h-11 border-none bg-slate-100 font-bold text-xs">
+                    <SelectTrigger className="h-11 w-[120px] border-none bg-slate-100 text-xs font-bold">
                       <div className="flex items-center gap-2">
                         <Image
                           src={
@@ -251,9 +272,11 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
                           width={16}
                           height={16}
                         />
+
                         <SelectValue />
                       </div>
                     </SelectTrigger>
+
                     <SelectContent className="z-[10001] bg-white">
                       <SelectItem value="English">English</SelectItem>
                       <SelectItem value="Bangla">Bangla</SelectItem>
@@ -261,19 +284,21 @@ const MobileNavbar = ({ categories }: MobileNavbarProps) => {
                   </Select>
                 </div>
 
+                {/* Auth */}
                 {user ? (
                   <button
+                    type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-900 text-white rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-all"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-sm font-bold tracking-wide text-white transition-all active:scale-95"
                   >
                     <LogOut size={18} />
                     LOGOUT
                   </button>
                 ) : (
                   <Link
-                    onClick={() => toggleDrawer(false)}
                     href="/login"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                    onClick={() => toggleDrawer(false)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold tracking-wide text-white shadow-lg shadow-primary/20 transition-all active:scale-95"
                   >
                     <CircleUserRound size={18} />
                     LOGIN / SIGNUP

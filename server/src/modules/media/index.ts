@@ -9,6 +9,7 @@ export default router;
 export {
   uploadSingleImage,
   uploadMultipleImages,
+  listMediaLibrary,
   deleteImage,
   deleteImages,
   attachMediaAssets,
@@ -32,6 +33,8 @@ export {
 export {
   cloudinaryImageUrlSchema,
   optionalCloudinaryImageUrlSchema,
+  nullableCloudinaryImageUrlSchema,
   mediaPublicIdSchema,
   optionalMediaPublicIdSchema,
+  nullableMediaPublicIdSchema,
 } from "./media.validators.ts";

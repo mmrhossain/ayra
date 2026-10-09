@@ -2,6 +2,8 @@ import { z } from "zod";
 import { paginationQuerySchema } from "../../../common/validators/pagination.ts";
 import {
   cloudinaryImageUrlSchema,
+  nullableCloudinaryImageUrlSchema,
+  nullableMediaPublicIdSchema,
   optionalCloudinaryImageUrlSchema,
   optionalMediaPublicIdSchema,
 } from "../../media/media.validators.ts";
@@ -42,10 +44,10 @@ export const createSliderSchema = z.object({
 
 export const updateSliderSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
-  imageUrl: optionalCloudinaryImageUrlSchema,
-  imagePublicId: optionalMediaPublicIdSchema,
-  mobileImageUrl: optionalCloudinaryImageUrlSchema,
-  mobileImagePublicId: optionalMediaPublicIdSchema,
+  imageUrl: nullableCloudinaryImageUrlSchema,
+  imagePublicId: nullableMediaPublicIdSchema,
+  mobileImageUrl: nullableCloudinaryImageUrlSchema,
+  mobileImagePublicId: nullableMediaPublicIdSchema,
   redirectUrl: optionalUrl,
   startDate: optionalDate,
   endDate: optionalDate,

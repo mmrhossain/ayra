@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuerySchema } from "../../common/validators/pagination.ts";
 import { env } from "../../config/env.ts";
 import { IMAGE_TYPE_VALUES } from "./media.types.ts";
 import { CLOUDINARY_HOST } from "./media.constants.ts";
@@ -11,6 +12,10 @@ export const singleUploadQuerySchema = z.object({
 
 export const multipleUploadQuerySchema = z.object({
   type: z.literal("product"),
+});
+
+export const listMediaQuerySchema = paginationQuerySchema.extend({
+  type: imageTypeSchema,
 });
 
 const cloudinaryPathPattern = /^\/[^/]+\/image\/upload\//i;
@@ -44,9 +49,19 @@ export const optionalCloudinaryImageUrlSchema = z.preprocess(
   cloudinaryImageUrlSchema.optional()
 );
 
+export const nullableCloudinaryImageUrlSchema = z.preprocess(
+  (value) => (value === "" ? null : value),
+  cloudinaryImageUrlSchema.nullable().optional()
+);
+
 export const mediaPublicIdSchema = z.string().trim().min(1).max(500);
 
 export const optionalMediaPublicIdSchema = z.preprocess(
   (value) => (value === "" || value === null ? undefined : value),
   mediaPublicIdSchema.optional()
+);
+
+export const nullableMediaPublicIdSchema = z.preprocess(
+  (value) => (value === "" ? null : value),
+  mediaPublicIdSchema.nullable().optional()
 );

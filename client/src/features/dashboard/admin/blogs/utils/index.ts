@@ -31,6 +31,7 @@ export function blogFormDefaults(initialData?: BlogListItem): BlogFormValues {
     excerpt: initialData?.excerpt ?? "",
     content: initialData?.content ?? "",
     featuredImage: initialData?.featuredImage ?? "",
+    featuredImagePublicId: initialData?.featuredImagePublicId ?? "",
     categoryId: initialData?.categoryId ?? "",
     metaTitle: initialData?.metaTitle ?? "",
     metaDescription: initialData?.metaDescription ?? "",

@@ -53,7 +53,7 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
             src={imageSrc(product)}
             alt={product?.name ?? "Product image"}
             fill
-            sizes="(max-width: 768px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className={productCardImage}
           />
         </Link>

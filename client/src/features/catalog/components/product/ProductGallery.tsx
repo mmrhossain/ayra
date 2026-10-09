@@ -61,7 +61,7 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
               alt={image.altText || `Product image ${index + 1}`}
               fill
               sizes="(max-width: 768px) 50vw, 100vw"
-              className="object-cover object-center"
+              className="object-contain"
               priority={index === 0}
             />
           </div>
@@ -91,7 +91,7 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
                 alt={image.altText || "thumbnail"}
                 fill
                 sizes="80px"
-                className="object-cover object-center"
+                className="object-contain"
               />
             </button>
           ))}
@@ -109,7 +109,7 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
                       alt={image.altText || `Product image ${index + 1}`}
                       fill
                       sizes="(max-width: 1200px) 70vw, 500px"
-                      className="object-cover object-center"
+                      className="object-contain"
                       priority={index === 0}
                     />
                   </div>

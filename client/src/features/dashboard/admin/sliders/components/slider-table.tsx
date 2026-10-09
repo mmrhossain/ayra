@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,12 +32,9 @@ import { toSliderErrorMessage } from "@/features/dashboard/admin/sliders/utils";
 import { formatDate } from "@/lib/format";
 import Image from "next/image";
 
-// const PAGE_SIZE = 20;
-
 export function SliderTable({ initialData }: SliderTableProps) {
-  const [page, setPage] = useState(initialData.pagination.page);
+  const [page, setPage] = useState(1);
   const [titleInput, setTitleInput] = useState("");
-  const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"all" | "true" | "false">("all");
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<DialogMode>("create");
@@ -45,18 +42,14 @@ export function SliderTable({ initialData }: SliderTableProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingSlider, setDeletingSlider] = useState<SliderListItem | null>(null);
 
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      setTitle(titleInput.trim());
-      setPage(1);
-    }, 300);
-    return () => window.clearTimeout(t);
-  }, [titleInput]);
+  // React 19 Built-in Feature: useDeferredValue দিয়ে ইনপুট ডিফার করা হলো
+  const deferredTitle = useDeferredValue(titleInput);
 
+  // ডিফার করা ভ্যালু হুকে পাস করা হলো, আলাদা করে setTimeout বা useEffect লাগবে না
   const { query, items, pagination } = useSliderList({
     initialData,
     page,
-    title,
+    title: deferredTitle.trim(),
     status,
   });
 
@@ -66,7 +59,10 @@ export function SliderTable({ initialData }: SliderTableProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Input
             value={titleInput}
-            onChange={(e) => setTitleInput(e.target.value)}
+            onChange={(e) => {
+              setTitleInput(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search by title"
             aria-label="Search sliders by title"
             className="max-w-sm"
@@ -139,11 +135,15 @@ export function SliderTable({ initialData }: SliderTableProps) {
                 items.map((slider) => (
                   <TableRow key={slider.id}>
                     <TableCell>
-                      <Image
-                        src={slider.imageUrl || "https://placehold.jp/160x96.png"}
-                        alt={slider.title}
-                        className="h-12 w-20 rounded-md object-cover"
-                      />
+                      <div className="relative h-12 w-20 overflow-hidden rounded-md">
+                        <Image
+                          src={slider.imageUrl || "https://placehold.jp/160x96.png"}
+                          alt={slider.title || "Slider image"}
+                          fill={true}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <p className="font-medium">{slider.title}</p>

@@ -45,7 +45,6 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
     });
   };
 
-  // Safe dashboard redirect depending on user role
   const getAccountHref = () => {
     if (user?.role === "ADMIN") return "/admin";
     if (user?.role === "VENDOR") return "/vendor";
@@ -53,40 +52,42 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
   };
 
   return (
-    <div className="container hidden min-w-0 items-center justify-between gap-4 py-2 lg:flex xl:gap-8">
+    <div className="container hidden min-w-0 items-center gap-4 py-2 lg:flex xl:gap-6">
       {/* 1. Logo */}
-      <div className="shrink-0 md:w-40">
-        <Link href="/">
+      <div className="flex h-9 w-[120px] shrink-0 items-center xl:w-[130px]">
+        <Link href="/" className="relative block h-9 w-full" aria-label="Ayra Home">
           <Image
-            src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791296117/logo_a9k7te.png"
-            alt="Logo"
-            width={150}
-            height={80}
-            style={{ width: "auto", height: "auto" }} // <-- Add this to fix the warning
-            className="h-8 w-auto" // Your scaling classes
+            src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791364893/logo_juxcww.png"
+            alt="Ayra"
+            fill
+            priority
+            sizes="(min-width: 1280px) 130px, 120px"
+            className="object-contain object-left"
           />
         </Link>
       </div>
 
-      {/* 2. Integrated Search Bar with Hoverable Category Dropdown */}
-      <div className="max-w-2xl min-w-0 flex-1">
+      {/* 2. Search Bar */}
+      <div className="min-w-0 flex-1">
         <div className="flex h-12 items-center rounded-sm border border-gray-200">
-          {/* Custom Category Selector */}
+          {/* Category Selector */}
           <div className="group/cat relative h-full w-[140px] min-w-0 shrink-0 border-r border-gray-200 bg-white xl:w-[180px]">
             <button
               type="button"
               className="flex h-full w-full items-center justify-between px-4 text-sm font-medium text-secondary"
             >
               <span className="truncate">{selectedCatName}</span>
+
               <ChevronDown
                 size={14}
                 className="transition-transform duration-200 group-hover/cat:rotate-180"
               />
             </button>
+
             <CategoryMegaMenu categories={categories ?? []} onSelect={setSelectedCatName} />
           </div>
 
-          {/* Search Input Area */}
+          {/* Search Input */}
           <div className="min-w-0 flex-1 overflow-hidden">
             <SearchBox />
           </div>
@@ -102,31 +103,34 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
               size={24}
               className="text-secondary transition-colors group-hover:text-primary"
             />
+
             <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
               {String(wishCount).padStart(2, "0")}
             </span>
           </div>
         </Link>
 
-        {/* My Cart */}
+        {/* Cart */}
         <Link href="/cart" className="group flex items-center gap-3">
           <div className="relative p-2">
             <ShoppingCart
               size={24}
               className="text-secondary transition-colors group-hover:text-primary"
             />
+
             <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
               {String(cartCount).padStart(2, "0")}
             </span>
           </div>
         </Link>
 
-        {/* Account Dropdown or Sign In */}
-        <div className="group shrink-0 cursor-pointer min-w-0 xl:w-[200px] xl:border-r xl:border-gray-100 xl:pr-6">
+        {/* Account */}
+        <div className="group min-w-0 shrink-0 cursor-pointer xl:w-[200px] xl:border-r xl:border-gray-100 xl:pr-6">
           {showSessionPlaceholder ? (
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-gray-100" />
-              <div className="hidden flex-col gap-1.5 xl:flex w-full">
+
+              <div className="hidden w-full flex-col gap-1.5 xl:flex">
                 <div className="h-2 w-10 animate-pulse rounded bg-gray-100" />
                 <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
               </div>
@@ -140,8 +144,10 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
                   className="h-10 w-10 shrink-0"
                   iconSize={22}
                 />
+
                 <div className="hidden min-w-0 flex-col items-start truncate xl:flex">
                   <span className="text-[11px] leading-none text-gray-500">Welcome</span>
+
                   <span className="w-full truncate text-sm font-bold capitalize text-secondary">
                     {user.name || "User"}
                   </span>
@@ -157,6 +163,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
                     {user?.role === "ADMIN" ? "Dashboard" : "My Account"}
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="cursor-pointer hover:bg-primary hover:text-white"
@@ -168,8 +175,10 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
           ) : (
             <Link href="/login" className="flex w-full shrink-0 items-center gap-3">
               <UserAvatar className="h-10 w-10 shrink-0" iconSize={22} />
+
               <div className="hidden min-w-0 flex-col items-start truncate text-left xl:flex">
                 <span className="text-[12px] leading-none text-gray-500">Welcome</span>
+
                 <span className="truncate text-sm font-bold text-secondary transition-colors group-hover:text-primary">
                   Sign in/Register
                 </span>

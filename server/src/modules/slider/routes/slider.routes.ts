@@ -14,8 +14,8 @@ import {
 
 const router = Router();
 
-// router.get("/sliders", listActiveSlidersHandler);
-router.get("/sliders/active", listActiveSlidersHandler);
+  router.get("/sliders", listActiveSlidersHandler);
+  router.get("/sliders/active", listActiveSlidersHandler);
 
 const adminOnly = [requireAuth, requireRole("ADMIN")];
 

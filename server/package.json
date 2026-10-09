@@ -1,5 +1,5 @@
 {
-  "name": "raangalay-backend",
+  "name": "Ayra",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -70,7 +70,7 @@
     "supertest": "^7.1.4",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.11"
   },
   "allowScripts": {
     "@prisma/engines@7.10.0": true,
@@ -79,5 +79,9 @@
     "prisma@7.10.0": true,
     "protobufjs@7.6.6": true,
     "@google/genai@2.21.0": true
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.2",
+    "mysql2": "^3.24.5"
   }
 }

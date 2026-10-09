@@ -43,8 +43,8 @@ export type FlatCategoryListItem = CategoryListItem & { depth: number };
 export type CreateCategoryBody = {
   name: string;
   description?: string;
-  image?: string;
-  imagePublicId?: string;
+  image?: string | null;
+  imagePublicId?: string | null;
   isActive?: boolean;
   parentId?: string | null;
 };

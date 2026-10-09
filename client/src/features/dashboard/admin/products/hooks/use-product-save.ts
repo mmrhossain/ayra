@@ -74,7 +74,7 @@ function productBody(
     brandId: details.brandId ? details.brandId : null,
     status,
     isFeatured: details.isFeatured,
-    images: images.length ? images : undefined,
+    images,
   };
 }
 

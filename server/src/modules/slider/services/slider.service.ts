@@ -1,6 +1,7 @@
 import { prisma } from "../../../lib/prisma.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { paginate } from "../../../common/utils/paginate.ts";
+import { resolveImagePublicId } from "../../../common/utils/cloudinary-public-id.ts";
 import {
   attachMediaAssets,
   detachMediaAssets,
@@ -105,10 +106,13 @@ export const createSlider = async (input: CreateSliderInput) => {
     data: {
       title: input.title,
       imageUrl: input.imageUrl,
-      imagePublicId: input.imagePublicId ?? null,
+      imagePublicId: resolveImagePublicId(input.imagePublicId, input.imageUrl),
       imageStatus: "READY",
       mobileImageUrl: input.mobileImageUrl ?? null,
-      mobileImagePublicId: input.mobileImagePublicId ?? null,
+      mobileImagePublicId: resolveImagePublicId(
+        input.mobileImagePublicId,
+        input.mobileImageUrl
+      ),
       mobileImageStatus: input.mobileImageUrl ? "READY" : null,
       redirectUrl: input.redirectUrl ?? null,
       startDate: input.startDate ?? null,
@@ -132,7 +136,9 @@ export const updateSlider = async (id: string, input: UpdateSliderInput) => {
     where: { id },
     select: {
       id: true,
+      imageUrl: true,
       imagePublicId: true,
+      mobileImageUrl: true,
       mobileImagePublicId: true,
     },
   });
@@ -144,6 +150,37 @@ export const updateSlider = async (id: string, input: UpdateSliderInput) => {
   if (!hasField) {
     throw new AppError("At least one field is required", 400);
   }
+
+  const imageCleared = input.imageUrl === null || input.imagePublicId === null;
+  const nextImageUrl = imageCleared
+    ? null
+    : input.imageUrl !== undefined
+      ? input.imageUrl
+      : existing.imageUrl;
+  const nextImagePublicId = imageCleared
+    ? null
+    : input.imageUrl !== undefined || input.imagePublicId !== undefined
+      ? resolveImagePublicId(
+          input.imagePublicId ?? existing.imagePublicId,
+          nextImageUrl
+        )
+      : existing.imagePublicId;
+
+  const mobileCleared =
+    input.mobileImageUrl === null || input.mobileImagePublicId === null;
+  const nextMobileImageUrl = mobileCleared
+    ? null
+    : input.mobileImageUrl !== undefined
+      ? input.mobileImageUrl
+      : existing.mobileImageUrl;
+  const nextMobileImagePublicId = mobileCleared
+    ? null
+    : input.mobileImageUrl !== undefined || input.mobileImagePublicId !== undefined
+      ? resolveImagePublicId(
+          input.mobileImagePublicId ?? existing.mobileImagePublicId,
+          nextMobileImageUrl
+        )
+      : existing.mobileImagePublicId;
 
   const updated = await prisma.slider.update({
     where: { id },
@@ -158,36 +195,31 @@ export const updateSlider = async (id: string, input: UpdateSliderInput) => {
       ...(input.endDate !== undefined && { endDate: input.endDate ?? null }),
       ...(input.priority !== undefined && { priority: input.priority }),
       ...(input.isActive !== undefined && { isActive: input.isActive }),
-      ...(input.imageUrl !== undefined && {
-        imageUrl: input.imageUrl,
-        imageStatus: "READY",
+      ...((input.imageUrl !== undefined ||
+        input.imagePublicId !== undefined ||
+        imageCleared) && {
+        imageUrl: nextImageUrl,
+        imagePublicId: nextImagePublicId,
+        imageStatus: nextImageUrl ? "READY" : "PENDING",
       }),
-      ...(input.imagePublicId !== undefined && {
-        imagePublicId: input.imagePublicId ?? null,
-      }),
-      ...(input.mobileImageUrl !== undefined && {
-        mobileImageUrl: input.mobileImageUrl ?? null,
-        mobileImageStatus: input.mobileImageUrl ? "READY" : null,
-      }),
-      ...(input.mobileImagePublicId !== undefined && {
-        mobileImagePublicId: input.mobileImagePublicId ?? null,
+      ...((input.mobileImageUrl !== undefined ||
+        input.mobileImagePublicId !== undefined ||
+        mobileCleared) && {
+        mobileImageUrl: nextMobileImageUrl,
+        mobileImagePublicId: nextMobileImagePublicId,
+        mobileImageStatus: nextMobileImageUrl ? "READY" : null,
       }),
     },
     select: sliderSelect,
   });
 
   const stalePublicIds: string[] = [];
-  if (
-    input.imagePublicId !== undefined &&
-    existing.imagePublicId &&
-    existing.imagePublicId !== input.imagePublicId
-  ) {
+  if (existing.imagePublicId && existing.imagePublicId !== nextImagePublicId) {
     stalePublicIds.push(existing.imagePublicId);
   }
   if (
-    input.mobileImagePublicId !== undefined &&
     existing.mobileImagePublicId &&
-    existing.mobileImagePublicId !== input.mobileImagePublicId
+    existing.mobileImagePublicId !== nextMobileImagePublicId
   ) {
     stalePublicIds.push(existing.mobileImagePublicId);
   }
@@ -217,11 +249,7 @@ export const deleteSlider = async (id: string) => {
 
   await prisma.slider.delete({ where: { id } });
 
-  const publicIds = [existing.imagePublicId, existing.mobileImagePublicId].filter(
-    (value): value is string => Boolean(value)
-  );
-
-  await detachMediaAssets(publicIds);
+  await detachMediaAssets([existing.imagePublicId, existing.mobileImagePublicId]);
   await invalidateHomeCache();
 
   return { deleted: true };

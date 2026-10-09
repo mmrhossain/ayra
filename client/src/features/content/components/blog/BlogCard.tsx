@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import StoreImage from "@/components/shared/store-image";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import type { PublicBlogListItem } from "@/features/content/types";
 
@@ -28,11 +28,12 @@ const BlogCard: React.FC<BlogCardProps> = ({ blogItem }) => {
           className="relative block aspect-[16/11] overflow-hidden mb-5"
           aria-label={`Read blog: ${title}`}
         >
-          <Image
+          <StoreImage
             src={featuredImage || PLACEHOLDER}
             alt={title}
             fill
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-contain transition-transform duration-700 ease-out group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </Link>

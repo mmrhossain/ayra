@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #86703c;
+  --color-primary: #3e3e3e;
   --color-btn-hover: #44381d;
   --color-secondary: #1a1a1a;
   --color-dark-color: #111111;
@@ -56,7 +56,7 @@
 :root {
   color-scheme: light;
   --radius: 0.25rem;
-  --background: #f4f1ea;
+  --background: #fff;
   --foreground: #1a1a1a;
   --card: #fcfbfa;
   --card-foreground: #1a1a1a;
@@ -81,6 +81,9 @@
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e6e2de;
   --sidebar-ring: #b8a16b;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
 }
 .dark {
   color-scheme: dark;
@@ -109,6 +112,9 @@
   --sidebar-accent-foreground: #f4f1ea;
   --sidebar-border: #44381d;
   --sidebar-ring: #b8a16b;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 }
 
 @utility container {

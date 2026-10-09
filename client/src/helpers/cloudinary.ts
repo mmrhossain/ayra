@@ -82,16 +82,9 @@ function buildCloudinaryUrl(
   height?: number,
   quality?: number | string
 ): string {
-  const crop = parsed.crop && parsed.crop !== "limit" ? parsed.crop : "limit";
-  const ratioHeight =
-    height ??
-    (parsed.width && parsed.height
-      ? Math.round((width * parsed.height) / parsed.width)
-      : undefined);
   const q = quality == null ? "auto" : String(quality);
-  const tokens = [`f_auto`, `q_${q}`, `c_${crop}`, `w_${width}`];
-  if (parsed.gravity && crop !== "limit") tokens.push(`g_${parsed.gravity}`);
-  if (ratioHeight) tokens.push(`h_${ratioHeight}`);
+  const tokens = [`f_auto`, `q_${q}`, `c_limit`, `w_${width}`];
+  if (height) tokens.push(`h_${height}`);
   const version = parsed.version ? `${parsed.version}/` : "";
   return `${parsed.origin}${parsed.uploadPath}${tokens.join(",")}/${version}${parsed.publicId}`;
 }

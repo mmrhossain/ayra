@@ -1243,6 +1243,7 @@ export const BlogScalarFieldEnum = {
   excerpt: 'excerpt',
   content: 'content',
   featuredImage: 'featuredImage',
+  featuredImagePublicId: 'featuredImagePublicId',
   status: 'status',
   metaTitle: 'metaTitle',
   metaDescription: 'metaDescription',

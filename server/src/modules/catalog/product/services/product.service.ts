@@ -250,6 +250,7 @@ export const productDetailSelect = {
     select: {
       id: true,
       imageUrl: true,
+      publicId: true,
       altText: true,
       isPrimary: true,
       sortOrder: true,
@@ -275,6 +276,7 @@ export const productDetailSelect = {
         select: {
           id: true,
           imageUrl: true,
+          publicId: true,
           altText: true,
           isPrimary: true,
         },

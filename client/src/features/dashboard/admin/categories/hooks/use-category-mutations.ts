@@ -36,8 +36,8 @@ export function useCategoryFormMutation({
         description: values.description || undefined,
         isActive: values.isActive,
         parentId: values.parentId ? values.parentId : null,
-        image: values.image || undefined,
-        imagePublicId: values.imagePublicId || undefined,
+        image: values.image?.trim() ? values.image : null,
+        imagePublicId: values.imagePublicId?.trim() ? values.imagePublicId : null,
       };
 
       if (mode === "create") {

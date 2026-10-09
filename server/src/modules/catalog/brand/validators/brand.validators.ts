@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { slugSchema } from "../../../../common/validators/slug.ts";
 import {
+  nullableCloudinaryImageUrlSchema,
+  nullableMediaPublicIdSchema,
   optionalCloudinaryImageUrlSchema,
   optionalMediaPublicIdSchema,
 } from "../../../media/media.validators.ts";
@@ -16,4 +18,7 @@ export const createBrandSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const updateBrandSchema = createBrandSchema.partial();
+export const updateBrandSchema = createBrandSchema.partial().extend({
+  logo: nullableCloudinaryImageUrlSchema,
+  logoPublicId: nullableMediaPublicIdSchema,
+});

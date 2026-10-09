@@ -3,7 +3,12 @@ import { AppError } from "../../../../common/errors/AppError.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
 import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
 import { sanitizeHtml } from "../../../../common/utils/sanitize-html.ts";
+import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public-id.ts";
 import type { Prisma } from "../../../../generated/prisma/client.ts";
+import {
+  attachMediaAssets,
+  detachMediaAssets,
+} from "../../../media/media.service.ts";
 import type {
   CreateBlogCategoryInput,
   CreateBlogInput,
@@ -20,6 +25,7 @@ const publicBlogSelect = {
   excerpt: true,
   content: true,
   featuredImage: true,
+  featuredImagePublicId: true,
   status: true,
   metaTitle: true,
   metaDescription: true,
@@ -35,6 +41,7 @@ const publicListSelect = {
   slug: true,
   excerpt: true,
   featuredImage: true,
+  featuredImagePublicId: true,
   publishedAt: true,
   category: { select: { id: true, name: true, slug: true } },
 } as const;
@@ -186,13 +193,17 @@ export const createBlog = async (input: CreateBlogInput) => {
   await assertCategory(input.categoryId);
 
   try {
-    return await prisma.blog.create({
+    const created = await prisma.blog.create({
       data: {
         title: input.title,
         slug: input.slug,
         excerpt: input.excerpt ?? null,
         content: sanitizeHtml(input.content),
         featuredImage: input.featuredImage ?? null,
+        featuredImagePublicId: resolveImagePublicId(
+          input.featuredImagePublicId,
+          input.featuredImage
+        ),
         categoryId: input.categoryId ?? null,
         metaTitle: input.metaTitle ?? null,
         metaDescription: input.metaDescription ?? null,
@@ -201,6 +212,12 @@ export const createBlog = async (input: CreateBlogInput) => {
       },
       select: adminBlogSelect,
     });
+    await attachMediaAssets(
+      [created.featuredImagePublicId],
+      "blog",
+      created.id
+    );
+    return created;
   } catch (err) {
     if (isPrismaCode(err, "P2002")) {
       throw new AppError("Blog slug already exists", 409);
@@ -227,16 +244,36 @@ export const updateBlog = async (id: string, input: UpdateBlogInput) => {
         ? existing.publishedAt
         : existing.publishedAt;
 
+  const imageCleared =
+    input.featuredImage === null || input.featuredImagePublicId === null;
+  const nextImage = imageCleared
+    ? null
+    : input.featuredImage !== undefined
+      ? input.featuredImage
+      : existing.featuredImage;
+  const nextPublicId = imageCleared
+    ? null
+    : input.featuredImage !== undefined ||
+        input.featuredImagePublicId !== undefined
+      ? resolveImagePublicId(
+          input.featuredImagePublicId ?? existing.featuredImagePublicId,
+          nextImage
+        )
+      : existing.featuredImagePublicId;
+
   try {
-    return await prisma.blog.update({
+    const updated = await prisma.blog.update({
       where: { id },
       data: {
         ...(input.title !== undefined && { title: input.title }),
         ...(input.slug !== undefined && { slug: input.slug }),
         ...(input.excerpt !== undefined && { excerpt: input.excerpt }),
         ...(input.content !== undefined && { content: sanitizeHtml(input.content) }),
-        ...(input.featuredImage !== undefined && {
-          featuredImage: input.featuredImage,
+        ...((input.featuredImage !== undefined ||
+          input.featuredImagePublicId !== undefined ||
+          imageCleared) && {
+          featuredImage: nextImage,
+          featuredImagePublicId: nextPublicId,
         }),
         ...(input.categoryId !== undefined && { categoryId: input.categoryId }),
         ...(input.metaTitle !== undefined && { metaTitle: input.metaTitle }),
@@ -250,6 +287,18 @@ export const updateBlog = async (id: string, input: UpdateBlogInput) => {
       },
       select: adminBlogSelect,
     });
+
+    const previousPublicId = resolveImagePublicId(
+      existing.featuredImagePublicId,
+      existing.featuredImage
+    );
+    if (previousPublicId && previousPublicId !== nextPublicId) {
+      await detachMediaAssets([previousPublicId]);
+    }
+    if (nextPublicId) {
+      await attachMediaAssets([nextPublicId], "blog", id);
+    }
+    return updated;
   } catch (err) {
     if (isPrismaCode(err, "P2002")) {
       throw new AppError("Blog slug already exists", 409);
@@ -283,9 +332,19 @@ export const deleteBlog = async (id: string) => {
   });
   if (!existing) throw new AppError("Blog post not found", 404);
 
-  return prisma.blog.update({
+  const deleted = await prisma.blog.update({
     where: { id },
     data: { deletedAt: new Date(), status: "ARCHIVED" },
     select: { id: true },
   });
+
+  const publicId = resolveImagePublicId(
+    existing.featuredImagePublicId,
+    existing.featuredImage
+  );
+  if (publicId) {
+    await detachMediaAssets([publicId]);
+  }
+
+  return deleted;
 };

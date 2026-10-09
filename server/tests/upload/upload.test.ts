@@ -100,7 +100,7 @@ describe("Upload API single", () => {
       role: "ADMIN",
       suffix: `up-s-${Date.now()}`,
     });
-    uploadImageFileToCloudinary.mockResolvedValue(uploadResult("sliders/hero"));
+    uploadImageFileToCloudinary.mockResolvedValue(uploadResult("awxvgitg1do5vu2a2xtw"));
 
     const res = await api()
       .post("/api/v1/media/upload")
@@ -109,7 +109,7 @@ describe("Upload API single", () => {
       .attach("image", PNG_1X1, { filename: "hero.png", contentType: "image/png" });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.publicId).toBe("sliders/hero");
+    expect(res.body.data.publicId).toBe("awxvgitg1do5vu2a2xtw");
     expect(res.body.data.variants).toHaveLength(2);
     expect(uploadImageFileToCloudinary).toHaveBeenCalledTimes(1);
   });
@@ -177,7 +177,7 @@ describe("Upload API single", () => {
   it("allows a customer to upload a customer avatar", async () => {
     const user = await createTestUser(tracker, { suffix: `up-av-${Date.now()}` });
     uploadImageFileToCloudinary.mockResolvedValue(
-      uploadResult("avatars/customers/1")
+      uploadResult("customeravatar1")
     );
 
     const res = await api()
@@ -187,7 +187,7 @@ describe("Upload API single", () => {
       .attach("image", PNG_1X1, { filename: "me.png", contentType: "image/png" });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.publicId).toBe("avatars/customers/1");
+    expect(res.body.data.publicId).toBe("customeravatar1");
     expect(uploadImageFileToCloudinary).toHaveBeenCalledTimes(1);
   });
 
@@ -215,7 +215,7 @@ describe("Upload API single", () => {
       isApproved: true,
     });
     uploadImageFileToCloudinary.mockResolvedValue(
-      uploadResult("avatars/vendors/1")
+      uploadResult("vendoravatar1")
     );
 
     const res = await api()
@@ -225,7 +225,7 @@ describe("Upload API single", () => {
       .attach("image", PNG_1X1, { filename: "shop.png", contentType: "image/png" });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.publicId).toBe("avatars/vendors/1");
+    expect(res.body.data.publicId).toBe("vendoravatar1");
   });
 });
 
@@ -238,7 +238,7 @@ describe("Upload API multiple product images", () => {
     let uploaded = 0;
     uploadImageFileToCloudinary.mockImplementation(async () => {
       uploaded += 1;
-      return uploadResult(`products/${uploaded}`);
+      return uploadResult(`prod${uploaded}id`);
     });
 
     const res = await api()
@@ -251,7 +251,7 @@ describe("Upload API multiple product images", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data).toHaveLength(3);
-    expect(res.body.data[0].publicId).toBe("products/1");
+    expect(res.body.data[0].publicId).toBe("prod1id");
     expect(uploadImageFileToCloudinary).toHaveBeenCalledTimes(3);
   });
 
@@ -306,5 +306,79 @@ describe("Upload API multiple product images", () => {
 
     expect(res.status).toBe(400);
     expect(uploadImageFileToCloudinary).not.toHaveBeenCalled();
+  });
+});
+
+describe("Media library API", () => {
+  it("rejects unauthenticated gallery list", async () => {
+    const res = await api().get("/api/v1/media").query({ type: "product" });
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects a customer listing admin-only media", async () => {
+    const user = await createTestUser(tracker, { suffix: `lib-cust-${Date.now()}` });
+    const res = await api()
+      .get("/api/v1/media")
+      .set("Cookie", user.cookie)
+      .query({ type: "product" });
+    expect(res.status).toBe(403);
+  });
+
+  it("lists Cloudinary assets of the requested type and excludes other types", async () => {
+    const { prisma } = await import("../../src/lib/prisma.ts");
+    const { env } = await import("../../src/config/env.ts");
+    const user = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `lib-ok-${Date.now()}`,
+    });
+    const cloudName = env.CLOUDINARY_CLOUD_NAME || "demo";
+    const url = (id: string) =>
+      `https://res.cloudinary.com/${cloudName}/image/upload/${id}.webp`;
+
+    const productAsset = await prisma.mediaAsset.create({
+      data: {
+        publicId: `prodlib-${Date.now()}`,
+        url: url("prodlib"),
+        type: "product",
+        status: "ATTACHED",
+        ownerUserId: user.id,
+      },
+    });
+    tracker.mediaAssetIds.push(productAsset.id);
+
+    const sliderAsset = await prisma.mediaAsset.create({
+      data: {
+        publicId: `slidelib-${Date.now()}`,
+        url: url("slidelib"),
+        type: "slider",
+        status: "ATTACHED",
+        ownerUserId: user.id,
+      },
+    });
+    tracker.mediaAssetIds.push(sliderAsset.id);
+
+    const deletedAsset = await prisma.mediaAsset.create({
+      data: {
+        publicId: `softdel-${Date.now()}`,
+        url: url("softdel"),
+        type: "product",
+        status: "SOFT_DELETED",
+        ownerUserId: user.id,
+        detachedAt: new Date(),
+      },
+    });
+    tracker.mediaAssetIds.push(deletedAsset.id);
+
+    const res = await api()
+      .get("/api/v1/media")
+      .set("Cookie", user.cookie)
+      .query({ type: "product", page: 1, limit: 24 });
+
+    expect(res.status).toBe(200);
+    const items = res.body.data.items as Array<{ publicId: string; type: string }>;
+    expect(items.some((item) => item.publicId === productAsset.publicId)).toBe(true);
+    expect(items.some((item) => item.publicId === sliderAsset.publicId)).toBe(false);
+    expect(items.some((item) => item.publicId === deletedAsset.publicId)).toBe(false);
+    expect(items.every((item) => item.type === "product")).toBe(true);
   });
 });

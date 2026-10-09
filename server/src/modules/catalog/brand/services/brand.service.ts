@@ -70,9 +70,15 @@ export const updateBrand = async (id: string, input: UpdateBrandInput) => {
         ? generateSlug(input.name, "Brand name")
         : undefined;
 
-  const nextLogo = input.logo !== undefined ? input.logo : existing.logo;
-  const nextPublicId =
-    input.logo !== undefined || input.logoPublicId !== undefined
+  const logoCleared = input.logo === null || input.logoPublicId === null;
+  const nextLogo = logoCleared
+    ? null
+    : input.logo !== undefined
+      ? input.logo
+      : existing.logo;
+  const nextPublicId = logoCleared
+    ? null
+    : input.logo !== undefined || input.logoPublicId !== undefined
       ? resolveImagePublicId(
           input.logoPublicId ?? existing.logoPublicId,
           nextLogo
@@ -85,8 +91,10 @@ export const updateBrand = async (id: string, input: UpdateBrandInput) => {
       ...(input.name !== undefined && { name: input.name }),
       ...(nextSlug !== undefined && { slug: nextSlug }),
       ...(input.isActive !== undefined && { isActive: input.isActive }),
-      ...(input.logo !== undefined && { logo: input.logo }),
-      ...((input.logo !== undefined || input.logoPublicId !== undefined) && {
+      ...((input.logo !== undefined || logoCleared) && { logo: nextLogo }),
+      ...((input.logo !== undefined ||
+        input.logoPublicId !== undefined ||
+        logoCleared) && {
         logoPublicId: nextPublicId,
       }),
       ...(input.description !== undefined && { description: input.description }),

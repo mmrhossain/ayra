@@ -16,6 +16,7 @@ export const blogFormSchema = z.object({
   excerpt: z.string().max(500).optional(),
   content: z.string().min(1, "Content is required").max(200000),
   featuredImage: z.string().optional(),
+  featuredImagePublicId: z.string().optional(),
   categoryId: z.string().optional(),
   metaTitle: z.string().max(200).optional(),
   metaDescription: z.string().max(500).optional(),

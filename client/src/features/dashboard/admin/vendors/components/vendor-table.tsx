@@ -125,7 +125,7 @@ export function VendorTable({ initialData }: Props) {
                           "https://placehold.jp/160x96.png"
                         }
                         alt={vendor.vendorProfile?.shopName || vendor.name}
-                        className="h-12 w-20 rounded-md object-cover"
+                        className="h-12 w-20 rounded-md object-contain"
                       />
                     </TableCell>
                     <TableCell className="text-muted-foreground">

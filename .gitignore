@@ -58,3 +58,6 @@ next-env.d.ts
 /reports/lighthouse-mobile/*
 
 /scripts/*
+
+# server dist folder
+server/dist/

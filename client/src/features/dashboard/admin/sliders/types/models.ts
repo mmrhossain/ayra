@@ -42,9 +42,9 @@ export type SliderListParams = {
 export type CreateSliderBody = {
   title: string;
   imageUrl: string;
-  imagePublicId?: string;
-  mobileImageUrl?: string;
-  mobileImagePublicId?: string;
+  imagePublicId?: string | null;
+  mobileImageUrl?: string | null;
+  mobileImagePublicId?: string | null;
   redirectUrl?: string;
   startDate?: string;
   endDate?: string;

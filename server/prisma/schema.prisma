@@ -145,7 +145,6 @@ model Category {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@unique([parentId, slug])
   @@index([slug])
   @@index([parentId])
   @@map("category")
@@ -1477,8 +1476,9 @@ model Blog {
   slug            String        @unique
   excerpt         String?
   content         String        @db.Text
-  featuredImage   String?
-  status          ContentStatus @default(DRAFT)
+  featuredImage         String?
+  featuredImagePublicId String?
+  status                ContentStatus @default(DRAFT)
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?

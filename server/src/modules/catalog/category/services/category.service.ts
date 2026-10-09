@@ -3,7 +3,13 @@ import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public
 import { paginated } from "../../../../common/utils/paginate.ts";
 import { generateSlug } from "../../../../common/utils/slug.ts";
 import type { Prisma } from "../../../../generated/prisma/client.ts";
-import { CacheKeys, CacheTtl, cacheGet, cacheSet, invalidateCatalogCache } from "../../../../lib/cache.ts";
+import {
+  CacheKeys,
+  CacheTtl,
+  cacheGet,
+  cacheSet,
+  invalidateCatalogCache,
+} from "../../../../lib/cache.ts";
 import { prisma, transaction } from "../../../../lib/prisma.ts";
 import {
   attachMediaAssets,
@@ -221,7 +227,7 @@ export const listAdminCategories = async (query: ListAdminCategoriesQuery) => {
     prisma.category.findMany({
       where,
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
       skip: (query.page - 1) * query.limit,
       take: query.limit,
@@ -397,9 +403,7 @@ export const updateCategory = async (id: string, input: UpdateCategoryInput) => 
 
   await validateParent(id, nextParentId);
 
-  const nextSlug = nameChanged
-    ? generateSlug(nextName, "Category name")
-    : existing.slug;
+  const nextSlug = nameChanged ? generateSlug(nextName, "Category name") : existing.slug;
 
   const slugChanged = nextSlug !== existing.slug;
 
@@ -422,10 +426,12 @@ export const updateCategory = async (id: string, input: UpdateCategoryInput) => 
     }
   }
 
-  const nextImage = input.image !== undefined ? input.image : existing.image;
+  const imageCleared = input.image === null || input.imagePublicId === null;
+  const nextImage = imageCleared ? null : input.image !== undefined ? input.image : existing.image;
 
-  const nextPublicId =
-    input.image !== undefined || input.imagePublicId !== undefined
+  const nextPublicId = imageCleared
+    ? null
+    : input.image !== undefined || input.imagePublicId !== undefined
       ? resolveImagePublicId(input.imagePublicId ?? existing.imagePublicId, nextImage)
       : existing.imagePublicId;
 
@@ -448,11 +454,11 @@ export const updateCategory = async (id: string, input: UpdateCategoryInput) => 
         description: input.description,
       }),
 
-      ...(input.image !== undefined && {
-        image: input.image,
+      ...((input.image !== undefined || imageCleared) && {
+        image: nextImage,
       }),
 
-      ...((input.image !== undefined || input.imagePublicId !== undefined) && {
+      ...((input.image !== undefined || input.imagePublicId !== undefined || imageCleared) && {
         imagePublicId: nextPublicId,
       }),
 

@@ -29,13 +29,17 @@ const cloudinaryUrl = (publicId: string) => {
   return `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}.webp`;
 };
 
-const seedAsset = async (publicId: string, ownerUserId: string) => {
+const seedAsset = async (
+  publicId: string,
+  ownerUserId: string,
+  type = "product"
+) => {
   const asset = await prisma.mediaAsset.upsert({
     where: { publicId },
     create: {
       publicId,
       url: cloudinaryUrl(publicId),
-      type: "product",
+      type,
       status: "ATTACHED",
       ownerUserId,
     },
@@ -43,6 +47,7 @@ const seedAsset = async (publicId: string, ownerUserId: string) => {
       status: "ATTACHED",
       ownerUserId,
       detachedAt: null,
+      type,
     },
   });
   tracker.mediaAssetIds.push(asset.id);
@@ -56,14 +61,14 @@ describe("Product image Cloudinary cleanup", () => {
       suffix: `pimg-up-${Date.now()}`,
     });
     const catalog = await createTestProduct(tracker);
-    await seedAsset("products/old", admin.id);
-    await seedAsset("products/new", admin.id);
+    await seedAsset("oldid", admin.id);
+    await seedAsset("newid", admin.id);
 
     await prisma.productImage.create({
       data: {
         productId: catalog.product.id,
-        imageUrl: cloudinaryUrl("products/old"),
-        publicId: "products/old",
+        imageUrl: cloudinaryUrl("oldid"),
+        publicId: "oldid",
         isPrimary: true,
         sortOrder: 0,
       },
@@ -75,8 +80,8 @@ describe("Product image Cloudinary cleanup", () => {
       .send({
         images: [
           {
-            imageUrl: cloudinaryUrl("products/new"),
-            publicId: "products/new",
+            imageUrl: cloudinaryUrl("newid"),
+            publicId: "newid",
             isPrimary: true,
             sortOrder: 0,
           },
@@ -85,16 +90,16 @@ describe("Product image Cloudinary cleanup", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data.images).toHaveLength(1);
-    expect(res.body.data.images[0].publicId).toBe("products/new");
+    expect(res.body.data.images[0].publicId).toBe("newid");
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
 
     const oldAsset = await prisma.mediaAsset.findUnique({
-      where: { publicId: "products/old" },
+      where: { publicId: "oldid" },
     });
     const newAsset = await prisma.mediaAsset.findUnique({
-      where: { publicId: "products/new" },
+      where: { publicId: "newid" },
     });
-    expect(oldAsset?.status).toBe("SOFT_DELETED");
+    expect(oldAsset?.status).toBe("ATTACHED");
     expect(newAsset?.status).toBe("ATTACHED");
   });
 
@@ -104,13 +109,13 @@ describe("Product image Cloudinary cleanup", () => {
       suffix: `pimg-del-${Date.now()}`,
     });
     const catalog = await createTestProduct(tracker);
-    await seedAsset("products/gone", admin.id);
+    await seedAsset("goneid", admin.id);
 
     await prisma.productImage.create({
       data: {
         productId: catalog.product.id,
-        imageUrl: cloudinaryUrl("products/gone"),
-        publicId: "products/gone",
+        imageUrl: cloudinaryUrl("goneid"),
+        publicId: "goneid",
         isPrimary: true,
       },
     });
@@ -122,9 +127,9 @@ describe("Product image Cloudinary cleanup", () => {
     expect(res.status).toBe(200);
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
     const asset = await prisma.mediaAsset.findUnique({
-      where: { publicId: "products/gone" },
+      where: { publicId: "goneid" },
     });
-    expect(asset?.status).toBe("SOFT_DELETED");
+    expect(asset?.status).toBe("ATTACHED");
   });
 });
 
@@ -134,16 +139,16 @@ describe("Category image Cloudinary cleanup", () => {
       role: "ADMIN",
       suffix: `cimg-up-${Date.now()}`,
     });
-    await seedAsset("categories/old", admin.id);
-    await seedAsset("categories/new", admin.id);
+    await seedAsset("catoldid", admin.id);
+    await seedAsset("catnewid", admin.id);
     const tag = randomUUID().slice(0, 8);
     const category = await prisma.category.create({
       data: {
         name: `Cat ${tag}`,
         slug: `cat-${tag}`,
         isActive: true,
-        image: cloudinaryUrl("categories/old"),
-        imagePublicId: "categories/old",
+        image: cloudinaryUrl("catoldid"),
+        imagePublicId: "catoldid",
       },
     });
     tracker.categoryIds.push(category.id);
@@ -152,17 +157,125 @@ describe("Category image Cloudinary cleanup", () => {
       .put(`/api/v1/admin/categories/${category.id}`)
       .set("Cookie", admin.cookie)
       .send({
-        image: cloudinaryUrl("categories/new"),
-        imagePublicId: "categories/new",
+        image: cloudinaryUrl("catnewid"),
+        imagePublicId: "catnewid",
       });
 
     expect(res.status).toBe(200);
-    expect(res.body.data.imagePublicId).toBe("categories/new");
+    expect(res.body.data.imagePublicId).toBe("catnewid");
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
     const oldAsset = await prisma.mediaAsset.findUnique({
-      where: { publicId: "categories/old" },
+      where: { publicId: "catoldid" },
     });
-    expect(oldAsset?.status).toBe("SOFT_DELETED");
+    expect(oldAsset?.status).toBe("ATTACHED");
+  });
+
+  it("clears the category image when edit sends a null image", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `cimg-rm-${Date.now()}`,
+    });
+    await seedAsset("catremoveid", admin.id);
+    const tag = randomUUID().slice(0, 8);
+    const category = await prisma.category.create({
+      data: {
+        name: `Cat ${tag}`,
+        slug: `cat-${tag}`,
+        isActive: true,
+        image: cloudinaryUrl("catremoveid"),
+        imagePublicId: "catremoveid",
+      },
+    });
+    tracker.categoryIds.push(category.id);
+
+    const res = await api()
+      .put(`/api/v1/admin/categories/${category.id}`)
+      .set("Cookie", admin.cookie)
+      .send({
+        image: null,
+        imagePublicId: null,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.image).toBeNull();
+    expect(res.body.data.imagePublicId).toBeNull();
+    const oldAsset = await prisma.mediaAsset.findUnique({
+      where: { publicId: "catremoveid" },
+    });
+    expect(oldAsset?.status).toBe("ATTACHED");
+  });
+});
+
+describe("Blog featured image Cloudinary cleanup", () => {
+  it("soft-deletes the previous blog image on replace", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `bimg-up-${Date.now()}`,
+    });
+    await seedAsset("blogoldid", admin.id);
+    await seedAsset("blognewid", admin.id);
+    const tag = randomUUID().slice(0, 8);
+    const post = await prisma.blog.create({
+      data: {
+        title: `Post ${tag}`,
+        slug: `blog-${tag}`,
+        content: `<p>${tag}</p>`,
+        featuredImage: cloudinaryUrl("blogoldid"),
+        featuredImagePublicId: "blogoldid",
+      },
+    });
+    tracker.blogIds.push(post.id);
+
+    const res = await api()
+      .put(`/api/v1/admin/blogs/${post.id}`)
+      .set("Cookie", admin.cookie)
+      .send({
+        featuredImage: cloudinaryUrl("blognewid"),
+        featuredImagePublicId: "blognewid",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.featuredImagePublicId).toBe("blognewid");
+    expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
+    const oldAsset = await prisma.mediaAsset.findUnique({
+      where: { publicId: "blogoldid" },
+    });
+    expect(oldAsset?.status).toBe("ATTACHED");
+  });
+
+  it("clears the blog image when edit sends a null featured image", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `bimg-rm-${Date.now()}`,
+    });
+    await seedAsset("blogremoveid", admin.id);
+    const tag = randomUUID().slice(0, 8);
+    const post = await prisma.blog.create({
+      data: {
+        title: `Post ${tag}`,
+        slug: `blog-rm-${tag}`,
+        content: `<p>${tag}</p>`,
+        featuredImage: cloudinaryUrl("blogremoveid"),
+        featuredImagePublicId: "blogremoveid",
+      },
+    });
+    tracker.blogIds.push(post.id);
+
+    const res = await api()
+      .put(`/api/v1/admin/blogs/${post.id}`)
+      .set("Cookie", admin.cookie)
+      .send({
+        featuredImage: null,
+        featuredImagePublicId: null,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.featuredImage).toBeNull();
+    expect(res.body.data.featuredImagePublicId).toBeNull();
+    const oldAsset = await prisma.mediaAsset.findUnique({
+      where: { publicId: "blogremoveid" },
+    });
+    expect(oldAsset?.status).toBe("ATTACHED");
   });
 });
 
@@ -173,15 +286,15 @@ describe("Variant image Cloudinary cleanup", () => {
       suffix: `vimg-up-${Date.now()}`,
     });
     const catalog = await createTestProduct(tracker);
-    await seedAsset("products/variant-old", admin.id);
-    await seedAsset("products/variant-new", admin.id);
+    await seedAsset("variantoldid", admin.id);
+    await seedAsset("variantnewid", admin.id);
 
     await prisma.productImage.create({
       data: {
         productId: catalog.product.id,
         variantId: catalog.variant.id,
-        imageUrl: cloudinaryUrl("products/variant-old"),
-        publicId: "products/variant-old",
+        imageUrl: cloudinaryUrl("variantoldid"),
+        publicId: "variantoldid",
         isPrimary: true,
       },
     });
@@ -192,8 +305,8 @@ describe("Variant image Cloudinary cleanup", () => {
       .send({
         images: [
           {
-            imageUrl: cloudinaryUrl("products/variant-new"),
-            publicId: "products/variant-new",
+            imageUrl: cloudinaryUrl("variantnewid"),
+            publicId: "variantnewid",
             isPrimary: true,
           },
         ],
@@ -202,9 +315,60 @@ describe("Variant image Cloudinary cleanup", () => {
     expect(res.status).toBe(200);
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
     const oldAsset = await prisma.mediaAsset.findUnique({
-      where: { publicId: "products/variant-old" },
+      where: { publicId: "variantoldid" },
     });
-    expect(oldAsset?.status).toBe("SOFT_DELETED");
+    expect(oldAsset?.status).toBe("ATTACHED");
+  });
+});
+
+describe("Media library reuse", () => {
+  it("keeps a Cloudinary file in the library when another category still uses it", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `reuse-${Date.now()}`,
+    });
+    await seedAsset("sharedcatid", admin.id, "category");
+    await seedAsset("replacementcatid", admin.id, "category");
+    const tag = randomUUID().slice(0, 8);
+    const first = await prisma.category.create({
+      data: {
+        name: `Cat A ${tag}`,
+        slug: `cat-a-${tag}`,
+        isActive: true,
+        image: cloudinaryUrl("sharedcatid"),
+        imagePublicId: "sharedcatid",
+      },
+    });
+    const second = await prisma.category.create({
+      data: {
+        name: `Cat B ${tag}`,
+        slug: `cat-b-${tag}`,
+        isActive: true,
+        image: cloudinaryUrl("sharedcatid"),
+        imagePublicId: "sharedcatid",
+      },
+    });
+    tracker.categoryIds.push(first.id, second.id);
+
+    const res = await api()
+      .put(`/api/v1/admin/categories/${first.id}`)
+      .set("Cookie", admin.cookie)
+      .send({
+        image: cloudinaryUrl("replacementcatid"),
+        imagePublicId: "replacementcatid",
+      });
+
+    expect(res.status).toBe(200);
+    expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
+    const shared = await prisma.mediaAsset.findUnique({
+      where: { publicId: "sharedcatid" },
+    });
+    expect(shared?.status).toBe("ATTACHED");
+    const stillUsed = await prisma.category.findUnique({
+      where: { id: second.id },
+      select: { imagePublicId: true },
+    });
+    expect(stillUsed?.imagePublicId).toBe("sharedcatid");
   });
 });
 
@@ -214,14 +378,14 @@ describe("Vendor logo Cloudinary cleanup", () => {
       role: "VENDOR",
       suffix: `vlogo-${Date.now()}`,
     });
-    await seedAsset("avatars/vendors/old", user.id);
-    await seedAsset("avatars/vendors/new", user.id);
+    await seedAsset("vendoroldid", user.id);
+    await seedAsset("vendornewid", user.id);
 
     await prisma.vendorProfile.update({
       where: { userId: user.id },
       data: {
-        logo: cloudinaryUrl("avatars/vendors/old"),
-        logoPublicId: "avatars/vendors/old",
+        logo: cloudinaryUrl("vendoroldid"),
+        logoPublicId: "vendoroldid",
       },
     });
 
@@ -229,12 +393,12 @@ describe("Vendor logo Cloudinary cleanup", () => {
       .patch("/api/v1/vendor/profile")
       .set("Cookie", user.cookie)
       .send({
-        logo: cloudinaryUrl("avatars/vendors/new"),
-        logoPublicId: "avatars/vendors/new",
+        logo: cloudinaryUrl("vendornewid"),
+        logoPublicId: "vendornewid",
       });
 
     expect(res.status).toBe(200);
-    expect(res.body.data.logoPublicId).toBe("avatars/vendors/new");
-    expect(deleteCloudinaryAsset).toHaveBeenCalledWith("avatars/vendors/old");
+    expect(res.body.data.logoPublicId).toBe("vendornewid");
+    expect(deleteCloudinaryAsset).toHaveBeenCalledWith("vendoroldid");
   });
 });

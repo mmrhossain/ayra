@@ -20,7 +20,7 @@ export function VendorDashboard({ profile, accountName, accountEmail }: Props) {
             <Image
               src={profile.logo}
               alt={profile.shopName || "Shop logo"}
-              className="size-16 rounded-xl border object-cover"
+              className="size-16 rounded-xl border object-contain"
             />
           ) : (
             <div className="flex size-16 items-center justify-center rounded-xl border bg-muted text-lg font-semibold">

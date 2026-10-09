@@ -1,21 +1,21 @@
 export interface EmailLayoutOptions {
-    title: string;
-    userName?: string | null | undefined;
-    message: string;
-    buttonText?: string | undefined;
-    buttonUrl?: string | undefined;
-    otpCode?: string | undefined;
+  title: string;
+  userName?: string | null | undefined;
+  message: string;
+  buttonText?: string | undefined;
+  buttonUrl?: string | undefined;
+  otpCode?: string | undefined;
 }
 
 export const getBaseEmailTemplate = ({
-                                         title,
-                                         userName,
-                                         message,
-                                         buttonText,
-                                         buttonUrl,
-                                         otpCode,
-                                     }: EmailLayoutOptions): string => {
-    return `
+  title,
+  userName,
+  message,
+  buttonText,
+  buttonUrl,
+  otpCode,
+}: EmailLayoutOptions): string => {
+  return `
     <!DOCTYPE html>
     <html>
     <head>
@@ -29,18 +29,18 @@ export const getBaseEmailTemplate = ({
           <td align="center">
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
               
-              <!-- Header Section -->
-              <tr>
-                <td align="center" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); padding: 35px 20px;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;">${title}</h1>
-                </td>
-              </tr>
+              // <!-- Header Section -->
+              // <tr>
+              //   <td align="center" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); padding: 35px 20px;">
+              //     <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;">${title}</h1>
+              //   </td>
+              // </tr>
 
               <!-- Body Content -->
               <tr>
                 <td style="padding: 40px 30px; color: #374151;">
                   <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-                    Hi <strong>${userName || 'there'}</strong>,
+                    Hi <strong>${userName || "there"}</strong>,
                   </p>
                   <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
                     ${message}
@@ -48,8 +48,8 @@ export const getBaseEmailTemplate = ({
 
                   <!-- Optional OTP Box -->
                   ${
-        otpCode
-            ? `
+                    otpCode
+                      ? `
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
                         <td align="center" style="padding: 10px 0 25px 0;">
@@ -60,13 +60,13 @@ export const getBaseEmailTemplate = ({
                       </tr>
                     </table>
                   `
-            : ''
-    }
+                      : ""
+                  }
 
                   <!-- Optional Button -->
                   ${
-        buttonText && buttonUrl
-            ? `
+                    buttonText && buttonUrl
+                      ? `
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
                         <td align="center" style="padding: 10px 0 25px 0;">
@@ -77,8 +77,8 @@ export const getBaseEmailTemplate = ({
                       </tr>
                     </table>
                   `
-            : ''
-    }
+                      : ""
+                  }
 
                   <p style="margin: 20px 0 10px 0; font-size: 14px; color: #6b7280; line-height: 1.5;">
                     If you did not request this, please ignore this email or contact support.
