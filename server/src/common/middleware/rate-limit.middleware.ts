@@ -1,19 +1,15 @@
-import { createHash } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import { ipKeyGenerator, rateLimit } from "express-rate-limit";
+import { createHash } from "node:crypto";
 import { RedisStore, type RedisReply } from "rate-limit-redis";
 import { env } from "../../config/env.ts";
 import { redis } from "../../lib/redis.ts";
 
 const skipInTest = () => env.NODE_ENV === "test";
 
-const SESSION_COOKIES = [
-  "ayra.session_token",
-  "__Secure-ayra.session_token",
-] as const;
+const SESSION_COOKIES = ["ayra.session_token", "__Secure-ayra.session_token"] as const;
 
-const hashToken = (token: string) =>
-  createHash("sha256").update(token).digest("hex").slice(0, 32);
+const hashToken = (token: string) => createHash("sha256").update(token).digest("hex").slice(0, 32);
 
 const redisStore = (prefix: string) => {
   if (!redis) {
@@ -43,8 +39,7 @@ export const identityKey = (req: Request) => {
   return clientIp(req);
 };
 
-const isHealthCheck = (req: Request) =>
-  req.path === "/health" || req.path === "/ready";
+const isHealthCheck = (req: Request) => req.path === "/health" || req.path === "/ready";
 
 const isAuthSessionPoll = (req: Request) => {
   const path = (req.originalUrl ?? req.path).split("?")[0] ?? "";
@@ -98,7 +93,7 @@ export const perEndpointLimiter = (
   max: number,
   label: string,
   prefix: string,
-  keyGenerator: (req: Request) => string = identityKey,
+  keyGenerator: (req: Request) => string = identityKey
 ) =>
   createLimiter({
     windowMs,
@@ -134,28 +129,18 @@ export const checkoutLimiter = perEndpointLimiter(
   5,
   "checkout",
   "checkout:user:rl:",
-  (req) => req.auth?.user.id ?? identityKey(req),
+  (req) => req.auth?.user.id ?? identityKey(req)
 );
 
-export const paymentLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  40,
-  "payment",
-  "payment:rl:",
-);
+export const paymentLimiter = perEndpointLimiter(15 * 60 * 1000, 40, "payment", "payment:rl:");
 
-export const couponLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  20,
-  "coupon",
-  "coupon:rl:",
-);
+export const couponLimiter = perEndpointLimiter(15 * 60 * 1000, 20, "coupon", "coupon:rl:");
 
 export const reviewLimiter = perEndpointLimiter(
   15 * 60 * 1000,
   20,
   "review submission",
-  "review:rl:",
+  "review:rl:"
 );
 
 export const uploadLimiter = createLimiter({
@@ -177,42 +162,21 @@ export const aiChatLimiter = createLimiter({
   passOnStoreError: false,
 });
 
-export const searchLimiter = perEndpointLimiter(
-  60 * 1000,
-  40,
-  "search",
-  "search:rl:",
-  clientIp,
-);
+export const searchLimiter = perEndpointLimiter(60 * 1000, 40, "search", "search:rl:", clientIp);
 
 export const listingLimiter = perEndpointLimiter(
   60 * 1000,
   120,
   "catalog",
   "listing:rl:",
-  clientIp,
+  clientIp
 );
 
-export const cartLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  80,
-  "cart",
-  "cart:rl:",
-);
+export const cartLimiter = perEndpointLimiter(15 * 60 * 1000, 80, "cart", "cart:rl:");
 
-export const orderLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  40,
-  "order",
-  "order:rl:",
-);
+export const orderLimiter = perEndpointLimiter(15 * 60 * 1000, 40, "order", "order:rl:");
 
-export const adminLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  120,
-  "admin",
-  "admin:rl:",
-);
+export const adminLimiter = perEndpointLimiter(15 * 60 * 1000, 120, "admin", "admin:rl:");
 
 const normalizePath = (req: Request) => {
   const raw = (req.originalUrl ?? req.path).split("?")[0] ?? "";
@@ -250,10 +214,7 @@ export const domainLimiter = (req: Request, res: Response, next: NextFunction) =
     return;
   }
 
-  if (
-    method === "POST" &&
-    (path === "/api/v1/media/upload" || path === "/api/v1/media/uploads")
-  ) {
+  if (method === "POST" && (path === "/api/v1/media/upload" || path === "/api/v1/media/uploads")) {
     uploadLimiter(req, res, next);
     return;
   }
@@ -285,10 +246,7 @@ export const domainLimiter = (req: Request, res: Response, next: NextFunction) =
     return;
   }
 
-  if (
-    path === "/api/v1/cart" ||
-    path.startsWith("/api/v1/cart/")
-  ) {
+  if (path === "/api/v1/cart" || path.startsWith("/api/v1/cart/")) {
     cartLimiter(req, res, next);
     return;
   }
