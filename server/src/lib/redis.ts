@@ -1,4 +1,4 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 import { logger } from "../common/looger/logger.ts";
 import { env } from "../config/env.ts";
 
@@ -80,11 +80,7 @@ export async function redisGet(key: string): Promise<string | null> {
   }
 }
 
-export async function redisSet(
-  key: string,
-  value: string,
-  ttlSeconds: number,
-): Promise<void> {
+export async function redisSet(key: string, value: string, ttlSeconds: number): Promise<void> {
   if (!redis) return;
   try {
     await redis.set(key, value, "EX", ttlSeconds);
