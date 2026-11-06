@@ -77,7 +77,7 @@
     "esbuild@0.28.2": true,
     "prisma@7.10.0": true,
     "protobufjs@7.6.6": true,
-    "@google/genai@2.21.0": true
+    "@google/genai@2.32.0": true
   },
   "overrides": {
     "minimatch@>=7.0.0 <11.0.1": "11.0.1",
