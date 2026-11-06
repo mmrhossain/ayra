@@ -15,6 +15,7 @@ export function useWishlist({
     queryFn: () => fetchWishlistItems({ page: 1, limit: 50 }),
     initialData,
     staleTime: 30_000,
+    retry: 2,
   });
 
   const data = query.data ?? initialData;

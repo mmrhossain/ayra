@@ -8,6 +8,7 @@ import {
   approveInventoryAdjustmentSchema,
   createInventoryTransferSchema,
   listInventoryQuerySchema,
+  setStockLevelsSchema,
 } from "../validators/inventory.validators.ts";
 import {
   listInventory,
@@ -17,6 +18,7 @@ import {
   completeInventoryTransfer,
   listInventoryAdjustments,
   listInventoryTransfers,
+  setStockLevels,
 } from "../services/inventory.service.ts";
 
 export const getInventory = asyncHandler(async (req: Request, res: Response) => {
@@ -51,6 +53,19 @@ export const approveAdjustmentHandler = asyncHandler(
         req.auth.user.id
       ),
       "Inventory adjustment processed"
+    );
+  }
+);
+
+export const setStockLevelsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.auth) throw new AppError("Unauthorized", 401);
+
+    const input = setStockLevelsSchema.parse(req.body);
+    successResponse(
+      res,
+      await setStockLevels(input, req.auth.user.id),
+      "Stock levels updated"
     );
   }
 );

@@ -1,6 +1,6 @@
 /**
  * Admin category CRUD. Authenticated dashboard client only.
- * Public category GET lives in `@/features/catalog/categories-api`.
+ * Public category GET lives in `@/features/catalog/api`.
  */
 import { dashboardApi } from "@/lib/api/dashboard";
 import type {

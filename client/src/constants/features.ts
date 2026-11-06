@@ -1,5 +1,12 @@
-import {Feature} from "@/types/feature";
-import {CheckCircle, Headphones, RotateCw, Shield} from "lucide-react";
+import { CheckCircle, Headphones, RotateCw, Shield } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
+
+type Feature = {
+  id: number;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  title: string;
+  description: string;
+};
 
 export const features: Feature[] = [
     { id: 1, icon: RotateCw, title: "Easy Returns", description: "30-day hassle-free returns" },

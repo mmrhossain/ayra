@@ -1,1 +1,1 @@
-export type AuthRole = "CUSTOMER" | "ADMIN" | "VENDOR";
+export type AuthRole = "CUSTOMER" | "ADMIN";

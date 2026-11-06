@@ -1,8 +1,8 @@
 /**
- * Guest cart + storefront facade. Guest transport uses the store-front client.
+ * Guest cart lives in localStorage until login.
  * Logged-in cart lives in `@/features/dashboard/customer/cart/api/cart`.
  */
-import { api, ApiError } from "@/lib/api/store-front";
+import { ApiError } from "@/lib/api/store-front";
 import {
   addAuthCartItem,
   applyCartCoupon as applyAuthCartCoupon,
@@ -18,15 +18,13 @@ import type {
   CartItemSnapshot,
   CartLine,
   CartSnapshot,
-  Envelope,
   GuestCartLine,
-  GuestCartRecord,
 } from "@/features/cart/types";
 import {
-  clearGuestSessionId,
-  getGuestSessionId,
-  getOrCreateGuestSessionId,
-} from "@/helpers";
+  clearGuestCart,
+  readGuestCart,
+  writeGuestCart,
+} from "@/features/cart/guest-storage";
 import { authClient } from "@/lib/api/auth/auth-client";
 
 export type { CartItemSnapshot, CartLine, CartSnapshot } from "@/features/cart/types";
@@ -75,17 +73,11 @@ function mapGuestLine(line: GuestCartLine): CartLine {
   };
 }
 
-function guestLinesFrom(data: GuestCartRecord | null | undefined): GuestCartLine[] {
-  const lines = data?.items ?? data?.cartData?.items ?? [];
-  return lines.filter((line) => line?.variantId);
-}
-
-function mapGuestCart(data: unknown): CartSnapshot {
-  if (!data || typeof data !== "object") return emptyCart();
-  const items = guestLinesFrom(data as GuestCartRecord).map(mapGuestLine);
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+function mapGuestCart(items: GuestCartLine[]): CartSnapshot {
+  const mapped = items.map(mapGuestLine);
+  const subtotal = mapped.reduce((sum, item) => sum + item.subtotal, 0);
   return {
-    items,
+    items: mapped,
     couponCode: null,
     subtotal,
     discountAmount: 0,
@@ -95,31 +87,10 @@ function mapGuestCart(data: unknown): CartSnapshot {
   };
 }
 
-async function fetchGuestLines(sessionId: string): Promise<GuestCartLine[]> {
-  const res = await api.get<Envelope<GuestCartRecord | null>>("/cart/guest", {
-    params: { sessionId },
-    cache: "no-store",
-  });
-  return guestLinesFrom(res.data);
-}
-
-async function saveGuestLines(
-  sessionId: string,
-  items: GuestCartLine[],
-): Promise<void> {
-  await api.put<Envelope<unknown>>("/cart/guest", {
-    body: { sessionId, cartData: { items } },
-  });
-}
-
 export async function fetchGuestCartSnapshot(): Promise<CartSnapshot> {
-  const sessionId = getGuestSessionId();
-  if (!sessionId) return emptyCart();
-  const res = await api.get<Envelope<GuestCartRecord | null>>("/cart/guest", {
-    params: { sessionId },
-    cache: "no-store",
-  });
-  return mapGuestCart(res.data);
+  const items = readGuestCart();
+  if (items.length === 0) return emptyCart();
+  return mapGuestCart(items);
 }
 
 export async function fetchCartSnapshot(): Promise<CartSnapshot> {
@@ -146,8 +117,7 @@ export async function addCartItem(
     }
   }
 
-  const sessionId = getOrCreateGuestSessionId();
-  const items = await fetchGuestLines(sessionId);
+  const items = readGuestCart();
   const existing = items.find((item) => item.variantId === variantId);
   if (existing) {
     existing.quantity = num(existing.quantity) + quantity;
@@ -172,7 +142,7 @@ export async function addCartItem(
       compareAtPrice: snapshot.compareAtPrice,
     });
   }
-  await saveGuestLines(sessionId, items);
+  writeGuestCart(items);
   return { message: "Item added to cart" };
 }
 
@@ -188,13 +158,11 @@ export async function updateCartItem(
     }
   }
 
-  const sessionId = getGuestSessionId();
-  if (!sessionId) throw new Error("Cart is empty");
-  const items = await fetchGuestLines(sessionId);
+  const items = readGuestCart();
   const existing = items.find((item) => item.variantId === variantId);
   if (!existing) throw new Error("Item not in cart");
   existing.quantity = quantity;
-  await saveGuestLines(sessionId, items);
+  writeGuestCart(items);
   return { message: "Cart item updated" };
 }
 
@@ -209,12 +177,7 @@ export async function removeCartItem(
     }
   }
 
-  const sessionId = getGuestSessionId();
-  if (!sessionId) throw new Error("Cart is empty");
-  const items = (await fetchGuestLines(sessionId)).filter(
-    (item) => item.variantId !== variantId,
-  );
-  await saveGuestLines(sessionId, items);
+  writeGuestCart(readGuestCart().filter((item) => item.variantId !== variantId));
   return { message: "Item removed from cart" };
 }
 
@@ -229,15 +192,21 @@ export async function removeCartCoupon(): Promise<{ message: string }> {
 }
 
 export async function mergeGuestCartOnLogin(): Promise<void> {
-  const sessionId = getGuestSessionId();
-  if (!sessionId) return;
-  await mergeAuthGuestCart(sessionId);
-  clearGuestSessionId();
+  const items = readGuestCart().map((item) => ({
+    variantId: item.variantId,
+    quantity: Math.max(1, num(item.quantity)),
+  }));
+  if (items.length === 0) return;
+  await mergeAuthGuestCart(items);
+  clearGuestCart();
 }
 
 export function toCartErrorMessage(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 401) return "Please sign in to continue";
+    if (err.status === 403) {
+      return err.message || "Staff accounts cannot shop. Sign in with a customer account.";
+    }
     return err.message;
   }
   return toAuthCartErrorMessage(err);

@@ -82,8 +82,8 @@ export function UserBanDialog({
               <Label htmlFor="ban-expiry">Expiry days (optional)</Label>
               <Input
                 id="ban-expiry"
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
                 value={expiryDays}
                 onChange={(e) => setExpiryDays(e.target.value)}
                 placeholder="Leave empty for permanent"

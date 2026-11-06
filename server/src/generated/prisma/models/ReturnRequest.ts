@@ -20,8 +20,18 @@ export type ReturnRequestModel = runtime.Types.Result.DefaultSelection<Prisma.$R
 
 export type AggregateReturnRequest = {
   _count: ReturnRequestCountAggregateOutputType | null
+  _avg: ReturnRequestAvgAggregateOutputType | null
+  _sum: ReturnRequestSumAggregateOutputType | null
   _min: ReturnRequestMinAggregateOutputType | null
   _max: ReturnRequestMaxAggregateOutputType | null
+}
+
+export type ReturnRequestAvgAggregateOutputType = {
+  shippingRefundAmount: runtime.Decimal | null
+}
+
+export type ReturnRequestSumAggregateOutputType = {
+  shippingRefundAmount: runtime.Decimal | null
 }
 
 export type ReturnRequestMinAggregateOutputType = {
@@ -32,6 +42,7 @@ export type ReturnRequestMinAggregateOutputType = {
   reviewedAt: Date | null
   reviewedBy: string | null
   adminNote: string | null
+  shippingRefundAmount: runtime.Decimal | null
   orderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -45,6 +56,7 @@ export type ReturnRequestMaxAggregateOutputType = {
   reviewedAt: Date | null
   reviewedBy: string | null
   adminNote: string | null
+  shippingRefundAmount: runtime.Decimal | null
   orderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -58,12 +70,21 @@ export type ReturnRequestCountAggregateOutputType = {
   reviewedAt: number
   reviewedBy: number
   adminNote: number
+  shippingRefundAmount: number
   orderId: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type ReturnRequestAvgAggregateInputType = {
+  shippingRefundAmount?: true
+}
+
+export type ReturnRequestSumAggregateInputType = {
+  shippingRefundAmount?: true
+}
 
 export type ReturnRequestMinAggregateInputType = {
   id?: true
@@ -73,6 +94,7 @@ export type ReturnRequestMinAggregateInputType = {
   reviewedAt?: true
   reviewedBy?: true
   adminNote?: true
+  shippingRefundAmount?: true
   orderId?: true
   createdAt?: true
   updatedAt?: true
@@ -86,6 +108,7 @@ export type ReturnRequestMaxAggregateInputType = {
   reviewedAt?: true
   reviewedBy?: true
   adminNote?: true
+  shippingRefundAmount?: true
   orderId?: true
   createdAt?: true
   updatedAt?: true
@@ -99,6 +122,7 @@ export type ReturnRequestCountAggregateInputType = {
   reviewedAt?: true
   reviewedBy?: true
   adminNote?: true
+  shippingRefundAmount?: true
   orderId?: true
   createdAt?: true
   updatedAt?: true
@@ -143,6 +167,18 @@ export type ReturnRequestAggregateArgs<ExtArgs extends runtime.Types.Extensions.
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ReturnRequestAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ReturnRequestSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ReturnRequestMinAggregateInputType
@@ -173,6 +209,8 @@ export type ReturnRequestGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   _count?: ReturnRequestCountAggregateInputType | true
+  _avg?: ReturnRequestAvgAggregateInputType
+  _sum?: ReturnRequestSumAggregateInputType
   _min?: ReturnRequestMinAggregateInputType
   _max?: ReturnRequestMaxAggregateInputType
 }
@@ -185,10 +223,13 @@ export type ReturnRequestGroupByOutputType = {
   reviewedAt: Date | null
   reviewedBy: string | null
   adminNote: string | null
+  shippingRefundAmount: runtime.Decimal
   orderId: string
   createdAt: Date
   updatedAt: Date
   _count: ReturnRequestCountAggregateOutputType | null
+  _avg: ReturnRequestAvgAggregateOutputType | null
+  _sum: ReturnRequestSumAggregateOutputType | null
   _min: ReturnRequestMinAggregateOutputType | null
   _max: ReturnRequestMaxAggregateOutputType | null
 }
@@ -219,10 +260,12 @@ export type ReturnRequestWhereInput = {
   reviewedAt?: Prisma.DateTimeNullableFilter<"ReturnRequest"> | Date | string | null
   reviewedBy?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
   adminNote?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
+  shippingRefundAmount?: Prisma.DecimalFilter<"ReturnRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFilter<"ReturnRequest"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
   items?: Prisma.ReturnItemListRelationFilter
+  refund?: Prisma.XOR<Prisma.RefundNullableScalarRelationFilter, Prisma.RefundWhereInput> | null
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
 }
 
@@ -234,10 +277,12 @@ export type ReturnRequestOrderByWithRelationInput = {
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   adminNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippingRefundAmount?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   items?: Prisma.ReturnItemOrderByRelationAggregateInput
+  refund?: Prisma.RefundOrderByWithRelationInput
   order?: Prisma.OrderOrderByWithRelationInput
 }
 
@@ -252,10 +297,12 @@ export type ReturnRequestWhereUniqueInput = Prisma.AtLeast<{
   reviewedAt?: Prisma.DateTimeNullableFilter<"ReturnRequest"> | Date | string | null
   reviewedBy?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
   adminNote?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
+  shippingRefundAmount?: Prisma.DecimalFilter<"ReturnRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFilter<"ReturnRequest"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
   items?: Prisma.ReturnItemListRelationFilter
+  refund?: Prisma.XOR<Prisma.RefundNullableScalarRelationFilter, Prisma.RefundWhereInput> | null
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
 }, "id">
 
@@ -267,12 +314,15 @@ export type ReturnRequestOrderByWithAggregationInput = {
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   adminNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippingRefundAmount?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ReturnRequestCountOrderByAggregateInput
+  _avg?: Prisma.ReturnRequestAvgOrderByAggregateInput
   _max?: Prisma.ReturnRequestMaxOrderByAggregateInput
   _min?: Prisma.ReturnRequestMinOrderByAggregateInput
+  _sum?: Prisma.ReturnRequestSumOrderByAggregateInput
 }
 
 export type ReturnRequestScalarWhereWithAggregatesInput = {
@@ -286,6 +336,7 @@ export type ReturnRequestScalarWhereWithAggregatesInput = {
   reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReturnRequest"> | Date | string | null
   reviewedBy?: Prisma.StringNullableWithAggregatesFilter<"ReturnRequest"> | string | null
   adminNote?: Prisma.StringNullableWithAggregatesFilter<"ReturnRequest"> | string | null
+  shippingRefundAmount?: Prisma.DecimalWithAggregatesFilter<"ReturnRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringWithAggregatesFilter<"ReturnRequest"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ReturnRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ReturnRequest"> | Date | string
@@ -299,9 +350,11 @@ export type ReturnRequestCreateInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReturnItemCreateNestedManyWithoutReturnRequestInput
+  refund?: Prisma.RefundCreateNestedOneWithoutReturnRequestInput
   order: Prisma.OrderCreateNestedOneWithoutReturnRequestsInput
 }
 
@@ -313,10 +366,12 @@ export type ReturnRequestUncheckedCreateInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutReturnRequestInput
 }
 
 export type ReturnRequestUpdateInput = {
@@ -327,9 +382,11 @@ export type ReturnRequestUpdateInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReturnItemUpdateManyWithoutReturnRequestNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutReturnRequestNestedInput
   order?: Prisma.OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
 }
 
@@ -341,10 +398,12 @@ export type ReturnRequestUncheckedUpdateInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutReturnRequestNestedInput
 }
 
 export type ReturnRequestCreateManyInput = {
@@ -355,6 +414,7 @@ export type ReturnRequestCreateManyInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -368,6 +428,7 @@ export type ReturnRequestUpdateManyMutationInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -380,6 +441,7 @@ export type ReturnRequestUncheckedUpdateManyInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -403,9 +465,14 @@ export type ReturnRequestCountOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   reviewedBy?: Prisma.SortOrder
   adminNote?: Prisma.SortOrder
+  shippingRefundAmount?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ReturnRequestAvgOrderByAggregateInput = {
+  shippingRefundAmount?: Prisma.SortOrder
 }
 
 export type ReturnRequestMaxOrderByAggregateInput = {
@@ -416,6 +483,7 @@ export type ReturnRequestMaxOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   reviewedBy?: Prisma.SortOrder
   adminNote?: Prisma.SortOrder
+  shippingRefundAmount?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -429,14 +497,24 @@ export type ReturnRequestMinOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   reviewedBy?: Prisma.SortOrder
   adminNote?: Prisma.SortOrder
+  shippingRefundAmount?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
+export type ReturnRequestSumOrderByAggregateInput = {
+  shippingRefundAmount?: Prisma.SortOrder
+}
+
 export type ReturnRequestScalarRelationFilter = {
   is?: Prisma.ReturnRequestWhereInput
   isNot?: Prisma.ReturnRequestWhereInput
+}
+
+export type ReturnRequestNullableScalarRelationFilter = {
+  is?: Prisma.ReturnRequestWhereInput | null
+  isNot?: Prisma.ReturnRequestWhereInput | null
 }
 
 export type ReturnRequestCreateNestedManyWithoutOrderInput = {
@@ -499,6 +577,22 @@ export type ReturnRequestUpdateOneRequiredWithoutItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ReturnRequestUpdateToOneWithWhereWithoutItemsInput, Prisma.ReturnRequestUpdateWithoutItemsInput>, Prisma.ReturnRequestUncheckedUpdateWithoutItemsInput>
 }
 
+export type ReturnRequestCreateNestedOneWithoutRefundInput = {
+  create?: Prisma.XOR<Prisma.ReturnRequestCreateWithoutRefundInput, Prisma.ReturnRequestUncheckedCreateWithoutRefundInput>
+  connectOrCreate?: Prisma.ReturnRequestCreateOrConnectWithoutRefundInput
+  connect?: Prisma.ReturnRequestWhereUniqueInput
+}
+
+export type ReturnRequestUpdateOneWithoutRefundNestedInput = {
+  create?: Prisma.XOR<Prisma.ReturnRequestCreateWithoutRefundInput, Prisma.ReturnRequestUncheckedCreateWithoutRefundInput>
+  connectOrCreate?: Prisma.ReturnRequestCreateOrConnectWithoutRefundInput
+  upsert?: Prisma.ReturnRequestUpsertWithoutRefundInput
+  disconnect?: Prisma.ReturnRequestWhereInput | boolean
+  delete?: Prisma.ReturnRequestWhereInput | boolean
+  connect?: Prisma.ReturnRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReturnRequestUpdateToOneWithWhereWithoutRefundInput, Prisma.ReturnRequestUpdateWithoutRefundInput>, Prisma.ReturnRequestUncheckedUpdateWithoutRefundInput>
+}
+
 export type ReturnRequestCreateWithoutOrderInput = {
   id?: string
   status?: $Enums.ReturnRequestStatus
@@ -507,9 +601,11 @@ export type ReturnRequestCreateWithoutOrderInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReturnItemCreateNestedManyWithoutReturnRequestInput
+  refund?: Prisma.RefundCreateNestedOneWithoutReturnRequestInput
 }
 
 export type ReturnRequestUncheckedCreateWithoutOrderInput = {
@@ -520,9 +616,11 @@ export type ReturnRequestUncheckedCreateWithoutOrderInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutReturnRequestInput
 }
 
 export type ReturnRequestCreateOrConnectWithoutOrderInput = {
@@ -562,6 +660,7 @@ export type ReturnRequestScalarWhereInput = {
   reviewedAt?: Prisma.DateTimeNullableFilter<"ReturnRequest"> | Date | string | null
   reviewedBy?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
   adminNote?: Prisma.StringNullableFilter<"ReturnRequest"> | string | null
+  shippingRefundAmount?: Prisma.DecimalFilter<"ReturnRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFilter<"ReturnRequest"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReturnRequest"> | Date | string
@@ -575,8 +674,10 @@ export type ReturnRequestCreateWithoutItemsInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  refund?: Prisma.RefundCreateNestedOneWithoutReturnRequestInput
   order: Prisma.OrderCreateNestedOneWithoutReturnRequestsInput
 }
 
@@ -588,9 +689,11 @@ export type ReturnRequestUncheckedCreateWithoutItemsInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  refund?: Prisma.RefundUncheckedCreateNestedOneWithoutReturnRequestInput
 }
 
 export type ReturnRequestCreateOrConnectWithoutItemsInput = {
@@ -617,8 +720,10 @@ export type ReturnRequestUpdateWithoutItemsInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  refund?: Prisma.RefundUpdateOneWithoutReturnRequestNestedInput
   order?: Prisma.OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
 }
 
@@ -630,9 +735,87 @@ export type ReturnRequestUncheckedUpdateWithoutItemsInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutReturnRequestNestedInput
+}
+
+export type ReturnRequestCreateWithoutRefundInput = {
+  id?: string
+  status?: $Enums.ReturnRequestStatus
+  reason?: string | null
+  requestedAt?: Date | string
+  reviewedAt?: Date | string | null
+  reviewedBy?: string | null
+  adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ReturnItemCreateNestedManyWithoutReturnRequestInput
+  order: Prisma.OrderCreateNestedOneWithoutReturnRequestsInput
+}
+
+export type ReturnRequestUncheckedCreateWithoutRefundInput = {
+  id?: string
+  status?: $Enums.ReturnRequestStatus
+  reason?: string | null
+  requestedAt?: Date | string
+  reviewedAt?: Date | string | null
+  reviewedBy?: string | null
+  adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orderId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+}
+
+export type ReturnRequestCreateOrConnectWithoutRefundInput = {
+  where: Prisma.ReturnRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReturnRequestCreateWithoutRefundInput, Prisma.ReturnRequestUncheckedCreateWithoutRefundInput>
+}
+
+export type ReturnRequestUpsertWithoutRefundInput = {
+  update: Prisma.XOR<Prisma.ReturnRequestUpdateWithoutRefundInput, Prisma.ReturnRequestUncheckedUpdateWithoutRefundInput>
+  create: Prisma.XOR<Prisma.ReturnRequestCreateWithoutRefundInput, Prisma.ReturnRequestUncheckedCreateWithoutRefundInput>
+  where?: Prisma.ReturnRequestWhereInput
+}
+
+export type ReturnRequestUpdateToOneWithWhereWithoutRefundInput = {
+  where?: Prisma.ReturnRequestWhereInput
+  data: Prisma.XOR<Prisma.ReturnRequestUpdateWithoutRefundInput, Prisma.ReturnRequestUncheckedUpdateWithoutRefundInput>
+}
+
+export type ReturnRequestUpdateWithoutRefundInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReturnRequestStatusFieldUpdateOperationsInput | $Enums.ReturnRequestStatus
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ReturnItemUpdateManyWithoutReturnRequestNestedInput
+  order?: Prisma.OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
+}
+
+export type ReturnRequestUncheckedUpdateWithoutRefundInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReturnRequestStatusFieldUpdateOperationsInput | $Enums.ReturnRequestStatus
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
 }
 
 export type ReturnRequestCreateManyOrderInput = {
@@ -643,6 +826,7 @@ export type ReturnRequestCreateManyOrderInput = {
   reviewedAt?: Date | string | null
   reviewedBy?: string | null
   adminNote?: string | null
+  shippingRefundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -655,9 +839,11 @@ export type ReturnRequestUpdateWithoutOrderInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReturnItemUpdateManyWithoutReturnRequestNestedInput
+  refund?: Prisma.RefundUpdateOneWithoutReturnRequestNestedInput
 }
 
 export type ReturnRequestUncheckedUpdateWithoutOrderInput = {
@@ -668,9 +854,11 @@ export type ReturnRequestUncheckedUpdateWithoutOrderInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
+  refund?: Prisma.RefundUncheckedUpdateOneWithoutReturnRequestNestedInput
 }
 
 export type ReturnRequestUncheckedUpdateManyWithoutOrderInput = {
@@ -681,6 +869,7 @@ export type ReturnRequestUncheckedUpdateManyWithoutOrderInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reviewedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   adminNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shippingRefundAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -724,10 +913,12 @@ export type ReturnRequestSelect<ExtArgs extends runtime.Types.Extensions.Interna
   reviewedAt?: boolean
   reviewedBy?: boolean
   adminNote?: boolean
+  shippingRefundAmount?: boolean
   orderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   items?: boolean | Prisma.ReturnRequest$itemsArgs<ExtArgs>
+  refund?: boolean | Prisma.ReturnRequest$refundArgs<ExtArgs>
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReturnRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["returnRequest"]>
@@ -740,6 +931,7 @@ export type ReturnRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   reviewedAt?: boolean
   reviewedBy?: boolean
   adminNote?: boolean
+  shippingRefundAmount?: boolean
   orderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -754,6 +946,7 @@ export type ReturnRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   reviewedAt?: boolean
   reviewedBy?: boolean
   adminNote?: boolean
+  shippingRefundAmount?: boolean
   orderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -768,14 +961,16 @@ export type ReturnRequestSelectScalar = {
   reviewedAt?: boolean
   reviewedBy?: boolean
   adminNote?: boolean
+  shippingRefundAmount?: boolean
   orderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ReturnRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "reason" | "requestedAt" | "reviewedAt" | "reviewedBy" | "adminNote" | "orderId" | "createdAt" | "updatedAt", ExtArgs["result"]["returnRequest"]>
+export type ReturnRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "reason" | "requestedAt" | "reviewedAt" | "reviewedBy" | "adminNote" | "shippingRefundAmount" | "orderId" | "createdAt" | "updatedAt", ExtArgs["result"]["returnRequest"]>
 export type ReturnRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | Prisma.ReturnRequest$itemsArgs<ExtArgs>
+  refund?: boolean | Prisma.ReturnRequest$refundArgs<ExtArgs>
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReturnRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -790,6 +985,7 @@ export type $ReturnRequestPayload<ExtArgs extends runtime.Types.Extensions.Inter
   name: "ReturnRequest"
   objects: {
     items: Prisma.$ReturnItemPayload<ExtArgs>[]
+    refund: Prisma.$RefundPayload<ExtArgs> | null
     order: Prisma.$OrderPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -800,6 +996,7 @@ export type $ReturnRequestPayload<ExtArgs extends runtime.Types.Extensions.Inter
     reviewedAt: Date | null
     reviewedBy: string | null
     adminNote: string | null
+    shippingRefundAmount: runtime.Decimal
     orderId: string
     createdAt: Date
     updatedAt: Date
@@ -1198,6 +1395,7 @@ readonly fields: ReturnRequestFieldRefs;
 export interface Prisma__ReturnRequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   items<T extends Prisma.ReturnRequest$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReturnRequest$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReturnItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  refund<T extends Prisma.ReturnRequest$refundArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReturnRequest$refundArgs<ExtArgs>>): Prisma.Prisma__RefundClient<runtime.Types.Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   order<T extends Prisma.OrderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrderDefaultArgs<ExtArgs>>): Prisma.Prisma__OrderClient<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1235,6 +1433,7 @@ export interface ReturnRequestFieldRefs {
   readonly reviewedAt: Prisma.FieldRef<"ReturnRequest", 'DateTime'>
   readonly reviewedBy: Prisma.FieldRef<"ReturnRequest", 'String'>
   readonly adminNote: Prisma.FieldRef<"ReturnRequest", 'String'>
+  readonly shippingRefundAmount: Prisma.FieldRef<"ReturnRequest", 'Decimal'>
   readonly orderId: Prisma.FieldRef<"ReturnRequest", 'String'>
   readonly createdAt: Prisma.FieldRef<"ReturnRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ReturnRequest", 'DateTime'>
@@ -1660,6 +1859,25 @@ export type ReturnRequest$itemsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ReturnItemScalarFieldEnum | Prisma.ReturnItemScalarFieldEnum[]
+}
+
+/**
+ * ReturnRequest.refund
+ */
+export type ReturnRequest$refundArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Refund
+   */
+  select?: Prisma.RefundSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Refund
+   */
+  omit?: Prisma.RefundOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RefundInclude<ExtArgs> | null
+  where?: Prisma.RefundWhereInput
 }
 
 /**

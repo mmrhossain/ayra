@@ -73,32 +73,32 @@ const Subtotal = () => {
 
   return (
     <aside className="h-fit rounded-[20px] border border-border-color p-4 sm:p-5 md:p-6">
-      <h2 className="mb-4 text-base font-bold text-secondary sm:mb-5 sm:text-lg md:text-xl">
+      <h2 className="mb-4 text-lg font-semibold text-foreground">
         Order Summary
       </h2>
 
       <div className="space-y-3 sm:space-y-4">
-        <div className="flex items-center justify-between text-sm sm:text-[15px] md:text-base">
+        <div className="flex items-center justify-between text-sm sm:text-base">
           <span className="text-sky-color">Subtotal</span>
-          <span className="font-bold text-secondary">
+          <span className="font-semibold tabular-nums text-foreground">
             {formatPrice(subtotal)}
           </span>
         </div>
 
         {discount > 0 ? (
-          <div className="flex items-center justify-between text-sm sm:text-[15px] md:text-base">
+          <div className="flex items-center justify-between text-sm sm:text-base">
             <span className="text-sky-color">
               Discount{discountPct ? ` (-${discountPct}%)` : ""}
             </span>
-            <span className="font-bold text-danger">
+            <span className="font-semibold tabular-nums text-danger">
               -{formatPrice(discount)}
             </span>
           </div>
         ) : null}
 
-        <div className="flex items-center justify-between border-t border-border-color pt-3 text-base sm:pt-4 sm:text-lg md:text-xl">
-          <span className="text-secondary">Total</span>
-          <span className="font-bold text-secondary">
+        <div className="flex items-center justify-between border-t border-border-color pt-3 text-base sm:pt-4">
+          <span className="text-foreground">Total</span>
+          <span className="font-semibold tabular-nums text-foreground">
             {formatPrice(Number(payableAmount))}
           </span>
         </div>
@@ -111,7 +111,7 @@ const Subtotal = () => {
       <div className="mt-4 sm:mt-5">
         {couponCode ? (
           <div className="flex items-center justify-between gap-3 rounded-full bg-bg-primary px-4 py-2.5">
-            <p className="truncate text-sm font-semibold text-secondary">
+            <p className="truncate text-sm font-semibold text-foreground">
               {couponCode}
             </p>
             <button
@@ -150,14 +150,14 @@ const Subtotal = () => {
               type="button"
               onClick={handleApply}
               disabled={couponBusy}
-              className="h-11 shrink-0 cursor-pointer rounded-full bg-secondary px-5 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50 sm:h-12 sm:px-7"
+              className="h-11 shrink-0 cursor-pointer rounded-full bg-ink px-5 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50 sm:h-12 sm:px-7"
             >
               {couponBusy ? "Applying..." : "Apply"}
             </button>
           </div>
         )}
         {couponError ? (
-          <p role="alert" className="mt-2 text-xs text-danger">
+          <p role="alert" className="mt-2 text-sm leading-snug text-danger">
             {couponError}
           </p>
         ) : null}
@@ -171,7 +171,7 @@ const Subtotal = () => {
             router.push("/login?redirect=/checkout");
           }
         }}
-        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-secondary text-sm font-medium text-white transition-colors hover:bg-primary sm:mt-5 sm:h-[54px] sm:text-base"
+        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-sm font-medium text-white transition-colors hover:bg-primary sm:mt-5 sm:h-[54px] sm:text-base"
       >
         Go to Checkout
         <ArrowRight size={18} />

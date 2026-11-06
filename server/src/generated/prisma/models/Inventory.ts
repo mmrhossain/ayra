@@ -44,6 +44,8 @@ export type InventoryMinAggregateOutputType = {
   quantityReserved: number | null
   quantityAvailable: number | null
   lastTransactionAt: Date | null
+  lastUpdatedBy: string | null
+  stockUpdatedAt: Date | null
   warehouseId: string | null
   variantId: string | null
   createdAt: Date | null
@@ -56,6 +58,8 @@ export type InventoryMaxAggregateOutputType = {
   quantityReserved: number | null
   quantityAvailable: number | null
   lastTransactionAt: Date | null
+  lastUpdatedBy: string | null
+  stockUpdatedAt: Date | null
   warehouseId: string | null
   variantId: string | null
   createdAt: Date | null
@@ -68,6 +72,8 @@ export type InventoryCountAggregateOutputType = {
   quantityReserved: number
   quantityAvailable: number
   lastTransactionAt: number
+  lastUpdatedBy: number
+  stockUpdatedAt: number
   warehouseId: number
   variantId: number
   createdAt: number
@@ -94,6 +100,8 @@ export type InventoryMinAggregateInputType = {
   quantityReserved?: true
   quantityAvailable?: true
   lastTransactionAt?: true
+  lastUpdatedBy?: true
+  stockUpdatedAt?: true
   warehouseId?: true
   variantId?: true
   createdAt?: true
@@ -106,6 +114,8 @@ export type InventoryMaxAggregateInputType = {
   quantityReserved?: true
   quantityAvailable?: true
   lastTransactionAt?: true
+  lastUpdatedBy?: true
+  stockUpdatedAt?: true
   warehouseId?: true
   variantId?: true
   createdAt?: true
@@ -118,6 +128,8 @@ export type InventoryCountAggregateInputType = {
   quantityReserved?: true
   quantityAvailable?: true
   lastTransactionAt?: true
+  lastUpdatedBy?: true
+  stockUpdatedAt?: true
   warehouseId?: true
   variantId?: true
   createdAt?: true
@@ -217,6 +229,8 @@ export type InventoryGroupByOutputType = {
   quantityReserved: number
   quantityAvailable: number
   lastTransactionAt: Date | null
+  lastUpdatedBy: string | null
+  stockUpdatedAt: Date | null
   warehouseId: string
   variantId: string
   createdAt: Date
@@ -252,6 +266,8 @@ export type InventoryWhereInput = {
   quantityReserved?: Prisma.IntFilter<"Inventory"> | number
   quantityAvailable?: Prisma.IntFilter<"Inventory"> | number
   lastTransactionAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
+  lastUpdatedBy?: Prisma.StringNullableFilter<"Inventory"> | string | null
+  stockUpdatedAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   warehouseId?: Prisma.StringFilter<"Inventory"> | string
   variantId?: Prisma.StringFilter<"Inventory"> | string
   createdAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
@@ -267,6 +283,8 @@ export type InventoryOrderByWithRelationInput = {
   quantityReserved?: Prisma.SortOrder
   quantityAvailable?: Prisma.SortOrder
   lastTransactionAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastUpdatedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  stockUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -286,6 +304,8 @@ export type InventoryWhereUniqueInput = Prisma.AtLeast<{
   quantityReserved?: Prisma.IntFilter<"Inventory"> | number
   quantityAvailable?: Prisma.IntFilter<"Inventory"> | number
   lastTransactionAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
+  lastUpdatedBy?: Prisma.StringNullableFilter<"Inventory"> | string | null
+  stockUpdatedAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   warehouseId?: Prisma.StringFilter<"Inventory"> | string
   variantId?: Prisma.StringFilter<"Inventory"> | string
   createdAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
@@ -301,6 +321,8 @@ export type InventoryOrderByWithAggregationInput = {
   quantityReserved?: Prisma.SortOrder
   quantityAvailable?: Prisma.SortOrder
   lastTransactionAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastUpdatedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  stockUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -321,6 +343,8 @@ export type InventoryScalarWhereWithAggregatesInput = {
   quantityReserved?: Prisma.IntWithAggregatesFilter<"Inventory"> | number
   quantityAvailable?: Prisma.IntWithAggregatesFilter<"Inventory"> | number
   lastTransactionAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Inventory"> | Date | string | null
+  lastUpdatedBy?: Prisma.StringNullableWithAggregatesFilter<"Inventory"> | string | null
+  stockUpdatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Inventory"> | Date | string | null
   warehouseId?: Prisma.StringWithAggregatesFilter<"Inventory"> | string
   variantId?: Prisma.StringWithAggregatesFilter<"Inventory"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Inventory"> | Date | string
@@ -333,6 +357,8 @@ export type InventoryCreateInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.InventoryTransactionCreateNestedManyWithoutInventoryInput
@@ -346,6 +372,8 @@ export type InventoryUncheckedCreateInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   warehouseId: string
   variantId: string
   createdAt?: Date | string
@@ -359,6 +387,8 @@ export type InventoryUpdateInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.InventoryTransactionUpdateManyWithoutInventoryNestedInput
@@ -372,6 +402,8 @@ export type InventoryUncheckedUpdateInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -385,6 +417,8 @@ export type InventoryCreateManyInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   warehouseId: string
   variantId: string
   createdAt?: Date | string
@@ -397,6 +431,8 @@ export type InventoryUpdateManyMutationInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -407,6 +443,8 @@ export type InventoryUncheckedUpdateManyInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -434,6 +472,8 @@ export type InventoryCountOrderByAggregateInput = {
   quantityReserved?: Prisma.SortOrder
   quantityAvailable?: Prisma.SortOrder
   lastTransactionAt?: Prisma.SortOrder
+  lastUpdatedBy?: Prisma.SortOrder
+  stockUpdatedAt?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -452,6 +492,8 @@ export type InventoryMaxOrderByAggregateInput = {
   quantityReserved?: Prisma.SortOrder
   quantityAvailable?: Prisma.SortOrder
   lastTransactionAt?: Prisma.SortOrder
+  lastUpdatedBy?: Prisma.SortOrder
+  stockUpdatedAt?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -464,6 +506,8 @@ export type InventoryMinOrderByAggregateInput = {
   quantityReserved?: Prisma.SortOrder
   quantityAvailable?: Prisma.SortOrder
   lastTransactionAt?: Prisma.SortOrder
+  lastUpdatedBy?: Prisma.SortOrder
+  stockUpdatedAt?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -585,6 +629,8 @@ export type InventoryCreateWithoutVariantInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.InventoryTransactionCreateNestedManyWithoutInventoryInput
@@ -597,6 +643,8 @@ export type InventoryUncheckedCreateWithoutVariantInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   warehouseId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -638,6 +686,8 @@ export type InventoryScalarWhereInput = {
   quantityReserved?: Prisma.IntFilter<"Inventory"> | number
   quantityAvailable?: Prisma.IntFilter<"Inventory"> | number
   lastTransactionAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
+  lastUpdatedBy?: Prisma.StringNullableFilter<"Inventory"> | string | null
+  stockUpdatedAt?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   warehouseId?: Prisma.StringFilter<"Inventory"> | string
   variantId?: Prisma.StringFilter<"Inventory"> | string
   createdAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
@@ -650,6 +700,8 @@ export type InventoryCreateWithoutWarehouseInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   transactions?: Prisma.InventoryTransactionCreateNestedManyWithoutInventoryInput
@@ -662,6 +714,8 @@ export type InventoryUncheckedCreateWithoutWarehouseInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   variantId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -700,6 +754,8 @@ export type InventoryCreateWithoutTransactionsInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   warehouse: Prisma.WarehouseCreateNestedOneWithoutInventoriesInput
@@ -712,6 +768,8 @@ export type InventoryUncheckedCreateWithoutTransactionsInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   warehouseId: string
   variantId: string
   createdAt?: Date | string
@@ -740,6 +798,8 @@ export type InventoryUpdateWithoutTransactionsInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutInventoriesNestedInput
@@ -752,6 +812,8 @@ export type InventoryUncheckedUpdateWithoutTransactionsInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -764,6 +826,8 @@ export type InventoryCreateManyVariantInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   warehouseId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -775,6 +839,8 @@ export type InventoryUpdateWithoutVariantInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.InventoryTransactionUpdateManyWithoutInventoryNestedInput
@@ -787,6 +853,8 @@ export type InventoryUncheckedUpdateWithoutVariantInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -799,6 +867,8 @@ export type InventoryUncheckedUpdateManyWithoutVariantInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -810,6 +880,8 @@ export type InventoryCreateManyWarehouseInput = {
   quantityReserved?: number
   quantityAvailable?: number
   lastTransactionAt?: Date | string | null
+  lastUpdatedBy?: string | null
+  stockUpdatedAt?: Date | string | null
   variantId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -821,6 +893,8 @@ export type InventoryUpdateWithoutWarehouseInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transactions?: Prisma.InventoryTransactionUpdateManyWithoutInventoryNestedInput
@@ -833,6 +907,8 @@ export type InventoryUncheckedUpdateWithoutWarehouseInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   variantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -845,6 +921,8 @@ export type InventoryUncheckedUpdateManyWithoutWarehouseInput = {
   quantityReserved?: Prisma.IntFieldUpdateOperationsInput | number
   quantityAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   lastTransactionAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastUpdatedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stockUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   variantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -887,6 +965,8 @@ export type InventorySelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   quantityReserved?: boolean
   quantityAvailable?: boolean
   lastTransactionAt?: boolean
+  lastUpdatedBy?: boolean
+  stockUpdatedAt?: boolean
   warehouseId?: boolean
   variantId?: boolean
   createdAt?: boolean
@@ -903,6 +983,8 @@ export type InventorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   quantityReserved?: boolean
   quantityAvailable?: boolean
   lastTransactionAt?: boolean
+  lastUpdatedBy?: boolean
+  stockUpdatedAt?: boolean
   warehouseId?: boolean
   variantId?: boolean
   createdAt?: boolean
@@ -917,6 +999,8 @@ export type InventorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   quantityReserved?: boolean
   quantityAvailable?: boolean
   lastTransactionAt?: boolean
+  lastUpdatedBy?: boolean
+  stockUpdatedAt?: boolean
   warehouseId?: boolean
   variantId?: boolean
   createdAt?: boolean
@@ -931,13 +1015,15 @@ export type InventorySelectScalar = {
   quantityReserved?: boolean
   quantityAvailable?: boolean
   lastTransactionAt?: boolean
+  lastUpdatedBy?: boolean
+  stockUpdatedAt?: boolean
   warehouseId?: boolean
   variantId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InventoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantityOnHand" | "quantityReserved" | "quantityAvailable" | "lastTransactionAt" | "warehouseId" | "variantId" | "createdAt" | "updatedAt", ExtArgs["result"]["inventory"]>
+export type InventoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantityOnHand" | "quantityReserved" | "quantityAvailable" | "lastTransactionAt" | "lastUpdatedBy" | "stockUpdatedAt" | "warehouseId" | "variantId" | "createdAt" | "updatedAt", ExtArgs["result"]["inventory"]>
 export type InventoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   transactions?: boolean | Prisma.Inventory$transactionsArgs<ExtArgs>
   warehouse?: boolean | Prisma.WarehouseDefaultArgs<ExtArgs>
@@ -966,6 +1052,8 @@ export type $InventoryPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     quantityReserved: number
     quantityAvailable: number
     lastTransactionAt: Date | null
+    lastUpdatedBy: string | null
+    stockUpdatedAt: Date | null
     warehouseId: string
     variantId: string
     createdAt: Date
@@ -1401,6 +1489,8 @@ export interface InventoryFieldRefs {
   readonly quantityReserved: Prisma.FieldRef<"Inventory", 'Int'>
   readonly quantityAvailable: Prisma.FieldRef<"Inventory", 'Int'>
   readonly lastTransactionAt: Prisma.FieldRef<"Inventory", 'DateTime'>
+  readonly lastUpdatedBy: Prisma.FieldRef<"Inventory", 'String'>
+  readonly stockUpdatedAt: Prisma.FieldRef<"Inventory", 'DateTime'>
   readonly warehouseId: Prisma.FieldRef<"Inventory", 'String'>
   readonly variantId: Prisma.FieldRef<"Inventory", 'String'>
   readonly createdAt: Prisma.FieldRef<"Inventory", 'DateTime'>

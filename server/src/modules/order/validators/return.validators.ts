@@ -30,4 +30,15 @@ export const listReturnRequestsQuerySchema = paginationQuerySchema.extend({
 export const reviewReturnRequestSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
   adminNote: z.string().max(1000).optional(),
+  // Optional per-line physical disposition overrides. Approval defaults to the
+  // customer's restock intent and treats an item as not damaged.
+  items: z
+    .array(
+      z.object({
+        orderItemId: z.string().min(1),
+        restockToStock: z.boolean().optional(),
+        damaged: z.boolean().optional(),
+      }),
+    )
+    .optional(),
 });

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../../../common/middleware/auth.middleware.ts";
+import { requireAuth, requireCustomer } from "../../../common/middleware/auth.middleware.ts";
 import {
   addWishlistItemHandler,
   clearWishlistHandler,
@@ -11,11 +11,13 @@ import {
 
 const router = Router();
 
-router.get("/wishlist", requireAuth, getWishlistHandler);
-router.get("/wishlist/items", requireAuth, listWishlistItemsHandler);
-router.get("/wishlist/items/:variantId", requireAuth, isInWishlistHandler);
-router.post("/wishlist/items", requireAuth, addWishlistItemHandler);
-router.delete("/wishlist/items/:variantId", requireAuth, removeWishlistItemHandler);
-router.delete("/wishlist", requireAuth, clearWishlistHandler);
+const customerOnly = [requireAuth, requireCustomer];
+
+router.get("/wishlist", ...customerOnly, getWishlistHandler);
+router.get("/wishlist/items", ...customerOnly, listWishlistItemsHandler);
+router.get("/wishlist/items/:variantId", ...customerOnly, isInWishlistHandler);
+router.post("/wishlist/items", ...customerOnly, addWishlistItemHandler);
+router.delete("/wishlist/items/:variantId", ...customerOnly, removeWishlistItemHandler);
+router.delete("/wishlist", ...customerOnly, clearWishlistHandler);
 
 export default router;

@@ -35,6 +35,7 @@ const unlinkFiles = async (files: Express.Multer.File[]) => {
       try {
         await unlink(file.path);
       } catch {
+        // Best-effort cleanup: a missing temp file must not fail the request.
       }
     })
   );

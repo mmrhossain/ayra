@@ -3,6 +3,7 @@
 import { toWishlistErrorMessage } from "@/features/dashboard/customer/wishlist/api/wishlist";
 import { errorToast, successToast } from "@/helpers/index";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE, staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { DashboardApiError } from "@/lib/api/dashboard";
 import { useWishStore } from "@/stores/useWishStore";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,10 +22,10 @@ export function useWishlistToggle(variantId: string | null | undefined) {
   const fetchWishList = useWishStore((s) => s.fetchWishList);
 
   useEffect(() => {
-    if (isLoggedIn && wishes === null) {
+    if (isLoggedIn && !isStaffRole(session?.user?.role) && wishes === null) {
       void fetchWishList();
     }
-  }, [isLoggedIn, wishes, fetchWishList]);
+  }, [isLoggedIn, session?.user?.role, wishes, fetchWishList]);
 
   const inWish = Boolean(
     variantId && wishes?.some((item) => item.variantId === variantId),
@@ -39,6 +40,12 @@ export function useWishlistToggle(variantId: string | null | undefined) {
     if (!isLoggedIn) {
       errorToast("Please sign in to manage your wishlist");
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const dest = staffShoppingRedirect(session?.user?.role);
+    if (dest || isStaffRole(session?.user?.role)) {
+      errorToast(STAFF_CANNOT_SHOP_MESSAGE);
+      if (dest) router.push(dest);
       return;
     }
     if (busy) return;
@@ -68,6 +75,7 @@ export function useWishlistToggle(variantId: string | null | undefined) {
     pathname,
     removeFromWishList,
     router,
+    session?.user?.role,
     setWishLoading,
     variantId,
   ]);

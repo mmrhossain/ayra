@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -21,6 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrderDetailDialog } from "@/features/dashboard/admin/orders/components/order-detail-dialog";
+import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-state";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import {
   customerLabel,
   money,
@@ -34,13 +35,32 @@ import { useOrderList } from "@/features/dashboard/admin/orders/hooks/use-order-
 import { statusColor } from "@/helpers";
 import { dateToIsoEnd, dateToIsoStart } from "@/lib/format";
 
+const orderDateTimeFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Dhaka",
+});
+
+function formatOrderDateTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : orderDateTimeFormatter.format(date);
+}
+
 type Props = {
   initialData: OrderListResult;
+  initialSearch?: string;
 };
 
-export function OrderTable({ initialData }: Props) {
+export function OrderTable({ initialData, initialSearch = "" }: Props) {
   const [page, setPage] = useState(initialData.pagination.page);
   const [status, setStatus] = useState<OrderStatus | "">("");
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [search, setSearch] = useState(initialSearch);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [detailOpen, setDetailOpen] = useState(false);
@@ -49,12 +69,22 @@ export function OrderTable({ initialData }: Props) {
   const from = dateToIsoStart(fromDate);
   const to = dateToIsoEnd(toDate);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { query, items, pagination } = useOrderList({
     initialData,
+    initialSearch,
     page,
     status,
     from,
     to,
+    search,
   });
 
   function openRow(order: OrderListItem) {
@@ -65,7 +95,14 @@ export function OrderTable({ initialData }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <Input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Order #, customer, phone"
+            aria-label="Search orders"
+            className="w-full sm:w-64"
+          />
           <Select
             value={status || "__all__"}
             onValueChange={(v) => {
@@ -131,7 +168,7 @@ export function OrderTable({ initialData }: Props) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Order</TableHead>
@@ -146,8 +183,11 @@ export function OrderTable({ initialData }: Props) {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    No orders found.
+                  <TableCell colSpan={7}>
+                    <EmptyState
+                      title="No orders found"
+                      body="Orders appear here as soon as customers check out."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -157,31 +197,31 @@ export function OrderTable({ initialData }: Props) {
                     className="cursor-pointer"
                     onClick={() => openRow(order)}
                   >
-                    <TableCell>
+                    <TableCell data-label="Order">
                       <p className="font-medium">{order.orderNumber}</p>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-muted-foreground" data-label="Customer">
                       {customerLabel(order)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Status">
                       <span
                         className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${statusColor(order?.status)}`}
                       >
                         {order?.status}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Payment">
                       <span className="text-xs font-medium">
                         {order.paymentStatus ?? "—"}
                       </span>
                     </TableCell>
-                    <TableCell className="tabular-nums">
+                    <TableCell className="tabular-nums" data-label="Total">
                       {money(order.grandTotal)}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
+                    <TableCell className="text-muted-foreground" data-label="Date">
+                      {formatOrderDateTime(order.createdAt)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" data-label="Actions">
                       <Button
                         type="button"
                         variant="outline"
@@ -198,7 +238,7 @@ export function OrderTable({ initialData }: Props) {
                 ))
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 

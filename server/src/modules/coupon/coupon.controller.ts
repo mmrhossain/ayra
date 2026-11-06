@@ -37,7 +37,9 @@ export const validateCoupon = asyncHandler(async (req: Request, res: Response) =
     select: { id: true, categoryId: true },
   });
   const categoryByProduct = new Map(products.map((p) => [p.id, p.categoryId]));
-  const subtotal = cart.items.reduce((sum, item) => sum + Number(item.subtotal), 0);
+  const lineSubtotal = (item: (typeof cart.items)[number]) =>
+    Number(item.variant.price) * item.quantity;
+  const subtotal = cart.items.reduce((sum, item) => sum + lineSubtotal(item), 0);
 
   const result = await validateCouponCode(input.code, customerProfile.id, {
     subtotal,
@@ -46,7 +48,7 @@ export const validateCoupon = asyncHandler(async (req: Request, res: Response) =
     lines: cart.items.map((item) => ({
       productId: item.productId,
       categoryId: categoryByProduct.get(item.productId) ?? "",
-      subtotal: Number(item.subtotal),
+      subtotal: lineSubtotal(item),
     })),
   });
 

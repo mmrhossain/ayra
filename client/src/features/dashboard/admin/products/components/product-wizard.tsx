@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProductSave } from "@/features/dashboard/admin/products/hooks/use-product-save";
 import { useProductWizardOptions } from "@/features/dashboard/admin/products/hooks/use-product-wizard-options";
-import { createDetailsSchema, detailsSchema } from "@/features/dashboard/admin/products/schemas";
+import { detailsSchema } from "@/features/dashboard/admin/products/schemas";
 import type {
   DetailsValues,
   ProductDetail,
@@ -25,9 +26,13 @@ import {
   focusFirstInvalid,
   normalizeVariantAttributes,
   slugify,
-  uniqueSku,
   variantsFromProduct,
 } from "@/features/dashboard/admin/products/utils";
+import {
+  buildSuggestedSku,
+  typedSkuError,
+} from "@/features/dashboard/admin/products/utils/sku-generator";
+import type { ImageUploadHandle } from "@/features/dashboard/admin/shared/components/image-upload";
 import { ProductWizardDetails } from "./product-wizard-details";
 import { ProductWizardStock } from "./product-wizard-stock";
 import { ProductWizardVariants } from "./product-wizard-variants";
@@ -64,13 +69,22 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
       ...row,
       skuError: undefined,
       priceError: undefined,
+      costError: undefined,
       attrError: undefined,
       isDefault: fallbackDefaultKey ? row.key === fallbackDefaultKey : row.isDefault,
     };
-    if (!row.sku.trim()) next.skuError = "SKU is required";
+    if (row.sku.trim()) {
+      next.skuError = typedSkuError(row.sku);
+    }
     const price = Number(row.price);
     if (!row.price.trim() || !Number.isFinite(price) || price <= 0) {
       next.priceError = "Price must be greater than 0";
+    }
+    if (row.costPrice.trim()) {
+      const cost = Number(row.costPrice);
+      if (!Number.isFinite(cost) || cost < 0) {
+        next.costError = "Buying cost must be zero or greater";
+      }
     }
     const skuKey = row.sku.trim().toLowerCase();
     if (skuKey) {
@@ -88,12 +102,20 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
 export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardProps) {
   const router = useRouter();
   const slugManual = useRef(mode === "edit");
+  const imageUploadRef = useRef<ImageUploadHandle>(null);
   const [step, setStep] = useState<WizardStep>(initialStep);
   const [rows, setRows] = useState<VariantRow[]>(() => variantsFromProduct(product));
   const [variantsDirty, setVariantsDirty] = useState(false);
   const [selected, setSelected] = useState<SelectedAttribute[]>(() => selectedFromProduct(product));
   const [existingVariantIds] = useState(() => product?.variants.map((v) => v.id) ?? []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingKind, setSubmittingKind] = useState<SaveKind | null>(null);
   const save = useProductSave();
+  const isSaving = isSubmitting || save.pending;
+  // `save.pendingKind` only becomes set once `save.run()` starts, i.e. after the
+  // image upload finishes. Fall back to the locally tracked kind so the button
+  // shows its loading state the moment a save/upload begins.
+  const activeKind = save.pendingKind ?? submittingKind;
   const setProductId = save.setProductId;
 
   useEffect(() => {
@@ -101,7 +123,7 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
   }, [mode, product, setProductId]);
 
   const form = useForm<DetailsValues>({
-    resolver: zodResolver(mode === "create" ? createDetailsSchema : detailsSchema),
+    resolver: zodResolver(detailsSchema),
     defaultValues: detailsFromProduct(product),
   });
 
@@ -114,14 +136,16 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
     name: "name",
   });
 
-  const slugValue = useWatch({
+  const basePriceValue = rows.find((row) => row.isDefault)?.price ?? rows[0]?.price ?? "";
+
+  const categoryIdValue = useWatch({
     control: form.control,
-    name: "slug",
+    name: "categoryId",
   });
 
-  const priceValue = useWatch({
+  const brandIdValue = useWatch({
     control: form.control,
-    name: "price",
+    name: "brandId",
   });
 
   const statusValue = useWatch({
@@ -165,10 +189,15 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
   };
 
   const submit = async (kind: SaveKind) => {
-    if (mode === "edit" && step >= 2) {
+    if (isSaving) return;
+    if (mode === "create" || step >= 2) {
       const checked = validateVariants(rows, selected);
       setRowsDirty(checked);
-      if (checked.some((row) => row.skuError || row.priceError || row.attrError)) {
+      if (
+        checked.some(
+          (row) => row.skuError || row.priceError || row.costError || row.attrError,
+        )
+      ) {
         setStep(2);
         requestAnimationFrame(focusFirstInvalid);
         return;
@@ -181,33 +210,31 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
       requestAnimationFrame(focusFirstInvalid);
       return;
     }
+    setIsSubmitting(true);
+    setSubmittingKind(kind);
+    try {
+      try {
+        await imageUploadRef.current?.flush();
+      } catch {
+        return;
+      }
+      await persist(kind);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittingKind(null);
+    }
+  };
+
+  const persist = async (kind: SaveKind) => {
     const details = form.getValues();
     if (mode === "edit" && kind === "save" && rows.length === 0) {
       setStep(2);
       return;
     }
 
-    const defaultSku = uniqueSku(`${details.slug}-default`, new Set());
     const variantsToSave =
-      mode === "create"
-        ? [
-            {
-              key: rows[0]?.key ?? "default",
-              id: rows[0]?.id,
-              sku: rows[0]?.sku?.trim() || defaultSku,
-              price: details.price,
-              isDefault: true,
-              attributeValueIds: [],
-              label: rows[0]?.label || "Default",
-              initialQty: 0,
-              skuError: undefined,
-              priceError: undefined,
-            },
-          ]
-        : kind === "draft" && step === 1
-          ? rows.filter((row) => row.id)
-          : rows;
-    const warehouseId = mode === "create" ? undefined : warehousesQuery.data?.items?.[0]?.id;
+      kind === "draft" && step === 1 ? rows.filter((row) => row.id) : rows;
+    const warehouseId = warehousesQuery.data?.items?.[0]?.id;
     const result = await save.run({
       mode,
       kind,
@@ -242,12 +269,21 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
         requestAnimationFrame(focusFirstInvalid);
         return;
       }
-      if (rows.length === 1 && !rows[0]?.sku) {
-        const slug = form.getValues("slug");
+      if (rows.length === 1 && !rows[0]?.skuEdited) {
+        const categoryName =
+          categories.find((item) => item.id === form.getValues("categoryId"))?.name ?? "";
+        const brandName =
+          (brandsQuery.data ?? []).find((item) => item.id === form.getValues("brandId"))?.name ??
+          "";
+        const suggested = categoryName
+          ? buildSuggestedSku({ brandName, categoryName, attributes: [] })
+          : "";
         setRows([
           {
             ...rows[0],
-            sku: slug ? `${slug}-default` : rows[0].sku,
+            sku: suggested,
+            lastSuggested: suggested,
+            skuEdited: false,
             label: rows[0].label || "Default",
           },
         ]);
@@ -258,56 +294,63 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
     if (step === 2) {
       const checked = validateVariants(rows, selected);
       setRowsDirty(checked);
-      if (checked.some((row) => row.skuError || row.priceError || row.attrError)) {
+      if (
+        checked.some(
+          (row) => row.skuError || row.priceError || row.costError || row.attrError,
+        )
+      ) {
         requestAnimationFrame(focusFirstInvalid);
         return;
       }
-      setStep(3);
+      if (mode === "edit") setStep(3);
     }
   };
 
   const title = mode === "create" ? "New product" : (product?.name ?? "Edit product");
 
   return (
-    <section className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+    <section className="min-w-0 space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl leading-tight font-semibold tracking-tight lg:text-3xl">{title}</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "create"
-              ? "Save basic info and a price. Manage variants and stock from the product list."
+              ? "Save basic info, set variant prices, then publish."
               : "Update details and every variant, not just the default."}
           </p>
         </div>
-        <Button type="button" variant="outline" onClick={goList}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={goList}
+          className="shrink-0 max-sm:w-full"
+        >
           Back to products
         </Button>
       </div>
 
-      {mode === "edit" ? (
-        <ol className="flex flex-wrap gap-2" aria-label="Wizard steps">
-          {STEPS.map((item) => {
-            const active = step === item.id;
-            const done = step > item.id;
-            return (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className={`rounded-full px-3 py-1.5 text-sm ${
-                    active ? "bg-primary text-primary-foreground" : done ? "bg-muted" : "border"
-                  }`}
-                  aria-current={active ? "step" : undefined}
-                  onClick={() => {
-                    if (item.id < step) setStep(item.id);
-                  }}
-                >
-                  {item.id}. {item.label}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      ) : null}
+      <ol className="flex flex-wrap gap-2 overflow-x-auto" aria-label="Wizard steps">
+        {STEPS.filter((item) => mode === "edit" || item.id !== 3).map((item) => {
+          const active = step === item.id;
+          const done = step > item.id;
+          return (
+            <li key={item.id}>
+              <button
+                type="button"
+                className={`rounded-full px-3 py-1.5 text-sm ${
+                  active ? "bg-primary text-primary-foreground" : done ? "bg-muted" : "border"
+                }`}
+                aria-current={active ? "step" : undefined}
+                onClick={() => {
+                  if (item.id < step) setStep(item.id);
+                }}
+              >
+                {item.id}. {item.label}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
 
       {save.productId && mode === "create" ? (
         <p className="rounded-md border p-3 text-sm">
@@ -325,20 +368,19 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
         <Skeleton className="h-40 w-full" />
       ) : (
         <>
-          {step === 1 ? (
+          <div className={step === 1 ? undefined : "hidden"}>
             <ProductWizardDetails
               form={form}
               categories={categories}
               brands={brandsQuery.data ?? []}
-              slugManual={slugManual}
-              showPrice={mode === "create"}
+              imageUploadRef={imageUploadRef}
             />
-          ) : null}
-          {mode === "edit" && step === 2 ? (
+          </div>
+          {step === 2 ? (
             <ProductWizardVariants
-              productName={nameValue ?? ""}
-              productSlug={slugValue ?? ""}
-              basePrice={priceValue ?? ""}
+              categoryName={categories.find((item) => item.id === categoryIdValue)?.name ?? ""}
+              brandName={(brandsQuery.data ?? []).find((item) => item.id === brandIdValue)?.name}
+              basePrice={basePriceValue}
               attributes={attributesQuery.data ?? []}
               selected={selected}
               onSelectedChange={setSelectedDirty}
@@ -348,7 +390,7 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
           ) : null}
           {mode === "edit" && step === 3 ? (
             <ProductWizardStock
-              rows={mode === "edit" ? rows.filter((row) => !row.id) : rows}
+              rows={rows}
               onRowsChange={(next) => {
                 if (mode !== "edit") {
                   setRowsDirty(next);
@@ -362,41 +404,67 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
         </>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-        {mode === "edit" ? (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={step === 1 || save.pending}
-            onClick={() => setStep((s) => (s === 1 ? 1 : ((s - 1) as WizardStep)))}
-          >
-            Back
-          </Button>
-        ) : (
-          <span />
-        )}
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+        {step > 1 ? (
           <Button
             type="button"
             variant="outline"
             disabled={save.pending}
-            onClick={() => submit("draft")}
+            onClick={() => setStep((s) => (s === 1 ? 1 : ((s - 1) as WizardStep)))}
+            className="max-sm:w-full"
           >
-            {save.pending ? "Saving..." : "Save draft"}
+            Back
           </Button>
-          {mode === "edit" && step < 3 ? (
+        ) : (
+          <span className="hidden sm:block" />
+        )}
+        <div className="flex flex-wrap gap-2 max-sm:flex-col">
+          {mode === "edit" || step >= 2 ? (
             <Button
               type="button"
-              variant="secondary"
-              disabled={save.pending}
+              variant="outline"
+              disabled={isSaving}
+              onClick={() => submit("draft")}
+              className="max-sm:w-full"
+            >
+              {activeKind === "draft" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save draft"
+              )}
+            </Button>
+          ) : null}
+          {step < (mode === "edit" ? 3 : 2) ? (
+            <Button
+              type="button"
+              variant="default"
+              disabled={isSaving}
               onClick={continueNext}
+              className="max-sm:w-full"
             >
               Continue
             </Button>
           ) : null}
-          {mode === "create" || step >= 2 ? (
-            <Button type="button" disabled={save.pending} onClick={() => submit("save")}>
-              {save.pending ? "Saving..." : statusValue === "ACTIVE" ? "Publish" : "Save"}
+          {step >= 2 ? (
+            <Button
+              type="button"
+              disabled={isSaving}
+              onClick={() => submit("save")}
+              className="max-sm:w-full"
+            >
+              {activeKind === "save" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Saving...
+                </>
+              ) : statusValue === "ACTIVE" ? (
+                "Publish"
+              ) : (
+                "Save"
+              )}
             </Button>
           ) : null}
         </div>

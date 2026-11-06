@@ -33,7 +33,7 @@ export default function HomeProductSection({
                 className="transition-transform duration-300 group-hover:translate-x-1"
               />
             }
-            className="text-xs md:text-sm font-bold uppercase tracking-wider text-slate-900 hover:text-primary bg-transparent hover:bg-transparent shadow-none p-0 h-auto gap-1"
+            className="h-auto gap-1 bg-transparent p-0 text-sm font-medium tracking-wide text-slate-900 uppercase shadow-none hover:bg-transparent hover:text-primary"
           />
         )}
       </div>

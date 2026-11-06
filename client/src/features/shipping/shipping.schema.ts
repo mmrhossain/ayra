@@ -28,10 +28,23 @@ export const shippingMethodFormSchema = z.object({
 export const shippingRateFormSchema = z.object({
   shippingZoneId: z.string().min(1, "Zone is required"),
   shippingMethodId: z.string().min(1, "Method is required"),
-  price: z.coerce.number().nonnegative("Price cannot be negative"),
+  price: z.preprocess((v) => {
+    if (v === "" || v === undefined || v === null) return undefined;
+    const n = typeof v === "number" ? v : Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  }, z
+    .number({ error: "Price is required" })
+    .nonnegative("Price cannot be negative")
+    .max(1_000_000, "Price is too large")
+    .multipleOf(0.01, "Use at most 2 decimal places")),
   freeShippingFrom: z.preprocess(
     (v) => (v === "" || v === undefined || v === null ? null : v),
-    z.coerce.number().nonnegative().nullable(),
+    z.coerce
+      .number()
+      .nonnegative("Amount cannot be negative")
+      .max(1_000_000, "Amount is too large")
+      .multipleOf(0.01, "Use at most 2 decimal places")
+      .nullable(),
   ),
   isActive: z.boolean(),
 });

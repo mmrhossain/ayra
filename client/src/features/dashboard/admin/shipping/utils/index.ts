@@ -46,7 +46,7 @@ export function emptyRateValues(): ShippingRateFormValues {
   return {
     shippingZoneId: "",
     shippingMethodId: "",
-    price: 0,
+    price: undefined as unknown as number,
     freeShippingFrom: null,
     isActive: true,
   };

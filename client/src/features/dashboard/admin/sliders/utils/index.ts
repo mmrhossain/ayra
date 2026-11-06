@@ -27,7 +27,7 @@ export function defaultValues(initialData?: SliderListItem): SliderFormValues {
     redirectUrl: initialData?.redirectUrl ?? "",
     startDate: toDatetimeLocal(initialData?.startDate),
     endDate: toDatetimeLocal(initialData?.endDate),
-    priority: String(initialData?.priority ?? 0),
+    priority: initialData?.priority == null ? "" : String(initialData.priority),
     isActive: initialData?.isActive ?? true,
   };
 }

@@ -1,5 +1,7 @@
 import { dashboardApi } from "@/lib/api/dashboard";
 import type {
+  BulkProductAction,
+  BulkProductResult,
   CreateProductBody,
   CreateVariantBody,
   Envelope,
@@ -24,6 +26,9 @@ export type {
   ProductImageInput,
   CreateProductBody,
   CreateVariantBody,
+  ProductStatus,
+  BulkProductAction,
+  BulkProductResult,
 } from "@/features/dashboard/admin/products/types";
 
 export {
@@ -36,11 +41,25 @@ export {
 
 const noStore = { cache: "no-store" as const };
 
+// Product reads and writes run heavy, multi-round-trip queries (joins across
+// variants, inventories, attributes) or a multi-step transaction. On a remote
+// database these can legitimately exceed the 10s default, so every product call
+// gets a budget that outlives the server's own query/transaction timeout (30s)
+// instead of aborting a request the backend is still honoring.
+const parsedProductApiTimeoutMs = Number(
+  process.env.NEXT_PUBLIC_PRODUCT_API_TIMEOUT_MS,
+);
+export const PRODUCT_API_TIMEOUT_MS =
+  Number.isFinite(parsedProductApiTimeoutMs) && parsedProductApiTimeoutMs > 0
+    ? parsedProductApiTimeoutMs
+    : 60_000;
+
 export async function fetchProductList(
   params: ProductListParams = {},
 ): Promise<ProductListResult> {
   const res = await dashboardApi.get<Envelope<ProductListResult>>("/products", {
     ...noStore,
+    timeoutMs: PRODUCT_API_TIMEOUT_MS,
     params: {
       page: params.page ?? 1,
       limit: params.limit ?? 20,
@@ -60,17 +79,24 @@ export async function fetchProductList(
 export async function fetchAdminProduct(id: string): Promise<ProductDetail> {
   const res = await dashboardApi.get<Envelope<ProductDetail>>(
     `/admin/products/${id}`,
-    noStore,
+    { ...noStore, timeoutMs: PRODUCT_API_TIMEOUT_MS },
   );
   return res.data;
 }
 
 export async function createProduct(
   body: CreateProductBody,
-): Promise<{ id: string }> {
-  const res = await dashboardApi.post<Envelope<{ id: string }>>(
+  idempotencyKey?: string,
+): Promise<ProductDetail> {
+  const res = await dashboardApi.post<Envelope<ProductDetail>>(
     "/admin/products",
-    { body },
+    {
+      body,
+      timeoutMs: PRODUCT_API_TIMEOUT_MS,
+      ...(idempotencyKey
+        ? { headers: { "Idempotency-Key": idempotencyKey } }
+        : {}),
+    },
   );
   return res.data;
 }
@@ -78,25 +104,51 @@ export async function createProduct(
 export async function updateProduct(
   id: string,
   body: Partial<CreateProductBody>,
-): Promise<{ id: string }> {
-  const res = await dashboardApi.put<Envelope<{ id: string }>>(
+  idempotencyKey?: string,
+): Promise<ProductDetail> {
+  const res = await dashboardApi.put<Envelope<ProductDetail>>(
     `/admin/products/${id}`,
-    { body },
+    {
+      body,
+      timeoutMs: PRODUCT_API_TIMEOUT_MS,
+      ...(idempotencyKey
+        ? { headers: { "Idempotency-Key": idempotencyKey } }
+        : {}),
+    },
   );
   return res.data;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  await dashboardApi.delete<Envelope<unknown>>(`/admin/products/${id}`);
+  await dashboardApi.delete<Envelope<unknown>>(`/admin/products/${id}`, {
+    timeoutMs: PRODUCT_API_TIMEOUT_MS,
+  });
+}
+
+export async function bulkUpdateProducts(
+  body: BulkProductAction,
+  idempotencyKey?: string,
+): Promise<BulkProductResult> {
+  const res = await dashboardApi.patch<Envelope<BulkProductResult>>(
+    "/admin/products/bulk",
+    {
+      body,
+      timeoutMs: PRODUCT_API_TIMEOUT_MS,
+      ...(idempotencyKey
+        ? { headers: { "Idempotency-Key": idempotencyKey } }
+        : {}),
+    },
+  );
+  return res.data;
 }
 
 export async function createProductVariant(
   productId: string,
   body: CreateVariantBody,
-): Promise<{ id: string }> {
-  const res = await dashboardApi.post<Envelope<{ id: string }>>(
+): Promise<{ id: string; sku: string }> {
+  const res = await dashboardApi.post<Envelope<{ id: string; sku: string }>>(
     `/admin/products/${productId}/variants`,
-    { body },
+    { body, timeoutMs: PRODUCT_API_TIMEOUT_MS },
   );
   return res.data;
 }
@@ -107,11 +159,13 @@ export async function updateProductVariant(
 ): Promise<{ id: string }> {
   const res = await dashboardApi.put<Envelope<{ id: string }>>(
     `/admin/variants/${id}`,
-    { body },
+    { body, timeoutMs: PRODUCT_API_TIMEOUT_MS },
   );
   return res.data;
 }
 
 export async function deleteProductVariant(id: string): Promise<void> {
-  await dashboardApi.delete<Envelope<unknown>>(`/admin/variants/${id}`);
+  await dashboardApi.delete<Envelope<unknown>>(`/admin/variants/${id}`, {
+    timeoutMs: PRODUCT_API_TIMEOUT_MS,
+  });
 }

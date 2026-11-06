@@ -7,9 +7,11 @@ import {
   successResponse,
 } from "../../../lib/openapi/common-schemas.ts";
 import {
+  bulkProductActionSchema,
   createProductSchema,
   createVariantSchema,
   listProductsQuerySchema,
+  productFacetsQuerySchema,
   updateProductSchema,
   updateVariantSchema,
 } from "./validators/product.validators.ts";
@@ -22,10 +24,24 @@ registry.registerPath({
   tags: [TAG],
   summary: "List products",
   description:
-    "Public paginated catalog of ACTIVE products. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin/vendor may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
+    "Public paginated catalog of ACTIVE products. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
   request: { query: listProductsQuerySchema },
   responses: {
     200: successResponse("Products fetched"),
+    ...errorResponses(400),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/products/facets",
+  tags: [TAG],
+  summary: "Get product filter facets",
+  description:
+    "Public facet counts for the same filters as GET /products (category, brand, price, attributes). featured and onSale apply the same catalog scope.",
+  request: { query: productFacetsQuerySchema },
+  responses: {
+    200: successResponse("Product facets fetched"),
     ...errorResponses(400),
   },
 });
@@ -94,6 +110,21 @@ registry.registerPath({
   responses: {
     200: successResponse("Product deleted"),
     ...errorResponses(401, 403, 404),
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/v1/admin/products/bulk",
+  tags: [TAG],
+  summary: "Bulk update products (admin)",
+  description:
+    "Apply one action (set-status, set-featured, set-category, delete) to up to 100 products. Returns requested/affected counts and the ids that could not be resolved.",
+  security: bearerAuth,
+  request: { body: jsonBody(bulkProductActionSchema) },
+  responses: {
+    200: successResponse("Products updated"),
+    ...errorResponses(400, 401, 403, 404),
   },
 });
 

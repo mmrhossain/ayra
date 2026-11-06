@@ -18,6 +18,8 @@ export type {
 export async function fetchPublishedLegal(
   type: LegalType,
 ): Promise<PublishedLegalDocument> {
-  const res = await api.get<Envelope<PublishedLegalDocument>>(`/legal/${type}`);
+  const res = await api.get<Envelope<PublishedLegalDocument>>(`/legal/${type}`, {
+    next: { revalidate: 300, tags: ["legal", `legal:${type}`] },
+  });
   return res.data;
 }

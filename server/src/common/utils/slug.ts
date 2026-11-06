@@ -19,3 +19,19 @@ export const generateSlug = (value: string, label = "Name"): string => {
 
   return slug;
 };
+
+export const ensureUniqueSlug = (slug: string, taken: Set<string>): string => {
+  const normalized = slugify(slug) || slug;
+  if (!taken.has(normalized)) {
+    taken.add(normalized);
+    return normalized;
+  }
+
+  let index = 2;
+  while (taken.has(`${normalized}-${index}`)) {
+    index += 1;
+  }
+  const next = `${normalized}-${index}`;
+  taken.add(next);
+  return next;
+};

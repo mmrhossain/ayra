@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../../../common/middleware/auth.middleware.ts";
+import { requireAuth, requireCustomer } from "../../../common/middleware/auth.middleware.ts";
 import {
   createAddressHandler,
   listAddressesHandler,
@@ -10,10 +10,12 @@ import {
 
 const router = Router();
 
-router.post("/addresses", requireAuth, createAddressHandler);
-router.get("/addresses", requireAuth, listAddressesHandler);
-router.get("/addresses/:id", requireAuth, getAddressHandler);
-router.put("/addresses/:id", requireAuth, updateAddressHandler);
-router.delete("/addresses/:id", requireAuth, deleteAddressHandler);
+const customerOnly = [requireAuth, requireCustomer];
+
+router.post("/addresses", ...customerOnly, createAddressHandler);
+router.get("/addresses", ...customerOnly, listAddressesHandler);
+router.get("/addresses/:id", ...customerOnly, getAddressHandler);
+router.put("/addresses/:id", ...customerOnly, updateAddressHandler);
+router.delete("/addresses/:id", ...customerOnly, deleteAddressHandler);
 
 export default router;

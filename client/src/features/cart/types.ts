@@ -3,11 +3,7 @@ import type {
   CartSnapshot as AuthCartSnapshot,
 } from "@/features/dashboard/customer/cart/api/cart";
 
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type CartLine = AuthCartLine;
 export type CartSnapshot = AuthCartSnapshot;
@@ -32,8 +28,26 @@ export type GuestCartLine = {
   compareAtPrice?: number | null;
 };
 
-export type GuestCartRecord = {
-  sessionId?: string;
-  items?: GuestCartLine[];
-  cartData?: { items?: GuestCartLine[] } | null;
+export type CartItem = CartLine;
+
+export type CartState = {
+  cart: CartItem[] | null;
+  cartCount: number;
+  discount: number;
+  totalAmount: number;
+  discountAmount: number;
+  vatAmount: number;
+  payableAmount: number;
+  couponCode: string | null;
+  cartLoading: Record<string, boolean>;
+  setCartLoading: (id: string, loading: boolean) => void;
+  fetchCart: () => Promise<void>;
+  updateCart: (
+    variantId: string,
+    quantity: number,
+  ) => Promise<{ message: string }>;
+  removeFromCart: (variantId: string) => Promise<{ message: string }>;
+  applyCoupon: (code: string) => Promise<{ message: string }>;
+  removeCoupon: () => Promise<{ message: string }>;
+  clearCart: () => void;
 };

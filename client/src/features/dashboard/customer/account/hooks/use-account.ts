@@ -5,10 +5,16 @@ import { toast } from "sonner";
 
 import {
   fetchCustomerProfile,
+  fetchNotificationPreferences,
   saveCustomerProfile,
+  saveNotificationPreferences,
 } from "@/features/dashboard/customer/account/api/profile";
 import type { AccountFormValues } from "@/features/dashboard/customer/account/schemas";
-import type { CustomerProfile } from "@/features/dashboard/customer/account/types";
+import type {
+  CustomerProfile,
+  NotificationPreferences,
+  NotificationPreferencesUpdate,
+} from "@/features/dashboard/customer/account/types";
 import { isCustomerGender, toProfileError } from "@/features/dashboard/customer/account/utils";
 import { authClient } from "@/lib/api/auth/auth-client";
 
@@ -26,6 +32,38 @@ export function useAccount({ initialData }: { initialData: CustomerProfile }) {
   return {
     query,
     profile: query.data ?? initialData,
+  };
+}
+
+export function useNotificationPreferences({
+  initialData,
+}: {
+  initialData: NotificationPreferences;
+}) {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ["customer-notification-preferences"],
+    queryFn: fetchNotificationPreferences,
+    initialData,
+    staleTime: 30_000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: (input: NotificationPreferencesUpdate) =>
+      saveNotificationPreferences(input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["customer-notification-preferences"], data);
+      toast.success("Notification preferences saved");
+    },
+    onError: (err) => {
+      toast.error(toProfileError(err));
+    },
+  });
+
+  return {
+    preferences: query.data ?? initialData,
+    mutation,
   };
 }
 

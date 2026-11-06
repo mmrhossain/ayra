@@ -18,7 +18,7 @@ export function faqCategoryFormDefaults(
   return {
     name: initialData?.name ?? "",
     slug: initialData?.slug ?? "",
-    sortOrder: initialData?.sortOrder ?? 0,
+    sortOrder: initialData?.sortOrder ?? (undefined as unknown as number),
     isActive: initialData?.isActive ?? true,
   };
 }

@@ -29,6 +29,7 @@ export function flattenCategories(
       image: item.image,
       imagePublicId: item.imagePublicId,
       mobileImage: item.mobileImage,
+      mobileImagePublicId: item.mobileImagePublicId,
       cardImage: item.cardImage,
       isActive: item.isActive,
       parentId: item.parentId,
@@ -52,6 +53,8 @@ export function categoryFormDefaults(
     isActive: initialData?.isActive ?? true,
     image: initialData?.image ?? "",
     imagePublicId: initialData?.imagePublicId ?? "",
+    mobileImage: initialData?.mobileImage ?? "",
+    mobileImagePublicId: initialData?.mobileImagePublicId ?? "",
   };
 }
 

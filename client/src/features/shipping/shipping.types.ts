@@ -5,6 +5,7 @@ export type ShippingZone = {
   isActive: boolean;
   isFallback: boolean;
   matchDistricts: string[];
+  matchDistrictCodes?: string[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -60,6 +61,7 @@ export type CreateShippingZoneBody = {
   isActive: boolean;
   isFallback: boolean;
   matchDistricts: string[];
+  matchDistrictCodes?: string[];
 };
 
 export type CreateShippingMethodBody = {

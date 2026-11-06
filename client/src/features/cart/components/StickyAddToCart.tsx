@@ -48,19 +48,20 @@ const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
 
     return (
         <div
+            data-sticky-add-to-cart
             className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-0 z-30 w-full max-w-full animate-in slide-in-from-bottom-4 duration-300 lg:hidden"
         >
-            <div className="bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3">
+            <div className="bg-background/95 backdrop-blur-lg border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3">
                 <div className="flex items-center gap-3 max-w-lg mx-auto">
                     {/* Price info */}
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs text-slate-500 truncate font-medium">{productName}</p>
+                        <p className="text-xs text-muted-foreground truncate font-medium">{productName}</p>
                         <div className="flex items-baseline gap-1.5 mt-0.5">
-                            <span className="text-base font-bold text-slate-900">
+                            <span className="text-base font-bold text-foreground">
                                 {formatPrice(discountPrice)}
                             </span>
                             {Number(discount) > 0 && (
-                                <span className="text-[11px] text-slate-400 line-through">
+                                <span className="text-xs text-muted-foreground line-through">
                                     {formatPrice(price)}
                                 </span>
                             )}
@@ -72,8 +73,8 @@ const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
                         onClick={onAddToCart}
                         disabled={isLoading || isOutOfStock}
                         className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-[0.96] shrink-0 ${isLoading || isOutOfStock
-                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                : "bg-primary text-white shadow-lg shadow-primary/25 hover:bg-btn-hover"
+                                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                : "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90"
                             }`}
                     >
                         {isLoading ? (

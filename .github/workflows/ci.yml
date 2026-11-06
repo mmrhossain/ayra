@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    env:
+      NODE_ENV: test
+      SKIP_DB_SETUP: "1"
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ayra_test
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ayra_test
+      FRONTEND_URL: http://localhost:3000
+      ACCESS_TOKEN_SECRET: ci-access-secret
+      ACCESS_TOKEN_EXPIRES_IN: 15m
+      REFRESH_TOKEN_SECRET: ci-refresh-secret
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      BETTER_AUTH_SECRET: ci-better-auth-secret
+      BETTER_AUTH_URL: http://localhost:5000
+      RESEND_FROM: ci@example.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run build
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - name: DB-free tests
+        run: >
+          npx vitest run
+          tests/common/test-db-guard.test.ts
+          tests/common/admin-permissions.test.ts
+          tests/common/owner-guard.test.ts
+          tests/common/sanitize-html.test.ts
+          tests/audit/admin-audit.utils.test.ts
+          tests/shipments/shipments.utils.test.ts
+          tests/settings/settings.registry.test.ts
+          tests/settings/settings.crypto.test.ts
+          tests/settings/sslcommerz-config.test.ts
+          tests/payment/refund-state.test.ts
+
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    env:
+      BACKEND_ORIGIN: http://localhost:5000
+      NEXT_PUBLIC_SITE_NAME: Ayra
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_CALLBACK_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm test
+      - run: npm run build

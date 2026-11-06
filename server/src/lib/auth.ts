@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, jwt } from "better-auth/plugins";
 import { adminAc, defaultAc } from "better-auth/plugins/admin/access";
@@ -8,9 +9,39 @@ import { env } from "../config/env.ts";
 import { attachMediaAssets, deleteImages } from "../modules/media/media.service.ts";
 import { getBaseEmailTemplate } from "../template/email.ts";
 import { getPasswordResetEmailHtml, PASSWORD_RESET_SUBJECT } from "../template/password-reset.ts";
+import { countActiveSuperAdminsById } from "./owner-guard.ts";
 import { prisma } from "./prisma.ts";
 import { createBetterAuthSecondaryStorage, redis } from "./redis.ts";
 import { resend } from "./resend.ts";
+
+/**
+ * Every Better Auth admin endpoint is exposed under `/api/v1/auth/admin/*`.
+ *
+ * The plugin only checks that the caller holds the `ADMIN` role (via `adminAc`),
+ * so a catalog-only staff member could otherwise create users, assign roles,
+ * ban accounts, impersonate, reset passwords or delete users. The application
+ * exposes its own permission-checked `/api/v1/admin/*` routes instead, so the
+ * plugin's HTTP surface is disabled outright. Internal `auth.api.*` calls are
+ * unaffected by `disabledPaths` and remain guarded by the application's own
+ * authorization middleware.
+ */
+const DISABLED_ADMIN_PATHS = [
+  "/admin/set-role",
+  "/admin/get-user",
+  "/admin/create-user",
+  "/admin/update-user",
+  "/admin/list-users",
+  "/admin/list-user-sessions",
+  "/admin/unban-user",
+  "/admin/ban-user",
+  "/admin/impersonate-user",
+  "/admin/stop-impersonating",
+  "/admin/revoke-user-session",
+  "/admin/revoke-user-sessions",
+  "/admin/remove-user",
+  "/admin/set-user-password",
+  "/admin/has-permission",
+];
 
 const sendAuthEmail = async (input: {
   kind: "verification" | "reset";
@@ -64,7 +95,7 @@ const betterAuthSecondaryStorage =
   redis && env.NODE_ENV !== "test" ? createBetterAuthSecondaryStorage(redis) : undefined;
 
 export const auth = betterAuth({
-  appName: "raangalay",
+  appName: env.BETTER_AUTH_APP_NAME,
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/v1/auth",
@@ -72,16 +103,49 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   ...(betterAuthSecondaryStorage ? { secondaryStorage: betterAuthSecondaryStorage } : {}),
-  trustedOrigins: [env.FRONTEND_URL],
+  trustedOrigins: [
+    ...new Set([env.FRONTEND_URL, "http://localhost:3000", ...env.EXTRA_TRUSTED_ORIGINS]),
+  ],
+  disabledPaths: DISABLED_ADMIN_PATHS,
+
+  session: {
+    // Authorization reads fresh rows on every request, but keep DB session
+    // rows as well so revocation and auditing never depend on Redis alone.
+    storeSessionInDatabase: true,
+  },
 
   // User configuration with additional fields and self-deletion enabled
   user: {
     additionalFields: {
       role: {
-        type: ["vendor", "admin", "customer"],
+        type: ["admin", "customer"],
         required: false,
         defaultValue: "customer",
         input: false, // don't allow user to set role
+      },
+      adminPermissions: {
+        type: "string[]",
+        required: false,
+        defaultValue: [],
+        input: false, // only super admins can change permissions
+      },
+      adminActions: {
+        type: "string[]",
+        required: false,
+        defaultValue: [],
+        input: false, // only super admins can change action permissions
+      },
+      isSuperAdmin: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false, // never settable through public signup/profile updates
+      },
+      staffStatus: {
+        type: "string",
+        required: false,
+        defaultValue: "ACTIVE",
+        input: false,
       },
       imagePublicId: {
         type: "string",
@@ -199,7 +263,7 @@ export const auth = betterAuth({
     : {}),
 
   advanced: {
-    cookiePrefix: "rangalay",
+    cookiePrefix: "ayra",
     useSecureCookies: env.isProduction,
     defaultCookieAttributes: {
       sameSite: "lax",
@@ -216,6 +280,49 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       update: {
+        before: async (user) => {
+          if (!user.id) return;
+
+          const existing = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              role: true,
+              adminPermissions: true,
+              adminActions: true,
+              isSuperAdmin: true,
+              staffStatus: true,
+              banned: true,
+            },
+          });
+          if (!existing) return;
+
+          const grantingSuperAdmin =
+            user.isSuperAdmin === true && existing.isSuperAdmin !== true;
+          const grantingScopes =
+            Array.isArray(user.adminPermissions) &&
+            existing.adminPermissions.length === 0 &&
+            user.adminPermissions.length > 0;
+          const grantingActions =
+            Array.isArray(user.adminActions) &&
+            existing.adminActions.length === 0 &&
+            user.adminActions.length > 0;
+
+          // Privilege fields are `input: false`, so this only fires when an
+          // internal caller writes them. Still refuse to silently create a new
+          // full administrator through generic user updates.
+          if (grantingSuperAdmin && user.isSuperAdmin === true) {
+            user.isSuperAdmin = false;
+          }
+          if (grantingScopes || grantingActions || grantingSuperAdmin) {
+            logger.warn({
+              message: "Blocked privilege grant through generic user update hook",
+              userId: user.id,
+            });
+            delete user.adminPermissions;
+            delete user.adminActions;
+            delete user.isSuperAdmin;
+          }
+        },
         after: async (user) => {
           const existing = await prisma.user.findUnique({
             where: { id: user.id },
@@ -232,7 +339,41 @@ export const auth = betterAuth({
               data: { imagePublicId: nextPublicId },
             });
           }
-          await attachMediaAssets([nextPublicId], "user", user.id);
+          await attachMediaAssets([nextPublicId], "user", user.id, user.id);
+        },
+      },
+      delete: {
+        before: async (user) => {
+          // The authoritative last-owner protection is the database trigger
+          // created in `20261102022000_owner_guard_trigger`. It runs inside the
+          // deleting transaction and serializes every deletion path (Better
+          // Auth, self-service and direct SQL). This hook only converts the
+          // database error into a clean API error.
+          const existing = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              role: true,
+              isSuperAdmin: true,
+              staffStatus: true,
+              banned: true,
+            },
+          });
+          if (!existing) return;
+
+          const isPrivileged =
+            existing.role?.toLowerCase() === "admin" &&
+            existing.isSuperAdmin &&
+            existing.staffStatus === "ACTIVE" &&
+            existing.banned !== true;
+          if (!isPrivileged) return;
+
+          const remaining = await countActiveSuperAdminsById(user.id);
+          if (remaining === 0) {
+            throw new APIError("FORBIDDEN", {
+              message: "At least one active super admin must remain",
+              code: "LAST_SUPER_ADMIN",
+            });
+          }
         },
       },
     },
@@ -247,7 +388,6 @@ export const auth = betterAuth({
       roles: {
         ADMIN: adminAc,
         CUSTOMER: defaultAc.newRole({ user: [], session: [] }),
-        VENDOR: defaultAc.newRole({ user: [], session: [] }),
       },
     }),
   ],

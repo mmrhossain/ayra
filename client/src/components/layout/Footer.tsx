@@ -5,7 +5,7 @@ import TopFooter from "@/components/layout/TopFooter";
 
 const Footer = () => {
   return (
-    <footer className="mt-14 w-full bg-white text-secondary">
+    <footer className="mt-14 w-full bg-white text-foreground">
       <div className="container flex flex-col">
         <TopFooter />
       </div>

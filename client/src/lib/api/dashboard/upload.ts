@@ -1,18 +1,15 @@
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
+import { UPLOAD_FETCH_TIMEOUT_MS, type Envelope } from "@/lib/api/http";
 
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope };
 
 export type ImageType =
   | "product"
   | "category"
   | "slider"
   | "blog"
-  | "customer_avatar"
-  | "vendor_avatar";
+  | "brand"
+  | "customer_avatar";
 
 export type UploadedImage = {
   publicId: string;
@@ -45,12 +42,13 @@ const FOLDER_TO_TYPE: Record<string, ImageType> = {
   profiles: "customer_avatar",
   profile: "customer_avatar",
   customer_avatar: "customer_avatar",
-  vendor_avatar: "vendor_avatar",
   slider: "slider",
   sliders: "slider",
   slider_mobile: "slider",
   blog: "blog",
   blogs: "blog",
+  brand: "brand",
+  brands: "brand",
 };
 
 export function resolveImageType(folder: string): ImageType {
@@ -61,12 +59,14 @@ export async function uploadImage(
   file: File,
   type: ImageType
 ): Promise<UploadedImage> {
+  // Uploaded untouched: the original is stored as-is and Cloudinary serves
+  // optimized derivatives (f_auto,q_auto) from the pristine master.
   const body = new FormData();
   body.append("image", file);
   body.append("type", type);
   const res = await dashboardApi.post<Envelope<UploadedImage>>(
     "/media/upload",
-    { body, params: { type } }
+    { body, params: { type }, timeoutMs: UPLOAD_FETCH_TIMEOUT_MS }
   );
   return res.data;
 }
@@ -80,7 +80,7 @@ export async function uploadImages(
   body.append("type", type);
   const res = await dashboardApi.post<Envelope<UploadedImage[]>>(
     "/media/uploads",
-    { body, params: { type } }
+    { body, params: { type }, timeoutMs: UPLOAD_FETCH_TIMEOUT_MS }
   );
   return res.data;
 }

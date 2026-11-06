@@ -24,7 +24,7 @@ const BottomFooter = () => {
           {/* Copyright & Credits (Centered Below) */}
           <div className="text-center">
             <p className="text-slate-500 text-sm leading-relaxed tracking-wide">
-              © {currentYear} <span className="text-secondary font-semibold">Ayra</span>. All rights
+              © {currentYear} <span className="text-foreground font-semibold">Ayra</span>. All rights
               reserved.
               <span className="hidden sm:inline mx-2 text-slate-300">|</span>
               <br className="sm:hidden" />

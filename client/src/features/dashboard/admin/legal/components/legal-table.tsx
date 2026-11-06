@@ -3,16 +3,9 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -22,18 +15,20 @@ import {
 import { LegalPublishDialog } from "@/features/dashboard/admin/legal/components/legal-publish-dialog";
 import { LegalFormDialog } from "@/features/dashboard/admin/legal/components/legal.dialog";
 import { useLegalList } from "@/features/dashboard/admin/legal/hooks/use-legal-list";
-import {
-  LEGAL_TYPES,
-  type DialogMode,
-  type LegalDocumentItem,
-  type LegalTableProps,
-  type LegalType,
+import type {
+  DialogMode,
+  LegalDocumentItem,
+  LegalTableProps,
 } from "@/features/dashboard/admin/legal/types";
-import { legalTypeLabel, toLegalErrorMessage } from "@/features/dashboard/admin/legal/utils";
+import {
+  legalTypeLabel,
+  toLegalErrorMessage,
+} from "@/features/dashboard/admin/legal/utils";
+import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-state";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 
-export function LegalTable({ initialData }: LegalTableProps) {
+export function LegalTable({ initialData, type }: LegalTableProps) {
   const [page, setPage] = useState(initialData?.meta?.page);
-  const [type, setType] = useState<LegalType | "">("");
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<DialogMode>("create");
   const [editing, setEditing] = useState<LegalDocumentItem | undefined>();
@@ -49,27 +44,10 @@ export function LegalTable({ initialData }: LegalTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Select
-          value={type || "__all__"}
-          onValueChange={(v) => {
-            setType(v === "__all__" ? "" : (v as LegalType));
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-full sm:w-52" aria-label="Filter by type">
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All</SelectItem>
-            {LEGAL_TYPES.map((item) => (
-              <SelectItem key={item} value={item}>
-                {legalTypeLabel(item)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <p className="text-sm text-muted-foreground">
+          {pagination?.total} documents
+        </p>
         <div className="flex items-center gap-3">
-          <p className="text-sm text-muted-foreground">{pagination?.total} documents</p>
           <Button
             type="button"
             onClick={() => {
@@ -84,7 +62,10 @@ export function LegalTable({ initialData }: LegalTableProps) {
       </div>
 
       {query.isError ? (
-        <div role="alert" className="rounded-xl border border-destructive/30 p-4">
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 p-4"
+        >
           <p className="text-sm">{toLegalErrorMessage(query.error)}</p>
         </div>
       ) : null}
@@ -97,7 +78,7 @@ export function LegalTable({ initialData }: LegalTableProps) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Type</TableHead>
@@ -111,33 +92,50 @@ export function LegalTable({ initialData }: LegalTableProps) {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No legal documents.
+                  <TableCell colSpan={6}>
+                    <EmptyState
+                      title="No legal documents"
+                      body="Add a privacy policy or terms of service document."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 items.map((doc) => (
                   <TableRow key={doc.id}>
-                    <TableCell>{legalTypeLabel(doc.type)}</TableCell>
-                    <TableCell className="font-medium">{doc.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{doc.version}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${
+                    <TableCell data-label="Type">
+                      {legalTypeLabel(doc.type)}
+                    </TableCell>
+                    <TableCell className="font-medium" data-label="Title">
+                      {doc.title}
+                    </TableCell>
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Version"
+                    >
+                      {doc.version}
+                    </TableCell>
+                    <TableCell data-label="Status">
+                      <StatusBadge
+                        variant={
                           doc.status === "PUBLISHED"
-                            ? "bg-primary text-primary-foreground"
+                            ? "success"
                             : doc.status === "ARCHIVED"
-                              ? "bg-secondary text-secondary-foreground"
-                              : "bg-secondary text-secondary-foreground"
-                        }`}
+                              ? "neutral"
+                              : "warning"
+                        }
                       >
                         {doc.status}
-                      </span>
+                      </StatusBadge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {doc.effectiveAt ? new Date(doc.effectiveAt).toLocaleDateString() : "—"}
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Effective"
+                    >
+                      {doc.effectiveAt
+                        ? new Date(doc.effectiveAt).toLocaleDateString()
+                        : "—"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" data-label="Actions">
                       <div className="flex items-center justify-end gap-2">
                         {doc.status === "DRAFT" ? (
                           <>
@@ -184,7 +182,7 @@ export function LegalTable({ initialData }: LegalTableProps) {
                 ))
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 
@@ -220,7 +218,11 @@ export function LegalTable({ initialData }: LegalTableProps) {
         mode={formMode}
         initialData={formMode === "edit" ? editing : undefined}
       />
-      <LegalPublishDialog open={publishOpen} onOpenChange={setPublishOpen} document={publishing} />
+      <LegalPublishDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        document={publishing}
+      />
     </div>
   );
 }

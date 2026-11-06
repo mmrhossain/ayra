@@ -7,9 +7,7 @@ import type {
 
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
-export type ListAdminCategoriesQuery = z.infer<
-  typeof listAdminCategoriesQuerySchema
->;
+export type ListAdminCategoriesQuery = z.infer<typeof listAdminCategoriesQuerySchema>;
 
 export type CategoryRecord = {
   id: string;
@@ -18,20 +16,23 @@ export type CategoryRecord = {
   description: string | null;
   image: string | null;
   imagePublicId: string | null;
+  mobileImage: string | null;
+  mobileImagePublicId: string | null;
   isActive: boolean;
   parentId: string | null;
   createdAt: Date;
-  products?: unknown[];
 };
 
 export type CategoryBranch = CategoryRecord & {
   parentSlug: string | null;
+  path: string;
   children: CategoryBranch[];
 };
 
-export type CategoryNode = CategoryRecord & {
+export type CategoryNode = {
   parentSlug: string | null;
-  mobileImage: string | null;
-  cardImage: string | null;
+  path: string;
+  mobileImage?: string;
+  productsCount?: number;
   children: CategoryNode[];
 };

@@ -21,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Textarea } from "@/components/ui/textarea";
 import { money } from "@/features/dashboard/admin/orders/api/orders";
 import { useRefundMutation } from "@/features/dashboard/admin/payments/hooks/use-payment-mutations";
@@ -32,18 +32,26 @@ const REFUND_FORM_ID = "refund-form";
 
 export type { RefundDialogProps };
 
-export function RefundDialog({ open, onOpenChange, payment }: RefundDialogProps) {
-  const maxAmount = Number(payment?.amount ?? 0);
+export function RefundDialog({
+  open,
+  onOpenChange,
+  payment,
+  remainingAmount,
+}: RefundDialogProps) {
+  const maxAmount =
+    remainingAmount !== undefined
+      ? remainingAmount
+      : Number(payment?.amount ?? 0);
   const schema = refundSchema(Number.isFinite(maxAmount) ? maxAmount : 0);
 
   const form = useForm<RefundFormValues>({
     resolver: zodResolver(schema) as Resolver<RefundFormValues>,
-    defaultValues: { amount: maxAmount || 0, reason: "" },
+    defaultValues: { amount: undefined as unknown as number, reason: "" },
   });
 
   useEffect(() => {
     if (!open) return;
-    form.reset({ amount: Number(payment?.amount ?? 0), reason: "" });
+    form.reset({ amount: undefined as unknown as number, reason: "" });
   }, [open, payment, form]);
 
   const mutation = useRefundMutation({
@@ -57,7 +65,7 @@ export function RefundDialog({ open, onOpenChange, payment }: RefundDialogProps)
         <DialogHeader className="shrink-0">
           <DialogTitle>Refund payment</DialogTitle>
           <DialogDescription>
-            {payment ? `Refund up to ${money(payment.amount)}.` : "Refund this payment."}
+            {payment ? `Refund up to ${money(maxAmount)}.` : "Refund this payment."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -73,7 +81,15 @@ export function RefundDialog({ open, onOpenChange, payment }: RefundDialogProps)
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min="0.01" max={maxAmount} {...field} />
+                    <NumberInput
+                      decimal
+                      placeholder="Amount"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

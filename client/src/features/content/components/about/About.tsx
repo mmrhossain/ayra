@@ -11,10 +11,10 @@ const About = () => {
   const scale = useTransform(scrollYProgress, [0, 1], [1, shouldReduceMotion ? 1 : 1.15]);
 
   return (
-    <div className="bg-[#fdfdfc] text-slate-900 selection:bg-teal-100 container">
+    <div className="bg-background text-slate-900 selection:bg-teal-100 container">
       <section className="relative py-20 sm:py-24 md:py-32 lg:py-36 flex items-center justify-center overflow-hidden">
         <motion.div style={{ scale }} className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#fdfdfc]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
           <div className="w-full h-full bg-[url('/hero-craft.jpg')] bg-cover bg-center opacity-20" />
         </motion.div>
 
@@ -25,14 +25,14 @@ const About = () => {
             transition={{ duration: shouldReduceMotion ? 0 : 1, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <span className="text-primary font-bold uppercase tracking-[0.2em] sm:tracking-[0.5em] text-[10px] sm:text-xs mb-6 sm:mb-8 block">
+            <span className="text-primary font-bold uppercase tracking-[0.2em] sm:tracking-[0.5em] text-xs mb-6 sm:mb-8 block">
               Established 2009 - Netrokona, Bangladesh
             </span>
-            <h1 className="text-[14vw] sm:text-[12vw] lg:text-[10vw] font-black leading-[0.86] tracking-tight sm:tracking-tighter uppercase italic drop-shadow-sm">
+            <h1 className="text-[14vw] sm:text-[12vw] lg:text-[10vw] font-black leading-none tracking-tight sm:tracking-tighter uppercase italic drop-shadow-sm">
               Raan<span className="text-primary italic font-serif">galay</span>
             </h1>
             <div className="mt-8 sm:mt-12 max-w-lg mx-auto border-t border-slate-200 pt-6 sm:pt-8">
-              <p className="text-slate-500 font-medium leading-relaxed tracking-[0.05em] uppercase text-[10px] md:text-xs">
+              <p className="text-slate-500 font-medium leading-relaxed tracking-[0.05em] uppercase text-xs">
                 A personality-driven lifestyle brand. An identity rooted in heritage, celebrating the universal language of color.
               </p>
             </div>
@@ -64,7 +64,7 @@ const About = () => {
                 Based at the foot of the <strong>Garo Hills</strong>, Raangalay bridges the gap between urban sophistication and the raw, sylvan beauty of Durgapur.
               </p>
               <div className="pt-2 md:pt-6">
-                <Link href="/vision" className="group inline-flex items-center gap-3 text-[11px] md:text-xs font-black uppercase tracking-[0.12em] md:tracking-widest text-primary">
+                <Link href="/vision" className="group inline-flex items-center gap-3 text-xs font-black uppercase tracking-[0.12em] md:tracking-widest text-primary">
                   Read our full manifesto <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform motion-reduce:transform-none" />
                 </Link>
               </div>
@@ -95,11 +95,11 @@ const About = () => {
             <div className="flex gap-8 sm:gap-12 pt-6 md:pt-8 border-t border-white/10">
               <div>
                 <span className="block text-3xl md:text-4xl font-black text-primary">60+</span>
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Local Artisans</span>
+                <span className="text-xs uppercase tracking-widest text-slate-500 font-bold">Local Artisans</span>
               </div>
               <div>
                 <span className="block text-3xl md:text-4xl font-black text-primary">100%</span>
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Handcrafted</span>
+                <span className="text-xs uppercase tracking-widest text-slate-500 font-bold">Handcrafted</span>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ const About = () => {
             <p className="text-teal-50 text-base md:text-xl lg:text-2xl max-w-2xl mx-auto mb-10 md:mb-12 font-medium leading-relaxed opacity-90">
               Buying is not a transaction; it&apos;s a celebration of heritage. Redefining global lifestyle through the red and green flag.
             </p>
-            <Link href="/shop" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 sm:px-8 md:px-12 h-12 md:h-14 rounded-full font-black uppercase text-[10px] md:text-xs tracking-[0.08em] md:tracking-[0.1em] hover:bg-white hover:text-teal-600 transition-all shadow-2xl">
+            <Link href="/shop" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 sm:px-8 md:px-12 h-12 md:h-14 rounded-full font-black uppercase text-xs tracking-[0.08em] md:tracking-[0.1em] hover:bg-white hover:text-teal-600 transition-all shadow-2xl">
               Enter the House of Color <ArrowRight size={18} />
             </Link>
           </motion.div>

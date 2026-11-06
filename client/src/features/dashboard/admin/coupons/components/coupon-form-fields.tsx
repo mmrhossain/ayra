@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import {
   Select,
   SelectContent,
@@ -124,26 +125,12 @@ export function CouponFormFields({
             <FormItem>
               <FormLabel>Discount value</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min={0}
-                  max={discountType === "PERCENTAGE" ? 100 : undefined}
-                  step="0.01"
+                <NumberInput
+                  decimal
+                  placeholder="Amount"
                   disabled={disabled || discountType === "FREE_SHIPPING"}
-                  value={
-                    discountType === "FREE_SHIPPING"
-                      ? 0
-                      : field.value === undefined || Number.isNaN(field.value)
-                        ? ""
-                        : field.value
-                  }
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === ""
-                        ? undefined
-                        : e.target.valueAsNumber,
-                    )
-                  }
+                  value={discountType === "FREE_SHIPPING" ? null : field.value}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -163,21 +150,12 @@ export function CouponFormFields({
             <FormItem>
               <FormLabel>Min order</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
+                <NumberInput
+                  decimal
+                  placeholder="Amount"
                   disabled={disabled}
-                  value={
-                    field.value == null || Number.isNaN(field.value)
-                      ? ""
-                      : field.value
-                  }
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === "" ? null : e.target.valueAsNumber,
-                    )
-                  }
+                  value={field.value}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -194,21 +172,12 @@ export function CouponFormFields({
             <FormItem>
               <FormLabel>Max discount</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
+                <NumberInput
+                  decimal
+                  placeholder="Amount"
                   disabled={disabled}
-                  value={
-                    field.value == null || Number.isNaN(field.value)
-                      ? ""
-                      : field.value
-                  }
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === "" ? null : e.target.valueAsNumber,
-                    )
-                  }
+                  value={field.value}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -228,23 +197,11 @@ export function CouponFormFields({
             <FormItem>
               <FormLabel>Usage limit</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min={1}
-                  step={1}
+                <NumberInput
+                  placeholder="Limit"
                   disabled={disabled}
-                  value={
-                    field.value === undefined || Number.isNaN(field.value)
-                      ? ""
-                      : field.value
-                  }
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === ""
-                        ? undefined
-                        : e.target.valueAsNumber,
-                    )
-                  }
+                  value={field.value}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -261,23 +218,11 @@ export function CouponFormFields({
             <FormItem>
               <FormLabel>Per customer</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min={1}
-                  step={1}
+                <NumberInput
+                  placeholder="Limit"
                   disabled={disabled}
-                  value={
-                    field.value === undefined || Number.isNaN(field.value)
-                      ? ""
-                      : field.value
-                  }
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === ""
-                        ? undefined
-                        : e.target.valueAsNumber,
-                    )
-                  }
+                  value={field.value}
+                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}

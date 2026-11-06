@@ -31,6 +31,8 @@ export type CategoryMinAggregateOutputType = {
   description: string | null
   image: string | null
   imagePublicId: string | null
+  mobileImage: string | null
+  mobileImagePublicId: string | null
   isActive: boolean | null
   parentId: string | null
   createdAt: Date | null
@@ -45,6 +47,8 @@ export type CategoryMaxAggregateOutputType = {
   description: string | null
   image: string | null
   imagePublicId: string | null
+  mobileImage: string | null
+  mobileImagePublicId: string | null
   isActive: boolean | null
   parentId: string | null
   createdAt: Date | null
@@ -59,6 +63,8 @@ export type CategoryCountAggregateOutputType = {
   description: number
   image: number
   imagePublicId: number
+  mobileImage: number
+  mobileImagePublicId: number
   isActive: number
   parentId: number
   createdAt: number
@@ -75,6 +81,8 @@ export type CategoryMinAggregateInputType = {
   description?: true
   image?: true
   imagePublicId?: true
+  mobileImage?: true
+  mobileImagePublicId?: true
   isActive?: true
   parentId?: true
   createdAt?: true
@@ -89,6 +97,8 @@ export type CategoryMaxAggregateInputType = {
   description?: true
   image?: true
   imagePublicId?: true
+  mobileImage?: true
+  mobileImagePublicId?: true
   isActive?: true
   parentId?: true
   createdAt?: true
@@ -103,6 +113,8 @@ export type CategoryCountAggregateInputType = {
   description?: true
   image?: true
   imagePublicId?: true
+  mobileImage?: true
+  mobileImagePublicId?: true
   isActive?: true
   parentId?: true
   createdAt?: true
@@ -190,6 +202,8 @@ export type CategoryGroupByOutputType = {
   description: string | null
   image: string | null
   imagePublicId: string | null
+  mobileImage: string | null
+  mobileImagePublicId: string | null
   isActive: boolean
   parentId: string | null
   createdAt: Date
@@ -225,6 +239,8 @@ export type CategoryWhereInput = {
   description?: Prisma.StringNullableFilter<"Category"> | string | null
   image?: Prisma.StringNullableFilter<"Category"> | string | null
   imagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImage?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
   parentId?: Prisma.StringNullableFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
@@ -243,6 +259,8 @@ export type CategoryOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mobileImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  mobileImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -264,6 +282,8 @@ export type CategoryWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Category"> | string | null
   image?: Prisma.StringNullableFilter<"Category"> | string | null
   imagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImage?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
   parentId?: Prisma.StringNullableFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
@@ -282,6 +302,8 @@ export type CategoryOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mobileImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  mobileImagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -302,6 +324,8 @@ export type CategoryScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   image?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   imagePublicId?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
+  mobileImage?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
+  mobileImagePublicId?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Category"> | boolean
   parentId?: Prisma.StringNullableWithAggregatesFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Category"> | Date | string
@@ -316,6 +340,8 @@ export type CategoryCreateInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -333,6 +359,8 @@ export type CategoryUncheckedCreateInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   parentId?: string | null
   createdAt?: Date | string
@@ -350,6 +378,8 @@ export type CategoryUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,6 +397,8 @@ export type CategoryUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -384,6 +416,8 @@ export type CategoryCreateManyInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   parentId?: string | null
   createdAt?: Date | string
@@ -398,6 +432,8 @@ export type CategoryUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -411,6 +447,8 @@ export type CategoryUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -440,6 +478,8 @@ export type CategoryCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
+  mobileImage?: Prisma.SortOrder
+  mobileImagePublicId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -454,6 +494,8 @@ export type CategoryMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
+  mobileImage?: Prisma.SortOrder
+  mobileImagePublicId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -468,6 +510,8 @@ export type CategoryMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
+  mobileImage?: Prisma.SortOrder
+  mobileImagePublicId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -573,6 +617,8 @@ export type CategoryCreateWithoutParentInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -589,6 +635,8 @@ export type CategoryUncheckedCreateWithoutParentInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -615,6 +663,8 @@ export type CategoryCreateWithoutChildrenInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -631,6 +681,8 @@ export type CategoryUncheckedCreateWithoutChildrenInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   parentId?: string | null
   createdAt?: Date | string
@@ -671,6 +723,8 @@ export type CategoryScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Category"> | string | null
   image?: Prisma.StringNullableFilter<"Category"> | string | null
   imagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImage?: Prisma.StringNullableFilter<"Category"> | string | null
+  mobileImagePublicId?: Prisma.StringNullableFilter<"Category"> | string | null
   isActive?: Prisma.BoolFilter<"Category"> | boolean
   parentId?: Prisma.StringNullableFilter<"Category"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Category"> | Date | string
@@ -696,6 +750,8 @@ export type CategoryUpdateWithoutChildrenInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -712,6 +768,8 @@ export type CategoryUncheckedUpdateWithoutChildrenInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -728,6 +786,8 @@ export type CategoryCreateWithoutProductsInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -744,6 +804,8 @@ export type CategoryUncheckedCreateWithoutProductsInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   parentId?: string | null
   createdAt?: Date | string
@@ -776,6 +838,8 @@ export type CategoryUpdateWithoutProductsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -792,6 +856,8 @@ export type CategoryUncheckedUpdateWithoutProductsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -808,6 +874,8 @@ export type CategoryCreateWithoutCouponCategoriesInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -824,6 +892,8 @@ export type CategoryUncheckedCreateWithoutCouponCategoriesInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   parentId?: string | null
   createdAt?: Date | string
@@ -856,6 +926,8 @@ export type CategoryUpdateWithoutCouponCategoriesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -872,6 +944,8 @@ export type CategoryUncheckedUpdateWithoutCouponCategoriesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -888,6 +962,8 @@ export type CategoryCreateManyParentInput = {
   description?: string | null
   image?: string | null
   imagePublicId?: string | null
+  mobileImage?: string | null
+  mobileImagePublicId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -901,6 +977,8 @@ export type CategoryUpdateWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -917,6 +995,8 @@ export type CategoryUncheckedUpdateWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -933,6 +1013,8 @@ export type CategoryUncheckedUpdateManyWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mobileImagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -995,6 +1077,8 @@ export type CategorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   description?: boolean
   image?: boolean
   imagePublicId?: boolean
+  mobileImage?: boolean
+  mobileImagePublicId?: boolean
   isActive?: boolean
   parentId?: boolean
   createdAt?: boolean
@@ -1014,6 +1098,8 @@ export type CategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   description?: boolean
   image?: boolean
   imagePublicId?: boolean
+  mobileImage?: boolean
+  mobileImagePublicId?: boolean
   isActive?: boolean
   parentId?: boolean
   createdAt?: boolean
@@ -1029,6 +1115,8 @@ export type CategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   description?: boolean
   image?: boolean
   imagePublicId?: boolean
+  mobileImage?: boolean
+  mobileImagePublicId?: boolean
   isActive?: boolean
   parentId?: boolean
   createdAt?: boolean
@@ -1044,6 +1132,8 @@ export type CategorySelectScalar = {
   description?: boolean
   image?: boolean
   imagePublicId?: boolean
+  mobileImage?: boolean
+  mobileImagePublicId?: boolean
   isActive?: boolean
   parentId?: boolean
   createdAt?: boolean
@@ -1051,7 +1141,7 @@ export type CategorySelectScalar = {
   deletedAt?: boolean
 }
 
-export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "image" | "imagePublicId" | "isActive" | "parentId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["category"]>
+export type CategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "image" | "imagePublicId" | "mobileImage" | "mobileImagePublicId" | "isActive" | "parentId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["category"]>
 export type CategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   children?: boolean | Prisma.Category$childrenArgs<ExtArgs>
   products?: boolean | Prisma.Category$productsArgs<ExtArgs>
@@ -1081,6 +1171,8 @@ export type $CategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     description: string | null
     image: string | null
     imagePublicId: string | null
+    mobileImage: string | null
+    mobileImagePublicId: string | null
     isActive: boolean
     parentId: string | null
     createdAt: Date
@@ -1519,6 +1611,8 @@ export interface CategoryFieldRefs {
   readonly description: Prisma.FieldRef<"Category", 'String'>
   readonly image: Prisma.FieldRef<"Category", 'String'>
   readonly imagePublicId: Prisma.FieldRef<"Category", 'String'>
+  readonly mobileImage: Prisma.FieldRef<"Category", 'String'>
+  readonly mobileImagePublicId: Prisma.FieldRef<"Category", 'String'>
   readonly isActive: Prisma.FieldRef<"Category", 'Boolean'>
   readonly parentId: Prisma.FieldRef<"Category", 'String'>
   readonly createdAt: Prisma.FieldRef<"Category", 'DateTime'>

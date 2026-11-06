@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { MutableRefObject } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
-import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import {
   Form,
   FormControl,
@@ -23,25 +22,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
-import type { CatalogOption } from "@/features/dashboard/admin/products/types";
 import type { FlatCategoryListItem } from "@/features/dashboard/admin/categories/api/categories";
-import type { DetailsValues } from "@/features/dashboard/admin/products/types";
+import type { CatalogOption, DetailsValues } from "@/features/dashboard/admin/products/types";
+import {
+  ImageUpload,
+  type ImageUploadHandle,
+} from "@/features/dashboard/admin/shared/components/image-upload";
 
 type Props = {
   form: UseFormReturn<DetailsValues>;
   categories: FlatCategoryListItem[];
   brands: CatalogOption[];
-  slugManual: MutableRefObject<boolean>;
-  showPrice?: boolean;
+  imageUploadRef?: React.Ref<ImageUploadHandle>;
 };
 
 export function ProductWizardDetails({
   form,
   categories,
   brands,
-  slugManual,
-  showPrice = false,
+  imageUploadRef,
 }: Props) {
   return (
     <Form {...form}>
@@ -64,30 +63,6 @@ export function ProductWizardDetails({
 
         <FormField
           control={form.control}
-          name="slug"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Slug <span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="product-slug"
-                  {...field}
-                  onChange={(e) => {
-                    slugManual.current = true;
-                    field.onChange(e);
-                  }}
-                />
-              </FormControl>
-              <FormDescription>Must be unique.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="categoryId"
           render={({ field }) => (
             <FormItem>
@@ -102,10 +77,7 @@ export function ProductWizardDetails({
                   </Link>
                 </p>
               ) : (
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || undefined}
-                >
+                <Select onValueChange={field.onChange} value={field.value || undefined}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select category" />
@@ -125,37 +97,6 @@ export function ProductWizardDetails({
           )}
         />
 
-        {showPrice ? (
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Price <span className="text-destructive">*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">BDT</span>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormDescription>
-                  Saved on the default variant. More variants can be added later.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ) : null}
-
         <FormField
           control={form.control}
           name="brandId"
@@ -163,9 +104,7 @@ export function ProductWizardDetails({
             <FormItem>
               <FormLabel>Brand</FormLabel>
               <Select
-                onValueChange={(v) =>
-                  field.onChange(v === "__none__" ? "" : v)
-                }
+                onValueChange={(v) => field.onChange(v === "__none__" ? "" : v)}
                 value={field.value ? field.value : "__none__"}
               >
                 <FormControl>
@@ -213,6 +152,8 @@ export function ProductWizardDetails({
               <FormLabel>Images</FormLabel>
               <FormControl>
                 <ImageUpload
+                  ref={imageUploadRef}
+                  deferUpload
                   mode="multiple"
                   folder="products"
                   maxFiles={5}
@@ -247,10 +188,7 @@ export function ProductWizardDetails({
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <FormLabel className="cursor-pointer">Featured</FormLabel>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
@@ -274,9 +212,7 @@ export function ProductWizardDetails({
                   <SelectItem value="ARCHIVED">Archived</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
-                Active products are visible in the storefront.
-              </FormDescription>
+              <FormDescription>Active products are visible in the storefront.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

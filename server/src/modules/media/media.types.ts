@@ -5,8 +5,8 @@ export const IMAGE_TYPE_VALUES = [
   "category",
   "slider",
   "blog",
+  "brand",
   "customer_avatar",
-  "vendor_avatar",
 ] as const;
 
 export type ImageType = (typeof IMAGE_TYPE_VALUES)[number];
@@ -16,6 +16,8 @@ export type UploadedImage = {
   url: string;
   secure_url: string;
   variants: string[];
+  imageUrl: string;
+  mobileImageUrl?: string;
 };
 
 export type ImageVariant = {
@@ -27,7 +29,6 @@ export type ImageVariant = {
 
 export type UploadPreset = {
   folder: string;
-  masterMax: number;
   variants: ImageVariant[];
   maxFiles: number;
   allowMultiple: boolean;
@@ -42,11 +43,9 @@ export type ImageFile = {
 
 export type MediaOwner =
   | "product"
-  | "product_variant"
   | "category"
   | "slider"
   | "blog"
-  | "vendor_profile"
   | "brand"
   | "user";
 

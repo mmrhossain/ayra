@@ -6,6 +6,7 @@ import {
   CleanupTracker,
   api,
   createActiveCartWithItem,
+  createTestCoupon,
   createTestOrder,
   createTestProduct,
   createTestUser,
@@ -309,6 +310,9 @@ describe("OrderItem costPrice snapshot", () => {
     expect(items).toHaveLength(1);
     expect(Number(items[0]!.unitPrice)).toBe(150);
     expect(Number(items[0]!.costPrice)).toBe(80);
+    expect(items[0]!.costSource).toBe("VARIANT_AT_CHECKOUT");
+    expect(items[0]!.costCapturedAt).toBeInstanceOf(Date);
+    expect(items[0]!.allocationVersion).toBe(1);
 
     await prisma.productVariant.update({
       where: { id: catalog.variant.id },
@@ -394,6 +398,49 @@ describe("OrderItem variantName snapshot", () => {
   });
 });
 
+describe("Order checkout idempotency", () => {
+  it("replays the first checkout response for the same Idempotency-Key", async () => {
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const user = await createTestUser(tracker, { suffix: `idem-${Date.now()}` });
+    await createActiveCartWithItem(
+      tracker,
+      user.customerProfileId,
+      catalog.variant,
+      catalog.product.name,
+      1
+    );
+
+    const key = randomUUID();
+    const body = {
+      paymentMethod: "COD",
+      billingAddress: testAddress,
+      shippingAddress: testAddress,
+      shippingMethodCode: "STANDARD",
+    };
+
+    const first = await api()
+      .post("/api/v1/checkout")
+      .set("Cookie", user.cookie)
+      .set("Idempotency-Key", key)
+      .send(body);
+    expect(first.status).toBe(201);
+
+    const second = await api()
+      .post("/api/v1/checkout")
+      .set("Cookie", user.cookie)
+      .set("Idempotency-Key", key)
+      .send(body);
+    expect(second.status).toBe(201);
+    expect(second.body.data.id).toBe(first.body.data.id);
+
+    const count = await prisma.order.count({
+      where: { customerProfileId: user.customerProfileId },
+    });
+    expect(count).toBe(1);
+    tracker.orderIds.push(first.body.data.id);
+  });
+});
+
 describe("Order confirmation notification", () => {
   it("creates a PENDING ORDER_CONFIRMATION notification after checkout", async () => {
     const catalog = await createTestProduct(tracker, { stock: 1, price: 100 });
@@ -414,7 +461,7 @@ describe("Order confirmation notification", () => {
     tracker.orderIds.push(order.id);
 
     const notification = await prisma.notification.findFirst({
-      where: { userId: user.id },
+      where: { userId: user.id, channel: "EMAIL" },
       include: { template: true },
     });
 
@@ -557,6 +604,246 @@ describe("Order status transitions", () => {
     expect(res.status).toBe(200);
     expect(res.body.data.status).toBe("CONFIRMED");
   });
+
+  it("keeps fulfillmentStatus in sync when packed, shipped, and delivered", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `fulfill-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `fulfill-c-${Date.now()}`,
+    });
+    const order = await createTestOrder(tracker, customer, {
+      status: "PROCESSING",
+    });
+
+    for (const status of ["PACKED", "SHIPPED", "DELIVERED"] as const) {
+      const res = await api()
+        .patch(`/api/v1/admin/orders/${order.id}/status`)
+        .set("Cookie", admin.cookie)
+        .send({ status });
+      expect(res.status).toBe(200);
+    }
+
+    const row = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+    });
+    expect(row.status).toBe("DELIVERED");
+    expect(row.fulfillmentStatus).toBe("FULFILLED");
+  });
+});
+
+describe("Admin order search", () => {
+  it("filters by order number substring", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `osearch-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `osearch-c-${Date.now()}`,
+    });
+    const order = await createTestOrder(tracker, customer);
+    const term = order.orderNumber.slice(-8);
+
+    const res = await api()
+      .get("/api/v1/admin/orders")
+      .query({ search: term })
+      .set("Cookie", admin.cookie);
+
+    expect(res.status).toBe(200);
+    const ids = res.body.data.items.map((item: { id: string }) => item.id);
+    expect(ids).toContain(order.id);
+  });
+
+  it("filters by exact order id", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `oid-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `oid-c-${Date.now()}`,
+    });
+    const order = await createTestOrder(tracker, customer);
+
+    const res = await api()
+      .get("/api/v1/admin/orders")
+      .query({ search: order.id })
+      .set("Cookie", admin.cookie);
+
+    expect(res.status).toBe(200);
+    const ids = res.body.data.items.map((item: { id: string }) => item.id);
+    expect(ids).toContain(order.id);
+  });
+
+  it("filters by customer name", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `oname-${Date.now()}`,
+    });
+    const suffix = `oname-c-${Date.now()}`;
+    const customer = await createTestUser(tracker, { suffix });
+    const order = await createTestOrder(tracker, customer);
+
+    const res = await api()
+      .get("/api/v1/admin/orders")
+      .query({ search: suffix })
+      .set("Cookie", admin.cookie);
+
+    expect(res.status).toBe(200);
+    const ids = res.body.data.items.map((item: { id: string }) => item.id);
+    expect(ids).toContain(order.id);
+  });
+});
+
+describe("Order list payloads", () => {
+  it("returns item counts instead of full order items", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `olist-a-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `olist-c-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 2, price: 100 });
+    await createActiveCartWithItem(
+      tracker,
+      customer.customerProfileId,
+      catalog.variant,
+      catalog.product.name,
+      2
+    );
+
+    const order = await checkout(customer.customerProfileId, {
+      paymentMethod: "COD",
+      billingAddress: testAddress,
+      shippingMethodCode: "STANDARD",
+    });
+    tracker.orderIds.push(order.id);
+
+    const adminRes = await api()
+      .get("/api/v1/admin/orders")
+      .query({ search: order.orderNumber })
+      .set("Cookie", admin.cookie);
+    expect(adminRes.status).toBe(200);
+    const adminOrder = adminRes.body.data.items.find(
+      (item: { id: string }) => item.id === order.id
+    );
+    expect(adminOrder._count.items).toBe(1);
+    expect(adminOrder.items).toBeUndefined();
+
+    const customerRes = await api()
+      .get("/api/v1/orders")
+      .set("Cookie", customer.cookie);
+    expect(customerRes.status).toBe(200);
+    const customerOrder = customerRes.body.data.items.find(
+      (item: { id: string }) => item.id === order.id
+    );
+    expect(customerOrder._count.items).toBe(1);
+    expect(customerOrder.items).toBeUndefined();
+  });
+});
+
+describe("Order money precision", () => {
+  it("keeps totals exact for 3 x 33.33 with a 10% coupon", async () => {
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 33.33 });
+    const coupon = await createTestCoupon(tracker, {
+      discountType: "PERCENTAGE",
+      discountValue: 10,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `money-${Date.now()}`,
+    });
+
+    await createActiveCartWithItem(
+      tracker,
+      customer.customerProfileId,
+      catalog.variant,
+      catalog.product.name,
+      3
+    );
+
+    const order = await checkout(customer.customerProfileId, {
+      paymentMethod: "COD",
+      billingAddress: testAddress,
+      shippingMethodCode: "STANDARD",
+      couponCode: coupon.code,
+    });
+    tracker.orderIds.push(order.id);
+
+    expect(Number(order.subtotal)).toBe(99.99);
+    expect(Number(order.discountAmount)).toBe(10);
+    expect(Number(order.shippingAmount)).toBe(60);
+    expect(Number(order.grandTotal)).toBe(149.99);
+
+    const items = await prisma.orderItem.findMany({
+      where: { orderId: order.id },
+    });
+    expect(items[0]!.allocationVersion).toBe(1);
+    expect(
+      items.reduce((sum, item) => sum + Number(item.discountAmount), 0),
+    ).toBe(10);
+    expect(items.reduce((sum, item) => sum + Number(item.taxAmount), 0)).toBe(
+      Number(order.taxAmount),
+    );
+  });
+});
+
+describe("Checkout price change guard", () => {
+  it("rejects a stale expectedSubtotal and allows an explicit accept", async () => {
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const customer = await createTestUser(tracker, {
+      suffix: `price-${Date.now()}`,
+    });
+    await createActiveCartWithItem(
+      tracker,
+      customer.customerProfileId,
+      catalog.variant,
+      catalog.product.name,
+      1,
+    );
+
+    await prisma.productVariant.update({
+      where: { id: catalog.variant.id },
+      data: { price: 120 },
+    });
+
+    const body = {
+      paymentMethod: "COD",
+      billingAddress: testAddress,
+      shippingAddress: testAddress,
+      shippingMethodCode: "STANDARD",
+      expectedSubtotal: 100,
+    };
+
+    const stale = await api()
+      .post("/api/v1/checkout")
+      .set("Cookie", customer.cookie)
+      .send(body);
+
+    expect(stale.status).toBe(409);
+    expect(stale.body.code).toBe("CART_PRICE_CHANGED");
+    expect(stale.body.details.currentSubtotal).toBe(120);
+    expect(stale.body.details.items[0].currentUnitPrice).toBe(120);
+
+    const activeCart = await prisma.cart.findFirst({
+      where: { customerProfileId: customer.customerProfileId, status: "ACTIVE" },
+    });
+    expect(activeCart).not.toBeNull();
+    expect(
+      await prisma.order.count({
+        where: { customerProfileId: customer.customerProfileId },
+      }),
+    ).toBe(0);
+
+    const accepted = await api()
+      .post("/api/v1/checkout")
+      .set("Cookie", customer.cookie)
+      .send({ ...body, acceptPriceChange: true });
+
+    expect(accepted.status).toBe(201);
+    expect(Number(accepted.body.data.subtotal)).toBe(120);
+    tracker.orderIds.push(accepted.body.data.id);
+  });
 });
 
 describe("Customer order status history", () => {
@@ -637,5 +924,34 @@ describe("Customer order status history", () => {
       where: { orderId: order.id },
     });
     expect(after).toBe(0);
+  });
+});
+
+describe("Customer order events", () => {
+  it("does not expose internal event metadata to customers", async () => {
+    const customer = await createTestUser(tracker, {
+      suffix: `evt-c-${Date.now()}`,
+    });
+    const order = await createTestOrder(tracker, customer, { status: "CONFIRMED" });
+    await prisma.orderEvent.create({
+      data: {
+        orderId: order.id,
+        eventType: "ORDER_CONFIRMED",
+        metadata: { changedBy: "admin-user-id", internalNote: "do not expose" },
+      },
+    });
+
+    const res = await api()
+      .get(`/api/v1/orders/${order.id}`)
+      .set("Cookie", customer.cookie);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.events).toEqual([
+      expect.objectContaining({ eventType: "ORDER_CONFIRMED" }),
+    ]);
+    expect(res.body.data.events[0]).not.toHaveProperty("metadata");
+    expect(res.body.data.events[0]).not.toHaveProperty("id");
+    expect(res.body.data.events[0]).not.toHaveProperty("orderId");
+    expect(res.body.data.events[0]).not.toHaveProperty("updatedAt");
   });
 });

@@ -43,58 +43,40 @@ describe("Cart items", () => {
     expect(item.quantity).toBe(2);
   });
 
-  it("saves and fetches a guest cart by sessionId", async () => {
-    const catalog = await createTestProduct(tracker, { stock: 10, price: 80 });
-    const sessionId = `guest-${randomUUID()}`;
-    tracker.guestCartSessionIds.push(sessionId);
+  it("resolves productImage from the product photo", async () => {
+    const user = await createTestUser(tracker, { suffix: `ci-${Date.now()}` });
+    const catalog = await createTestProduct(tracker, { stock: 10, price: 150 });
+    const imageUrl = "https://res.cloudinary.com/demo/image/upload/cart-item.jpg";
+    await prisma.productImage.create({
+      data: {
+        productId: catalog.product.id,
+        imageUrl,
+        isPrimary: true,
+      },
+    });
 
-    const saved = await api()
-      .put("/api/v1/cart/guest")
-      .send({
-        sessionId,
-        cartData: {
-          items: [
-            {
-              variantId: catalog.variant.id,
-              quantity: 2,
-              productName: catalog.product.name,
-              sku: catalog.variant.sku,
-              unitPrice: 80,
-            },
-          ],
-        },
-      });
-    expect(saved.status).toBe(200);
-    expect(saved.body.success).toBe(true);
+    const res = await api()
+      .post("/api/v1/cart/items")
+      .set("Cookie", user.cookie)
+      .send({ variantId: catalog.variant.id, quantity: 1 });
 
-    const fetched = await api().get("/api/v1/cart/guest").query({ sessionId });
-    expect(fetched.status).toBe(200);
-    expect(fetched.body.success).toBe(true);
-    expect(fetched.body.data.items).toHaveLength(1);
-    expect(fetched.body.data.items[0].variantId).toBe(catalog.variant.id);
-    expect(fetched.body.data.items[0].quantity).toBe(2);
-    expect(fetched.body.data.items[0].productName).toBe(catalog.product.name);
+    expect(res.status).toBe(200);
+    trackCart(res.body);
+
+    const item = res.body.data.items.find(
+      (i: { variantId: string }) => i.variantId === catalog.variant.id
+    );
+    expect(item.productImage).toBe(imageUrl);
   });
 
-  it("merges guest cart into the user cart after login", async () => {
+  it("merges guest cart items into the user cart after login", async () => {
     const catalog = await createTestProduct(tracker, { stock: 10, price: 80 });
-    const sessionId = `guest-${randomUUID()}`;
-    tracker.guestCartSessionIds.push(sessionId);
-
-    const saved = await api()
-      .put("/api/v1/cart/guest")
-      .send({
-        sessionId,
-        cartData: { items: [{ variantId: catalog.variant.id, quantity: 3 }] },
-      });
-    expect(saved.status).toBe(200);
-
     const user = await createTestUser(tracker, { suffix: `mg-${Date.now()}` });
 
     const merged = await api()
       .post("/api/v1/cart/guest/merge")
       .set("Cookie", user.cookie)
-      .send({ sessionId });
+      .send({ items: [{ variantId: catalog.variant.id, quantity: 3 }] });
 
     expect(merged.status).toBe(200);
     trackCart(merged.body);
@@ -210,6 +192,22 @@ describe("Cart items", () => {
       where: { customerProfileId: user.customerProfileId, status: "CHECKED_OUT" },
     });
     expect(count).toBe(2);
+  });
+
+  it("rejects ADMIN cart mutations with 403", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `adm-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 100 });
+
+    const res = await api()
+      .post("/api/v1/cart/items")
+      .set("Cookie", admin.cookie)
+      .send({ variantId: catalog.variant.id, quantity: 1 });
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
   });
 
   it("rejects adding a draft product to the cart", async () => {

@@ -12,19 +12,23 @@ const PAGE_SIZE = 20;
 
 export function useOrderList({
   initialData,
+  initialSearch = "",
   page,
   status,
   from,
   to,
+  search,
 }: {
   initialData: OrderListResult;
+  initialSearch?: string;
   page: number;
   status: OrderStatus | "";
   from?: string;
   to?: string;
+  search?: string;
 }) {
   const query = useQuery({
-    queryKey: ["orders", page, status, from ?? "", to ?? ""],
+    queryKey: ["orders", page, status, from ?? "", to ?? "", search ?? ""],
     queryFn: () =>
       fetchOrderList({
         page,
@@ -32,9 +36,14 @@ export function useOrderList({
         status: status || undefined,
         from,
         to,
+        search: search || undefined,
       }),
     initialData:
-      page === initialData.pagination.page && status === "" && !from && !to
+      page === initialData.pagination.page &&
+      status === "" &&
+      !from &&
+      !to &&
+      (search ?? "") === initialSearch
         ? initialData
         : undefined,
     placeholderData: keepPreviousData,

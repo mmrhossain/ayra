@@ -8,6 +8,7 @@ import {
 } from "../../../lib/openapi/common-schemas.ts";
 import {
   createBrandSchema,
+  listAdminBrandsQuerySchema,
   updateBrandSchema,
 } from "./validators/brand.validators.ts";
 
@@ -20,6 +21,19 @@ registry.registerPath({
   summary: "List brands",
   responses: {
     200: successResponse("Brands fetched"),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/admin/brands",
+  tags: [TAG],
+  summary: "List brands (admin)",
+  security: bearerAuth,
+  request: { query: listAdminBrandsQuerySchema },
+  responses: {
+    200: successResponse("Admin brands fetched"),
+    ...errorResponses(401, 403),
   },
 });
 
@@ -61,6 +75,6 @@ registry.registerPath({
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Brand deleted"),
-    ...errorResponses(401, 403, 404),
+    ...errorResponses(401, 403, 404, 409),
   },
 });

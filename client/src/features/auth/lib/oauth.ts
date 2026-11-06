@@ -2,16 +2,31 @@ import { CALLBACK_URL } from "@/config";
 
 export function safeRedirectPath(raw: string | null | undefined): string {
   if (!raw) return "/";
-  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("://")) {
+
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
     return "/";
   }
-  return raw;
+
+  if (
+    !decoded.startsWith("/") ||
+    decoded.startsWith("//") ||
+    decoded.startsWith("/\\") ||
+    decoded.includes("://") ||
+    decoded.includes("\\") ||
+    /[\u0000-\u001F\u007F]/.test(decoded)
+  ) {
+    return "/";
+  }
+
+  return decoded;
 }
 
 function clientOrigin(): string {
-  if (CALLBACK_URL) return CALLBACK_URL;
   if (typeof window !== "undefined") return window.location.origin;
-  return "";
+  return CALLBACK_URL;
 }
 
 export function oauthCallbackUrl(redirect: string): string {

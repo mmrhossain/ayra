@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../../../common/middleware/auth.middleware.ts";
+import { requireAuth, requireCustomer } from "../../../common/middleware/auth.middleware.ts";
 import {
   getShippingOptionsHandler,
   quoteShippingHandler,
@@ -7,7 +7,9 @@ import {
 
 const router = Router();
 
-router.get("/shipping/options", requireAuth, getShippingOptionsHandler);
-router.post("/shipping/quote", requireAuth, quoteShippingHandler);
+const customerOnly = [requireAuth, requireCustomer];
+
+router.get("/shipping/options", ...customerOnly, getShippingOptionsHandler);
+router.post("/shipping/quote", ...customerOnly, quoteShippingHandler);
 
 export default router;

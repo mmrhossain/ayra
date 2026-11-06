@@ -34,28 +34,38 @@ import {
 
 const addressFromQuote = (input: {
   shippingAddress?:
-    | { district: string; division?: string | undefined }
+    | {
+        district: string;
+        division?: string | undefined;
+        districtCode?: string | undefined;
+        divisionCode?: string | undefined;
+      }
     | undefined;
   district?: string | undefined;
+  districtCode?: string | undefined;
 }) => {
   const district = input.shippingAddress?.district ?? input.district;
-  if (!district) {
+  const districtCode =
+    input.shippingAddress?.districtCode ?? input.districtCode;
+  if (!district && !districtCode) {
     throw new AppError("Delivery district is required to calculate shipping", 400);
   }
   return {
     district,
+    districtCode,
     division: input.shippingAddress?.division,
+    divisionCode: input.shippingAddress?.divisionCode,
   };
 };
 
 export const getShippingOptionsHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const query = shippingOptionsQuerySchema.parse(req.query);
-    if (!query.district) {
+    if (!query.district && !query.districtCode) {
       throw new AppError("Delivery district is required to calculate shipping", 400);
     }
     const result = await listShippingOptions(
-      { district: query.district },
+      { district: query.district, districtCode: query.districtCode },
       query.subtotal ?? 0
     );
     successResponse(res, result, "Shipping options fetched");

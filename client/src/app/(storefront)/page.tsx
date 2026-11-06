@@ -1,16 +1,15 @@
-import HomePage from "@/features/home/components/HomePage";
 import { fetchHome } from "@/features/home/api";
-import HomePageSkeleton from "@/skeleton/homePageSkeleton";
+import HomePage from "@/features/home/components/HomePage";
+import HomePageSkeleton from "@/features/home/skeleton/HomePageSkeleton";
 import { Suspense } from "react";
 
 async function HomeContent() {
-  const data = await fetchHome();
+  // Handle the error gracefully without a try/catch block
+  const data = await fetchHome().catch(() => null);
 
   if (!data) {
     return (
-      <div className="container py-24 text-center text-gray-400">
-        Home is unavailable right now
-      </div>
+      <div className="container py-24 text-center text-gray-400">Home is unavailable right now</div>
     );
   }
 

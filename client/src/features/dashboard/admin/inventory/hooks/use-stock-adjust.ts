@@ -26,10 +26,11 @@ export function useStockAdjustMutation({
   return useMutation({
     mutationFn: async (values: AdjustFormValues) => {
       if (!item) throw new Error("Missing inventory row");
-      if (values.type !== "set" && values.quantity < 1) {
+      const quantity = Number(values.quantity);
+      if (values.type !== "set" && quantity < 1) {
         throw new Error("Quantity must be at least 1");
       }
-      const difference = differenceFor(values.type, values.quantity, item.quantityOnHand);
+      const difference = differenceFor(values.type, quantity, item.quantityOnHand);
       if (difference === 0) throw new Error("No quantity change");
       const reason = values.notes?.trim()
         ? `${values.reason}: ${values.notes.trim()}`

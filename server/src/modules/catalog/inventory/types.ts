@@ -5,12 +5,14 @@ import type {
   createInventoryAdjustmentSchema,
   createInventoryTransferSchema,
   listInventoryQuerySchema,
+  setStockLevelsSchema,
 } from "./validators/inventory.validators.ts";
 
 export type CreateInventoryAdjustmentInput = z.infer<typeof createInventoryAdjustmentSchema>;
 export type CreateInventoryTransferInput = z.infer<typeof createInventoryTransferSchema>;
 export type ListInventoryQuery = z.infer<typeof listInventoryQuerySchema>;
 export type ApproveAdjustmentInput = z.infer<typeof approveInventoryAdjustmentSchema>;
+export type SetStockLevelsInput = z.infer<typeof setStockLevelsSchema>;
 
 export type LockedInventory = {
   id: string;

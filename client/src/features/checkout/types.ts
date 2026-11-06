@@ -1,8 +1,9 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+import type {
+  CustomerOrder,
+  CustomerOrderListItem,
+} from "@/features/dashboard/customer/orders/types";
+
+export type { Envelope } from "@/lib/api/http";
 
 export type CustomerCartItem = {
   id: string;
@@ -21,6 +22,7 @@ export type CustomerCartItem = {
       id: string;
       name: string;
       slug?: string;
+      images?: Array<{ imageUrl?: string; isPrimary?: boolean }>;
     } | null;
   } | null;
 };
@@ -43,6 +45,9 @@ export type CheckoutAddress = {
   division: string;
   district: string;
   thana?: string;
+  divisionCode?: string;
+  districtCode?: string;
+  upazilaCode?: string;
   postalCode?: string;
   addressLine1: string;
   addressLine2?: string;
@@ -55,6 +60,41 @@ export type CheckoutPayload = {
   shippingMethodCode: string;
   couponCode?: string;
   notes?: string;
+  expectedSubtotal?: number;
+  acceptPriceChange?: boolean;
+};
+
+export type PlaceOrderInput = {
+  name: string;
+  phone: string;
+  email?: string;
+  address: string;
+  country: string;
+  postal_code?: string;
+  division: string;
+  district: string;
+  thana: string;
+  divisionCode: string;
+  districtCode: string;
+  upazilaCode: string;
+  couponCode?: string;
+  paymentMethod: "COD" | "SSLCOMMERZ";
+  shippingMethodCode: string;
+  expectedSubtotal?: number;
+  acceptPriceChange?: boolean;
+};
+
+export type OrderState = {
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  orders: CustomerOrderListItem[] | null;
+  currentOrder: CustomerOrder | null;
+  createOrder: (
+    data: PlaceOrderInput,
+    idempotencyKey: string,
+  ) => Promise<{ message: string; data: CustomerOrder }>;
+  fetchOrderList: () => Promise<CustomerOrderListItem[]>;
+  fetchOrderById: (id: string) => Promise<CustomerOrder>;
 };
 
 export type InitiatePaymentResult = {

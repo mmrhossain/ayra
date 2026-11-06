@@ -4,9 +4,17 @@ import { assertCloudinaryConfigured } from "./lib/cloudinary.ts";
 import { prisma } from "./lib/prisma.ts";
 import { redis } from "./lib/redis.ts";
 import {
+  startIdempotencyCleanupWorker,
+  stopIdempotencyCleanupWorker,
+} from "./common/worker/idempotency-cleanup.worker.ts";
+import {
   startReservationExpiryWorker,
   stopReservationExpiryWorker,
 } from "./modules/catalog/inventory/worker/reservation-expiry.worker.ts";
+import {
+  startProductMetricsWorker,
+  stopProductMetricsWorker,
+} from "./modules/catalog/product/worker/product-metrics.worker.ts";
 import { startMediaWorker, stopMediaWorker } from "./modules/media/worker/media.worker.ts";
 import {
   startNotificationWorker,
@@ -49,6 +57,8 @@ async function initializeApp() {
   startNotificationWorker();
   startReservationExpiryWorker();
   startMediaWorker();
+  startIdempotencyCleanupWorker();
+  startProductMetricsWorker();
 }
 
 initializeApp();
@@ -72,6 +82,8 @@ const shutdown = (signal: string) => {
     stopNotificationWorker(),
     stopReservationExpiryWorker(),
     stopMediaWorker(),
+    stopIdempotencyCleanupWorker(),
+    stopProductMetricsWorker(),
   ]).catch((err) => {
     console.error("Worker drain failed", err);
   });

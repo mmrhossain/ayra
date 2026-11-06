@@ -33,9 +33,9 @@ export const StepBreadcrumb = ({ current, onSelect }: StepBreadcrumbProps) => {
                 disabled={!canJump}
                 onClick={() => onSelect?.(step.id)}
                 className={cn(
-                  "text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors sm:text-xs sm:tracking-[0.18em]",
-                  isCurrent && "text-secondary",
-                  isComplete && "cursor-pointer text-neutral-400 hover:text-secondary",
+                  "text-xs font-semibold uppercase tracking-[0.16em] transition-colors sm:text-xs sm:tracking-[0.18em]",
+                  isCurrent && "text-foreground",
+                  isComplete && "cursor-pointer text-neutral-400 hover:text-foreground",
                   !isCurrent && !isComplete && "cursor-default text-neutral-300",
                 )}
                 aria-current={isCurrent ? "step" : undefined}

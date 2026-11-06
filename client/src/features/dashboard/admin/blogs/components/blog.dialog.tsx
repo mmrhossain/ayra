@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
@@ -34,7 +36,10 @@ import { useBlogFormMutation } from "@/features/dashboard/admin/blogs/hooks/use-
 import { blogFormSchema, type BlogFormValues } from "@/features/dashboard/admin/blogs/schemas";
 import type { BlogFormDialogProps } from "@/features/dashboard/admin/blogs/types";
 import { blogFormDefaults } from "@/features/dashboard/admin/blogs/utils";
-import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
+import {
+  ImageUpload,
+  type ImageUploadHandle,
+} from "@/features/dashboard/admin/shared/components/image-upload";
 
 const BLOG_FORM_ID = "blog-form";
 const NONE_CATEGORY = "__none__";
@@ -53,11 +58,31 @@ export function BlogFormDialog({
     defaultValues: blogFormDefaults(initialData),
   });
 
+  const imageUploadRef = useRef<ImageUploadHandle>(null);
+
   const mutation = useBlogFormMutation({
     mode,
     initialData,
     onSuccess: () => onOpenChange(false),
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSaving = isSubmitting || mutation.isPending;
+  const submitForm = form.handleSubmit((values) => mutation.mutateAsync(values));
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) return;
+    setIsSubmitting(true);
+    try {
+      await imageUploadRef.current?.flush();
+      await submitForm(event);
+    } catch {
+      // Errors are surfaced by the mutation/form layers.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,7 +98,7 @@ export function BlogFormDialog({
           <form
             id={BLOG_FORM_ID}
             className="flex-1 space-y-4 overflow-y-auto pr-1 scrollbar-hide"
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={handleSubmit}
           >
             {/* Title Field */}
             <FormField
@@ -155,6 +180,8 @@ export function BlogFormDialog({
                   <FormLabel>Featured image</FormLabel>
                   <FormControl>
                     <ImageUpload
+                      ref={imageUploadRef}
+                      deferUpload
                       mode="single"
                       folder="blog"
                       value={field.value}
@@ -262,12 +289,21 @@ export function BlogFormDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
+            disabled={isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" form={BLOG_FORM_ID} disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving..." : mode === "edit" ? "Save changes" : "Create draft"}
+          <Button type="submit" form={BLOG_FORM_ID} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Saving...
+              </>
+            ) : mode === "edit" ? (
+              "Save changes"
+            ) : (
+              "Create draft"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

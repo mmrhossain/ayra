@@ -1,12 +1,16 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { PaymentTable } from "@/features/dashboard/admin/payments/components/payment-table";
 import {
   fetchPaymentList,
   toPaymentErrorMessage,
 } from "@/features/dashboard/admin/payments/api/payments";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPaymentsPage() {
+  await requireAdminPageAccess("/admin/payments");
   let initial;
   let error: string | null = null;
 
@@ -18,22 +22,15 @@ export default async function AdminPaymentsPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Payments</h1>
-        <p className="text-sm text-muted-foreground">
-          Transactions from the live backend.
-        </p>
-      </div>
+      <PageHeader
+        title="Payments"
+        description="Transactions from the live backend."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load payments</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load payments"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <PaymentTable initialData={initial} />
       )}

@@ -11,6 +11,11 @@ export type {
   PaymentTransaction,
   PaymentEvent,
   RefundRecord,
+  RefundQueuePayment,
+  RefundQueueItem,
+  RefundStatus,
+  RefundListParams,
+  RefundListResult,
   PaymentDetail,
   PaymentPagination,
   PaymentListResult,
@@ -18,12 +23,17 @@ export type {
   RefundInput,
 } from "./models";
 
-export { PAYMENT_STATUSES, PAYMENT_METHODS } from "./models";
+export {
+  PAYMENT_STATUSES,
+  PAYMENT_METHODS,
+  REFUND_STATUSES,
+} from "./models";
 
 export type RefundDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   payment: PaymentRecord | null;
+  remainingAmount?: number;
 };
 
 export type CollectCodDialogProps = {

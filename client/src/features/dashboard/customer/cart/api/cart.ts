@@ -2,13 +2,9 @@
  * Authenticated customer cart. Dashboard client only.
  * Guest cart lives in `@/features/cart/api` (store-front client).
  */
+import { resolveProductImage } from "@/features/cart/lib/product-image";
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
-
-type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+import type { Envelope } from "@/lib/api/http";
 
 export type CartLine = {
   id: string;
@@ -66,7 +62,20 @@ function mapAuthItem(item: Record<string, unknown>): CartLine | null {
     subtotal: num(item.subtotal) || unitPrice * quantity,
     productName: String(item.productName ?? product?.name ?? "Product"),
     productSlug: (item.productSlug ?? product?.slug ?? null) as string | null,
-    productImage: (item.productImage ?? null) as string | null,
+    productImage: resolveProductImage({
+      productImage: (item.productImage ?? null) as string | null,
+      variant: variant
+        ? {
+            product: product
+              ? {
+                  images: product.images as
+                    | Array<{ imageUrl?: string; isPrimary?: boolean }>
+                    | undefined,
+                }
+              : null,
+          }
+        : null,
+    }),
     sku: (item.sku ?? variant?.sku) as string | undefined,
     compareAtPrice: compareAt != null ? num(compareAt) : null,
   };
@@ -151,16 +160,20 @@ export async function removeCartCoupon(): Promise<{ message: string }> {
 }
 
 export async function mergeGuestCartOnLogin(
-  sessionId: string,
+  items: Array<{ variantId: string; quantity: number }>,
 ): Promise<void> {
+  if (items.length === 0) return;
   await dashboardApi.post<Envelope<unknown>>("/cart/guest/merge", {
-    body: { sessionId },
+    body: { items },
   });
 }
 
 export function toCartErrorMessage(err: unknown): string {
   if (err instanceof DashboardApiError) {
     if (err.status === 401) return "Please sign in to continue";
+    if (err.status === 403) {
+      return err.message || "Staff accounts cannot shop. Sign in with a customer account.";
+    }
     return err.message;
   }
   if (err instanceof Error) return err.message;

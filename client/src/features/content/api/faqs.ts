@@ -8,6 +8,8 @@ import type { Envelope, PublicFaqCategory } from "@/features/content/types";
 export type { PublicFaqCategory, PublicFaqItem } from "@/features/content/types";
 
 export async function fetchPublicFaqs(): Promise<PublicFaqCategory[]> {
-  const res = await api.get<Envelope<PublicFaqCategory[]>>("/faqs");
+  const res = await api.get<Envelope<PublicFaqCategory[]>>("/faqs", {
+    next: { revalidate: 300, tags: ["faqs"] },
+  });
   return res.data ?? [];
 }

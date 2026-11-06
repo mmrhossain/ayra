@@ -13,7 +13,7 @@ import Link from "next/link";
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 
 export const checkoutControlClass =
-  "h-11 w-full min-w-0 rounded-[3px] border-[#e5e5e5] bg-white px-3.5 text-sm shadow-none placeholder:text-neutral-400 focus-visible:border-neutral-500 focus-visible:ring-0 sm:h-12 md:text-sm";
+  "h-11 w-full min-w-0 rounded-[3px] border-border bg-white px-3.5 text-base shadow-none placeholder:text-muted-foreground focus-visible:border-neutral-500 focus-visible:ring-0 sm:h-12";
 
 export function CheckoutSection({
   title,
@@ -29,7 +29,7 @@ export function CheckoutSection({
   return (
     <section className={cn("space-y-3 sm:space-y-3.5", className)}>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary sm:text-xs sm:tracking-[0.16em]">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground sm:tracking-[0.16em]">
           {title}
         </h2>
         {action}
@@ -63,7 +63,7 @@ export function CheckoutField({
         <p
           id={props.id ? `${props.id}-error` : undefined}
           role="alert"
-          className="mt-1.5 text-xs text-danger"
+          className="mt-1.5 text-sm leading-snug text-danger"
         >
           {error}
         </p>
@@ -106,12 +106,12 @@ export function CheckoutSelect({
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="rounded-sm border border-[#e5e5e5] bg-white">
+        <SelectContent className="rounded-sm border border-border bg-white">
           {children}
         </SelectContent>
       </Select>
       {error ? (
-        <p role="alert" className="mt-1.5 text-xs text-danger">
+        <p role="alert" className="mt-1.5 text-sm leading-snug text-danger">
           {error}
         </p>
       ) : null}
@@ -130,7 +130,7 @@ export function CheckoutCta({
     <button
       type="button"
       className={cn(
-        "inline-flex h-11 min-h-11 min-w-[132px] cursor-pointer items-center justify-center gap-3 bg-secondary px-5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:min-w-[148px] sm:px-6",
+        "inline-flex h-11 min-h-11 w-full min-w-[132px] cursor-pointer items-center justify-center gap-3 bg-ink px-5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-auto sm:min-w-[148px] sm:px-6",
         className,
       )}
       disabled={loading || disabled}
@@ -151,7 +151,7 @@ export function CheckoutBack({
   onClick?: () => void;
 }) {
   const className =
-    "group mb-7 inline-flex items-center text-secondary transition-colors hover:text-black sm:mb-9";
+    "group mb-7 inline-flex items-center text-foreground transition-colors hover:text-black sm:mb-9";
   const inner = (
     <>
       <ArrowLeft size={18} strokeWidth={1.75} />
@@ -194,7 +194,7 @@ export function CheckoutSummaryRow({
     >
       <span
         className={cn(
-          emphasize ? "text-secondary" : "font-medium text-secondary",
+          emphasize ? "text-foreground" : "font-medium text-foreground",
           muted && "font-normal text-neutral-400",
         )}
       >
@@ -202,7 +202,7 @@ export function CheckoutSummaryRow({
       </span>
       <span
         className={cn(
-          "text-right text-secondary",
+          "text-right text-foreground",
           muted && "text-xs font-normal italic text-neutral-400",
         )}
       >
@@ -214,7 +214,7 @@ export function CheckoutSummaryRow({
 
 export function CheckoutStepActions({ children }: { children: ReactNode }) {
   return (
-    <div className="flex justify-end pt-6 max-lg:sticky max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] max-lg:z-10 max-lg:bg-bg-primary max-lg:py-3 sm:pt-8">
+    <div className="flex justify-end pt-6 max-lg:sticky max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] max-lg:z-10 max-lg:bg-background max-lg:py-3 sm:pt-8">
       {children}
     </div>
   );

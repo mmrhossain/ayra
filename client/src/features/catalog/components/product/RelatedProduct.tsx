@@ -12,12 +12,17 @@ const RelatedProduct = async ({
 }) => {
   if (!categorySlug) return null;
 
-  const result = await fetchProducts({
-    page: 1,
-    limit: 12,
-    category: categorySlug,
-    sort: "newest",
-  });
+  let result;
+  try {
+    result = await fetchProducts({
+      page: 1,
+      limit: 12,
+      category: categorySlug,
+      sort: "newest",
+    });
+  } catch {
+    return null;
+  }
 
   const items = (result?.items ?? []).filter((p) => p.id !== currentProductId).slice(0, 8);
 

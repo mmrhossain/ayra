@@ -1,11 +1,13 @@
 "use client";
 
+import { ChangePasswordDialog } from "@/components/shared/change-password-dialog";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { successToast } from "@/helpers";
 import clsx from "clsx";
-import { Heart, LogOut, MapPin, Package, User } from "lucide-react";
+import { Heart, KeyRound, LogOut, MapPin, Package, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const sidebarItems = [
   { label: "Account Details", href: "/customer/account", icon: User },
@@ -17,6 +19,7 @@ const sidebarItems = [
 const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -30,10 +33,10 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-full md:w-72 bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm h-fit">
+    <aside className="w-full md:w-72 bg-card rounded-xl border border-border overflow-hidden shadow-sm h-fit">
       {/* User Header (Optional but recommended) */}
-      <div className="p-4 sm:p-6 border-b border-slate-50 bg-slate-50/50">
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+      <div className="p-4 sm:p-6 border-b border-border bg-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Manage Account
         </p>
       </div>
@@ -52,7 +55,7 @@ const Sidebar = () => {
                     "flex items-center gap-3 px-3.5 sm:px-4 py-3 min-h-11 text-sm font-semibold rounded-xl transition-all duration-300 group relative",
                     isActive
                       ? "bg-primary/5 text-primary shadow-sm"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {/* Active Bar Indicator */}
@@ -66,7 +69,7 @@ const Sidebar = () => {
                       "transition-transform duration-300 group-hover:scale-110",
                       isActive
                         ? "text-primary"
-                        : "text-slate-400 group-hover:text-slate-900",
+                        : "text-muted-foreground group-hover:text-foreground",
                     )}
                   />
                   {item.label}
@@ -76,20 +79,34 @@ const Sidebar = () => {
           })}
         </ul>
 
-        <div className="my-4 mx-4 border-t border-slate-100" />
+        <div className="my-4 mx-4 border-t border-border" />
+
+        {/* Change Password Button */}
+        <button
+          onClick={() => setPasswordOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all duration-300 group"
+        >
+          <KeyRound
+            size={18}
+            className="text-muted-foreground group-hover:text-foreground transition-colors"
+          />
+          Change Password
+        </button>
 
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group"
+          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group"
         >
           <LogOut
             size={18}
-            className="text-slate-400 group-hover:text-red-600 transition-colors"
+            className="text-muted-foreground group-hover:text-red-600 transition-colors"
           />
           Logout Account
         </button>
       </nav>
+
+      <ChangePasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
     </aside>
   );
 };

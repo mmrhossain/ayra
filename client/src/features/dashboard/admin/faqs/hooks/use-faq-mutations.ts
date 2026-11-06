@@ -24,6 +24,7 @@ import {
   toFaqCategoryDeleteErrorMessage,
   toFaqErrorMessage,
 } from "@/features/dashboard/admin/faqs/utils";
+import { revalidateStorefrontTags } from "@/lib/api/revalidate";
 
 export function useFaqCategoryFormMutation({
   mode,
@@ -52,6 +53,7 @@ export function useFaqCategoryFormMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-faq-categories"] });
+      void revalidateStorefrontTags(["faqs"]);
       toast.success(mode === "edit" ? "Category updated" : "Category created");
       onSuccess();
     },
@@ -78,6 +80,7 @@ export function useFaqCategoryDeleteMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-faq-categories"] });
       queryClient.invalidateQueries({ queryKey: ["admin-faq-items"] });
+      void revalidateStorefrontTags(["faqs"]);
       toast.success("Category deleted");
       onSuccess();
     },
@@ -116,6 +119,7 @@ export function useFaqItemFormMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-faq-items"] });
       queryClient.invalidateQueries({ queryKey: ["admin-faq-categories"] });
+      void revalidateStorefrontTags(["faqs"]);
       toast.success(mode === "edit" ? "FAQ updated" : "FAQ created");
       onSuccess();
     },
@@ -142,6 +146,7 @@ export function useFaqItemDeleteMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-faq-items"] });
       queryClient.invalidateQueries({ queryKey: ["admin-faq-categories"] });
+      void revalidateStorefrontTags(["faqs"]);
       toast.success("FAQ deleted");
       onSuccess();
     },

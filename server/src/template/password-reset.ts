@@ -18,4 +18,6 @@ export const getPasswordResetEmailHtml = ({
       "We received a request to reset your password. Click the button below to choose a new password. This link expires in 1 hour.",
     buttonText: "Reset Password",
     buttonUrl: resetUrl,
+    footerNote:
+      "If you did not request this, please ignore this email or contact support.",
   });

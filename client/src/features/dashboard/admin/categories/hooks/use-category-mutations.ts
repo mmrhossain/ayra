@@ -17,6 +17,7 @@ import {
   toCategoryDeleteErrorMessage,
   toCategoryErrorMessage,
 } from "@/features/dashboard/admin/categories/utils";
+import { revalidateStorefrontTags } from "@/lib/api/revalidate";
 
 export function useCategoryFormMutation({
   mode,
@@ -38,6 +39,10 @@ export function useCategoryFormMutation({
         parentId: values.parentId ? values.parentId : null,
         image: values.image?.trim() ? values.image : null,
         imagePublicId: values.imagePublicId?.trim() ? values.imagePublicId : null,
+        mobileImage: values.mobileImage?.trim() ? values.mobileImage : null,
+        mobileImagePublicId: values.mobileImagePublicId?.trim()
+          ? values.mobileImagePublicId
+          : null,
       };
 
       if (mode === "create") {
@@ -58,6 +63,7 @@ export function useCategoryFormMutation({
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
+      void revalidateStorefrontTags(["home", "categories"]);
       toast.success(mode === "create" ? "Category created" : "Category updated");
       onSuccess();
     },
@@ -84,6 +90,7 @@ export function useCategoryDeleteMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void revalidateStorefrontTags(["home", "categories"]);
       toast.success("Category deleted");
       onSuccess();
     },

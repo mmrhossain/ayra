@@ -56,8 +56,9 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
 
   return (
     <section
+      id="hero"
       className={cn(
-        "relative w-full overflow-hidden h-[60svh] min-h-[350px] sm:h-[calc(100dvh-var(--header-height,120px))] sm:min-h-[500px] ",
+        "relative w-full overflow-hidden h-[70svh] min-h-[70svh] sm:h-[calc(100dvh-var(--header-height,120px))] sm:min-h-[500px]",
         className
       )}
     >
@@ -68,40 +69,43 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
           align: "start",
         }}
         setApi={setApi}
-        className="w-full"
+        className="w-full h-full [&>div]:h-full"
       >
-        <CarouselContent className="ml-0 flex">
+        <CarouselContent className="ml-0 flex h-full">
           {sliders.map((slider, index) => {
             const isActive = activeIndex === index;
 
             return (
-              <CarouselItem key={slider.id || index} className="relative min-w-full pl-0">
+              <CarouselItem
+                key={slider.id || index}
+                className="relative min-w-full h-full pl-0 basis-full"
+              >
                 {/* Hero Container */}
-                <div className="relative">
+                <div className="relative w-full h-full">
                   {/* Mobile Image */}
                   <Image
-                    src={slider.mobileImageUrl || "/fallbacks/hero-mobile.webp"}
+                    src={slider.mobileImageUrl || ""}
                     alt={slider.title || "Hero Banner"}
                     priority={index === 0}
-                    loading={"eager"}
-                    width={960}
-                    height={1200}
+                    loading="eager"
+                    fill
+                    sizes="(max-width: 960px) 100vw, 960px"
                     className="object-cover md:hidden"
                   />
 
                   {/* Desktop Image */}
                   <Image
-                    src={slider.imageUrl || "/fallbacks/hero-desktop.webp"}
+                    src={slider.imageUrl || ""}
                     alt={slider.title || "Hero Banner"}
                     priority={index === 0}
-                    loading={"eager"}
-                    width={1920}
-                    height={1080}
-                    className="w-[100%] h-auto object-cover hidden md:block"
+                    loading="eager"
+                    fill
+                    sizes="(max-width: 1920px) 100vw, 1920px"
+                    className="object-cover hidden md:block"
                   />
                 </div>
 
-                {/* Content */}
+                {/* Content Overlay */}
                 <div className="absolute inset-0 z-20 pointer-events-none">
                   <div className="mx-auto flex h-full max-w-7xl items-end px-4 pb-12 sm:px-12 sm:pb-16 lg:px-20 lg:pb-20">
                     <div className="max-w-xl text-left text-white">
@@ -169,23 +173,23 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
             );
           })}
         </CarouselContent>
-
-        {/* Indicators */}
-        <div className="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 sm:bottom-10">
-          {sliders.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Go to slide ${i + 1}`}
-              onClick={() => api?.scrollTo(i)}
-              className={cn(
-                "h-[2px] transition-all duration-500",
-                activeIndex === i ? "w-8 bg-amber-200" : "w-4 bg-white/40 hover:bg-white/70"
-              )}
-            />
-          ))}
-        </div>
       </Carousel>
+
+      {/* Indicators: anchored to the hero section, desktop only */}
+      <div className="pointer-events-auto absolute bottom-10 left-1/2 z-30 hidden -translate-x-1/2 items-center gap-2 md:flex">
+        {sliders.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Go to slide ${i + 1}`}
+            onClick={() => api?.scrollTo(i)}
+            className={cn(
+              "h-[2px] transition-all duration-500",
+              activeIndex === i ? "w-8 bg-amber-200" : "w-4 bg-white/40 hover:bg-white/70"
+            )}
+          />
+        ))}
+      </div>
     </section>
   );
 };

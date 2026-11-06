@@ -34,6 +34,26 @@ export const listPaymentsQuerySchema = paginationQuerySchema
     method: paymentMethodSchema.optional(),
   });
 
+export const refundStatusFilterSchema = z.enum([
+  "PENDING",
+  "APPROVED",
+  "PROCESSING",
+  "COMPLETED",
+  "REJECTED",
+]);
+
+export const listRefundsQuerySchema = paginationQuerySchema
+  .merge(dateRangeQuerySchema)
+  .extend({
+    status: refundStatusFilterSchema.optional(),
+    method: paymentMethodSchema.optional(),
+    search: z.string().trim().min(1).max(100).optional(),
+    requiresManualProcessing: z
+      .enum(["true", "false"])
+      .transform((value) => value === "true")
+      .optional(),
+  });
+
 export const sslcommerzSuccessSchema = z
   .object({
     val_id: z.string().min(1),
@@ -66,3 +86,8 @@ export const sslcommerzIpnSchema = z
       });
     }
   });
+
+export const refundStatusSchema = z.object({
+  status: z.enum(["APPROVED", "REJECTED", "PROCESSING", "COMPLETED"]),
+  providerReference: z.string().trim().max(200).optional(),
+});

@@ -4,6 +4,7 @@ import ProductDetails from "@/features/catalog/components/product/ProductDetails
 import ProductNotFound from "@/features/catalog/components/product/ProductNotFound";
 import ProductTab from "@/features/catalog/components/product/ProductTab";
 import RelatedProduct from "@/features/catalog/components/product/RelatedProduct";
+import { SITE_NAME, SITE_URL } from "@/config/site";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +15,10 @@ type Props = {
 
 function firstImageUrl(product: {
   images?: Array<{ imageUrl: string; isPrimary?: boolean }>;
-  variants?: Array<{ images?: Array<{ imageUrl: string }> }>;
 }): string | undefined {
   const primary = product.images?.find((img) => img.isPrimary)?.imageUrl;
   if (primary) return primary;
-  if (product.images?.[0]?.imageUrl) return product.images[0].imageUrl;
-  return product.variants?.[0]?.images?.[0]?.imageUrl;
+  return product.images?.[0]?.imageUrl;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -28,28 +27,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!product) {
     return {
-      title: "Product Not Found | Raangalay",
+      title: `Product Not Found | ${SITE_NAME}`,
       description: "The requested product could not be found.",
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://raangalay.com";
+  const siteUrl = SITE_URL;
   const productUrl = `${siteUrl}/product-details/${slug}`;
   const imageUrl =
     firstImageUrl(product) || `${siteUrl}/images/placeholder/product_placeholder.jpg`;
   const cleanDescription =
     (product.description || "").replace(/<[^>]*>?/gm, "").slice(0, 160) ||
-    "Discover premium quality products at Raangalay.";
+    `Discover premium quality products at ${SITE_NAME}.`;
 
   return {
-    title: `${product.name} | Raangalay`,
+    title: `${product.name} | ${SITE_NAME}`,
     description: cleanDescription,
     alternates: { canonical: productUrl },
     openGraph: {
       title: product.name,
       description: cleanDescription,
       url: productUrl,
-      siteName: "Raangalay",
+      siteName: SITE_NAME,
       images: [{ url: imageUrl, width: 800, height: 600, alt: product.name }],
       type: "website",
     },

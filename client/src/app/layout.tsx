@@ -1,6 +1,8 @@
+import { AppSplash } from "@/components/shared/AppSplash";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import ScrollToTopOnNavigation from "@/components/shared/ScrollToTopOnNavigation";
 import { Toaster } from "@/components/ui/sonner";
+import { SITE_NAME, SITE_URL } from "@/config/site";
 import ThemeColorManager from "@/hooks/ThemeColorManager";
 import "@smastrom/react-rating/style.css";
 import type { Metadata } from "next";
@@ -17,8 +19,8 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://raangalay.com"),
-  title: "Ayra | Modern Online Shopping in Bangladesh",
+  metadataBase: new URL(SITE_URL),
+  title: `${SITE_NAME} | Modern Online Shopping in Bangladesh`,
   description: "Bangladesh's premier modern e-commerce platform.",
 };
 
@@ -27,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={jost.variable} suppressHydrationWarning>
       <body className={`${jost.className} antialiased`} suppressHydrationWarning>
         <ThemeColorManager />
+        <AppSplash />
         <Suspense fallback={null}>
           <ScrollToTopOnNavigation />
         </Suspense>

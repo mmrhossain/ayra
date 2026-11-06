@@ -11,28 +11,26 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "seed": "tsx prisma/seed.ts",
-    "seed:admin": "tsx src/scripts/seed-admin.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/md-mhossain/raangalay-backend.git"
+    "seed:admin": "tsx src/scripts/seed-admin.ts",
+    "db:constraints": "prisma db execute --file prisma/sql/live-constraints.sql",
+    "db:search-indexes": "prisma db execute --file prisma/sql/search-indexes.sql",
+    "backfill:geo": "tsx src/scripts/backfill-geo-codes.ts"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/md-mhossain/raangalay-backend/issues"
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
   },
-  "homepage": "https://github.com/md-mhossain/raangalay-backend#readme",
+  "type": "module",
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
-    "@better-auth/prisma-adapter": "^1.7.2",
+    "@better-auth/prisma-adapter": "1.7.17",
     "@google/genai": "^2.20.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@types/express-rate-limit": "^5.1.3",
-    "better-auth": "^1.7.2",
+    "better-auth": "1.7.17",
     "cloudinary": "^2.11.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -47,12 +45,13 @@
     "pg": "^8.21.0",
     "rate-limit-redis": "^6.0.1",
     "resend": "^6.25.0",
-    "sharp": "^0.35.5",
+    "sanitize-html": "^2.18.1",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
@@ -63,13 +62,16 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^25.9.1",
     "@types/pg": "^8.20.0",
+    "@types/sanitize-html": "^2.16.2",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^10.11.0",
+    "globals": "^17.14.0",
     "prisma": "^7.10.0",
     "supertest": "^7.1.4",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^4.1.11"
   },
   "allowScripts": {
@@ -81,6 +83,7 @@
     "@google/genai@2.21.0": true
   },
   "overrides": {
+    "minimatch@>=7.0.0 <11.0.1": "11.0.1",
     "deepmerge-ts": "^8.0.2",
     "mysql2": "^3.24.5"
   }

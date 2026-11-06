@@ -214,7 +214,7 @@ describe("User suspension", () => {
     expect(unban.body.data.banned).toBe(false);
   });
 
-  it("admin can list users and vendors; customer and vendor cannot", async () => {
+  it("admin can list users; customer cannot", async () => {
     const admin = await createTestUser(tracker, {
       role: "ADMIN",
       suffix: `ulist-admin-${Date.now()}`,
@@ -222,11 +222,6 @@ describe("User suspension", () => {
     const customer = await createTestUser(tracker, {
       suffix: `ulist-cust-${Date.now()}`,
     });
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `ulist-vend-${Date.now()}`,
-    });
-
     const unauth = await api().get("/api/v1/admin/users");
     expect(unauth.status).toBe(401);
 
@@ -234,11 +229,6 @@ describe("User suspension", () => {
       .get("/api/v1/admin/users")
       .set("Cookie", customer.cookie);
     expect(customerDenied.status).toBe(403);
-
-    const vendorDenied = await api()
-      .get("/api/v1/admin/users?role=VENDOR")
-      .set("Cookie", vendor.cookie);
-    expect(vendorDenied.status).toBe(403);
 
     const listed = await api()
       .get("/api/v1/admin/users")
@@ -253,16 +243,6 @@ describe("User suspension", () => {
     expect(listed.body.data.items.some((u: { id: string }) => u.id === customer.id)).toBe(true);
     expect(listed.body.data.items[0]).not.toHaveProperty("password");
     expect(listed.body.data.items[0]).not.toHaveProperty("token");
-
-    const vendors = await api()
-      .get("/api/v1/admin/users")
-      .query({ role: "VENDOR" })
-      .set("Cookie", admin.cookie);
-    expect(vendors.status).toBe(200);
-    expect(vendors.body.data.items.every((u: { vendorProfile: unknown }) => u.vendorProfile)).toBe(true);
-    expect(
-      vendors.body.data.items.some((u: { id: string }) => u.id === vendor.id),
-    ).toBe(true);
   });
 
   it("admin can fetch a user by id", async () => {
@@ -288,84 +268,5 @@ describe("User suspension", () => {
     expect(res.status).toBe(200);
     expect(res.body.data.id).toBe(customer.id);
     expect(res.body.data.email).toBe(customer.email);
-  });
-});
-
-describe("Vendor approval", () => {
-  it("customer can apply as vendor once", async () => {
-    const user = await createTestUser(tracker, {
-      suffix: `vapply-${Date.now()}`,
-    });
-    const tag = randomUUID().slice(0, 8);
-
-    const applied = await api()
-      .post("/api/v1/auth/vendor/apply")
-      .set("Cookie", user.cookie)
-      .send({
-        shopName: `Apply Shop ${tag}`,
-        shopSlug: `apply-shop-${tag}`,
-      });
-
-    expect(applied.status).toBe(201);
-    expect(applied.body.data.isApproved).toBe(false);
-
-    const duplicate = await api()
-      .post("/api/v1/auth/vendor/apply")
-      .set("Cookie", user.cookie)
-      .send({
-        shopName: `Apply Shop ${tag} 2`,
-        shopSlug: `apply-shop-${tag}-2`,
-      });
-
-    expect(duplicate.status).toBe(409);
-  });
-
-  it("unapproved vendor cannot update vendor profile", async () => {
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      isApproved: false,
-      suffix: `vunap-${Date.now()}`,
-    });
-
-    const res = await api()
-      .patch("/api/v1/vendor/profile")
-      .set("Cookie", vendor.cookie)
-      .send({ shopName: "Hijack Shop" });
-
-    expect(res.status).toBe(403);
-  });
-
-  it("unapproved vendor cannot access restricted admin routes", async () => {
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      isApproved: false,
-      suffix: `vend-${Date.now()}`,
-    });
-
-    const res = await api()
-      .post("/api/v1/admin/categories")
-      .set("Cookie", vendor.cookie)
-      .send({
-        name: `Blocked Cat ${randomUUID().slice(0, 8)}`,
-        slug: `blocked-cat-${randomUUID().slice(0, 8)}`,
-      });
-
-    expect(res.status).toBe(403);
-  });
-
-  it("approved vendor still cannot mutate catalog (admin-only CUD)", async () => {
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      isApproved: true,
-      suffix: `vap-${Date.now()}`,
-    });
-
-    const tag = randomUUID().slice(0, 8);
-    const res = await api()
-      .post("/api/v1/admin/categories")
-      .set("Cookie", vendor.cookie)
-      .send({ name: `Approved Cat ${tag}`, slug: `approved-cat-${tag}` });
-
-    expect(res.status).toBe(403);
   });
 });

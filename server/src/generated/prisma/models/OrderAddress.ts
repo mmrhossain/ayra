@@ -35,6 +35,9 @@ export type OrderAddressMinAggregateOutputType = {
   district: string | null
   thana: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   orderId: string | null
@@ -51,6 +54,9 @@ export type OrderAddressMaxAggregateOutputType = {
   district: string | null
   thana: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   orderId: string | null
@@ -67,6 +73,9 @@ export type OrderAddressCountAggregateOutputType = {
   district: number
   thana: number
   postalCode: number
+  divisionCode: number
+  districtCode: number
+  upazilaCode: number
   addressLine1: number
   addressLine2: number
   orderId: number
@@ -85,6 +94,9 @@ export type OrderAddressMinAggregateInputType = {
   district?: true
   thana?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   orderId?: true
@@ -101,6 +113,9 @@ export type OrderAddressMaxAggregateInputType = {
   district?: true
   thana?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   orderId?: true
@@ -117,6 +132,9 @@ export type OrderAddressCountAggregateInputType = {
   district?: true
   thana?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   orderId?: true
@@ -206,6 +224,9 @@ export type OrderAddressGroupByOutputType = {
   district: string
   thana: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string
   addressLine2: string | null
   orderId: string
@@ -243,6 +264,9 @@ export type OrderAddressWhereInput = {
   district?: Prisma.StringFilter<"OrderAddress"> | string
   thana?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   postalCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   addressLine1?: Prisma.StringFilter<"OrderAddress"> | string
   addressLine2?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   orderId?: Prisma.StringFilter<"OrderAddress"> | string
@@ -260,6 +284,9 @@ export type OrderAddressOrderByWithRelationInput = {
   district?: Prisma.SortOrder
   thana?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   orderId?: Prisma.SortOrder
@@ -281,6 +308,9 @@ export type OrderAddressWhereUniqueInput = Prisma.AtLeast<{
   district?: Prisma.StringFilter<"OrderAddress"> | string
   thana?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   postalCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   addressLine1?: Prisma.StringFilter<"OrderAddress"> | string
   addressLine2?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   orderId?: Prisma.StringFilter<"OrderAddress"> | string
@@ -298,6 +328,9 @@ export type OrderAddressOrderByWithAggregationInput = {
   district?: Prisma.SortOrder
   thana?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   orderId?: Prisma.SortOrder
@@ -320,6 +353,9 @@ export type OrderAddressScalarWhereWithAggregatesInput = {
   district?: Prisma.StringWithAggregatesFilter<"OrderAddress"> | string
   thana?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
+  divisionCode?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
+  districtCode?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
   addressLine1?: Prisma.StringWithAggregatesFilter<"OrderAddress"> | string
   addressLine2?: Prisma.StringNullableWithAggregatesFilter<"OrderAddress"> | string | null
   orderId?: Prisma.StringWithAggregatesFilter<"OrderAddress"> | string
@@ -336,6 +372,9 @@ export type OrderAddressCreateInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   order: Prisma.OrderCreateNestedOneWithoutAddressesInput
@@ -352,6 +391,9 @@ export type OrderAddressUncheckedCreateInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   orderId: string
@@ -368,6 +410,9 @@ export type OrderAddressUpdateInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.OrderUpdateOneRequiredWithoutAddressesNestedInput
@@ -384,6 +429,9 @@ export type OrderAddressUncheckedUpdateInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -400,6 +448,9 @@ export type OrderAddressCreateManyInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   orderId: string
@@ -416,6 +467,9 @@ export type OrderAddressUpdateManyMutationInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -431,6 +485,9 @@ export type OrderAddressUncheckedUpdateManyInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -462,6 +519,9 @@ export type OrderAddressCountOrderByAggregateInput = {
   district?: Prisma.SortOrder
   thana?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
@@ -478,6 +538,9 @@ export type OrderAddressMaxOrderByAggregateInput = {
   district?: Prisma.SortOrder
   thana?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
@@ -494,6 +557,9 @@ export type OrderAddressMinOrderByAggregateInput = {
   district?: Prisma.SortOrder
   thana?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
@@ -556,6 +622,9 @@ export type OrderAddressCreateWithoutOrderInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
 }
@@ -571,6 +640,9 @@ export type OrderAddressUncheckedCreateWithoutOrderInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
 }
@@ -615,6 +687,9 @@ export type OrderAddressScalarWhereInput = {
   district?: Prisma.StringFilter<"OrderAddress"> | string
   thana?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   postalCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   addressLine1?: Prisma.StringFilter<"OrderAddress"> | string
   addressLine2?: Prisma.StringNullableFilter<"OrderAddress"> | string | null
   orderId?: Prisma.StringFilter<"OrderAddress"> | string
@@ -631,6 +706,9 @@ export type OrderAddressCreateManyOrderInput = {
   district: string
   thana?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
 }
@@ -646,6 +724,9 @@ export type OrderAddressUpdateWithoutOrderInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -661,6 +742,9 @@ export type OrderAddressUncheckedUpdateWithoutOrderInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -676,6 +760,9 @@ export type OrderAddressUncheckedUpdateManyWithoutOrderInput = {
   district?: Prisma.StringFieldUpdateOperationsInput | string
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -693,6 +780,9 @@ export type OrderAddressSelect<ExtArgs extends runtime.Types.Extensions.Internal
   district?: boolean
   thana?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   orderId?: boolean
@@ -710,6 +800,9 @@ export type OrderAddressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   district?: boolean
   thana?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   orderId?: boolean
@@ -727,6 +820,9 @@ export type OrderAddressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   district?: boolean
   thana?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   orderId?: boolean
@@ -744,12 +840,15 @@ export type OrderAddressSelectScalar = {
   district?: boolean
   thana?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   orderId?: boolean
 }
 
-export type OrderAddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "fullName" | "phone" | "email" | "country" | "division" | "district" | "thana" | "postalCode" | "addressLine1" | "addressLine2" | "orderId", ExtArgs["result"]["orderAddress"]>
+export type OrderAddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "fullName" | "phone" | "email" | "country" | "division" | "district" | "thana" | "postalCode" | "divisionCode" | "districtCode" | "upazilaCode" | "addressLine1" | "addressLine2" | "orderId", ExtArgs["result"]["orderAddress"]>
 export type OrderAddressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
 }
@@ -776,6 +875,9 @@ export type $OrderAddressPayload<ExtArgs extends runtime.Types.Extensions.Intern
     district: string
     thana: string | null
     postalCode: string | null
+    divisionCode: string | null
+    districtCode: string | null
+    upazilaCode: string | null
     addressLine1: string
     addressLine2: string | null
     orderId: string
@@ -1213,6 +1315,9 @@ export interface OrderAddressFieldRefs {
   readonly district: Prisma.FieldRef<"OrderAddress", 'String'>
   readonly thana: Prisma.FieldRef<"OrderAddress", 'String'>
   readonly postalCode: Prisma.FieldRef<"OrderAddress", 'String'>
+  readonly divisionCode: Prisma.FieldRef<"OrderAddress", 'String'>
+  readonly districtCode: Prisma.FieldRef<"OrderAddress", 'String'>
+  readonly upazilaCode: Prisma.FieldRef<"OrderAddress", 'String'>
   readonly addressLine1: Prisma.FieldRef<"OrderAddress", 'String'>
   readonly addressLine2: Prisma.FieldRef<"OrderAddress", 'String'>
   readonly orderId: Prisma.FieldRef<"OrderAddress", 'String'>

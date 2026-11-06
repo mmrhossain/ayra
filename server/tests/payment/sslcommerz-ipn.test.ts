@@ -101,7 +101,7 @@ describe("SSLCommerz IPN", () => {
     expect(res.body.data.payment).not.toHaveProperty("bankTranId");
 
     const notification = await prisma.notification.findFirst({
-      where: { userId: user.id },
+      where: { userId: user.id, channel: "EMAIL" },
       include: { template: true },
     });
     expect(notification).not.toBeNull();
@@ -351,14 +351,115 @@ describe("SSLCommerz IPN", () => {
     expect(persisted.status).toBe("CANCELLED");
     expect(persisted.paymentStatus).toBe("FAILED");
 
-    const unchanged = await prisma.payment.findUniqueOrThrow({
+    const settled = await prisma.payment.findUniqueOrThrow({
       where: { id: payment.id },
     });
-    expect(unchanged.status).toBe("INITIATED");
+    expect(settled.status).toBe("SUCCESS");
+    expect(settled.valId).toBe(valId);
+
+    const refund = await prisma.refund.findFirst({
+      where: { paymentId: payment.id, status: { not: "REJECTED" } },
+    });
+    expect(refund).toMatchObject({
+      status: "PENDING",
+      requiresManualProcessing: true,
+      reason: "Payment received after the order was cancelled",
+    });
+    expect(Number(refund?.amount)).toBe(100);
 
     const log = await prisma.paymentWebhookLog.findFirst({
       where: { provider: "SSLCOMMERZ", externalEventId: valId },
     });
+    expect(log?.processed).toBe(true);
     if (log) tracker.webhookLogIds.push(log.id);
+  });
+
+  it("settles the payment on a verified success redirect", async () => {
+    const user = await createTestUser(tracker, { suffix: `ok-${Date.now()}` });
+    const order = await createTestOrder(tracker, user, { grandTotal: 100 });
+    const payment = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+
+    const valId = `VAL-OK-${Date.now()}`;
+    mockVerify(100, payment.providerReference as string);
+
+    const res = await api()
+      .get("/api/v1/payments/sslcommerz/success")
+      .query({ val_id: valId, tran_id: payment.providerReference });
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain("/checkout/payment/success");
+    expect(res.headers.location).toContain(`orderId=${order.id}`);
+
+    const settled = await prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
+    expect(settled.status).toBe("SUCCESS");
+    expect(settled.valId).toBe(valId);
+
+    const paidOrder = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+    });
+    expect(paidOrder.paymentStatus).toBe("PAID");
+    expect(paidOrder.status).toBe("CONFIRMED");
+  });
+
+  it("does not settle the payment when gateway verification fails", async () => {
+    const user = await createTestUser(tracker, { suffix: `badok-${Date.now()}` });
+    const order = await createTestOrder(tracker, user, { grandTotal: 100 });
+    const payment = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+
+    vi.spyOn(sslcommerzProvider, "verifyTransaction").mockResolvedValue({
+      valid: false,
+      providerReference: payment.providerReference as string,
+      transactionId: payment.providerReference as string,
+      amount: 100,
+      currency: "BDT",
+      raw: { status: "INVALID" },
+    });
+
+    const res = await api()
+      .get("/api/v1/payments/sslcommerz/success")
+      .query({
+        val_id: `VAL-BAD-${Date.now()}`,
+        tran_id: payment.providerReference,
+      });
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain("/checkout/payment/failed");
+
+    const unchanged = await prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
+    expect(unchanged.status).toBe("INITIATED");
+  });
+
+  it("is idempotent when the success redirect is replayed", async () => {
+    const user = await createTestUser(tracker, { suffix: `dups-${Date.now()}` });
+    const order = await createTestOrder(tracker, user, { grandTotal: 100 });
+    const payment = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+
+    const valId = `VAL-DUPS-${Date.now()}`;
+    mockVerify(100, payment.providerReference as string);
+
+    const first = await api()
+      .get("/api/v1/payments/sslcommerz/success")
+      .query({ val_id: valId, tran_id: payment.providerReference });
+    const second = await api()
+      .get("/api/v1/payments/sslcommerz/success")
+      .query({ val_id: valId, tran_id: payment.providerReference });
+
+    expect(first.status).toBe(302);
+    expect(second.status).toBe(302);
+
+    const events = await prisma.paymentEvent.findMany({
+      where: { paymentId: payment.id, eventType: "PAYMENT_SUCCESS" },
+    });
+    expect(events.length).toBe(1);
   });
 });

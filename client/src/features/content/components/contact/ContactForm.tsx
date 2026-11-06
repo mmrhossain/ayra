@@ -57,18 +57,18 @@ const ContactForm: React.FC = () => {
                   name={name}
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-[10px] uppercase font-black tracking-[0.12em] md:tracking-[0.15em] text-gray-400">
+                      <FormLabel className="text-xs uppercase font-black tracking-[0.12em] md:tracking-[0.15em] text-gray-400">
                         {formatLabel(name)}{" "}
                         <span className="text-primary">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder={`Enter ${formatLabel(name)}`}
-                          className="h-11 sm:h-12 border-0 border-b-2 border-gray-100 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary transition-all placeholder:text-gray-200 font-bold text-secondary"
+                          className="h-11 sm:h-12 border-0 border-b-2 border-gray-100 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary transition-all placeholder:text-gray-200 font-bold text-foreground"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-[10px] font-bold uppercase tracking-tight" />
+                      <FormMessage className="text-xs font-bold uppercase tracking-tight" />
                     </FormItem>
                   )}
                 />
@@ -81,7 +81,7 @@ const ContactForm: React.FC = () => {
             name="message"
             render={({ field }) => (
               <FormItem className="space-y-2">
-                <FormLabel className="text-[10px] uppercase font-black tracking-[0.12em] md:tracking-[0.15em] text-gray-400">
+                <FormLabel className="text-xs uppercase font-black tracking-[0.12em] md:tracking-[0.15em] text-gray-400">
                   Your Message
                 </FormLabel>
                 <FormControl>
@@ -91,7 +91,7 @@ const ContactForm: React.FC = () => {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-[10px] font-bold uppercase tracking-tight" />
+                <FormMessage className="text-xs font-bold uppercase tracking-tight" />
               </FormItem>
             )}
           />
@@ -100,7 +100,7 @@ const ContactForm: React.FC = () => {
             <CustomButton
               ctaText="Send Message"
               type="submit"
-              className="w-full md:w-auto h-11 sm:h-14 px-8 sm:px-12 bg-black text-white hover:bg-primary transition-all duration-300 font-black uppercase text-[10px] sm:text-[11px] tracking-[0.1em] sm:tracking-[0.2em] rounded-full shadow-lg hover:shadow-primary/20"
+              className="w-full md:w-auto h-11 sm:h-14 px-8 sm:px-12 bg-black text-white hover:bg-primary transition-all duration-300 font-black uppercase text-xs sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] rounded-full shadow-lg hover:shadow-primary/20"
             />
           </div>
         </form>

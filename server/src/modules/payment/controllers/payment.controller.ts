@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { env } from "../../../config/env.ts";
+import { getSettingValue } from "../../settings/settings.service.ts";
 import { asyncHandler } from "../../../common/utils/asyncHandler.ts";
 import { requireParam } from "../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../common/utils/response.ts";
@@ -8,7 +8,9 @@ import { getOrCreateCustomerProfile } from "../../../common/utils/customerProfil
 import {
     initiatePaymentSchema,
     listPaymentsQuerySchema,
+    listRefundsQuerySchema,
     refundSchema,
+    refundStatusSchema,
     sslcommerzFailCancelSchema,
     sslcommerzIpnSchema,
     sslcommerzSuccessSchema,
@@ -19,6 +21,8 @@ import {
     getPayment,
     initiatePayment,
     listPayments,
+    listRefunds,
+    updateRefundStatus,
 } from "../services/payment.service.ts";
 import {
     handleSslcommerzCancel,
@@ -81,9 +85,29 @@ export const refundPaymentHandler = asyncHandler(
     }
 );
 
+export const updateRefundStatusHandler = asyncHandler(
+    async (req: Request, res: Response) => {
+        if (!req.auth) throw new AppError("Unauthorized", 401);
+
+        const input = refundStatusSchema.parse(req.body);
+
+        successResponse(
+            res,
+            await updateRefundStatus(
+                requireParam(req.params.refundId, "refundId"),
+                input,
+                req.auth.user.id
+            ),
+            "Refund updated"
+        );
+    }
+);
+
 // Helper to extract data from body or query (handles both POST and GET redirects)
 const getRequestData = (req: Request) => {
-    return Object.keys(req.body).length > 0 ? req.body : req.query;
+    const body =
+        req.body && typeof req.body === "object" ? req.body : {};
+    return Object.keys(body).length > 0 ? body : req.query;
 };
 
 export const sslcommerzSuccessHandler = asyncHandler(
@@ -91,13 +115,20 @@ export const sslcommerzSuccessHandler = asyncHandler(
         const rawData = getRequestData(req);
         const input = sslcommerzSuccessSchema.parse(rawData);
 
-        const result = await handleSslcommerzSuccess(input);
-        const frontendUrl = env.FRONTEND_URL || "http://localhost:3000";
+        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
 
-        // Redirect user browser to frontend success page
-        return res.redirect(
-            `${frontendUrl}/checkout/payment/success?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
-        );
+        try {
+            const result = await handleSslcommerzSuccess(input);
+
+            // Redirect user browser to frontend success page
+            return res.redirect(
+                `${frontendUrl}/checkout/payment/success?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
+            );
+        } catch {
+            return res.redirect(
+                `${frontendUrl}/checkout/payment/failed?tran_id=${encodeURIComponent(input.tran_id)}`
+            );
+        }
     }
 );
 
@@ -107,7 +138,7 @@ export const sslcommerzFailHandler = asyncHandler(
         const input = sslcommerzFailCancelSchema.parse(rawData);
 
         const result = await handleSslcommerzFail(input);
-        const frontendUrl = env.FRONTEND_URL || "http://localhost:3000";
+        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
 
         return res.redirect(
             `${frontendUrl}/checkout/payment/failed?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
@@ -121,7 +152,7 @@ export const sslcommerzCancelHandler = asyncHandler(
         const input = sslcommerzFailCancelSchema.parse(rawData);
 
         const result = await handleSslcommerzCancel(input);
-        const frontendUrl = env.FRONTEND_URL || "http://localhost:3000";
+        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
 
         return res.redirect(
             `${frontendUrl}/checkout/payment/cancelled?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
@@ -142,6 +173,14 @@ export const adminListPaymentsHandler = asyncHandler(
         const query = listPaymentsQuerySchema.parse(req.query);
 
         successResponse(res, await listPayments(query), "Payments fetched");
+    }
+);
+
+export const adminListRefundsHandler = asyncHandler(
+    async (req: Request, res: Response) => {
+        const query = listRefundsQuerySchema.parse(req.query);
+
+        successResponse(res, await listRefunds(query), "Refunds fetched");
     }
 );
 

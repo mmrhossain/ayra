@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../../../common/middleware/auth.middleware.ts";
+import { requireAuth, requireCustomer } from "../../../common/middleware/auth.middleware.ts";
 
 import {
   initiatePaymentHandler,
@@ -14,6 +14,7 @@ const router = Router();
 router.post(
     "/payments/:orderId/initiate",
     requireAuth,
+    requireCustomer,
     initiatePaymentHandler
 );
 

@@ -61,7 +61,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/v1/orders/{id}/cancelled",
+  path: "/api/v1/orders/{id}/cancel",
   tags: [TAG],
   summary: "Cancel my order",
   security: bearerAuth,

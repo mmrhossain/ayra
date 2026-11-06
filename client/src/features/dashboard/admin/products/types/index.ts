@@ -16,6 +16,9 @@ export type {
   ProductImageInput,
   CreateProductBody,
   CreateVariantBody,
+  ProductStatus,
+  BulkProductAction,
+  BulkProductResult,
 } from "./models";
 
 export type { DetailsFormValues as DetailsValues } from "@/features/dashboard/admin/products/schemas";
@@ -40,14 +43,20 @@ export type VariantRow = {
   key: string;
   id?: string;
   sku: string;
+  skuEdited?: boolean;
+  lastSuggested?: string;
   price: string;
+  costPrice: string;
   isDefault: boolean;
   attributeValueIds: string[];
   label: string;
   skuError?: string;
   priceError?: string;
+  costError?: string;
   attrError?: string;
-  initialQty: number;
+  initialQty: string;
+  /** Current stock carried from the loaded product, used to diff the entered level. */
+  existingQty?: number;
 };
 
 export type SelectedAttribute = {

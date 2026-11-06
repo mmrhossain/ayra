@@ -1,27 +1,24 @@
-import { BETTER_AUTH_URL } from "@/config";
+import { BETTER_AUTH_BASE_PATH, BETTER_AUTH_URL } from "@/config";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 /**
- * Better Auth client for the unified backend.s
+ * Better Auth client for the unified backend.
  *
- * One session powers the whole app (storefront + ADMIN/VENDOR/CUSTOMER areas).
- * Backend auth is at /api/v1/auth and is cookie-only
- * (credentials: include). Sign-in: POST /api/v1/auth/sign-in/email.
+ * Browser traffic always goes through same-origin `/backend-proxy`
+ * unless NEXT_PUBLIC_BETTER_AUTH_URL is an explicit remote origin.
  */
 export const authClient = createAuthClient({
-  baseURL: BETTER_AUTH_URL,
-  basePath: "/api/v1/auth",
+  ...(BETTER_AUTH_URL ? { baseURL: BETTER_AUTH_URL } : {}),
+  basePath: BETTER_AUTH_BASE_PATH,
   plugins: [
-    // The backend extends the Better Auth user model with a `role` field
-    // (ADMIN/VENDOR/CUSTOMER) and an `isApproved` flag for vendors.
-    // Declare them here so `user.role` / `user.isApproved` are typed. They are
-    // assigned server-side (role defaults to CUSTOMER on signup), so they are
-    // not part of the sign-up/sign-in input.
     inferAdditionalFields({
       user: {
         role: { type: "string", required: false, input: false },
-        isApproved: { type: "boolean", input: false },
+        adminPermissions: { type: "string[]", required: false, input: false },
+        adminActions: { type: "string[]", required: false, input: false },
+        isSuperAdmin: { type: "boolean", required: false, input: false },
+        staffStatus: { type: "string", required: false, input: false },
         banned: { type: "boolean", required: false, input: false },
         banReason: { type: "string", required: false, input: false },
         banExpires: { type: "date", required: false, input: false },
@@ -30,4 +27,4 @@ export const authClient = createAuthClient({
   ],
 });
 
-export { SESSION_COOKIE } from "@/config/index";
+export { SESSION_COOKIE } from "@/config";

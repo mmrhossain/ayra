@@ -105,6 +105,77 @@ describe("Shipping admin CRUD", () => {
     await prisma.shippingMethod.delete({ where: { id: method.body.data.id } });
     await prisma.shippingZone.delete({ where: { id: zone.body.data.id } });
   });
+
+  it("rejects money values that exceed the limit or have more than 2 decimals", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `shm-${Date.now()}`,
+    });
+    const tag = randomUUID().slice(0, 8);
+
+    const zone = await api()
+      .post("/api/v1/admin/shipping/zones")
+      .set("Cookie", admin.cookie)
+      .send({
+        name: `Money Zone ${tag}`,
+        code: `MONEY_${tag}`,
+        isActive: true,
+        matchDistricts: ["Khulna"],
+      });
+    expect(zone.status).toBe(201);
+
+    const method = await api()
+      .post("/api/v1/admin/shipping/methods")
+      .set("Cookie", admin.cookie)
+      .send({
+        name: `Money Method ${tag}`,
+        code: `MMETHOD_${tag}`,
+        isActive: true,
+      });
+    expect(method.status).toBe(201);
+
+    const tooPrecise = await api()
+      .post("/api/v1/admin/shipping/rates")
+      .set("Cookie", admin.cookie)
+      .send({
+        shippingZoneId: zone.body.data.id,
+        shippingMethodId: method.body.data.id,
+        price: 10.999,
+      });
+    expect(tooPrecise.status).toBe(400);
+
+    const tooLarge = await api()
+      .post("/api/v1/admin/shipping/rates")
+      .set("Cookie", admin.cookie)
+      .send({
+        shippingZoneId: zone.body.data.id,
+        shippingMethodId: method.body.data.id,
+        price: 1_000_001,
+      });
+    expect(tooLarge.status).toBe(400);
+
+    await prisma.shippingMethod.delete({ where: { id: method.body.data.id } });
+    await prisma.shippingZone.delete({ where: { id: zone.body.data.id } });
+  });
+
+  it("blocks deleting or deactivating the active fallback zone", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `shf-${Date.now()}`,
+    });
+    const catalog = await ensureDefaultShippingCatalog();
+
+    const deleted = await api()
+      .delete(`/api/v1/admin/shipping/zones/${catalog.outsideDhaka.id}`)
+      .set("Cookie", admin.cookie);
+    expect(deleted.status).toBe(409);
+
+    const deactivated = await api()
+      .put(`/api/v1/admin/shipping/zones/${catalog.outsideDhaka.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ isActive: false });
+    expect(deactivated.status).toBe(409);
+  });
 });
 
 describe("Customer shipping options", () => {

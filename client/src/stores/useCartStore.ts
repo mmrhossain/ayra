@@ -5,7 +5,7 @@ import {
   removeCartItem,
   updateCartItem,
 } from "@/features/cart/api";
-import { CartState } from "@/types/cart";
+import { CartState } from "@/features/cart/types";
 import { create } from "zustand";
 
 export const useCartStore = create<CartState>((set, get) => ({

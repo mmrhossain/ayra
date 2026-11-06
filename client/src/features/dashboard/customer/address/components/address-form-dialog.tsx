@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -52,23 +53,29 @@ export function AddressFormDialog({
   });
 
   // ✅ useWatch এর মাধ্যমে React Compiler এর মেমোরাইজেশন ওয়ার্নিং দূর করা হয়েছে
-  const selectedDivision = useWatch({
+  const selectedDivisionCode = useWatch({
     control: form.control,
-    name: "division",
+    name: "divisionCode",
   });
 
-  const selectedDistrict = useWatch({
+  const selectedDistrictCode = useWatch({
     control: form.control,
-    name: "district",
+    name: "districtCode",
+  });
+
+  const selectedUpazilaCode = useWatch({
+    control: form.control,
+    name: "upazilaCode",
   });
 
   const {
     fetchDivisionList,
     fetchDistrictList,
-    fetchPostList,
+    fetchUpazilaList,
     divisionList,
     districtList,
-    postList,
+    upazilaList,
+    geoError,
   } = locationStore();
 
   useEffect(() => {
@@ -82,22 +89,47 @@ export function AddressFormDialog({
     const hydrate = async () => {
       await fetchDivisionList();
       if (cancelled || !editing) return;
-      const division = locationStore
-        .getState()
-        .divisionList?.find((d) => d.name === editing.division);
+      const division =
+        locationStore
+          .getState()
+          .divisionList?.find((d) => d.code === editing.divisionCode) ??
+        locationStore
+          .getState()
+          .divisionList?.find((d) => d.name === editing.division);
       if (!division) return;
-      await fetchDistrictList(division._id);
+      form.setValue("division", division.name);
+      form.setValue("divisionCode", division.code);
+      await fetchDistrictList(division.code);
       if (cancelled) return;
-      const district = locationStore
-        .getState()
-        .districtList?.find((d) => d.name === editing.district);
-      if (district) await fetchPostList(district._id);
+      const district =
+        locationStore
+          .getState()
+          .districtList?.find((d) => d.code === editing.districtCode) ??
+        locationStore
+          .getState()
+          .districtList?.find((d) => d.name === editing.district);
+      if (!district) return;
+      form.setValue("district", district.name);
+      form.setValue("districtCode", district.code);
+      await fetchUpazilaList(district.code);
+      if (cancelled) return;
+      const upazila =
+        locationStore
+          .getState()
+          .upazilaList?.find((u) => u.code === editing.upazilaCode) ??
+        locationStore
+          .getState()
+          .upazilaList?.find((u) => u.name === editing.thana);
+      if (upazila) {
+        form.setValue("thana", upazila.name);
+        form.setValue("upazilaCode", upazila.code);
+      }
     };
     void hydrate();
     return () => {
       cancelled = true;
     };
-  }, [open, editing, fetchDivisionList, fetchDistrictList, fetchPostList]);
+  }, [open, editing, fetchDivisionList, fetchDistrictList, fetchUpazilaList, form]);
 
   const displayName = editing?.fullName || userName || "";
 
@@ -108,23 +140,29 @@ export function AddressFormDialog({
   });
 
   const handleDivisionChange = async (value: string) => {
-    const selected = divisionList?.find((d) => d._id === value);
+    const selected = divisionList?.find((d) => d.code === value);
     form.setValue("division", selected?.name || "", { shouldValidate: true });
+    form.setValue("divisionCode", value);
     form.setValue("district", "");
+    form.setValue("districtCode", "");
     form.setValue("thana", "");
+    form.setValue("upazilaCode", "");
     if (value) await fetchDistrictList(value);
   };
 
   const handleDistrictChange = async (value: string) => {
-    const selected = districtList?.find((d) => d._id === value);
+    const selected = districtList?.find((d) => d.code === value);
     form.setValue("district", selected?.name || "", { shouldValidate: true });
+    form.setValue("districtCode", value);
     form.setValue("thana", "");
-    if (value) await fetchPostList(value);
+    form.setValue("upazilaCode", "");
+    if (value) await fetchUpazilaList(value);
   };
 
   const handleThanaChange = (value: string) => {
-    const selected = postList?.find((p) => p._id === value);
+    const selected = upazilaList?.find((u) => u.code === value);
     form.setValue("thana", selected?.name || "");
+    form.setValue("upazilaCode", value);
   };
 
   return (
@@ -198,11 +236,11 @@ export function AddressFormDialog({
               <FormField
                 control={form.control}
                 name="division"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Division</FormLabel>
                     <Select
-                      value={divisionList?.find((d) => d.name === field.value)?._id}
+                      value={selectedDivisionCode || ""}
                       onValueChange={(v) => void handleDivisionChange(v)}
                     >
                       <FormControl>
@@ -212,26 +250,31 @@ export function AddressFormDialog({
                       </FormControl>
                       <SelectContent>
                         {divisionList?.map((div) => (
-                          <SelectItem key={div._id} value={div._id}>
+                          <SelectItem key={div.code} value={div.code}>
                             {div.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                    {geoError ? (
+                      <p className="text-sm leading-snug text-destructive" role="alert">
+                        {geoError}
+                      </p>
+                    ) : null}
                   </FormItem>
                 )}
               />
               <FormField
                 control={form.control}
                 name="district"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>District</FormLabel>
                     <Select
-                      value={districtList?.find((d) => d.name === field.value)?._id}
+                      value={selectedDistrictCode || ""}
                       onValueChange={(v) => void handleDistrictChange(v)}
-                      disabled={!selectedDivision}
+                      disabled={!selectedDivisionCode}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -240,7 +283,7 @@ export function AddressFormDialog({
                       </FormControl>
                       <SelectContent>
                         {districtList?.map((dist) => (
-                          <SelectItem key={dist._id} value={dist._id}>
+                          <SelectItem key={dist.code} value={dist.code}>
                             {dist.name}
                           </SelectItem>
                         ))}
@@ -255,13 +298,13 @@ export function AddressFormDialog({
               <FormField
                 control={form.control}
                 name="thana"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Thana</FormLabel>
                     <Select
-                      value={postList?.find((p) => p.name === field.value)?._id}
+                      value={selectedUpazilaCode || ""}
                       onValueChange={handleThanaChange}
-                      disabled={!selectedDistrict}
+                      disabled={!selectedDistrictCode}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -269,9 +312,9 @@ export function AddressFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {postList?.map((post) => (
-                          <SelectItem key={post._id} value={post._id}>
-                            {post.name}
+                        {upazilaList?.map((upazila) => (
+                          <SelectItem key={upazila.code} value={upazila.code}>
+                            {upazila.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -332,14 +375,22 @@ export function AddressFormDialog({
         </Form>
 
         <DialogFooter>
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={mutation.isPending}
+          >
+            Cancel
+          </Button>
+          <Button
             type="submit"
             form={ADDRESS_FORM_ID}
             disabled={mutation.isPending}
-            className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             {mutation.isPending ? "Saving..." : "Save address"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

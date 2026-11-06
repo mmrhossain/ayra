@@ -4,7 +4,12 @@ import { REASONS } from "@/features/dashboard/admin/inventory/utils";
 
 export const adjustFormSchema = z.object({
   type: z.enum(["increase", "decrease", "set"]),
-  quantity: z.number().int().nonnegative("Quantity cannot be negative"),
+  quantity: z
+    .string({ error: "Quantity is required" })
+    .trim()
+    .min(1, "Quantity is required")
+    .regex(/^\d+$/, "Enter a whole number")
+    .refine((value) => Number(value) <= Number.MAX_SAFE_INTEGER, "Quantity is too large"),
   reason: z.enum(REASONS),
   notes: z.string().optional(),
 });

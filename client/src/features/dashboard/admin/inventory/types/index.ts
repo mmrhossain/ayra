@@ -8,6 +8,10 @@ export type {
   InventoryListParams,
   InventoryListResult,
   InventoryPagination,
+  SetStockLevelItem,
+  SetStockLevelsBody,
+  SetStockLevelsResult,
+  StockLevelChange,
 } from "./models";
 
 export { LOW_STOCK_THRESHOLD } from "./models";

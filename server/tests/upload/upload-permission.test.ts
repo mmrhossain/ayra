@@ -1,15 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Request, Response } from "express";
-
-const findUnique = vi.fn();
-
-vi.mock("../../src/lib/prisma.ts", () => ({
-  prisma: {
-    vendorProfile: {
-      findUnique,
-    },
-  },
-}));
 
 const {
   requireMultipleUploadPermission,
@@ -24,7 +14,17 @@ const call = (
 ) =>
   new Promise<{ ok: boolean; err?: { statusCode?: number } }>((resolve) => {
     const req = {
-      auth: role ? { user: { id: userId, email: "a@b.c", role } } : undefined,
+      auth: role
+        ? {
+            user: {
+              id: userId,
+              email: "a@b.c",
+              role,
+              isSuperAdmin: role === "ADMIN",
+              banned: false,
+            },
+          }
+        : undefined,
       query: { type },
       body: {},
     } as unknown as Request;
@@ -58,28 +58,7 @@ describe("upload permission", () => {
       call(requireSingleUploadPermission, "CUSTOMER", "customer_avatar")
     ).resolves.toEqual({ ok: true });
     await expect(
-      call(requireSingleUploadPermission, "CUSTOMER", "vendor_avatar")
+      call(requireSingleUploadPermission, "CUSTOMER", "product")
     ).resolves.toMatchObject({ ok: false, err: { statusCode: 403 } });
-  });
-
-  it("allows approved VENDOR for vendor_avatar and blocks catalog types", async () => {
-    findUnique.mockResolvedValueOnce({ isApproved: true });
-    await expect(
-      call(requireSingleUploadPermission, "VENDOR", "vendor_avatar")
-    ).resolves.toEqual({ ok: true });
-    await expect(call(requireSingleUploadPermission, "VENDOR", "category")).resolves.toMatchObject({
-      ok: false,
-      err: { statusCode: 403 },
-    });
-  });
-
-  it("blocks unapproved VENDOR from vendor_avatar", async () => {
-    findUnique.mockResolvedValueOnce({ isApproved: false });
-    await expect(
-      call(requireSingleUploadPermission, "VENDOR", "vendor_avatar")
-    ).resolves.toMatchObject({
-      ok: false,
-      err: { statusCode: 403 },
-    });
   });
 });

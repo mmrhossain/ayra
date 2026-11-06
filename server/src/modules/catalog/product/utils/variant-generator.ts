@@ -1,3 +1,5 @@
+import { AppError } from "../../../../common/errors/AppError.ts";
+
 export type VariantOptionGroup = {
   attributeId: string;
   attributeValueIds: string[];
@@ -10,6 +12,8 @@ export type VariantCombination = {
 
 export const makeVariantKey = (attributeValueIds: string[]): string =>
   [...attributeValueIds].sort().join("|");
+
+export const MAX_VARIANT_COMBINATIONS = 100;
 
 export const generateVariantCombinations = (
   groups: VariantOptionGroup[],
@@ -42,6 +46,12 @@ export const generateVariantCombinations = (
     if (seen.has(key)) continue;
     seen.add(key);
     unique.push({ attributeValueIds, key });
+  }
+  if (unique.length > MAX_VARIANT_COMBINATIONS) {
+    throw new AppError(
+      `Too many variant combinations (${unique.length}). Maximum is ${MAX_VARIANT_COMBINATIONS}`,
+      400,
+    );
   }
   return unique;
 };

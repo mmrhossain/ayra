@@ -35,7 +35,7 @@ const PageBreadcrumb = ({ items, className }: PageBreadcrumbProps) => {
               <span
                 className={cn(
                   "line-clamp-1",
-                  isLast ? "font-medium text-secondary" : undefined,
+                  isLast ? "font-medium text-foreground" : undefined,
                 )}
               >
                 {item.label}

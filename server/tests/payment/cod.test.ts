@@ -128,7 +128,7 @@ describe("COD collect", () => {
     expect(res.body.data.status).toBe("COLLECTED");
 
     const notification = await prisma.notification.findFirst({
-      where: { userId: user.id },
+      where: { userId: user.id, channel: "EMAIL" },
       include: { template: true },
     });
     expect(notification).not.toBeNull();

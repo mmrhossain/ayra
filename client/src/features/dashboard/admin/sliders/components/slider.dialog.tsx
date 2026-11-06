@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
+import {
+  ImageUpload,
+  type ImageUploadHandle,
+} from "@/features/dashboard/admin/shared/components/image-upload";
 import { useSliderFormMutation } from "@/features/dashboard/admin/sliders/hooks/use-slider-mutations";
 import {
   sliderFormSchema,
@@ -53,6 +57,25 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
     onSuccess: () => onOpenChange(false),
   });
 
+  const imageUploadRef = useRef<ImageUploadHandle>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSaving = isSubmitting || mutation.isPending;
+  const submitForm = form.handleSubmit((values) => mutation.mutateAsync(values));
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) return;
+    setIsSubmitting(true);
+    try {
+      await imageUploadRef.current?.flush();
+      await submitForm(event);
+    } catch {
+      // Errors are surfaced by the mutation/form layers.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-xl">
@@ -68,7 +91,7 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
         <Form {...form}>
           <form
             id={SLIDER_FORM_ID}
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={handleSubmit}
             className="flex-1 space-y-4 overflow-y-auto scrollbar-hide"
           >
             <FormField
@@ -107,6 +130,8 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
                   <FormLabel>Slider Image</FormLabel>
                   <FormControl>
                     <ImageUpload
+                      ref={imageUploadRef}
+                      deferUpload
                       mode="single"
                       folder="slider"
                       variantIndex={0}
@@ -174,7 +199,7 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} {...field} />
+                    <Input type="text" inputMode="numeric" placeholder="Priority" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -204,16 +229,21 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
+            disabled={isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" form={SLIDER_FORM_ID} disabled={mutation.isPending}>
-            {mutation.isPending
-              ? "Saving..."
-              : mode === "create"
-                ? "Create slider"
-                : "Save changes"}
+          <Button type="submit" form={SLIDER_FORM_ID} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Saving...
+              </>
+            ) : mode === "create" ? (
+              "Create slider"
+            ) : (
+              "Save changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

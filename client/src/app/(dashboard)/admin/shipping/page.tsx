@@ -1,3 +1,4 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { ShippingTable } from "@/features/dashboard/admin/shipping/components/shipping-table";
 import {
   fetchShippingMethods,
@@ -6,9 +7,13 @@ import {
   toShippingErrorMessage,
 } from "@/features/shipping/shipping-api";
 
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminShippingPage() {
+  await requireAdminPageAccess("/admin/shipping");
   let zones;
   let methods;
   let rates;
@@ -26,22 +31,15 @@ export default async function AdminShippingPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Shipping</h1>
-        <p className="text-sm text-muted-foreground">
-          Zones, delivery methods, and rates used at checkout.
-        </p>
-      </div>
+      <PageHeader
+        title="Shipping settings"
+        description="Zones, delivery methods, and rates used at checkout."
+      />
       {error || !zones || !methods || !rates ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load shipping</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load shipping"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <ShippingTable
           initialZones={zones}

@@ -19,7 +19,9 @@ export function isRefundable(payment: Pick<PaymentRecord, "status">): boolean {
   );
 }
 
-export function paymentCustomerLabel(payment: PaymentRecord): string {
+export function paymentCustomerLabel(
+  payment: Pick<PaymentRecord, "order">,
+): string {
   const user = payment.order?.customerProfile?.user;
   return (
     user?.name?.trim() ||

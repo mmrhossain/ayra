@@ -1,5 +1,6 @@
-import { dashboardApi } from "@/lib/api/dashboard";
+import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
 import type { CustomerOrder } from "@/features/dashboard/customer/orders/types";
+import { toCustomerApiError } from "@/features/dashboard/customer/orders/utils";
 import type {
   CheckoutPayload,
   CustomerCart,
@@ -16,13 +17,27 @@ export type {
   InitiatePaymentResult,
 } from "@/features/checkout/types";
 
-export { toCustomerApiError } from "@/features/dashboard/customer/orders/utils";
+export { toCustomerApiError };
+
+// The server allows a 20s checkout transaction. Leave enough headroom for the
+// network and for the idempotency record to be persisted before aborting.
+export const CHECKOUT_FETCH_TIMEOUT_MS = 35_000;
+
+export function toCheckoutApiError(err: unknown): string {
+  if (err instanceof DashboardApiError && err.status === 503) {
+    return "Checkout is taking longer than expected. Please retry; do not place a second order.";
+  }
+  return toCustomerApiError(err);
+}
 
 export async function placeOrder(
   body: CheckoutPayload,
+  idempotencyKey: string,
 ): Promise<{ message: string; data: CustomerOrder }> {
   const res = await dashboardApi.post<Envelope<CustomerOrder>>("/checkout", {
     body,
+    timeoutMs: CHECKOUT_FETCH_TIMEOUT_MS,
+    headers: { "Idempotency-Key": idempotencyKey },
   });
   return { message: res.message, data: res.data };
 }

@@ -1,7 +1,9 @@
 import type { z } from "zod";
 import type { chatSchema } from "./validators/ai.validators.ts";
 
-export type ChatInput = z.infer<typeof chatSchema>;
+export type ChatInput = z.infer<typeof chatSchema> & {
+  userId?: string;
+};
 
 export type ChatTurn = {
   role: "user" | "model";

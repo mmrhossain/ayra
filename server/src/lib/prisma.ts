@@ -2,6 +2,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "../config/env";
 import type { Prisma } from "../generated/prisma/client";
 import { PrismaClient } from "../generated/prisma/client";
+import { logger } from "../common/looger/logger";
+import { buildPgPoolConfig } from "./pg-pool-config";
 
 const connectionString = env.DATABASE_URL;
 
@@ -21,13 +23,30 @@ if (!looksPooled) {
 const poolMax =
   env.NODE_ENV === "test" ? Math.min(env.DATABASE_POOL_MAX, 5) : env.DATABASE_POOL_MAX;
 
-const adapter = new PrismaPg({
-  connectionString,
-  max: poolMax,
-  connectionTimeoutMillis: 10_000,
-  idleTimeoutMillis: 20_000,
-  keepAlive: true,
-});
+const adapter = new PrismaPg(
+  buildPgPoolConfig({
+    connectionString,
+    max: poolMax,
+    connectionTimeoutMillis: env.DATABASE_CONNECTION_TIMEOUT_MS,
+    idleTimeoutMillis: env.DATABASE_IDLE_TIMEOUT_MS,
+    queryTimeoutMillis: env.DATABASE_QUERY_TIMEOUT_MS,
+    keepAliveInitialDelayMillis: env.DATABASE_KEEPALIVE_INITIAL_DELAY_MS,
+  }),
+  {
+    onPoolError: (error) => {
+      logger.error({
+        message: "[prisma] Pool error; dead connections will be discarded and re-established",
+        error: error.message,
+      });
+    },
+    onConnectionError: (error) => {
+      logger.error({
+        message: "[prisma] Connection error; connection will be recycled",
+        error: error.message,
+      });
+    },
+  }
+);
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -53,8 +72,11 @@ export const transaction = <T>(
   }
 ): Promise<T> => {
   return prisma.$transaction(fn, {
-    maxWait: env.NODE_ENV === "test" ? 20_000 : 2_000,
-    timeout: options?.timeout ?? (env.NODE_ENV === "test" ? 30_000 : 10_000),
+    maxWait:
+      env.NODE_ENV === "test" ? 20_000 : env.DATABASE_TRANSACTION_MAX_WAIT_MS,
+    timeout:
+      options?.timeout ??
+      (env.NODE_ENV === "test" ? 30_000 : env.DATABASE_TRANSACTION_TIMEOUT_MS),
     ...options,
   });
 };

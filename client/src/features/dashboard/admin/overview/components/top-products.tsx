@@ -15,21 +15,23 @@ import {
 } from "@/components/ui/table";
 import type { TopProductsResult } from "@/features/dashboard/admin/overview/api/analytics";
 
-const BDT = new Intl.NumberFormat("en-BD", {
-  style: "currency",
-  currency: "BDT",
-  maximumFractionDigits: 0,
-});
-
 export function TopProductsTable({ data }: { data: TopProductsResult }) {
+  const money = new Intl.NumberFormat("en-BD", {
+    style: "currency",
+    currency: data.currency,
+    maximumFractionDigits: 2,
+  });
+
   if (data.products.length === 0) {
     return (
-      <Card>
+      <Card className="h-full min-w-0">
         <CardHeader>
           <CardTitle>Top products</CardTitle>
-          <CardDescription>Highest revenue this period</CardDescription>
+          <CardDescription>
+            Net product sales by delivery date, less approved returns.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <p className="py-6 text-center text-sm text-muted-foreground">
             No product sales in this period yet.
           </p>
@@ -39,35 +41,53 @@ export function TopProductsTable({ data }: { data: TopProductsResult }) {
   }
 
   return (
-    <Card>
+    <Card className="h-full min-w-0">
       <CardHeader>
         <CardTitle>Top products</CardTitle>
-        <CardDescription>Highest revenue this period</CardDescription>
+        <CardDescription>
+          Net product sales by delivery date, less approved returns. Shipping
+          and tax excluded.
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-w-0">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Product</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Revenue</TableHead>
+              <TableHead className="text-right">Net qty</TableHead>
+              <TableHead className="text-right">Net sales</TableHead>
+              <TableHead className="text-right">Est. gross profit</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.products.map((product) => (
               <TableRow key={product.sku}>
                 <TableCell className="font-medium">
-                  {product.productName}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {product.sku}
+                  <div>{product.productName}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {product.sku}
+                    {product.quantityReturned > 0
+                      ? ` · ${product.quantityReturned} returned`
+                      : ""}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {product.quantity}
+                  {product.netQuantity}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {BDT.format(product.revenue)}
+                  {money.format(product.netProductSales)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {product.costDataComplete ? (
+                    money.format(product.estimatedGrossProfit)
+                  ) : (
+                    <span
+                      className="text-muted-foreground"
+                      title={`Cost known for ${product.costCoveragePercent.toFixed(1)}% of sales`}
+                    >
+                      Incomplete
+                    </span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

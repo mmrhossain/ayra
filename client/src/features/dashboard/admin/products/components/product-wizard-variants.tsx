@@ -1,19 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NumberInput } from "@/components/ui/number-input";
 import type { AttributeListItem } from "@/features/dashboard/admin/attributes/api/attributes";
 import type { SelectedAttribute, VariantRow } from "@/features/dashboard/admin/products/types";
-import { cartesian, comboKey, slugify, uniqueSku } from "@/features/dashboard/admin/products/utils";
+import { cartesian, comboKey } from "@/features/dashboard/admin/products/utils";
+import {
+  buildSuggestedSku,
+  ensureUniqueSku,
+  typedSkuError,
+  type SkuAttributeInput,
+} from "@/features/dashboard/admin/products/utils/sku-generator";
 
 type Props = {
-  productName: string;
-  productSlug: string;
+  categoryName: string;
+  brandName?: string | null;
   basePrice?: string;
   attributes: AttributeListItem[];
   selected: SelectedAttribute[];
@@ -22,13 +29,35 @@ type Props = {
   onRowsChange: (next: VariantRow[]) => void;
 };
 
+function skuAttributesForCombo(
+  combo: Array<{ id: string; value: string; attributeName: string; attributeId: string }>,
+): SkuAttributeInput[] {
+  return combo.map((item) => ({
+    attributeId: item.attributeId,
+    attributeName: item.attributeName,
+    value: item.value,
+  }));
+}
+
+function shouldKeepSku(row: VariantRow | undefined, suggested: string): boolean {
+  if (!row) return false;
+  if (row.skuEdited) return true;
+  if (row.lastSuggested && row.sku === row.lastSuggested) return false;
+  if (row.sku && row.sku !== suggested) return true;
+  return false;
+}
+
+function defaultPriceOf(rows: VariantRow[], fallback = ""): string {
+  return rows.find((row) => row.isDefault)?.price || rows[0]?.price || fallback;
+}
+
 function buildVariantRows(
   selected: SelectedAttribute[],
   attributes: AttributeListItem[],
   rows: VariantRow[],
-  productName: string,
-  productSlug: string,
-  basePrice = ""
+  categoryName: string,
+  brandName?: string | null,
+  basePrice = "",
 ): VariantRow[] {
   const groups = selected
     .map((s) => {
@@ -41,22 +70,31 @@ function buildVariantRows(
           id: v.id,
           value: v.value,
           attributeName: attr.name,
+          attributeId: attr.id,
         }));
     })
     .filter((g) => g.length > 0);
 
   if (groups.length === 0) {
-    const sku = rows[0]?.sku || `${productSlug || slugify(productName) || "product"}-default`;
+    const suggested = categoryName
+      ? buildSuggestedSku({ brandName, categoryName, attributes: [] })
+      : "";
+    const prev = rows[0];
+    const keep = shouldKeepSku(prev, suggested);
     return [
       {
         key: "default",
-        id: rows[0]?.id,
-        sku,
-        price: rows[0]?.price || basePrice,
+        id: prev?.id,
+        sku: keep ? prev?.sku ?? "" : suggested,
+        skuEdited: keep ? Boolean(prev?.skuEdited) : false,
+        lastSuggested: suggested,
+        price: prev?.price || basePrice,
+        costPrice: prev?.costPrice ?? "",
         isDefault: true,
         attributeValueIds: [],
         label: "Default",
-        initialQty: rows[0]?.initialQty ?? 0,
+        initialQty: prev?.initialQty ?? "",
+        existingQty: prev?.existingQty ?? 0,
         attrError: selected.length ? "এই variant-এ কোনো attribute value link করা হয়নি" : undefined,
       },
     ];
@@ -65,30 +103,50 @@ function buildVariantRows(
   const combos = cartesian(groups);
   const existingByKey = new Map(rows.map((row) => [comboKey(row.attributeValueIds), row]));
   const previousDefault = rows.find((row) => row.isDefault);
+  // A simple product starts as a single variant (usually the no-attribute
+  // default). When the admin adds or changes options no combination can match
+  // that lone row by attribute key, so adopt its identity for the first
+  // combination: the server then updates the existing variant (keeping its
+  // stock) instead of creating a sibling and orphaning it.
+  const adoptDefault =
+    rows.length === 1 ? (previousDefault ?? rows[0]) : undefined;
   const taken = new Set<string>();
 
   const next: VariantRow[] = combos.map((combo, index) => {
     const ids = combo.map((c) => c.id);
     const key = comboKey(ids);
-    const prev = existingByKey.get(key);
+    const prev = existingByKey.get(key) ?? (index === 0 ? adoptDefault : undefined);
     const label = combo.map((c) => c.value).join(" / ");
-    const suggested = uniqueSku(
-      [productSlug || slugify(productName), ...combo.map((c) => c.value)].join("-"),
-      taken
-    );
-    taken.add(prev?.sku ?? suggested);
+    const candidate = categoryName
+      ? buildSuggestedSku({
+          brandName,
+          categoryName,
+          attributes: skuAttributesForCombo(combo),
+        })
+      : "";
+    const keep = shouldKeepSku(prev, candidate);
+    const sku = keep && prev?.sku
+      ? prev.sku
+      : candidate
+        ? ensureUniqueSku(candidate, taken)
+        : "";
+    if (sku) taken.add(sku.toLowerCase());
 
     return {
       key,
       id: prev?.id,
-      sku: prev?.sku ?? suggested,
+      sku,
+      skuEdited: keep ? Boolean(prev?.skuEdited) : false,
+      lastSuggested: candidate,
       price: prev?.price || basePrice,
+      costPrice: prev?.costPrice ?? "",
       isDefault: previousDefault
         ? previousDefault.key === key || comboKey(previousDefault.attributeValueIds) === key
         : index === 0,
       attributeValueIds: ids,
       label,
-      initialQty: prev?.initialQty ?? 0,
+      initialQty: prev?.initialQty ?? "",
+      existingQty: prev?.existingQty ?? 0,
       skuError: prev?.skuError,
       priceError: prev?.priceError,
       attrError: undefined,
@@ -103,8 +161,8 @@ function buildVariantRows(
 }
 
 export function ProductWizardVariants({
-  productName,
-  productSlug,
+  categoryName,
+  brandName,
   basePrice = "",
   attributes,
   selected,
@@ -112,8 +170,27 @@ export function ProductWizardVariants({
   rows,
   onRowsChange,
 }: Props) {
-  // Memoized lookup for performance optimization
   const selectedIds = useMemo(() => new Set(selected.map((s) => s.attributeId)), [selected]);
+  const skuContext = `${brandName ?? ""}|${categoryName}`;
+  const previousSkuContext = useRef("");
+
+  useEffect(() => {
+    if (previousSkuContext.current === skuContext) return;
+    previousSkuContext.current = skuContext;
+    onRowsChange(
+      buildVariantRows(
+        selected,
+        attributes,
+        rows,
+        categoryName,
+        brandName,
+        defaultPriceOf(rows, basePrice),
+      ),
+    );
+    // Rebuild only when the SKU context changes; including the row/attribute
+    // props here would overwrite edits after every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skuContext]);
 
   // Helper function to sync and update parent state easily
   const updateAndSyncRows = (nextSelected: SelectedAttribute[]) => {
@@ -122,9 +199,9 @@ export function ProductWizardVariants({
       nextSelected,
       attributes,
       rows,
-      productName,
-      productSlug,
-      basePrice
+      categoryName,
+      brandName,
+      defaultPriceOf(rows, basePrice),
     );
     onRowsChange(newRows);
   };
@@ -148,7 +225,16 @@ export function ProductWizardVariants({
   };
 
   const generate = () => {
-    onRowsChange(buildVariantRows(selected, attributes, rows, productName, productSlug, basePrice));
+    onRowsChange(
+      buildVariantRows(
+        selected,
+        attributes,
+        rows,
+        categoryName,
+        brandName,
+        defaultPriceOf(rows, basePrice),
+      ),
+    );
   };
 
   const updateRow = (key: string, patch: Partial<VariantRow>) => {
@@ -241,7 +327,7 @@ export function ProductWizardVariants({
 
       {rows.length > 0 ? (
         <div className="overflow-x-auto rounded-xl border">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[44rem] text-sm">
             <thead>
               <tr className="border-b text-left">
                 <th className="p-3 font-medium">Variant</th>
@@ -249,8 +335,9 @@ export function ProductWizardVariants({
                   SKU <span className="text-destructive">*</span>
                 </th>
                 <th className="p-3 font-medium">
-                  Price <span className="text-destructive">*</span>
+                  Selling price <span className="text-destructive">*</span>
                 </th>
+                <th className="p-3 font-medium">Buying cost / unit</th>
                 <th className="p-3 font-medium">Default</th>
               </tr>
             </thead>
@@ -260,7 +347,7 @@ export function ProductWizardVariants({
                   <td className="p-3">
                     {row.label}
                     {row.attrError ? (
-                      <p className="mt-1 text-xs text-destructive" data-invalid="true">
+                      <p className="mt-1 text-sm leading-snug text-destructive" data-invalid="true">
                         {row.attrError}
                       </p>
                     ) : null}
@@ -271,14 +358,17 @@ export function ProductWizardVariants({
                       onChange={(e) =>
                         updateRow(row.key, {
                           sku: e.target.value,
-                          skuError: undefined,
+                          skuEdited: true,
+                          skuError: e.target.value.trim()
+                            ? typedSkuError(e.target.value)
+                            : undefined,
                         })
                       }
                       aria-label={`SKU for ${row.label}`}
                       aria-invalid={Boolean(row.skuError)}
                     />
                     {row.skuError ? (
-                      <p className="mt-1 text-xs text-destructive">{row.skuError}</p>
+                      <p className="mt-1 text-sm leading-snug text-destructive">{row.skuError}</p>
                     ) : (
                       <p className="mt-1 text-xs text-muted-foreground">Must be unique.</p>
                     )}
@@ -286,25 +376,60 @@ export function ProductWizardVariants({
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">BDT</span>
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        min="0"
-                        step="0.01"
-                        value={row.price}
-                        onChange={(e) =>
+                      <NumberInput
+                        decimal
+                        placeholder="Amount"
+                        value={row.price === "" ? null : Number(row.price)}
+                        onChange={(value) =>
                           updateRow(row.key, {
-                            price: e.target.value,
+                            price: value === null ? "" : String(value),
                             priceError: undefined,
                           })
                         }
                         aria-label={`Price for ${row.label}`}
                         aria-invalid={Boolean(row.priceError)}
+                        className="w-36"
                       />
                     </div>
                     {row.priceError ? (
-                      <p className="mt-1 text-xs text-destructive">{row.priceError}</p>
+                      <p className="mt-1 text-sm leading-snug text-destructive">{row.priceError}</p>
                     ) : null}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">BDT</span>
+                      <NumberInput
+                        decimal
+                        placeholder="Optional"
+                        value={
+                          row.costPrice === "" ? null : Number(row.costPrice)
+                        }
+                        onChange={(value) =>
+                          updateRow(row.key, {
+                            costPrice: value === null ? "" : String(value),
+                            costError: undefined,
+                          })
+                        }
+                        aria-label={`Buying cost for ${row.label}`}
+                        aria-invalid={Boolean(row.costError)}
+                        className="w-36"
+                      />
+                    </div>
+                    {row.costError ? (
+                      <p className="mt-1 text-sm leading-snug text-destructive">
+                        {row.costError}
+                      </p>
+                    ) : row.costPrice.trim() &&
+                      row.price.trim() &&
+                      Number(row.costPrice) > Number(row.price) ? (
+                      <p className="mt-1 text-xs text-amber-600">
+                        Buying cost is above the selling price.
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Blank means unknown, not zero.
+                      </p>
+                    )}
                   </td>
                   <td className="p-3">
                     <Label className="inline-flex items-center gap-2 cursor-pointer">

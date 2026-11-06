@@ -28,15 +28,15 @@ const Features = () => {
               {/* 2. Sophisticated Content Stack */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-primary/40 tracking-tighter uppercase italic">
+                  <span className="text-xs font-semibold uppercase italic tracking-tight text-primary/40">
                     0{index + 1}
                   </span>
-                  <h3 className="font-black text-slate-900 text-sm uppercase tracking-[0.25em]">
+                  <h3 className="text-sm font-semibold tracking-wide uppercase text-slate-900">
                     {title}
                   </h3>
                 </div>
 
-                <p className="text-xs md:text-[13px] text-slate-500 font-medium leading-[1.8] max-w-[200px] group-hover:text-slate-700 transition-colors">
+                <p className="max-w-[200px] text-sm leading-relaxed font-medium text-slate-500 group-hover:text-slate-700 transition-colors">
                   {description}
                 </p>
               </div>

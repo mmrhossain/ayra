@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type SavedAddress = {
   id: string;
@@ -16,6 +12,9 @@ export type SavedAddress = {
   thana?: string | null;
   area?: string | null;
   postalCode?: string | null;
+  divisionCode?: string | null;
+  districtCode?: string | null;
+  upazilaCode?: string | null;
   addressLine1: string;
   addressLine2?: string | null;
   isDefaultShipping: boolean;
@@ -35,6 +34,9 @@ export type AddressPayload = {
   thana?: string;
   area?: string;
   postalCode?: string;
+  divisionCode?: string;
+  districtCode?: string;
+  upazilaCode?: string;
   addressLine1: string;
   addressLine2?: string;
   isDefaultShipping?: boolean;

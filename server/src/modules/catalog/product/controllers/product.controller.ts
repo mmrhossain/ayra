@@ -8,6 +8,7 @@ import {
   createVariantSchema,
   updateVariantSchema,
   listProductsQuerySchema,
+  bulkProductActionSchema,
 } from "../validators/product.validators.ts";
 import {
   listProducts,
@@ -20,11 +21,13 @@ import {
   updateVariant,
   deleteVariant,
 } from "../services/product.service.ts";
+import { getProductFacets } from "../services/product-facets.service.ts";
+import { bulkUpdateProducts } from "../services/product-bulk.service.ts";
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const query = listProductsQuerySchema.parse(req.query);
   const role = req.auth?.user.role;
-  const isStaff = role === "ADMIN" || role === "VENDOR";
+  const isStaff = role === "ADMIN";
 
   successResponse(
     res,
@@ -36,6 +39,24 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
     "Products fetched"
   );
 });
+
+export const getProductFacetsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = listProductsQuerySchema.parse(req.query);
+    const role = req.auth?.user.role;
+    const isStaff = role === "ADMIN";
+
+    successResponse(
+      res,
+      await getProductFacets({
+        ...query,
+        includeInactive: query.includeInactive === true && isStaff,
+        status: isStaff ? query.status : undefined,
+      }),
+      "Facets fetched"
+    );
+  }
+);
 
 export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   successResponse(
@@ -80,6 +101,13 @@ export const deleteProductHandler = asyncHandler(
       await deleteProduct(requireParam(req.params.id, "id")),
       "Product deleted"
     );
+  }
+);
+
+export const bulkUpdateProductsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const input = bulkProductActionSchema.parse(req.body);
+    successResponse(res, await bulkUpdateProducts(input), "Products updated");
   }
 );
 

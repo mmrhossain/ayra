@@ -1,8 +1,8 @@
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
 import { sanitizeHtml } from "../../../../common/utils/sanitize-html.ts";
+import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
 import { generateSlug } from "../../../../common/utils/slug.ts";
-import type { Prisma } from "../../../../generated/prisma/client.ts";
 import {
   CacheKeys,
   CacheTtl,
@@ -18,17 +18,20 @@ import {
   type UpdateProductPayload,
 } from "../types/product.types.ts";
 import { validateCreateProductPayload } from "../utils/product-validation.ts";
+import { allocateUniqueSlug } from "../utils/unique-identity.ts";
 import { persistGeneratedVariants, resolveCreateVariants } from "./product-generator.service.ts";
 import {
   attachProductMedia,
-  collectVariantImagePublicIds,
   createProductImages,
   detachProductMedia,
   imagePublicIds,
   replaceImages,
   toProductImageRows,
 } from "./product-image.service.ts";
+import { requireActiveWarehouses } from "./product-inventory.service.ts";
 import { rethrowUniqueConflict, upsertProductVariants } from "./product-variant.service.ts";
+import { assertCategoryAndBrand, resolveCreateSlug } from "./product-creation.service.ts";
+import { buildProductWhere } from "./product-where.service.ts";
 
 export { createVariant, deleteVariant, updateVariant } from "./product-variant.service.ts";
 
@@ -57,68 +60,7 @@ const formatProductStock = <
 const publicVisibility = { status: "ACTIVE" as const, deletedAt: null };
 
 export const listProducts = async (query: ListProductsQuery) => {
-  const where: Record<string, unknown> = {
-    deletedAt: null,
-    ...(query.status
-      ? { status: query.status }
-      : query.includeInactive
-        ? {}
-        : { status: "ACTIVE" }),
-  };
-
-  if (query.category) {
-    // Search for the category AND its active subcategories
-    const matchingCategory = await prisma.category.findFirst({
-      where: { slug: query.category, deletedAt: null },
-      select: {
-        id: true,
-        children: {
-          where: { deletedAt: null },
-          select: { id: true },
-        },
-      },
-    });
-
-    if (matchingCategory) {
-      const categoryIds = [
-        matchingCategory.id,
-        ...matchingCategory.children.map((child) => child.id),
-      ];
-
-      where.categoryId = { in: categoryIds };
-    } else {
-      where.category = { slug: query.category, deletedAt: null };
-    }
-  }
-
-  if (query.brand) {
-    where.brand = { slug: query.brand, deletedAt: null };
-  }
-
-  if (query.search) {
-    where.OR = [
-      { name: { contains: query.search, mode: "insensitive" } },
-      { slug: { contains: query.search, mode: "insensitive" } },
-    ];
-  }
-  if (query.featured === true) {
-    where.isFeatured = true;
-  }
-
-  const variantSome: Prisma.ProductVariantWhereInput = {
-    deletedAt: null,
-    ...(query.minPrice !== undefined && { price: { gte: query.minPrice } }),
-    ...(query.maxPrice !== undefined && { price: { lte: query.maxPrice } }),
-    ...(query.onSale === true && {
-      compareAtPrice: { gt: prisma.productVariant.fields.price },
-    }),
-  };
-
-  if (query.minPrice !== undefined || query.maxPrice !== undefined || query.onSale === true) {
-    where.variants = { some: variantSome };
-  }
-
-  const productWhere = where as Prisma.ProductWhereInput;
+  const productWhere = await buildProductWhere(query);
   const skip = (query.page - 1) * query.limit;
   const take = query.limit;
   const isPriceSort = query.sort === "price_asc" || query.sort === "price_desc";
@@ -153,6 +95,7 @@ export const listProducts = async (query: ListProductsQuery) => {
               select: {
                 id: true,
                 value: true,
+                color: true,
                 attributeId: true,
                 attribute: { select: { id: true, name: true } },
               },
@@ -177,12 +120,7 @@ export const listProducts = async (query: ListProductsQuery) => {
             skip,
             take,
           }),
-          prisma.product.count({
-            where: {
-              ...productWhere,
-              variants: { some: { deletedAt: null } },
-            },
-          }),
+          prisma.product.count({ where: productWhere }),
         ]);
 
         const ids = ranked.map((row) => row.productId);
@@ -272,21 +210,13 @@ export const productDetailSelect = {
           quantityAvailable: true,
         },
       },
-      images: {
-        select: {
-          id: true,
-          imageUrl: true,
-          publicId: true,
-          altText: true,
-          isPrimary: true,
-        },
-      },
       attributes: {
         select: {
           attributeValue: {
             select: {
               id: true,
               value: true,
+              color: true,
               attributeId: true,
               attribute: {
                 select: {
@@ -321,6 +251,7 @@ export const toProductDetail = (product: {
       attributeValue: {
         id: string;
         value: string;
+        color?: string | null;
         attributeId?: string;
         attribute?: { id: string; name: string };
       };
@@ -338,6 +269,7 @@ export const toProductDetail = (product: {
         attributeValue: {
           id: link.attributeValue.id,
           value: link.attributeValue.value,
+          color: link.attributeValue.color ?? null,
           attributeId: link.attributeValue.attributeId ?? link.attributeValue.attribute?.id,
           attribute: link.attributeValue.attribute
             ? {
@@ -389,20 +321,6 @@ export const getProductById = async (id: string) => {
 export const createProduct = async (input: CreateProductPayload) => {
   validateCreateProductPayload(input);
 
-  const category = await prisma.category.findUnique({
-    where: { id: input.categoryId },
-  });
-  if (!category || category.deletedAt) {
-    throw new AppError("Category not found", 404);
-  }
-
-  const slug = input.slug?.trim() ? input.slug : generateSlug(input.name, "Product name");
-
-  const existing = await prisma.product.findFirst({
-    where: { slug, deletedAt: null },
-  });
-  if (existing) throw new AppError("Product slug already exists", 409);
-
   const {
     images,
     variants: _variants,
@@ -414,6 +332,14 @@ export const createProduct = async (input: CreateProductPayload) => {
 
   try {
     const created = await transaction(async (tx) => {
+      const warehouses = await requireActiveWarehouses(tx);
+      const { category, brand } = await assertCategoryAndBrand(
+        tx,
+        productData.categoryId,
+        productData.brandId,
+      );
+      const slug = await resolveCreateSlug(tx, input);
+
       const product = await tx.product.create({
         data: {
           name: productData.name,
@@ -423,7 +349,6 @@ export const createProduct = async (input: CreateProductPayload) => {
           categoryId: productData.categoryId,
           brandId: productData.brandId ?? null,
           description: productData.description ? sanitizeHtml(productData.description) : null,
-          sku: productData.sku ?? null,
           metaTitle: productData.metaTitle ?? null,
           metaDescription: productData.metaDescription ?? null,
         },
@@ -433,24 +358,32 @@ export const createProduct = async (input: CreateProductPayload) => {
         await createProductImages(tx, product.id, images);
       }
 
-      const variants = await resolveCreateVariants(tx, input);
-      await persistGeneratedVariants(tx, product.id, variants);
-
-      return tx.product.findUniqueOrThrow({
-        where: { id: product.id },
-        select: adminProductDetailSelect,
+      const variants = await resolveCreateVariants(tx, input, {
+        categoryName: category.name,
+        brandName: brand?.name ?? null,
       });
+      await persistGeneratedVariants(tx, product.id, variants, warehouses);
+
+      // Image-bookkeeping runs inside the same transaction so a rejected or
+      // conflicting media claim rolls the product back instead of leaving an
+      // orphaned record. Cloudinary itself is untouched here.
+      await attachProductMedia(imagePublicIds(images ?? []), product.id, tx);
+
+      // Keep the transaction short: the heavy detail projection is read after
+      // commit instead of holding the transaction open for the extra joins.
+      return { id: product.id, slug };
     });
 
-    const attachedIds = [
-      ...imagePublicIds(images ?? []),
-      ...collectVariantImagePublicIds(input.variants),
-      ...collectVariantImagePublicIds(input.variantOverrides),
-    ];
-    await attachProductMedia(attachedIds, created.id);
     await invalidateCatalogCache({ productSlug: created.slug });
-    return toProductDetail(created);
+    const detail = await prisma.product.findUniqueOrThrow({
+      where: { id: created.id },
+      select: adminProductDetailSelect,
+    });
+    return toProductDetail(detail);
   } catch (err) {
+    if (isPrismaCode(err, "P2003")) {
+      throw new AppError("Category or brand not found", 400);
+    }
     rethrowUniqueConflict(err, "Product slug or Variant SKU already exists");
   }
 };
@@ -458,24 +391,64 @@ export const createProduct = async (input: CreateProductPayload) => {
 export const updateProduct = async (id: string, input: UpdateProductPayload) => {
   const existing = await prisma.product.findUnique({
     where: { id },
-    include: { variants: { select: { id: true, sku: true } } },
+    // Only live variants participate in replacement; soft-deleted ids must not
+    // be resurrected or silently treated as editable. Scalar fields are loaded
+    // so the upsert can skip writes for rows the payload leaves unchanged.
+    include: {
+      variants: {
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          sku: true,
+          price: true,
+          barcode: true,
+          compareAtPrice: true,
+          costPrice: true,
+          weight: true,
+          isDefault: true,
+        },
+      },
+    },
   });
   if (!existing) throw new AppError("Product not found", 404);
 
   const { images, variants, ...productData } = input;
 
-  const nextSlug =
+  const requestedSlug =
     productData.slug !== undefined
       ? productData.slug
       : productData.name !== undefined && productData.name !== existing.name
         ? generateSlug(productData.name, "Product name")
         : undefined;
+  const slugIsExplicit = productData.slug !== undefined;
 
-  let updatedProduct;
-  let stalePublicIds: string[] = [];
+  let updatedSlug = existing.slug;
 
   try {
     const result = await transaction(async (tx) => {
+      const effectiveCategoryId = productData.categoryId ?? existing.categoryId;
+      const effectiveBrandId =
+        productData.brandId === undefined ? existing.brandId : productData.brandId;
+
+      // Resolve category and brand once and reuse the result for both the
+      // existence check and the SKU generation below, instead of querying them
+      // twice in the same transaction.
+      const catBrandProvided =
+        productData.categoryId !== undefined || productData.brandId !== undefined;
+      const names =
+        catBrandProvided || variants
+          ? await assertCategoryAndBrand(tx, effectiveCategoryId, effectiveBrandId)
+          : undefined;
+
+      let nextSlug: string | undefined;
+      if (requestedSlug) {
+        const taken = await allocateUniqueSlug(tx, requestedSlug, id);
+        if (slugIsExplicit && taken !== requestedSlug) {
+          throw new AppError("Product slug already exists", 409);
+        }
+        nextSlug = slugIsExplicit ? requestedSlug : taken;
+      }
+
       await tx.product.update({
         where: { id },
         data: {
@@ -500,7 +473,6 @@ export const updateProduct = async (id: string, input: UpdateProductPayload) => 
               ? sanitizeHtml(productData.description)
               : productData.description,
           }),
-          ...(productData.sku !== undefined && { sku: productData.sku }),
           ...(productData.metaTitle !== undefined && {
             metaTitle: productData.metaTitle,
           }),
@@ -514,39 +486,50 @@ export const updateProduct = async (id: string, input: UpdateProductPayload) => 
       if (images) {
         staleIds = await replaceImages(
           tx,
-          { productId: id, variantId: null },
+          { productId: id },
           toProductImageRows(images, id)
         );
       }
 
       if (variants) {
-        const upserted = await upsertProductVariants(tx, id, variants, existing.variants);
-        staleIds.push(...upserted.staleIds);
+        const resolved =
+          names ??
+          (await assertCategoryAndBrand(tx, effectiveCategoryId, effectiveBrandId));
+        await upsertProductVariants(tx, id, variants, existing.variants, {
+          categoryName: resolved.category.name,
+          brandName: resolved.brand?.name ?? null,
+        });
       }
 
-      const finalProduct = await tx.product.findUniqueOrThrow({
-        where: { id },
-        select: adminProductDetailSelect,
-      });
+      // Media bookkeeping is part of the transaction: detach images removed from
+      // the product, then attach the retained/added ones. Retained images keep
+      // the same entity id, so they are never flagged as conflicts. Cloudinary
+      // is not touched here.
+      if (staleIds.length) {
+        await detachProductMedia(staleIds, tx);
+      }
+      await attachProductMedia(imagePublicIds(images ?? []), id, tx);
 
-      return { product: finalProduct, stalePublicIds: staleIds };
+      // Return only the identity fields; the full detail projection is read
+      // after commit so the transaction does not wait on the heavier joins.
+      return { slug: nextSlug ?? existing.slug };
     });
 
-    updatedProduct = result.product;
-    stalePublicIds = result.stalePublicIds;
+    updatedSlug = result.slug;
   } catch (err) {
+    if (isPrismaCode(err, "P2003")) {
+      throw new AppError("Category or brand not found", 400);
+    }
     rethrowUniqueConflict(err, "Product slug or Variant SKU already exists");
   }
 
-  if (stalePublicIds.length) {
-    await detachProductMedia(stalePublicIds);
-  }
-  const nextIds = [...imagePublicIds(images ?? []), ...collectVariantImagePublicIds(variants)];
-  await attachProductMedia(nextIds, id);
-  if (!updatedProduct) throw new AppError("Product not found", 404);
   await invalidateCatalogCache({
-    productSlug: updatedProduct.slug,
+    productSlug: updatedSlug,
     previousSlug: existing.slug,
+  });
+  const updatedProduct = await prisma.product.findUniqueOrThrow({
+    where: { id },
+    select: adminProductDetailSelect,
   });
   return toProductDetail(updatedProduct);
 };

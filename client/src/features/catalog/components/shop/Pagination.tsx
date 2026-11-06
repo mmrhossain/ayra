@@ -48,24 +48,24 @@ export default function ShopPagination({
         {prev ? (
           <Link
             href={hrefFor(basePath, filters, prev)}
-            className="h-10 px-4 inline-flex items-center border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:border-black"
+            className="h-10 px-4 inline-flex items-center border border-zinc-200 text-sm font-medium hover:border-black"
           >
             Previous
           </Link>
         ) : (
-          <span className="h-10 px-4 inline-flex items-center border border-zinc-100 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+          <span className="h-10 px-4 inline-flex items-center border border-zinc-100 text-sm font-medium text-zinc-300">
             Previous
           </span>
         )}
         {next ? (
           <Link
             href={hrefFor(basePath, filters, next)}
-            className="h-10 px-4 inline-flex items-center bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+            className="h-10 px-4 inline-flex items-center bg-zinc-900 text-sm font-medium text-white hover:bg-black"
           >
             Next
           </Link>
         ) : (
-          <span className="h-10 px-4 inline-flex items-center border border-zinc-100 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+          <span className="h-10 px-4 inline-flex items-center border border-zinc-100 text-sm font-medium text-zinc-300">
             Next
           </span>
         )}

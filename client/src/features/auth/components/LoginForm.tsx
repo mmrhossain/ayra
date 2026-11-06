@@ -16,10 +16,12 @@ import AuthCard, {
   authSubmitClass,
 } from "@/features/auth/components/AuthCard";
 import GoogleSignInButton from "@/features/auth/components/GoogleSignInButton";
+import { safeRedirectPath } from "@/features/auth/lib/oauth";
 import { LoginFormData, loginSchema } from "@/features/auth/schemas/loginSchema";
 import { mergeGuestCartOnLogin, toCartErrorMessage } from "@/features/cart/api";
 import { errorToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { isStaffRole, staffDashboardPath } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
 import Link from "next/link";
@@ -50,7 +52,7 @@ const LoginForm: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const { error } = await authClient.signIn.email({
+      const { data: signInData, error } = await authClient.signIn.email({
         email: data.identifier,
         password: data.password,
         rememberMe: data.remember === true,
@@ -66,17 +68,31 @@ const LoginForm: React.FC = () => {
         return;
       }
 
-      try {
-        await mergeGuestCartOnLogin();
-        await Promise.all([
-          useCartStore.getState().fetchCart(),
-          useWishStore.getState().fetchWishList(),
-        ]);
-      } catch (mergeErr) {
-        console.error(toCartErrorMessage(mergeErr));
+      // Use the role from the sign-in response directly. Reading it back with a
+      // second getSession() call can race the cookie being set, which used to
+      // drop staff onto the storefront root instead of their dashboard.
+      const role = signInData?.user?.role;
+      const dashboard = staffDashboardPath(role);
+
+      if (dashboard) {
+        const intended = safeRedirectPath(redirect);
+        router.push(intended.startsWith("/admin") ? intended : dashboard);
+        return;
       }
 
-      router.push(redirect || "/");
+      if (!isStaffRole(role)) {
+        try {
+          await mergeGuestCartOnLogin();
+          await Promise.all([
+            useCartStore.getState().fetchCart(),
+            useWishStore.getState().fetchWishList(),
+          ]);
+        } catch (mergeErr) {
+          console.error(toCartErrorMessage(mergeErr));
+        }
+      }
+
+      router.push(safeRedirectPath(redirect));
     } catch {
       errorToast("Could not reach the server. Please try again.");
     } finally {
@@ -119,7 +135,7 @@ const LoginForm: React.FC = () => {
                     </div>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />
@@ -154,7 +170,7 @@ const LoginForm: React.FC = () => {
                     </button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />

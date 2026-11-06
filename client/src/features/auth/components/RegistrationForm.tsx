@@ -56,7 +56,7 @@ const RegistrationForm: React.FC = () => {
         email: data.identifier,
         password: data.password,
         name: data.fullName,
-        callbackURL: `${CALLBACK_URL}/login`,
+        callbackURL: `${typeof window !== "undefined" ? window.location.origin : CALLBACK_URL}/login`,
       });
 
       if (error) {
@@ -98,7 +98,7 @@ const RegistrationForm: React.FC = () => {
                     </div>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />
@@ -127,7 +127,7 @@ const RegistrationForm: React.FC = () => {
                     </div>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />
@@ -158,7 +158,7 @@ const RegistrationForm: React.FC = () => {
                     </button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />
@@ -193,7 +193,7 @@ const RegistrationForm: React.FC = () => {
                     </button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />

@@ -11,6 +11,7 @@ import {
   createInventoryAdjustmentSchema,
   createInventoryTransferSchema,
   listInventoryQuerySchema,
+  setStockLevelsSchema,
 } from "./validators/inventory.validators.ts";
 
 const TAG = "Inventory";
@@ -30,6 +31,21 @@ registry.registerPath({
   responses: {
     200: successResponse("Inventory fetched"),
     ...errorResponses(400, 401, 403),
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/v1/admin/inventory/stock",
+  tags: [TAG],
+  summary: "Set inventory stock levels (admin)",
+  description:
+    "Idempotent bulk set of target quantities (not deltas). Applied auto-approved with an audit row.",
+  security: bearerAuth,
+  request: { body: jsonBody(setStockLevelsSchema) },
+  responses: {
+    200: successResponse("Stock levels updated"),
+    ...errorResponses(400, 401, 403, 404),
   },
 });
 

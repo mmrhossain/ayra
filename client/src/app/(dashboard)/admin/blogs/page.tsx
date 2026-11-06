@@ -1,3 +1,4 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { BlogTable } from "@/features/dashboard/admin/blogs/components/blog-table";
 import {
   fetchBlogCategories,
@@ -5,9 +6,13 @@ import {
   toBlogErrorMessage,
 } from "@/features/dashboard/admin/blogs/api/blogs";
 
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminBlogsPage() {
+  await requireAdminPageAccess("/admin/blogs");
   let posts;
   let categories;
   let error: string | null = null;
@@ -23,22 +28,15 @@ export default async function AdminBlogsPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Blogs</h1>
-        <p className="text-sm text-muted-foreground">
-          Categories and posts shown on the storefront blog pages.
-        </p>
-      </div>
+      <PageHeader
+        title="Blogs"
+        description="Categories and posts shown on the storefront blog pages."
+      />
       {error || !posts || !categories ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load blogs</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load blogs"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <BlogTable initialPosts={posts} initialCategories={categories} />
       )}

@@ -39,7 +39,7 @@ const QuantityStepper = ({
         onClick={onDecrease}
         disabled={decreaseDisabled || loading}
         className={cn(
-          "flex items-center justify-center rounded-full text-secondary transition-transform active:scale-90 disabled:opacity-40",
+          "flex items-center justify-center rounded-full text-foreground transition-transform active:scale-90 disabled:opacity-40",
           compact ? "h-8 w-8" : "h-9 w-9 sm:h-10 sm:w-10",
         )}
         aria-label="Decrease quantity"
@@ -48,12 +48,12 @@ const QuantityStepper = ({
       </button>
       <span
         className={cn(
-          "min-w-[1.25rem] text-center font-semibold text-secondary",
+          "min-w-[1.25rem] text-center font-semibold text-foreground",
           compact ? "text-sm" : "text-sm sm:text-base",
         )}
       >
         {loading ? (
-          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
+          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink border-t-transparent" />
         ) : (
           value
         )}
@@ -63,7 +63,7 @@ const QuantityStepper = ({
         onClick={onIncrease}
         disabled={increaseDisabled || loading}
         className={cn(
-          "flex items-center justify-center rounded-full text-secondary transition-transform active:scale-90 disabled:opacity-40",
+          "flex items-center justify-center rounded-full text-foreground transition-transform active:scale-90 disabled:opacity-40",
           compact ? "h-8 w-8" : "h-9 w-9 sm:h-10 sm:w-10",
         )}
         aria-label="Increase quantity"

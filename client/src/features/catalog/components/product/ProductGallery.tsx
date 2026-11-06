@@ -7,14 +7,11 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import type { GalleryImage } from "@/features/catalog/types";
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
-export type GalleryImage = {
-  id?: string | number;
-  imageUrl?: string;
-  altText?: string | null;
-};
+export type { GalleryImage };
 
 function resolveSrc(image: GalleryImage): string {
   const url = image.imageUrl?.trim() || "";
@@ -44,33 +41,7 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
 
   return (
     <div className="w-full min-w-0">
-      {/* মোবাইল ডিভাইসের জন্য রেসপন্সিভ গ্রিড ভিউ */}
-      <div
-        className={cn(
-          "grid grid-cols-2 gap-2.5 sm:gap-3 md:hidden",
-          list.length === 1 && "grid-cols-1"
-        )}
-      >
-        {list.map((image, index) => (
-          <div
-            key={`grid-${image.id ?? index}`}
-            className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-50 dark:bg-zinc-900"
-          >
-            <StoreImage
-              src={resolveSrc(image)}
-              alt={image.altText || `Product image ${index + 1}`}
-              fill
-              sizes="(max-width: 768px) 50vw, 100vw"
-              className="object-contain"
-              priority={index === 0}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* ট্যাবলেট ও ডেস্কটপের জন্য থাম্বনেইল এবং কারূসল ভিউ */}
-      <div className="hidden w-full min-w-0 md:flex md:flex-col-reverse md:gap-3 lg:flex-row lg:items-start lg:gap-4">
-        {/* বাম পাশের থাম্বনেইল লিস্ট (ইন্ডাস্ট্রি স্ট্যান্ডার্ড স্কয়ার ও কমপ্যাক্ট সাইজ) */}
+      <div className="flex w-full min-w-0 flex-col-reverse gap-3 lg:flex-row lg:items-start lg:gap-4">
         <div className="flex max-w-full gap-2.5 overflow-x-auto py-1 no-scrollbar sm:gap-3 lg:w-[72px] xl:w-[80px] lg:max-h-[450px] lg:flex-col lg:overflow-y-auto shrink-0">
           {list.map((image, index) => (
             <button

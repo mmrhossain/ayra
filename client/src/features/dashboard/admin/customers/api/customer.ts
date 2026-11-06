@@ -8,7 +8,6 @@ import type {
 
 export type {
   AdminUserItem,
-  AdminUserVendorProfile,
   Envelope,
   UserListParams,
   UserListResult,
@@ -42,17 +41,6 @@ export async function fetchAdminUserList(
         status: params.status,
       },
     },
-  );
-  return res.data;
-}
-
-export async function approveUser(
-  id: string,
-  isApproved: boolean,
-): Promise<AdminUserItem> {
-  const res = await dashboardApi.post<Envelope<AdminUserItem>>(
-    `/admin/users/${id}/approve`,
-    { body: { isApproved } },
   );
   return res.data;
 }

@@ -1,8 +1,10 @@
 import type { z } from "zod";
 import type {
   updateCustomerProfileSchema,
-  updateVendorProfileSchema,
+  updateNotificationPreferencesSchema,
 } from "./validators/profile.validators.ts";
 
 export type UpdateCustomerProfileInput = z.infer<typeof updateCustomerProfileSchema>;
-export type UpdateVendorProfileInput = z.infer<typeof updateVendorProfileSchema>;
+export type UpdateNotificationPreferencesInput = z.infer<
+  typeof updateNotificationPreferencesSchema
+>;

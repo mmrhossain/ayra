@@ -28,7 +28,14 @@ const uploadedImageSchema = z.object({
   secure_url: z.string().url(),
   variants: z.array(z.string().url()).openapi({
     description:
-      "On-the-fly Cloudinary delivery URLs. Slider: [desktop 1920x720, mobile 960x360]. Category: [desktop banner 1920x720, mobile banner 960x360, card 800x1067]. Product: [detail 1200x1500, thumbnail 400x500].",
+      "On-the-fly Cloudinary delivery URLs. Slider and category: [desktop 1920x820, mobile 960x1200]. Product: [1200x1200]. Blog: [1600x900]. Avatars: [400x400].",
+  }),
+  imageUrl: z.string().url().openapi({
+    description: "Desktop delivery URL (variants[0]).",
+  }),
+  mobileImageUrl: z.string().url().optional().openapi({
+    description:
+      "Mobile delivery URL (variants[1]) for slider and category. Absent for types with a single variant.",
   }),
 });
 
@@ -96,7 +103,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "Upload a single image",
   description:
-    "Streams one image from disk after magic-byte validation. Role-gated by type: product/category/slider/blog require ADMIN; customer_avatar requires CUSTOMER or ADMIN; vendor_avatar requires an approved VENDOR or ADMIN. Product bulk uploads must use /media/uploads. Delivery URLs are generated on the fly (f_auto, q_auto). Cloudinary failures return 502 or 504 with { success: false, message }.",
+    "Streams one image from disk after magic-byte validation. Role-gated by type: product/category/slider/blog require ADMIN; customer_avatar requires CUSTOMER or ADMIN. Product bulk uploads must use /media/uploads. Delivery URLs are generated on the fly (f_auto, q_auto). Cloudinary failures return 502 or 504 with { success: false, message }.",
   security: bearerAuth,
   request: {
     query: singleUploadQuerySchema,

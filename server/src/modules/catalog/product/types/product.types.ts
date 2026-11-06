@@ -22,7 +22,6 @@ export type UpdateVariantInput = z.infer<typeof updateVariantSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;
 
 export type ProductImageInput = NonNullable<CreateProductInput["images"]>[number];
-export type VariantImageInput = NonNullable<CreateVariantInput["images"]>[number];
 
 export type VariantOptionGroupInput = z.infer<typeof variantOptionGroupSchema>;
 export type VariantDefaultsInput = z.infer<typeof variantDefaultsSchema>;
@@ -48,11 +47,12 @@ export type ProductImageRow = {
   sortOrder?: number;
   altText?: string | null;
   productId: string;
-  variantId?: string;
 };
 
 export type GeneratedVariantSpec = {
   sku: string;
+  skuGenerated?: boolean;
+  skuCandidate?: string;
   barcode?: string;
   price: number;
   compareAtPrice?: number;
@@ -61,7 +61,6 @@ export type GeneratedVariantSpec = {
   isDefault: boolean;
   attributeValueIds: string[];
   labels: string[];
-  images?: VariantImageInput[];
 };
 
 export type VariantMatrixRow = {
@@ -74,7 +73,6 @@ export type VariantMatrixRow = {
   isDefault: boolean;
   attributeValueIds: string[];
   attributes: Array<{ id: string; value: string }>;
-  images: VariantImageInput[];
 };
 
 export const resolveProductStatus = (

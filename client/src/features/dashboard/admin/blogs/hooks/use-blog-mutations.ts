@@ -25,6 +25,7 @@ import {
   toBlogCategoryDeleteErrorMessage,
   toBlogErrorMessage,
 } from "@/features/dashboard/admin/blogs/utils";
+import { revalidateStorefrontTags } from "@/lib/api/revalidate";
 
 export function useBlogCategoryFormMutation({
   mode,
@@ -134,6 +135,7 @@ export function useBlogFormMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
       queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
+      void revalidateStorefrontTags(["blogs"]);
       toast.success(mode === "edit" ? "Post updated" : "Draft created");
       onSuccess();
     },
@@ -159,6 +161,7 @@ export function useBlogPublishMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
+      void revalidateStorefrontTags(["blogs"]);
       toast.success("Post published");
       onSuccess();
     },
@@ -185,6 +188,7 @@ export function useBlogDeleteMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
       queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
+      void revalidateStorefrontTags(["blogs"]);
       toast.success("Post deleted");
       onSuccess();
     },

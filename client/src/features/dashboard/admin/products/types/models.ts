@@ -1,113 +1,21 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+import type { ProductListParams as CatalogProductListParams } from "@/features/catalog/types";
 
-export type ProductListItem = {
-  id: string;
-  name: string;
-  slug: string;
-  status: "DRAFT" | "ACTIVE" | "ARCHIVED";
-  isFeatured: boolean;
-  averageRating?: number | null;
-  reviewCount?: number | null;
-  category?: { id: string; name: string; slug: string } | null;
-  brand?: { id: string; name: string; slug: string } | null;
-  images: Array<{ imageUrl: string }>;
-  variants: Array<{
-    id: string;
-    sku?: string;
-    price: number | string;
-    compareAtPrice?: number | string | null;
-    isDefault?: boolean;
-    availableStock?: number;
-  }>;
-};
+export type { Envelope } from "@/lib/api/http";
+export type {
+  CatalogOption,
+  NormalizedVariantAttribute,
+  ProductDetail,
+  ProductImageAsset,
+  ProductListItem,
+  ProductListResult,
+  ProductPagination,
+  ProductSort,
+  ProductVariant,
+  ProductVariantAttribute,
+} from "@/features/catalog/types";
 
-export type ProductImageAsset = {
-  id: string;
-  imageUrl: string;
-  altText?: string | null;
-  isPrimary?: boolean;
-};
-
-export type ProductVariantAttribute = {
-  attributeValue: {
-    id: string;
-    value: string;
-    attributeId: string;
-    attribute?: { id: string; name: string };
-  };
-};
-
-export type ProductVariant = {
-  id: string;
-  sku: string;
-  barcode?: string | null;
-  price: number | string;
-  compareAtPrice?: number | string | null;
-  weight?: number | string | null;
-  isDefault?: boolean;
-  availableStock?: number;
-  images?: ProductImageAsset[];
-  attributes?: ProductVariantAttribute[];
-};
-
-export type NormalizedVariantAttribute = {
-  id: string;
-  value: string;
-  attributeId: string;
-  attributeName?: string;
-};
-
-export type ProductDetail = {
-  id: string;
-  name: string;
-  slug: string;
-  sku?: string | null;
-  description?: string | null;
+export type ProductListParams = CatalogProductListParams & {
   status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
-  isFeatured?: boolean;
-  averageRating?: number | null;
-  reviewCount?: number | null;
-  category?: { id: string; name: string; slug: string } | null;
-  brand?: { id: string; name: string; slug: string } | null;
-  images?: ProductImageAsset[];
-  variants: ProductVariant[];
-};
-
-export type ProductPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
-export type ProductListResult = {
-  items: ProductListItem[];
-  pagination: ProductPagination;
-};
-
-export type ProductSort = "newest" | "price_asc" | "price_desc" | "popular";
-
-export type ProductListParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  category?: string;
-  brand?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  sort?: ProductSort;
-  includeInactive?: boolean;
-  status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
-};
-
-export type CatalogOption = {
-  id: string;
-  name: string;
-  slug: string;
 };
 
 export type ProductImageInput = {
@@ -124,11 +32,29 @@ export type CreateProductBody = {
   status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
   isFeatured?: boolean;
   images?: ProductImageInput[];
+  variants?: CreateVariantBody[];
+  variantDefaults?: { price: number; costPrice?: number };
 };
 
 export type CreateVariantBody = {
-  sku: string;
+  id?: string;
+  sku?: string;
   price: number;
+  costPrice?: number | null;
   isDefault?: boolean;
   attributeValueIds?: string[];
+};
+
+export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
+
+export type BulkProductAction =
+  | { type: "set-status"; ids: string[]; status: ProductStatus }
+  | { type: "set-featured"; ids: string[]; isFeatured: boolean }
+  | { type: "set-category"; ids: string[]; categoryId: string }
+  | { type: "delete"; ids: string[] };
+
+export type BulkProductResult = {
+  requested: number;
+  affected: number;
+  failed: string[];
 };

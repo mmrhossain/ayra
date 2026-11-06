@@ -7,7 +7,7 @@ import {
 } from "../../lib/openapi/common-schemas.ts";
 import {
   updateCustomerProfileSchema,
-  updateVendorProfileSchema,
+  updateNotificationPreferencesSchema,
 } from "./validators/profile.validators.ts";
 
 const TAG = "Profile";
@@ -39,25 +39,25 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/v1/vendor/profile",
+  path: "/api/v1/customer/notification-preferences",
   tags: [TAG],
-  summary: "Get vendor profile",
+  summary: "Get customer notification preferences",
   security: bearerAuth,
   responses: {
-    200: successResponse("Vendor profile fetched"),
-    ...errorResponses(401, 403, 404),
+    200: successResponse("Notification preferences fetched"),
+    ...errorResponses(401),
   },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/v1/vendor/profile",
+  path: "/api/v1/customer/notification-preferences",
   tags: [TAG],
-  summary: "Update vendor profile",
+  summary: "Update customer notification preferences",
   security: bearerAuth,
-  request: { body: jsonBody(updateVendorProfileSchema) },
+  request: { body: jsonBody(updateNotificationPreferencesSchema) },
   responses: {
-    200: successResponse("Vendor profile updated"),
-    ...errorResponses(400, 401, 403, 404),
+    200: successResponse("Notification preferences saved"),
+    ...errorResponses(400, 401),
   },
 });

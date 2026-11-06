@@ -15,7 +15,7 @@ const EmptyState = ({ text, title }: { text: string; title?: string }) => {
 
                 {/* Text Content */}
                 <div className="space-y-3 mb-10">
-                    <h2 className="text-2xl font-black text-slate-900 capitalize tracking-tight">
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-900 capitalize">
                         {title ?? `Your ${text} is empty`}
                     </h2>
                     <p className="text-slate-500 text-sm leading-relaxed px-4">
@@ -26,14 +26,14 @@ const EmptyState = ({ text, title }: { text: string; title?: string }) => {
                 {/* Call to Action */}
                 <Link
                     href="/shop"
-                    className="group inline-flex items-center gap-2 bg-slate-900 px-8 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-primary shadow-xl shadow-slate-200 active:scale-95 rounded-2xl"
+                    className="group inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-medium tracking-wide uppercase text-white shadow-xl shadow-slate-200 transition-all hover:bg-primary active:scale-95"
                 >
                     Continue Shopping
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
 
                 {/* Secondary Hint */}
-                <p className="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
                     Handcrafted with heritage
                 </p>
             </div>

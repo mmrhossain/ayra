@@ -1,470 +1,27 @@
 export type paths = {
-    "/api/v1/auth/register/vendor": {
+    "/api/v1/admin/users": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /**
-         * Register a vendor account
-         * @description Public. Creates a vendor account via Better Auth (email + password, mandatory email verification) and provisions the vendor profile in a pending-approval state.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: email */
-                        email: string;
-                        password: string;
-                        name: string;
-                        firstName?: string;
-                        lastName?: string;
-                        phone?: string;
-                        shopName: string;
-                        shopSlug: string;
-                        description?: string;
-                        address?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Vendor registration submitted for approval */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            message: string;
-                            data: {
-                                userId: string;
-                                profile: {
-                                    id: string;
-                                    shopName: string;
-                                    shopSlug: string;
-                                } & {
-                                    [key: string]: unknown;
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/vendors/pending": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List pending vendor approvals
-         * @description Admin only. Returns vendors awaiting admin approval.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description List of pending vendors */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: ({
-                                id: string;
-                                email: string;
-                                role: string;
-                                isApproved: boolean;
-                                vendorProfile?: ({
-                                    id: string;
-                                    shopName: string;
-                                    shopSlug: string;
-                                } & {
-                                    [key: string]: unknown;
-                                }) | null;
-                            } & {
-                                [key: string]: unknown;
-                            })[];
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/vendors/{userId}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Approve a vendor
-         * @description Admin only. Approves a pending vendor account.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Vendor approved */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            message: string;
-                            data: {
-                                userId: string;
-                                approved?: boolean;
-                                rejected?: boolean;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/vendors/{userId}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Reject a vendor
-         * @description Admin only. Rejects and deletes a pending vendor account.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Vendor rejected */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            message: string;
-                            data: {
-                                userId: string;
-                                approved?: boolean;
-                                rejected?: boolean;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List products
-         * @description Public. Paginated product listing with filtering and sorting.
-         */
+        /** List users (admin) */
         get: {
             parameters: {
                 query?: {
-                    q?: string;
-                    category?: string;
-                    brand?: string;
-                    minPrice?: number | null;
-                    maxPrice?: number | null;
-                    inStock?: boolean | null;
-                    featured?: boolean | null;
-                    sort?: "newest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "featured";
                     page?: number;
                     limit?: number;
+                    searchValue?: string;
+                    searchField?: "email" | "name";
+                    searchOperator?: "contains" | "starts_with" | "ends_with";
+                    sortBy?: string;
+                    sortDirection?: "asc" | "desc";
+                    filterField?: string;
+                    filterValue?: string | (number | null) | (boolean | null) | unknown;
+                    filterOperator?: "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | "contains";
+                    role?: "CUSTOMER" | "ADMIN";
+                    status?: "ACTIVE" | "INACTIVE" | "BLOCKED";
                 };
                 header?: never;
                 path?: never;
@@ -472,7 +29,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated product list */
+                /** @description Users fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -481,45 +38,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                    shortDescription?: string | null;
-                                    isFeatured: boolean;
-                                    category?: {
-                                        id: string;
-                                        name: string;
-                                        slug: string;
-                                    } | null;
-                                    brand?: {
-                                        id: string;
-                                        name: string;
-                                        slug: string;
-                                    } | null;
-                                    images: {
-                                        id: string;
-                                        imageUrl: string;
-                                        altText?: string | null;
-                                        isPrimary: boolean;
-                                        sortOrder?: number | null;
-                                    }[];
-                                    priceRange: {
-                                        min: number;
-                                        max: number;
-                                    };
-                                    availableStock: number;
-                                    createdAt: string;
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -528,7 +52,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -537,35 +61,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -576,212 +73,33 @@ export type paths = {
             };
         };
         put?: never;
-        /**
-         * Create a product
-         * @description Admin only.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        slug?: string;
-                        shortDescription?: string | null;
-                        description?: string | null;
-                        sku?: string | null;
-                        isPublished?: boolean;
-                        isFeatured?: boolean;
-                        metaTitle?: string | null;
-                        metaDescription?: string | null;
-                        /** Format: uuid */
-                        categoryId: string;
-                        /** Format: uuid */
-                        brandId?: string | null;
-                        images?: {
-                            /** Format: uri */
-                            imageUrl: string;
-                            altText?: string | null;
-                            isPrimary?: boolean;
-                            sortOrder?: number | null;
-                        }[];
-                        variants: {
-                            sku: string;
-                            barcode?: string | null;
-                            price: number | null;
-                            compareAtPrice?: number | null;
-                            costPrice?: number | null;
-                            weight?: number | null;
-                            isDefault?: boolean;
-                            lowStockThreshold?: number | null;
-                            attributes?: {
-                                name: string;
-                                value: string;
-                            }[];
-                            inventory?: {
-                                /** Format: uuid */
-                                warehouseId: string;
-                                quantityOnHand: number | null;
-                            }[];
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Product created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                shortDescription?: string | null;
-                                isFeatured: boolean;
-                                category?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                brand?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                images: {
-                                    id: string;
-                                    imageUrl: string;
-                                    altText?: string | null;
-                                    isPrimary: boolean;
-                                    sortOrder?: number | null;
-                                }[];
-                                priceRange: {
-                                    min: number;
-                                    max: number;
-                                };
-                                availableStock: number;
-                                createdAt: string;
-                                description?: string | null;
-                                sku?: string | null;
-                                metaTitle?: string | null;
-                                metaDescription?: string | null;
-                                variants?: ({
-                                    id: string;
-                                    sku: string;
-                                    price: number;
-                                    compareAtPrice?: number | null;
-                                    weight?: number | null;
-                                    isDefault: boolean;
-                                    lowStockThreshold: number;
-                                    availableStock: number;
-                                    attributes?: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/products/{slug}": {
+    "/api/v1/admin/users/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get a product by slug
-         * @description Public. Returns a published product with its variants and aggregated stock. Internal fields (cost price, per-warehouse stock) are excluded.
-         */
+        /** Get user by id (admin) */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    slug: string;
+                    id: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Product detail */
+                /** @description User fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -790,71 +108,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                shortDescription?: string | null;
-                                isFeatured: boolean;
-                                category?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                brand?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                images: {
-                                    id: string;
-                                    imageUrl: string;
-                                    altText?: string | null;
-                                    isPrimary: boolean;
-                                    sortOrder?: number | null;
-                                }[];
-                                priceRange: {
-                                    min: number;
-                                    max: number;
-                                };
-                                availableStock: number;
-                                createdAt: string;
-                                description?: string | null;
-                                sku?: string | null;
-                                metaTitle?: string | null;
-                                metaDescription?: string | null;
-                                variants?: ({
-                                    id: string;
-                                    sku: string;
-                                    price: number;
-                                    compareAtPrice?: number | null;
-                                    weight?: number | null;
-                                    isDefault: boolean;
-                                    lowStockThreshold: number;
-                                    availableStock: number;
-                                    attributes?: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -863,7 +122,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -872,26 +131,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -909,7 +150,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/products/{id}": {
+    "/api/v1/admin/users/{id}/ban": {
         parameters: {
             query?: never;
             header?: never;
@@ -919,100 +160,10 @@ export type paths = {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Delete a product
-         * @description Admin only. Soft-deletes the product.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Product deleted */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                /** @enum {boolean} */
-                                deleted: true;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Update a product
-         * @description Admin only.
-         */
+        /** Ban a user (admin) */
         patch: {
             parameters: {
                 query?: never;
@@ -1022,34 +173,16 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        name?: string;
-                        slug?: string;
-                        shortDescription?: string | null;
-                        description?: string | null;
-                        sku?: string | null;
-                        isPublished?: boolean;
-                        isFeatured?: boolean;
-                        metaTitle?: string | null;
-                        metaDescription?: string | null;
-                        /** Format: uuid */
-                        categoryId?: string;
-                        /** Format: uuid */
-                        brandId?: string | null;
-                        images?: {
-                            /** Format: uri */
-                            imageUrl: string;
-                            altText?: string | null;
-                            isPrimary?: boolean;
-                            sortOrder?: number | null;
-                        }[];
+                        banReason?: string;
+                        banExpiresIn?: number;
                     };
                 };
             };
             responses: {
-                /** @description Product updated */
+                /** @description User banned */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1058,62 +191,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                shortDescription?: string | null;
-                                isFeatured: boolean;
-                                category?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                brand?: {
-                                    id: string;
-                                    name: string;
-                                    slug: string;
-                                } | null;
-                                images: {
-                                    id: string;
-                                    imageUrl: string;
-                                    altText?: string | null;
-                                    isPrimary: boolean;
-                                    sortOrder?: number | null;
-                                }[];
-                                priceRange: {
-                                    min: number;
-                                    max: number;
-                                };
-                                availableStock: number;
-                                createdAt: string;
-                                description?: string | null;
-                                sku?: string | null;
-                                metaTitle?: string | null;
-                                metaDescription?: string | null;
-                                variants?: ({
-                                    id: string;
-                                    sku: string;
-                                    price: number;
-                                    compareAtPrice?: number | null;
-                                    weight?: number | null;
-                                    isDefault: boolean;
-                                    lowStockThreshold: number;
-                                    availableStock: number;
-                                    attributes?: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1122,7 +205,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -1131,7 +214,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1140,26 +223,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1171,138 +236,7 @@ export type paths = {
         };
         trace?: never;
     };
-    "/api/v1/products/{id}/variants": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Add a product variant
-         * @description Admin only.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        sku: string;
-                        barcode?: string | null;
-                        price: number | null;
-                        compareAtPrice?: number | null;
-                        costPrice?: number | null;
-                        weight?: number | null;
-                        isDefault?: boolean;
-                        lowStockThreshold?: number | null;
-                        attributes?: {
-                            name: string;
-                            value: string;
-                        }[];
-                        inventory?: {
-                            /** Format: uuid */
-                            warehouseId: string;
-                            quantityOnHand: number | null;
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Variant added */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                sku: string;
-                                price: number;
-                                attributes?: {
-                                    name: string;
-                                    value: string;
-                                }[];
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/products/{id}/variants/{variantId}": {
+    "/api/v1/admin/users/{id}/unban": {
         parameters: {
             query?: never;
             header?: never;
@@ -1312,136 +246,22 @@ export type paths = {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Delete a product variant
-         * @description Admin only. Soft-deletes the variant.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    variantId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Variant deleted */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                /** @enum {boolean} */
-                                deleted: true;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Update a product variant
-         * @description Admin only.
-         */
+        /** Unban a user (admin) */
         patch: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
                     id: string;
-                    variantId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        sku?: string;
-                        barcode?: string | null;
-                        price?: number | null;
-                        compareAtPrice?: number | null;
-                        costPrice?: number | null;
-                        weight?: number | null;
-                        isDefault?: boolean;
-                        lowStockThreshold?: number | null;
-                        attributes?: {
-                            name: string;
-                            value: string;
-                        }[];
-                        inventory?: {
-                            /** Format: uuid */
-                            warehouseId: string;
-                            quantityOnHand: number | null;
-                        }[];
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Variant updated */
+                /** @description User unbanned */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1450,21 +270,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                sku: string;
-                                price: number;
-                                attributes?: {
-                                    name: string;
-                                    value: string;
-                                }[];
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1473,7 +284,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -1482,7 +293,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1491,7 +302,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -1500,144 +311,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
             };
         };
-        trace?: never;
-    };
-    "/api/v1/products/{id}/images": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Replace product images
-         * @description Admin only. Replaces the full image set for a product.
-         */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        images: {
-                            /** Format: uri */
-                            imageUrl: string;
-                            altText?: string | null;
-                            isPrimary?: boolean;
-                            sortOrder?: number | null;
-                        }[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Images replaced */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: ({
-                                id: string;
-                                imageUrl: string;
-                                isPrimary: boolean;
-                                sortOrder: number;
-                            } & {
-                                [key: string]: unknown;
-                            })[];
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/v1/categories": {
@@ -1647,10 +322,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List category tree
-         * @description Public. Returns the active categories as a nested tree.
-         */
+        /** List categories */
         get: {
             parameters: {
                 query?: never;
@@ -1660,7 +332,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Category tree */
+                /** @description Categories fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1669,181 +341,15 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: ({
-                                id: string;
-                                name: string;
-                                slug: string;
-                                description?: string | null;
-                                image?: string | null;
-                                productCount: number;
-                                children: {
-                                    [key: string]: unknown;
-                                }[];
-                            } & {
-                                [key: string]: unknown;
-                            })[];
+                            message: string;
+                            data?: unknown;
                         };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
             };
         };
         put?: never;
-        /**
-         * Create a category
-         * @description Admin only.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        slug?: string;
-                        description?: string | null;
-                        /** Format: uri */
-                        image?: string | null;
-                        isActive?: boolean;
-                        /** Format: uuid */
-                        parentId?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Category created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                isActive: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1858,8 +364,8 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get a category by slug
-         * @description Public.
+         * Get category by slug or nested path
+         * @description Resolve a category by slug (`/categories/saree`) or nested path (`/categories/saree/jamdani`). Nested paths must match parent then child.
          */
         get: {
             parameters: {
@@ -1872,7 +378,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Category detail */
+                /** @description Category fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1881,72 +387,13 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                parent?: {
-                                    [key: string]: unknown;
-                                } | null;
-                                children?: {
-                                    [key: string]: unknown;
-                                }[];
-                                _count?: {
-                                    products: number;
-                                };
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1964,7 +411,150 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/categories/{id}": {
+    "/api/v1/admin/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List categories (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Admin categories fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create category (admin)
+         * @description Create a category from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=category. The response variants array is [desktop 1920x820, mobile 960x1200]; use variants[0] / imageUrl as image and variants[1] / mobileImageUrl as mobileImage.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description?: string;
+                        /** Format: uri */
+                        image?: string | null;
+                        imagePublicId?: string | null;
+                        /** Format: uri */
+                        mobileImage?: string | null;
+                        mobileImagePublicId?: string | null;
+                        /** @default true */
+                        isActive?: boolean;
+                        parentId?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Category created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/categories/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1972,12 +562,97 @@ export type paths = {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /** Update category (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        description?: string;
+                        /** Format: uri */
+                        image?: string | null;
+                        imagePublicId?: string | null;
+                        /** Format: uri */
+                        mobileImage?: string | null;
+                        mobileImagePublicId?: string | null;
+                        /** @default true */
+                        isActive?: boolean;
+                        parentId?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Category updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         post?: never;
-        /**
-         * Delete a category
-         * @description Admin only. Soft-deletes the category.
-         */
+        /** Delete category (admin) */
         delete: {
             parameters: {
                 query?: never;
@@ -1998,24 +673,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                /** @enum {boolean} */
-                                deleted: true;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2024,7 +687,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2033,26 +696,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2064,35 +709,27 @@ export type paths = {
         };
         options?: never;
         head?: never;
-        /**
-         * Update a category
-         * @description Admin only.
-         */
-        patch: {
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List brands */
+        get: {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    id: string;
-                };
+                path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        slug?: string;
-                        description?: string | null;
-                        /** Format: uri */
-                        image?: string | null;
-                        isActive?: boolean;
-                        /** Format: uuid */
-                        parentId?: string | null;
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Category updated */
+                /** @description Brands fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2101,27 +738,57 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                slug: string;
-                                isActive: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List brands (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Admin brands fetched */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2130,7 +797,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2139,8 +806,48 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
-                404: {
+            };
+        };
+        put?: never;
+        /** Create brand (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        slug?: string;
+                        /** Format: uri */
+                        logo?: string | null;
+                        logoPublicId?: string | null;
+                        description?: string;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Brand created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2148,7 +855,25 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
                 409: {
                     headers: {
                         [name: string]: unknown;
@@ -2157,8 +882,788 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Too many requests */
-                429: {
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/brands/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update brand (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        slug?: string;
+                        /** Format: uri */
+                        logo?: string | null;
+                        logoPublicId?: string | null;
+                        description?: string;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Brand updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete brand (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Brand deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List products
+         * @description Public paginated catalog of ACTIVE products. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    category?: string;
+                    brand?: string;
+                    search?: string;
+                    minPrice?: number | null;
+                    maxPrice?: number | null;
+                    featured?: boolean | null;
+                    onSale?: boolean | null;
+                    sort?: "newest" | "price_asc" | "price_desc" | "popular";
+                    includeInactive?: boolean | null;
+                    status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+                    attrs?: string | string[];
+                    categories?: string | string[];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Products fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product by slug */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Product fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product by id including draft and archived (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Product fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Update product (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        slug?: string;
+                        description?: string;
+                        /** @enum {string} */
+                        status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+                        /** @default false */
+                        isFeatured?: boolean;
+                        categoryId?: string;
+                        brandId?: string | null;
+                        metaTitle?: string;
+                        metaDescription?: string;
+                        images?: {
+                            /** Format: uri */
+                            url?: string | null;
+                            /** Format: uri */
+                            imageUrl?: string | null;
+                            publicId?: string | null;
+                            /** @default false */
+                            isPrimary?: boolean;
+                            sortOrder?: number;
+                        }[];
+                        variants?: {
+                            sku?: string;
+                            barcode?: string;
+                            price?: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                            /** @default false */
+                            isDefault?: boolean;
+                            attributeValueIds?: string[];
+                            id?: string;
+                        }[];
+                        variantOptions?: {
+                            attributeId: string;
+                            attributeValueIds: string[];
+                        }[];
+                        variantDefaults?: {
+                            price: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                        };
+                        variantOverrides?: {
+                            attributeValueIds: string[];
+                            sku?: string;
+                            barcode?: string;
+                            price?: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                            isDefault?: boolean;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Product updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete product (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Product deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create product (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        slug?: string;
+                        description?: string;
+                        /** @enum {string} */
+                        status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
+                        /** @default false */
+                        isFeatured?: boolean;
+                        categoryId: string;
+                        brandId?: string | null;
+                        metaTitle?: string;
+                        metaDescription?: string;
+                        images?: {
+                            /** Format: uri */
+                            url?: string | null;
+                            /** Format: uri */
+                            imageUrl?: string | null;
+                            publicId?: string | null;
+                            /** @default false */
+                            isPrimary?: boolean;
+                            sortOrder?: number;
+                        }[];
+                        variants?: {
+                            sku?: string;
+                            barcode?: string;
+                            price: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                            /** @default false */
+                            isDefault?: boolean;
+                            attributeValueIds?: string[];
+                        }[];
+                        variantOptions?: {
+                            attributeId: string;
+                            attributeValueIds: string[];
+                        }[];
+                        variantDefaults?: {
+                            price: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                        };
+                        variantOverrides?: {
+                            attributeValueIds: string[];
+                            sku?: string;
+                            barcode?: string;
+                            price?: number;
+                            compareAtPrice?: number;
+                            costPrice?: number | null;
+                            weight?: number | null;
+                            isDefault?: boolean;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Product created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Bulk update products (admin)
+         * @description Apply one action (set-status, set-featured, set-category, delete) to up to 100 products. Returns requested/affected counts and the ids that could not be resolved.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        type: "set-status";
+                        ids: string[];
+                        /** @enum {string} */
+                        status: "DRAFT" | "ACTIVE" | "ARCHIVED";
+                    } | {
+                        /** @enum {string} */
+                        type: "set-featured";
+                        ids: string[];
+                        isFeatured: boolean;
+                    } | {
+                        /** @enum {string} */
+                        type: "set-category";
+                        ids: string[];
+                        categoryId: string;
+                    } | {
+                        /** @enum {string} */
+                        type: "delete";
+                        ids: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Products updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2170,28 +1675,43 @@ export type paths = {
         };
         trace?: never;
     };
-    "/api/v1/inventory/warehouses": {
+    "/api/v1/admin/products/{productId}/variants": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List warehouses
-         * @description Admin only.
-         */
-        get: {
+        get?: never;
+        put?: never;
+        /** Create product variant (admin) */
+        post: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    productId: string;
+                };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        sku?: string;
+                        barcode?: string;
+                        price: number;
+                        compareAtPrice?: number;
+                        costPrice?: number | null;
+                        weight?: number | null;
+                        /** @default false */
+                        isDefault?: boolean;
+                        attributeValueIds?: string[];
+                    };
+                };
+            };
             responses: {
-                /** @description List of warehouses */
-                200: {
+                /** @description Variant created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2199,18 +1719,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: ({
-                                id: string;
-                                name: string;
-                                code: string;
-                                isActive: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            })[];
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2219,7 +1733,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2228,7 +1742,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2237,7 +1751,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -2246,8 +1760,64 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/variants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update variant (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        sku?: string;
+                        barcode?: string;
+                        price?: number;
+                        compareAtPrice?: number;
+                        costPrice?: number | null;
+                        weight?: number | null;
+                        /** @default false */
+                        isDefault?: boolean;
+                        attributeValueIds?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Variant updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2255,8 +1825,154 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Too many requests */
-                429: {
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete variant (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Variant deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List inventory (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    warehouseId?: string;
+                    variantId?: string;
+                    search?: string;
+                    lowStockOnly?: boolean | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventory fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2267,10 +1983,69 @@ export type paths = {
             };
         };
         put?: never;
-        /**
-         * Create a warehouse
-         * @description Admin only.
-         */
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List inventory adjustments (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Adjustments fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create inventory adjustment (admin) */
         post: {
             parameters: {
                 query?: never;
@@ -2278,19 +2053,427 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        warehouseId: string;
+                        variantId: string;
+                        difference: number | null;
+                        reason: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Inventory adjustment created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/adjustments/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve or reject inventory adjustment (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        approved: boolean;
+                        remarks?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Inventory adjustment processed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List inventory transfers (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Transfers fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create inventory transfer (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        fromWarehouseId: string;
+                        toWarehouseId: string;
+                        remarks?: string;
+                        items: {
+                            variantId: string;
+                            quantity: number;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Inventory transfer created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete inventory transfer (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Inventory transfer completed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/warehouses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List warehouses (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    search?: string;
+                    isActive?: boolean | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Warehouses fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create warehouse (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
                 content: {
                     "application/json": {
                         name: string;
                         code: string;
-                        phone?: string | null;
+                        phone?: string;
                         /** Format: email */
-                        email?: string | null;
+                        email?: string;
                         country: string;
-                        state?: string | null;
+                        state?: string;
                         city: string;
                         addressLine1: string;
-                        addressLine2?: string | null;
+                        addressLine2?: string;
+                        /** @default true */
                         isActive?: boolean;
                     };
                 };
@@ -2305,18 +2488,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                name: string;
-                                code: string;
-                                isActive: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2325,7 +2502,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2334,7 +2511,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2343,26 +2520,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
+                /** @description Conflict */
                 409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2378,42 +2537,26 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/inventory/stock-in": {
+    "/api/v1/admin/warehouses/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /**
-         * Stock in
-         * @description Admin only. Increases quantity on hand for a variant+warehouse.
-         */
-        post: {
+        /** Get warehouse by id (admin) */
+        get: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        variantId: string;
-                        /** Format: uuid */
-                        warehouseId: string;
-                        quantity: number;
-                        referenceType?: string | null;
-                        referenceId?: string | null;
-                        remarks?: string | null;
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Stock-in movement recorded */
+                /** @description Warehouse fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2422,28 +2565,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                variantId: string;
-                                warehouseId: string;
-                                quantity: number;
-                                type: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2452,7 +2579,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2461,7 +2588,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -2470,68 +2597,38 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/inventory/stock-out": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Stock out
-         * @description Admin only. Decreases quantity on hand; rejects if it would go negative.
-         */
-        post: {
+        /** Update warehouse (admin) */
+        put: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        variantId: string;
-                        /** Format: uuid */
-                        warehouseId: string;
-                        quantity: number;
-                        referenceType?: string | null;
-                        referenceId?: string | null;
-                        remarks?: string | null;
+                        name?: string;
+                        code?: string;
+                        phone?: string;
+                        /** Format: email */
+                        email?: string;
+                        country?: string;
+                        state?: string;
+                        city?: string;
+                        addressLine1?: string;
+                        addressLine2?: string;
+                        /** @default true */
+                        isActive?: boolean;
                     };
                 };
             };
             responses: {
-                /** @description Stock-out movement recorded */
+                /** @description Warehouse updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2540,19 +2637,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                variantId: string;
-                                warehouseId: string;
-                                quantity: number;
-                                type: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2561,7 +2651,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2570,7 +2660,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2579,7 +2669,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -2588,7 +2678,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
+                /** @description Conflict */
                 409: {
                     headers: {
                         [name: string]: unknown;
@@ -2597,57 +2687,22 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/inventory/adjust": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Adjust stock
-         * @description Admin only. Applies a signed quantity adjustment with a required reason.
-         */
-        post: {
+        post?: never;
+        /** Delete warehouse (admin) */
+        delete: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        variantId: string;
-                        /** Format: uuid */
-                        warehouseId: string;
-                        quantity: number;
-                        reason: string;
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Stock adjusted */
+                /** @description Warehouse deleted */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2656,28 +2711,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                variantId: string;
-                                warehouseId: string;
-                                quantity: number;
-                                type: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -2686,7 +2725,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2695,7 +2734,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -2704,164 +2743,26 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
             };
         };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/inventory/set": {
+    "/api/v1/shipping/options": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /**
-         * Set stock level
-         * @description Admin only. Sets the quantity on hand to an absolute value.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        variantId: string;
-                        /** Format: uuid */
-                        warehouseId: string;
-                        quantityOnHand: number | null;
-                        lowStockThreshold?: number | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Stock level set */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                variantId: string;
-                                warehouseId: string;
-                                quantity: number;
-                                type: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/inventory/low-stock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List low-stock items
-         * @description Admin only. Paginated list of variants at or below their low-stock threshold.
-         */
+        /** List available shipping options for an address */
         get: {
             parameters: {
                 query?: {
-                    page?: number;
-                    limit?: number;
+                    district?: string;
+                    subtotal?: number | null;
                 };
                 header?: never;
                 path?: never;
@@ -2869,7 +2770,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated low-stock list */
+                /** @description Shipping options fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2878,25 +2779,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    variantId: string;
-                                    sku: string;
-                                    productId: string;
-                                    productName: string;
-                                    totalOnHand: number;
-                                    totalReserved: number;
-                                    totalAvailable: number;
-                                    lowStockThreshold: number;
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2905,44 +2793,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2955,6 +2807,1641 @@ export type paths = {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shipping/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate shipping for a selected method and address */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        shippingMethodCode: string;
+                        shippingAddress?: {
+                            fullName: string;
+                            phone: string;
+                            /** Format: email */
+                            email?: string;
+                            /** @default Bangladesh */
+                            country?: string;
+                            division: string;
+                            district: string;
+                            thana?: string;
+                            postalCode?: string;
+                            addressLine1: string;
+                            addressLine2?: string;
+                        };
+                        district?: string;
+                        subtotal?: number | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping quote calculated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List shipping zones (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping zones fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create shipping zone (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        code: string;
+                        /** @default true */
+                        isActive?: boolean;
+                        /** @default false */
+                        isFallback?: boolean;
+                        /** @default [] */
+                        matchDistricts?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping zone created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/zones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get shipping zone (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping zone fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Update shipping zone (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        code?: string;
+                        /** @default true */
+                        isActive?: boolean;
+                        /** @default false */
+                        isFallback?: boolean;
+                        /** @default [] */
+                        matchDistricts?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping zone updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete shipping zone (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping zone deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List shipping methods (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping methods fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create shipping method (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        code: string;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping method created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/methods/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get shipping method (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping method fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Update shipping method (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        code?: string;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping method updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List shipping rates (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping rates fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create shipping rate (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        shippingZoneId: string;
+                        shippingMethodId: string;
+                        price: number | null;
+                        freeShippingFrom?: number | null;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping rate created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/rates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get shipping rate (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping rate fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Update shipping rate (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        shippingZoneId?: string;
+                        shippingMethodId?: string;
+                        price?: number | null;
+                        freeShippingFrom?: number | null;
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Shipping rate updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete shipping rate (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Shipping rate deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attributes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List attributes with values */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Attributes fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attributes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get attribute by id */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Attribute fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attributes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create attribute (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Attribute created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attributes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update attribute (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Attribute updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete attribute (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Attribute deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attributes/{attributeId}/values": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create attribute value (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    attributeId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        value: string;
+                        color?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Attribute value created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attribute-values/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update attribute value (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        value?: string;
+                        color?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Attribute value updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete attribute value (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Attribute value deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -2967,23 +4454,17 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get the current cart
-         * @description Returns the authenticated user's cart, or the guest cart for the given `x-guest-session-id`.
-         */
+        /** Get authenticated cart */
         get: {
             parameters: {
                 query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Current cart */
+                /** @description Cart fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -2992,84 +4473,13 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3081,23 +4491,17 @@ export type paths = {
         };
         put?: never;
         post?: never;
-        /**
-         * Clear the cart
-         * @description Empties the current user's cart or the guest cart.
-         */
+        /** Clear cart */
         delete: {
             parameters: {
                 query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Empty cart */
+                /** @description Cart cleared */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -3106,84 +4510,13 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3207,31 +4540,24 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Add an item to the cart
-         * @description Adds a variant to the cart. Quantity is validated against available stock; pricing is always server-side from the product catalog.
-         */
+        /** Add item to cart */
         post: {
             parameters: {
                 query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** Format: uuid */
                         variantId: string;
                         quantity: number;
                     };
                 };
             };
             responses: {
-                /** @description Cart after adding the item */
+                /** @description Item added to cart */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -3240,38 +4566,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3280,7 +4580,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -3289,35 +4589,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3333,7 +4606,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/cart/items/{itemId}": {
+    "/api/v1/cart/items/{variantId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3341,27 +4614,25 @@ export type paths = {
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Remove an item from the cart
-         * @description Removes a cart item. Ownership is enforced: the item must belong to the current user's cart.
-         */
-        delete: {
+        /** Update cart item quantity */
+        put: {
             parameters: {
                 query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
+                header?: never;
                 path: {
-                    itemId: string;
+                    variantId: string;
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        quantity: number;
+                    };
+                };
+            };
             responses: {
-                /** @description Cart after removing the item */
+                /** @description Cart item updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -3370,38 +4641,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3410,7 +4655,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -3419,16 +4664,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -3437,8 +4673,37 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
+            };
+        };
+        post?: never;
+        /** Remove cart item */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    variantId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Item removed from cart */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3446,8 +4711,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Too many requests */
-                429: {
+                /** @description Not found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3459,129 +4724,10 @@ export type paths = {
         };
         options?: never;
         head?: never;
-        /**
-         * Update a cart item quantity
-         * @description Updates the quantity of a cart item. Ownership is enforced: the item must belong to the current user's cart.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
-                path: {
-                    itemId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        quantity: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Cart after updating the item */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
-    "/api/v1/cart/merge": {
+    "/api/v1/cart/guest/merge": {
         parameters: {
             query?: never;
             header?: never;
@@ -3590,29 +4736,27 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Merge guest cart on login
-         * @description Authentication required. Merges the guest cart identified by the `x-guest-session-id` into the authenticated user's cart, then clears the guest cart. Quantities are capped at available stock.
-         */
+        /** Merge local guest cart items into authenticated cart */
         post: {
             parameters: {
                 query?: never;
-                header?: {
-                    /** @description Opaque guest session id generated client-side. Required for guest carts. */
-                    "x-guest-session-id"?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        sessionId: string;
+                        /** @default [] */
+                        items?: {
+                            variantId: string;
+                            quantity: number;
+                        }[];
                     };
                 };
             };
             responses: {
-                /** @description Merged cart */
+                /** @description Guest cart merged */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -3621,38 +4765,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: {
-                                    id?: string | null;
-                                    variantId: string;
-                                    productId: string;
-                                    productName: string;
-                                    productSlug?: string | null;
-                                    productImage?: string | null;
-                                    sku: string;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                    quantity: number;
-                                    availableStock: number;
-                                    attributes: {
-                                        name: string;
-                                        value: string;
-                                    }[];
-                                }[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3661,7 +4779,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -3670,8 +4788,55 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/coupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply coupon to cart */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        code: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Coupon applied */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3679,7 +4844,16 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -3688,8 +4862,130 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
+            };
+        };
+        /** Remove coupon from cart */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Coupon removed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Checkout authenticated cart */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        paymentMethod: "COD" | "SSLCOMMERZ";
+                        billingAddress: {
+                            fullName: string;
+                            phone: string;
+                            /** Format: email */
+                            email?: string;
+                            /** @default Bangladesh */
+                            country?: string;
+                            division: string;
+                            district: string;
+                            thana?: string;
+                            postalCode?: string;
+                            addressLine1: string;
+                            addressLine2?: string;
+                        };
+                        shippingAddress?: {
+                            fullName: string;
+                            phone: string;
+                            /** Format: email */
+                            email?: string;
+                            /** @default Bangladesh */
+                            country?: string;
+                            division: string;
+                            district: string;
+                            thana?: string;
+                            postalCode?: string;
+                            addressLine1: string;
+                            addressLine2?: string;
+                        };
+                        shippingMethodCode: string;
+                        couponCode?: string;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Order created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3723,10 +5019,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Place an order from the cart
-         * @description Authentication required. Creates the order, reserves stock atomically, and optionally initiates payment. All prices are recalculated server-side from the cart; no client-supplied amounts are trusted.
-         */
+        /** Create order from cart */
         post: {
             parameters: {
                 query?: never;
@@ -3734,47 +5027,42 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        shippingAddressId?: string;
+                        /** @enum {string} */
+                        paymentMethod: "COD" | "SSLCOMMERZ";
+                        billingAddress: {
+                            fullName: string;
+                            phone: string;
+                            /** Format: email */
+                            email?: string;
+                            /** @default Bangladesh */
+                            country?: string;
+                            division: string;
+                            district: string;
+                            thana?: string;
+                            postalCode?: string;
+                            addressLine1: string;
+                            addressLine2?: string;
+                        };
                         shippingAddress?: {
                             fullName: string;
                             phone: string;
                             /** Format: email */
-                            email?: string | null;
-                            country: string;
-                            state?: string | null;
-                            city: string;
-                            area?: string | null;
-                            postalCode?: string | null;
+                            email?: string;
+                            /** @default Bangladesh */
+                            country?: string;
+                            division: string;
+                            district: string;
+                            thana?: string;
+                            postalCode?: string;
                             addressLine1: string;
-                            addressLine2?: string | null;
+                            addressLine2?: string;
                         };
-                        /** Format: uuid */
-                        billingAddressId?: string;
-                        billingAddress?: {
-                            fullName: string;
-                            phone: string;
-                            /** Format: email */
-                            email?: string | null;
-                            country: string;
-                            state?: string | null;
-                            city: string;
-                            area?: string | null;
-                            postalCode?: string | null;
-                            addressLine1: string;
-                            addressLine2?: string | null;
-                        };
-                        /**
-                         * @default flat
-                         * @enum {string}
-                         */
-                        shippingMethod?: "flat" | "free";
-                        /** @enum {string} */
-                        paymentMethod?: "COD" | "SSLCOMMERZ";
-                        notes?: string | null;
+                        shippingMethodCode: string;
+                        couponCode?: string;
+                        notes?: string;
                     };
                 };
             };
@@ -3788,39 +5076,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                orderId: string;
-                                orderNumber: string;
-                                status: string;
-                                paymentStatus: string;
-                                currency: string;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                                shippingMethod: string;
-                                items: {
-                                    productName: string;
-                                    sku: string;
-                                    variantId: string;
-                                    quantity: number;
-                                    unitPrice: string;
-                                    subtotal: string;
-                                }[];
-                                payment?: {
-                                    paymentId: string;
-                                    redirectUrl?: string | null;
-                                    method: string;
-                                };
-                                paymentError?: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3829,35 +5090,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3889,16 +5123,16 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List my orders
-         * @description Authentication required. Paginated list of the authenticated customer's orders.
-         */
+        /** List my orders */
         get: {
             parameters: {
                 query?: {
                     page?: number;
                     limit?: number;
-                    status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED" | null;
+                    from?: string;
+                    to?: string;
+                    status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED";
+                    search?: string;
                 };
                 header?: never;
                 path?: never;
@@ -3906,7 +5140,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated order list */
+                /** @description Orders fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -3915,39 +5149,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    orderNumber: string;
-                                    status: string;
-                                    paymentStatus: string;
-                                    fulfillmentStatus: string;
-                                    currency: string;
-                                    subtotal?: unknown;
-                                    discountAmount?: unknown;
-                                    taxAmount?: unknown;
-                                    shippingAmount?: unknown;
-                                    grandTotal?: unknown;
-                                    items: ({
-                                        id: string;
-                                        productName: string;
-                                        sku: string;
-                                        variantId?: string | null;
-                                        quantity: number;
-                                        unitPrice?: unknown;
-                                        subtotal?: unknown;
-                                    } & {
-                                        [key: string]: unknown;
-                                    })[];
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3956,44 +5163,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4018,10 +5189,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get an order
-         * @description Authentication required. Returns the order only if it belongs to the authenticated customer (ownership enforced, otherwise 404).
-         */
+        /** Get my order */
         get: {
             parameters: {
                 query?: never;
@@ -4033,7 +5201,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Order detail */
+                /** @description Order fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -4042,45 +5210,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                orderNumber: string;
-                                status: string;
-                                paymentStatus: string;
-                                fulfillmentStatus: string;
-                                currency: string;
-                                subtotal?: unknown;
-                                discountAmount?: unknown;
-                                taxAmount?: unknown;
-                                shippingAmount?: unknown;
-                                grandTotal?: unknown;
-                                items: ({
-                                    id: string;
-                                    productName: string;
-                                    sku: string;
-                                    variantId?: string | null;
-                                    quantity: number;
-                                    unitPrice?: unknown;
-                                    subtotal?: unknown;
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4089,35 +5224,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4135,7 +5243,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/{id}/cancel": {
+    "/api/v1/orders/{id}/cancelled": {
         parameters: {
             query?: never;
             header?: never;
@@ -4144,10 +5252,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Cancel an order
-         * @description Authentication required. Cancels the customer's own order within the cancellable statuses and releases reserved stock.
-         */
+        /** Cancel my order */
         post: {
             parameters: {
                 query?: never;
@@ -4157,10 +5262,10 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        reason?: string | null;
+                        reason?: string;
                     };
                 };
             };
@@ -4175,17 +5280,11 @@ export type paths = {
                             /** @enum {boolean} */
                             success: true;
                             message: string;
-                            data: {
-                                id: string;
-                                status: string;
-                                paymentStatus: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4194,7 +5293,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4203,35 +5302,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4247,7 +5319,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/{id}/return": {
+    "/api/v1/orders/{id}/return-request": {
         parameters: {
             query?: never;
             header?: never;
@@ -4256,10 +5328,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Request a return
-         * @description Authentication required. Requests a return for the customer's own order.
-         */
+        /** Create a return request for a delivered order */
         post: {
             parameters: {
                 query?: never;
@@ -4269,16 +5338,22 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        reason?: string | null;
+                        reason?: string;
+                        items: {
+                            orderItemId: string;
+                            quantity: number;
+                            /** @enum {string} */
+                            restockOrRefund: "RESTOCK" | "REFUND";
+                        }[];
                     };
                 };
             };
             responses: {
-                /** @description Return requested */
-                200: {
+                /** @description Return request created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4287,17 +5362,11 @@ export type paths = {
                             /** @enum {boolean} */
                             success: true;
                             message: string;
-                            data: {
-                                id: string;
-                                status: string;
-                                paymentStatus: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4306,7 +5375,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4315,16 +5384,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -4333,17 +5393,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
+                /** @description Conflict */
                 409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4359,27 +5410,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/admin": {
+    "/api/v1/admin/orders": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List all orders (admin)
-         * @description Admin only. Paginated order listing with status / payment status / date filters.
-         */
+        /** List all orders (admin) */
         get: {
             parameters: {
                 query?: {
                     page?: number;
                     limit?: number;
-                    status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED" | null;
-                    paymentStatus?: "PENDING" | "PAID" | "PARTIALLY_PAID" | "FAILED" | "REFUNDED" | null;
-                    from?: string | null;
-                    to?: string | null;
-                    q?: string | null;
+                    from?: string;
+                    to?: string;
+                    status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED";
+                    search?: string;
                 };
                 header?: never;
                 path?: never;
@@ -4387,7 +5434,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated admin order list */
+                /** @description Orders fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -4396,39 +5443,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    orderNumber: string;
-                                    status: string;
-                                    paymentStatus: string;
-                                    fulfillmentStatus: string;
-                                    currency: string;
-                                    subtotal?: unknown;
-                                    discountAmount?: unknown;
-                                    taxAmount?: unknown;
-                                    shippingAmount?: unknown;
-                                    grandTotal?: unknown;
-                                    items: ({
-                                        id: string;
-                                        productName: string;
-                                        sku: string;
-                                        variantId?: string | null;
-                                        quantity: number;
-                                        unitPrice?: unknown;
-                                        subtotal?: unknown;
-                                    } & {
-                                        [key: string]: unknown;
-                                    })[];
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4437,7 +5457,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4446,35 +5466,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4492,17 +5485,14 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/admin/{id}": {
+    "/api/v1/admin/orders/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get any order (admin)
-         * @description Admin only. Full order detail including customer profile and payments.
-         */
+        /** Get order by id (admin) */
         get: {
             parameters: {
                 query?: never;
@@ -4514,7 +5504,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Admin order detail */
+                /** @description Order fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -4523,45 +5513,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                orderNumber: string;
-                                status: string;
-                                paymentStatus: string;
-                                fulfillmentStatus: string;
-                                currency: string;
-                                subtotal?: unknown;
-                                discountAmount?: unknown;
-                                taxAmount?: unknown;
-                                shippingAmount?: unknown;
-                                grandTotal?: unknown;
-                                items: ({
-                                    id: string;
-                                    productName: string;
-                                    sku: string;
-                                    variantId?: string | null;
-                                    quantity: number;
-                                    unitPrice?: unknown;
-                                    subtotal?: unknown;
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4570,7 +5527,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4579,26 +5536,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4616,7 +5555,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/admin/{id}/status": {
+    "/api/v1/admin/orders/{id}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -4629,10 +5568,7 @@ export type paths = {
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Transition order status (admin)
-         * @description Admin only. Advances the order through the allowed status state machine.
-         */
+        /** Update order status (admin) */
         patch: {
             parameters: {
                 query?: never;
@@ -4642,12 +5578,12 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
                         /** @enum {string} */
                         status: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED";
-                        remarks?: string | null;
+                        remarks?: string;
                     };
                 };
             };
@@ -4662,17 +5598,11 @@ export type paths = {
                             /** @enum {boolean} */
                             success: true;
                             message: string;
-                            data: {
-                                id: string;
-                                status: string;
-                                paymentStatus: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4681,7 +5611,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4690,7 +5620,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4699,26 +5629,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4730,37 +5642,29 @@ export type paths = {
         };
         trace?: never;
     };
-    "/api/v1/orders/admin/{id}/cancel": {
+    "/api/v1/admin/return-requests": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /**
-         * Cancel any order (admin)
-         * @description Admin only. Cancels an order and releases reserved stock.
-         */
-        post: {
+        /** List return requests (admin) */
+        get: {
             parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    status?: "PENDING" | "APPROVED" | "REJECTED";
+                    orderId?: string;
                 };
+                header?: never;
+                path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        reason?: string | null;
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Order cancelled */
+                /** @description Return requests fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -4770,17 +5674,11 @@ export type paths = {
                             /** @enum {boolean} */
                             success: true;
                             message: string;
-                            data: {
-                                id: string;
-                                status: string;
-                                paymentStatus: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4789,7 +5687,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4798,35 +5696,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4836,10 +5707,99 @@ export type paths = {
                 };
             };
         };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/return-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Approve or reject a return request (admin) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "APPROVED" | "REJECTED";
+                        adminNote?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Return request updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/payments/{orderId}/initiate": {
@@ -4851,10 +5811,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Initiate a payment for an order
-         * @description Authentication required. Creates a payment transaction for the order. Ownership is enforced: the order must belong to the authenticated customer.
-         */
+        /** Initiate payment for an order */
         post: {
             parameters: {
                 query?: never;
@@ -4864,7 +5821,7 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
                         /** @enum {string} */
@@ -4874,7 +5831,7 @@ export type paths = {
             };
             responses: {
                 /** @description Payment initiated */
-                200: {
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4882,18 +5839,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                paymentId: string;
-                                method: string;
-                                redirectUrl?: string | null;
-                                status?: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4902,7 +5853,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -4911,26 +5862,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4955,7 +5888,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/payments/cod/eligibility": {
+    "/api/v1/payments/sslcommerz/success": {
         parameters: {
             query?: never;
             header?: never;
@@ -4964,10 +5897,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /**
-         * Check COD eligibility for an order
-         * @description Authentication required. Returns whether cash-on-delivery is allowed for the order based on policy limits (max order value, outstanding COD count).
-         */
+        /** SSLCommerz success callback (signature-based, no bearer auth) */
         post: {
             parameters: {
                 query?: never;
@@ -4975,127 +5905,18 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        orderId: string;
+                        val_id: string;
+                        tran_id: string;
+                    } & {
+                        [key: string]: unknown;
                     };
                 };
             };
             responses: {
-                /** @description COD eligibility result */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                eligible: boolean;
-                                orderId: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/payments/cod/{paymentId}/collect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Collect a COD payment
-         * @description Admin only. Marks a COD payment as collected. The acting admin is taken from the session; the actor id is never accepted from the request body.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    paymentId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        paymentId: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description COD payment collected */
+                /** @description Payment verified */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -5105,56 +5926,12 @@ export type paths = {
                             /** @enum {boolean} */
                             success: true;
                             message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5170,125 +5947,34 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/payments/sslcommerz/{type}": {
+    "/api/v1/payments/sslcommerz/failed": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * SSLCommerz callback (GET)
-         * @description Webhook callback from the SSLCommerz payment gateway (GET/POST). Signature-verified - no bearer token required.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    type: "success" | "fail" | "cancel" | "ipn";
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Callback processed */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                success?: boolean;
-                                status?: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
+        get?: never;
         put?: never;
-        /**
-         * SSLCommerz callback (POST)
-         * @description Webhook callback from the SSLCommerz payment gateway (GET/POST). Signature-verified - no bearer token required.
-         */
+        /** SSLCommerz failed callback (signature-based, no bearer auth) */
         post: {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    type: "success" | "fail" | "cancel" | "ipn";
-                };
+                path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
+                        tran_id: string;
+                    } & {
                         [key: string]: unknown;
                     };
                 };
             };
             responses: {
-                /** @description Callback processed */
+                /** @description Payment failed */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -5297,62 +5983,13 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                success?: boolean;
-                                status?: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5368,33 +6005,34 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/coupons/admin": {
+    "/api/v1/payments/sslcommerz/cancelled": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List coupons
-         * @description Admin only. Paginated coupon listing with filtering.
-         */
-        get: {
+        get?: never;
+        put?: never;
+        /** SSLCommerz cancelled callback (signature-based, no bearer auth) */
+        post: {
             parameters: {
-                query?: {
-                    page?: number;
-                    limit?: number;
-                    status?: "DRAFT" | "ACTIVE" | "EXPIRED" | "DISABLED" | null;
-                    isActive?: "true" | "false" | null;
-                    q?: string | null;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        tran_id: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
             responses: {
-                /** @description Paginated coupon list */
+                /** @description Payment cancelled */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -5403,37 +6041,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    code: string;
-                                    name: string;
-                                    description?: string | null;
-                                    status: string;
-                                    discountType: string;
-                                    discountValue: number;
-                                    minimumOrderAmount?: number | null;
-                                    maximumDiscountAmount?: number | null;
-                                    usageLimit?: number | null;
-                                    usageCount: number;
-                                    usageLimitPerCustomer?: number | null;
-                                    startsAt: string;
-                                    expiresAt: string;
-                                    isActive: boolean;
-                                    applicableCategoryIds: string[];
-                                    applicableProductIds: string[];
-                                    campaignId?: string | null;
-                                    createdAt: string;
-                                    updatedAt: string;
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5442,7 +6055,124 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/sslcommerz/ipn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** SSLCommerz IPN webhook (signature-based, no bearer auth) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        status: string;
+                        tran_id: string;
+                        val_id?: string;
+                        verify_sign: string;
+                        verify_key: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description IPN processed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List payments (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    from?: string;
+                    to?: string;
+                    status?: "PENDING" | "INITIATED" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED" | "REFUNDED" | "PARTIALLY_REFUNDED" | "COLLECTED";
+                    method?: "COD" | "SSLCOMMERZ";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Payments fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -5451,7 +6181,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5460,7 +6190,68 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get payment by id including gatewayResponse (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Payment fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -5469,8 +6260,547 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/cod/{paymentId}/collect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Collect COD payment (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    paymentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Payment collected */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/{paymentId}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refund a payment (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    paymentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        amount: number;
+                        reason?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Refund created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public storefront settings */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Settings fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                store: {
+                                    name: string;
+                                    supportEmail: string;
+                                    supportPhone: string;
+                                    logoUrl: string;
+                                    currency: string;
+                                };
+                                payment: {
+                                    enabledMethods: ("COD" | "SSLCOMMERZ")[];
+                                };
+                                checkout: {
+                                    pricesIncludeTax: boolean;
+                                    taxRatePercent: number;
+                                    freeShippingThreshold: number | null;
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List admin settings grouped by section */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Settings fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                key: string;
+                                label: string;
+                                description: string;
+                                fields: {
+                                    key: string;
+                                    label: string;
+                                    /** @enum {string} */
+                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "secret" | "textarea";
+                                    help?: string;
+                                    options?: {
+                                        value: string;
+                                        label: string;
+                                    }[];
+                                    readOnly?: boolean;
+                                    value?: unknown;
+                                    configured?: boolean;
+                                    last4?: string | null;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List platform setting audit entries */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Settings audit fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/{group}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update one settings group */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    group: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        values: {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Settings updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                key: string;
+                                label: string;
+                                description: string;
+                                fields: {
+                                    key: string;
+                                    label: string;
+                                    /** @enum {string} */
+                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "secret" | "textarea";
+                                    help?: string;
+                                    options?: {
+                                        value: string;
+                                        label: string;
+                                    }[];
+                                    readOnly?: boolean;
+                                    value?: unknown;
+                                    configured?: boolean;
+                                    last4?: string | null;
+                                }[];
+                            };
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/coupons/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate a coupon code */
+        get: {
+            parameters: {
+                query: {
+                    code: string;
+                    subtotal?: number | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Coupon is valid */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5490,10 +6820,79 @@ export type paths = {
             };
         };
         put?: never;
-        /**
-         * Create a coupon
-         * @description Admin only. Discount values are stored and always recomputed server-side; client-supplied amounts are never trusted during checkout.
-         */
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List coupons (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Coupons fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create coupon (admin) */
         post: {
             parameters: {
                 query?: never;
@@ -5501,14 +6900,14 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
                         code: string;
                         name: string;
                         description?: string | null;
                         /**
-                         * @default DRAFT
+                         * @default ACTIVE
                          * @enum {string}
                          */
                         status?: "DRAFT" | "ACTIVE" | "EXPIRED" | "DISABLED";
@@ -5526,11 +6925,9 @@ export type paths = {
                         /** @default true */
                         isActive?: boolean;
                         /** @default [] */
-                        applicableCategoryIds?: string[];
-                        /** @default [] */
                         applicableProductIds?: string[];
-                        /** Format: uuid */
-                        campaignId?: string | null;
+                        /** @default [] */
+                        applicableCategoryIds?: string[];
                     };
                 };
             };
@@ -5544,34 +6941,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                code: string;
-                                name: string;
-                                description?: string | null;
-                                status: string;
-                                discountType: string;
-                                discountValue: number;
-                                minimumOrderAmount?: number | null;
-                                maximumDiscountAmount?: number | null;
-                                usageLimit?: number | null;
-                                usageCount: number;
-                                usageLimitPerCustomer?: number | null;
-                                startsAt: string;
-                                expiresAt: string;
-                                isActive: boolean;
-                                applicableCategoryIds: string[];
-                                applicableProductIds: string[];
-                                campaignId?: string | null;
-                                createdAt: string;
-                                updatedAt: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5580,7 +6955,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -5589,35 +6964,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5633,18 +6981,16 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/coupons/admin/{id}": {
+    "/api/v1/admin/coupons/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get a coupon
-         * @description Admin only.
-         */
-        get: {
+        get?: never;
+        /** Update coupon (admin) */
+        put: {
             parameters: {
                 query?: never;
                 header?: never;
@@ -5653,9 +6999,37 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        code?: string;
+                        name?: string;
+                        description?: string | null;
+                        /**
+                         * @default ACTIVE
+                         * @enum {string}
+                         */
+                        status?: "DRAFT" | "ACTIVE" | "EXPIRED" | "DISABLED";
+                        /** @enum {string} */
+                        discountType?: "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING";
+                        discountValue?: number | null;
+                        minimumOrderAmount?: number | null;
+                        maximumDiscountAmount?: number | null;
+                        usageLimit?: number | null;
+                        usageLimitPerCustomer?: number | null;
+                        /** Format: date-time */
+                        startsAt?: string | null;
+                        /** Format: date-time */
+                        expiresAt?: string | null;
+                        /** @default true */
+                        isActive?: boolean;
+                        applicableProductIds?: string[];
+                        applicableCategoryIds?: string[];
+                    };
+                };
+            };
             responses: {
-                /** @description Coupon detail */
+                /** @description Coupon updated */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -5664,34 +7038,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                code: string;
-                                name: string;
-                                description?: string | null;
-                                status: string;
-                                discountType: string;
-                                discountValue: number;
-                                minimumOrderAmount?: number | null;
-                                maximumDiscountAmount?: number | null;
-                                usageLimit?: number | null;
-                                usageCount: number;
-                                usageLimitPerCustomer?: number | null;
-                                startsAt: string;
-                                expiresAt: string;
-                                isActive: boolean;
-                                applicableCategoryIds: string[];
-                                applicableProductIds: string[];
-                                campaignId?: string | null;
-                                createdAt: string;
-                                updatedAt: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5700,7 +7052,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -5709,7 +7061,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5718,26 +7070,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5747,12 +7081,8 @@ export type paths = {
                 };
             };
         };
-        put?: never;
         post?: never;
-        /**
-         * Delete a coupon
-         * @description Admin only. Soft-deletes the coupon.
-         */
+        /** Delete coupon (admin) */
         delete: {
             parameters: {
                 query?: never;
@@ -5773,24 +7103,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                /** @enum {boolean} */
-                                deleted: true;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -5799,7 +7117,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5808,368 +7126,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Update a coupon
-         * @description Admin only.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        code?: string;
-                        name?: string;
-                        description?: string | null;
-                        /** @enum {string} */
-                        status?: "DRAFT" | "ACTIVE" | "EXPIRED" | "DISABLED";
-                        /** @enum {string} */
-                        discountType?: "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING";
-                        discountValue?: number | null;
-                        minimumOrderAmount?: number | null;
-                        maximumDiscountAmount?: number | null;
-                        usageLimit?: number | null;
-                        usageLimitPerCustomer?: number | null;
-                        /** Format: date-time */
-                        startsAt?: string | null;
-                        /** Format: date-time */
-                        expiresAt?: string | null;
-                        isActive?: boolean;
-                        applicableCategoryIds?: string[];
-                        applicableProductIds?: string[];
-                        /** Format: uuid */
-                        campaignId?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Coupon updated */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                code: string;
-                                name: string;
-                                description?: string | null;
-                                status: string;
-                                discountType: string;
-                                discountValue: number;
-                                minimumOrderAmount?: number | null;
-                                maximumDiscountAmount?: number | null;
-                                usageLimit?: number | null;
-                                usageCount: number;
-                                usageLimitPerCustomer?: number | null;
-                                startsAt: string;
-                                expiresAt: string;
-                                isActive: boolean;
-                                applicableCategoryIds: string[];
-                                applicableProductIds: string[];
-                                campaignId?: string | null;
-                                createdAt: string;
-                                updatedAt: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/api/v1/cart/coupon": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Apply a coupon to the cart
-         * @description Customer only. Validates the code against the cart and stores the server-computed discount. Rate limited to prevent code guessing. The discount is re-validated atomically during checkout.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        code: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Coupon applied - updated cart */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: unknown[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        /**
-         * Remove the applied coupon
-         * @description Customer only. Removes the discount from the cart.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Coupon removed - updated cart */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id?: string | null;
-                                customerProfileId?: string | null;
-                                sessionId?: string | null;
-                                items: unknown[];
-                                itemCount: number;
-                                subtotal: string;
-                                discountAmount: string;
-                                taxAmount: string;
-                                shippingAmount: string;
-                                grandTotal: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6191,10 +7149,91 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List my wishlist
-         * @description Customer only. Returns the authenticated customer's wishlist with product details (name, image, price range, in-stock status), paginated. Items are always scoped to the session customer - other users' wishlists are never reachable.
-         */
+        /** Get wishlist */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Wishlist fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Clear wishlist */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Wishlist cleared */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List wishlist items */
         get: {
             parameters: {
                 query?: {
@@ -6207,7 +7246,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated wishlist */
+                /** @description Wishlist items fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -6216,44 +7255,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    addedAt: string;
-                                    product: {
-                                        id: string;
-                                        name: string;
-                                        slug: string;
-                                        shortDescription?: string | null;
-                                        category?: {
-                                            id: string;
-                                            name: string;
-                                            slug: string;
-                                        } | null;
-                                        brand?: {
-                                            id: string;
-                                            name: string;
-                                            slug: string;
-                                        } | null;
-                                        image?: string | null;
-                                        priceRange: {
-                                            min: number;
-                                            max: number;
-                                        };
-                                        inStock: boolean;
-                                        availableStock: number;
-                                    } & {
-                                        [key: string]: unknown;
-                                    };
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -6262,44 +7269,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6310,10 +7281,7 @@ export type paths = {
             };
         };
         put?: never;
-        /**
-         * Add a product to my wishlist
-         * @description Customer only. Idempotent - adding an already-present product returns 200 with `duplicate: true` instead of an error.
-         */
+        /** Add item to wishlist */
         post: {
             parameters: {
                 query?: never;
@@ -6321,36 +7289,15 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        productId: string;
+                        variantId: string;
                     };
                 };
             };
             responses: {
-                /** @description Product already in wishlist (idempotent) */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                id: string;
-                                productId: string;
-                                addedAt: string;
-                                duplicate: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Product added to wishlist */
+                /** @description Item added to wishlist */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -6359,18 +7306,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                productId: string;
-                                addedAt: string;
-                                duplicate: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -6379,7 +7320,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -6388,16 +7329,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -6406,17 +7338,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
+                /** @description Conflict */
                 409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6432,32 +7355,65 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/wishlist/{productId}": {
+    "/api/v1/wishlist/items/{variantId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Check if variant is in wishlist */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    variantId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Wishlist status fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
-        /**
-         * Remove a product from my wishlist
-         * @description Customer only. Ownership is implicit from the session; the productId is taken from the path, never from the body.
-         */
+        /** Remove item from wishlist */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    productId: string;
+                    variantId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Product removed from wishlist */
+                /** @description Item removed from wishlist */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -6466,26 +7422,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                productId: string;
-                                /** @enum {boolean} */
-                                removed: true;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -6494,16 +7436,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -6512,130 +7445,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/wishlist/{productId}/move-to-cart": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Move a wishlist product to the cart
-         * @description Customer only. Resolves a purchasable variant (default first, else any in-stock), adds one unit to the cart, and removes the item from the wishlist.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Moved to cart */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                productId: string;
-                                variantId: string;
-                            } & {
-                                [key: string]: unknown;
-                            };
-                        };
-                    };
-                };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6648,16 +7459,12 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List approved reviews for a product
-         * @description Public. Returns only approved reviews with the customer's display name (never the profile id or email), paginated and filterable by rating.
-         */
+        /** List product reviews */
         get: {
             parameters: {
                 query?: {
                     page?: number;
                     limit?: number;
-                    rating?: number;
                 };
                 header?: never;
                 path: {
@@ -6667,7 +7474,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated review list */
+                /** @description Reviews fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -6676,72 +7483,13 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    rating: number;
-                                    comment?: string | null;
-                                    images: string[];
-                                    verifiedPurchase: boolean;
-                                    createdAt: string;
-                                    customer: {
-                                        name: string;
-                                    };
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6752,10 +7500,7 @@ export type paths = {
             };
         };
         put?: never;
-        /**
-         * Submit a product review
-         * @description Customer only. One review per customer per product (409 on duplicate). An optional orderId is ownership-checked and must be a delivered order that contains the product to set the verified-purchase badge. Comments are HTML-escaped server-side. Reviews start unapproved pending admin moderation. Rate limited to prevent spam.
-         */
+        /** Create product review */
         post: {
             parameters: {
                 query?: never;
@@ -6765,19 +7510,17 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
                         rating: number;
                         comment?: string;
-                        /** Format: uuid */
                         orderId?: string;
-                        images?: string[];
                     };
                 };
             };
             responses: {
-                /** @description Review submitted for moderation */
+                /** @description Review submitted for approval */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -6786,20 +7529,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                rating: number;
-                                comment?: string | null;
-                                images: string[];
-                                isApproved: boolean;
-                                verifiedPurchase: boolean;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -6808,7 +7543,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -6817,26 +7552,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6871,10 +7588,7 @@ export type paths = {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Delete a review
-         * @description The review's owner or an admin may delete it. Non-owners get 404.
-         */
+        /** Delete review (owner or admin) */
         delete: {
             parameters: {
                 query?: never;
@@ -6895,24 +7609,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                /** @enum {boolean} */
-                                deleted: true;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -6921,7 +7623,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6930,26 +7632,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6961,10 +7645,7 @@ export type paths = {
         };
         options?: never;
         head?: never;
-        /**
-         * Edit my review
-         * @description Customer only. The review must belong to the authenticated customer (others get 404). Recomputes the product rating aggregate when the review was already approved.
-         */
+        /** Update own review */
         patch: {
             parameters: {
                 query?: never;
@@ -6974,12 +7655,11 @@ export type paths = {
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": {
                         rating?: number;
                         comment?: string;
-                        images?: string[];
                     };
                 };
             };
@@ -6993,16 +7673,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                rating: number;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -7011,7 +7687,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -7020,35 +7696,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7067,17 +7716,13 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Review moderation queue
-         * @description Admin only. Lists reviews filtered by moderation status.
-         */
+        /** List reviews (admin) */
         get: {
             parameters: {
                 query?: {
                     page?: number;
                     limit?: number;
-                    rating?: number;
-                    status?: "pending" | "approved";
+                    status?: "pending" | "approved" | "rejected";
                 };
                 header?: never;
                 path?: never;
@@ -7085,7 +7730,7 @@ export type paths = {
             };
             requestBody?: never;
             responses: {
-                /** @description Paginated review list */
+                /** @description Reviews fetched */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -7094,26 +7739,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                items: ({
-                                    id: string;
-                                    rating: number;
-                                    comment?: string | null;
-                                    images: string[];
-                                    verifiedPurchase: boolean;
-                                    createdAt: string;
-                                    customer: {
-                                        name: string;
-                                    };
-                                } & {
-                                    [key: string]: unknown;
-                                })[];
-                                pagination: components["schemas"]["PaginationMeta"];
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
+                /** @description Validation failed */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -7122,7 +7753,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -7131,35 +7762,8 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Resource not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Too many requests */
-                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7190,10 +7794,7 @@ export type paths = {
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Approve a review
-         * @description Admin only. Approving publishes the review and updates the product's average rating / review count.
-         */
+        /** Approve review (admin) */
         patch: {
             parameters: {
                 query?: never;
@@ -7214,25 +7815,12 @@ export type paths = {
                         "application/json": {
                             /** @enum {boolean} */
                             success: true;
-                            data: {
-                                id: string;
-                                rating: number;
-                            } & {
-                                [key: string]: unknown;
-                            };
+                            message: string;
+                            data?: unknown;
                         };
                     };
                 };
-                /** @description Validation failed or malformed request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication required */
+                /** @description Unauthorized */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -7241,7 +7829,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Forbidden - insufficient role */
+                /** @description Forbidden */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7250,7 +7838,7 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Resource not found */
+                /** @description Not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -7259,8 +7847,640 @@ export type paths = {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description Conflict - duplicate value or invalid state */
-                409: {
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reject review (admin) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        rejectionReason?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Review rejected */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/sliders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List active sliders
+         * @description Returns active sliders that have an imageUrl. Desktop clients use imageUrl; mobile clients use mobileImageUrl and fall back to imageUrl when mobile is missing.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sliders fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sliders/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active sliders (alias) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sliders fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/sliders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List sliders (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    title?: string;
+                    isActive?: boolean | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sliders fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create slider (admin)
+         * @description Create a slider from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=slider. The response variants array is [desktop 1920x720, mobile 1080x1350]; use variants[0] as imageUrl and variants[1] as mobileImageUrl.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        title: string;
+                        /** Format: uri */
+                        imageUrl: string;
+                        imagePublicId?: string | null;
+                        /** Format: uri */
+                        mobileImageUrl?: string | null;
+                        mobileImagePublicId?: string | null;
+                        /** Format: uri */
+                        redirectUrl?: string | null;
+                        /** Format: date-time */
+                        startDate?: string | null;
+                        /** Format: date-time */
+                        endDate?: string | null;
+                        /** @default 0 */
+                        priority?: number | null;
+                        isActive?: boolean | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Slider created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/sliders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get slider (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Slider fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete slider (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Slider deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update slider (admin) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        title?: string;
+                        /** Format: uri */
+                        imageUrl?: string | null;
+                        imagePublicId?: string | null;
+                        /** Format: uri */
+                        mobileImageUrl?: string | null;
+                        mobileImagePublicId?: string | null;
+                        /** Format: uri */
+                        redirectUrl?: string | null;
+                        /** Format: date-time */
+                        startDate?: string | null;
+                        /** Format: date-time */
+                        endDate?: string | null;
+                        priority?: number | null;
+                        isActive?: boolean | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Slider updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get homepage payload
+         * @description Aggregated storefront homepage: active sliders, top-level categories, and ordered product sections. Automatic sections fall back when no HOME collections exist.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Home fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat with store assistant (optional auth) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        message: string;
+                        conversationId?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description AI response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -7279,6 +8499,2935 @@ export type paths = {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/legal/{type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get published privacy or terms document */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    type: "PRIVACY" | "TERMS";
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Legal document fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/legal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List legal documents (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    type?: "PRIVACY" | "TERMS";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Legal documents fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create legal document draft (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        type: "PRIVACY" | "TERMS";
+                        version: string;
+                        title: string;
+                        body: string;
+                        /** Format: date-time */
+                        effectiveAt?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Legal document created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/legal/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update legal document draft (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        version?: string;
+                        title?: string;
+                        body?: string;
+                        /** Format: date-time */
+                        effectiveAt?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Legal document updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/legal/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish legal document (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Legal document published */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/faqs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published FAQs grouped by active category */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description FAQs fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/faq-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List FAQ categories (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description FAQ categories fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create FAQ category (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        slug: string;
+                        /** @default 0 */
+                        sortOrder?: number;
+                        /** @default true */
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description FAQ category created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/faq-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update FAQ category (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        slug?: string;
+                        sortOrder?: number;
+                        isActive?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description FAQ category updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete FAQ category (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description FAQ category deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/faq-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List FAQ items (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    categoryId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description FAQ items fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create FAQ item (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        categoryId: string;
+                        question: string;
+                        answer: string;
+                        /** @default 0 */
+                        sortOrder?: number;
+                        /** @default false */
+                        isPublished?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description FAQ item created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/faq-items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update FAQ item (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        categoryId?: string;
+                        question?: string;
+                        answer?: string;
+                        sortOrder?: number;
+                        isPublished?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description FAQ item updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete FAQ item (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description FAQ item deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/blogs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published blog posts */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    category?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blogs fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/blogs/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get published blog post by slug */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blog fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List blog categories (admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blog categories fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create blog category (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        slug: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Blog category created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blog-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update blog category (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        slug?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Blog category updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete blog category (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blog category deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blogs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List blog posts (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    search?: string;
+                    status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+                    categoryId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blogs fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create blog post draft (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        title: string;
+                        slug: string;
+                        excerpt?: string;
+                        content: string;
+                        /** Format: uri */
+                        featuredImage?: string | null;
+                        featuredImagePublicId?: string | null;
+                        /** Format: uuid */
+                        categoryId?: string | null;
+                        metaTitle?: string;
+                        metaDescription?: string;
+                        metaKeywords?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Blog created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blogs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update blog post (admin) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        title?: string;
+                        slug?: string;
+                        excerpt?: string | null;
+                        content?: string;
+                        /** Format: uri */
+                        featuredImage?: string | null;
+                        featuredImagePublicId?: string | null;
+                        /** Format: uuid */
+                        categoryId?: string | null;
+                        metaTitle?: string | null;
+                        metaDescription?: string | null;
+                        metaKeywords?: string | null;
+                        /** @enum {string} */
+                        status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+                    };
+                };
+            };
+            responses: {
+                /** @description Blog updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Soft-delete blog post (admin) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blog deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/blogs/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish blog post (admin) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Blog published */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin dashboard overview metrics */
+        get: {
+            parameters: {
+                query?: {
+                    dateFrom?: string;
+                    dateTo?: string;
+                    lowStockThreshold?: number | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Analytics overview */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/analytics/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sales trend time-series */
+        get: {
+            parameters: {
+                query?: {
+                    dateFrom?: string;
+                    dateTo?: string;
+                    groupBy?: "day" | "week" | "month";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sales trend */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/analytics/top-products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Top products by revenue or quantity */
+        get: {
+            parameters: {
+                query?: {
+                    dateFrom?: string;
+                    dateTo?: string;
+                    limit?: number;
+                    sortBy?: "revenue" | "quantity";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Top products */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/analytics/orders-by-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Order count breakdown by status */
+        get: {
+            parameters: {
+                query?: {
+                    dateFrom?: string;
+                    dateTo?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Orders by status */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List my addresses */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Addresses fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create address */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        fullName: string;
+                        phone: string;
+                        /** Format: email */
+                        email?: string;
+                        /** @default Bangladesh */
+                        country?: string;
+                        division: string;
+                        district: string;
+                        thana?: string;
+                        postalCode?: string;
+                        addressLine1: string;
+                        addressLine2?: string;
+                        label?: string;
+                        area?: string;
+                        isDefaultShipping?: boolean;
+                        isDefaultBilling?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Address created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/addresses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get address by id */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Address fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Update address */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        fullName?: string;
+                        phone?: string;
+                        /** Format: email */
+                        email?: string;
+                        /** @default Bangladesh */
+                        country?: string;
+                        division?: string;
+                        district?: string;
+                        thana?: string;
+                        postalCode?: string;
+                        addressLine1?: string;
+                        addressLine2?: string;
+                        label?: string;
+                        area?: string;
+                        isDefaultShipping?: boolean;
+                        isDefaultBilling?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Address updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete address */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Address deleted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get or create customer profile */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Customer profile fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Create or update customer profile */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        dateOfBirth?: string | null;
+                        /** @enum {string} */
+                        gender?: "MALE" | "FEMALE" | "OTHER";
+                    };
+                };
+            };
+            responses: {
+                /** @description Customer profile saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data?: unknown;
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List media library images
+         * @description Returns Cloudinary CDN images of one type for the admin gallery. Images remain on Cloudinary; this lists unique public ids already uploaded. Excludes SOFT_DELETED. Newest first. Role-gated by type, same as upload.
+         */
+        get: {
+            parameters: {
+                query: {
+                    page?: number;
+                    limit?: number;
+                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Media library fetched */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                items: {
+                                    /** @description Unique Cloudinary public id. Files stay on Cloudinary CDN. */
+                                    publicId: string;
+                                    /** Format: uri */
+                                    url: string;
+                                    /** Format: uri */
+                                    secure_url: string;
+                                    /** @description On-the-fly Cloudinary delivery URLs. Slider and category: [desktop 1920x820, mobile 960x1200]. Product: [1200x1200]. Blog: [1600x900]. Avatars: [400x400]. */
+                                    variants: string[];
+                                    /**
+                                     * Format: uri
+                                     * @description Desktop delivery URL (variants[0]).
+                                     */
+                                    imageUrl: string;
+                                    /**
+                                     * Format: uri
+                                     * @description Mobile delivery URL (variants[1]) for slider and category. Absent for types with a single variant.
+                                     */
+                                    mobileImageUrl?: string;
+                                    /** @enum {string} */
+                                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                                    /** @enum {string} */
+                                    status: "PENDING" | "ATTACHED";
+                                    /** Format: date-time */
+                                    createdAt: string;
+                                }[];
+                                pagination: {
+                                    page: number;
+                                    limit: number;
+                                    total: number;
+                                    totalPages: number;
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a single image
+         * @description Streams one image from disk after magic-byte validation. Role-gated by type: product/category/slider/blog require ADMIN; customer_avatar requires CUSTOMER or ADMIN. Product bulk uploads must use /media/uploads. Delivery URLs are generated on the fly (f_auto, q_auto). Cloudinary failures return 502 or 504 with { success: false, message }.
+         */
+        post: {
+            parameters: {
+                query: {
+                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /**
+                         * @description Image type. For multiple product images use POST /api/v1/media/uploads.
+                         * @enum {string}
+                         */
+                        type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                        /**
+                         * Format: binary
+                         * @description Image file (jpg, jpeg, png, webp). Max 5MB.
+                         */
+                        image: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Image uploaded */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                /** @description Unique Cloudinary public id. Files stay on Cloudinary CDN. */
+                                publicId: string;
+                                /** Format: uri */
+                                url: string;
+                                /** Format: uri */
+                                secure_url: string;
+                                /** @description On-the-fly Cloudinary delivery URLs. Slider and category: [desktop 1920x820, mobile 960x1200]. Product: [1200x1200]. Blog: [1600x900]. Avatars: [400x400]. */
+                                variants: string[];
+                                /**
+                                 * Format: uri
+                                 * @description Desktop delivery URL (variants[0]).
+                                 */
+                                imageUrl: string;
+                                /**
+                                 * Format: uri
+                                 * @description Mobile delivery URL (variants[1]) for slider and category. Absent for types with a single variant.
+                                 */
+                                mobileImageUrl?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Too many requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Bad gateway */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Gateway timeout */
+                504: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload multiple product images
+         * @description Uploads 1–5 product images after magic-byte validation. ADMIN only. Other image types are rejected.
+         */
+        post: {
+            parameters: {
+                query: {
+                    type: "product";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /**
+                         * @description Must be product. Max 5 files.
+                         * @enum {string}
+                         */
+                        type: "product";
+                        /** @description Product images (jpg, jpeg, png, webp). Max 5 files, 5MB each. */
+                        images: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Images uploaded */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                            data: {
+                                /** @description Unique Cloudinary public id. Files stay on Cloudinary CDN. */
+                                publicId: string;
+                                /** Format: uri */
+                                url: string;
+                                /** Format: uri */
+                                secure_url: string;
+                                /** @description On-the-fly Cloudinary delivery URLs. Slider and category: [desktop 1920x820, mobile 960x1200]. Product: [1200x1200]. Blog: [1600x900]. Avatars: [400x400]. */
+                                variants: string[];
+                                /**
+                                 * Format: uri
+                                 * @description Desktop delivery URL (variants[0]).
+                                 */
+                                imageUrl: string;
+                                /**
+                                 * Format: uri
+                                 * @description Mobile delivery URL (variants[1]) for slider and category. Absent for types with a single variant.
+                                 */
+                                mobileImageUrl?: string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Validation failed */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Too many requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Bad gateway */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Gateway timeout */
+                504: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 };
@@ -7289,15 +11438,11 @@ export type components = {
             /** @enum {boolean} */
             success: false;
             message: string;
-            fieldErrors?: {
-                [key: string]: string[];
-            };
-            stack?: string;
         };
         PaginationMeta: {
-            total: number;
             page: number;
             limit: number;
+            total: number;
             totalPages: number;
         };
     };

@@ -1,8 +1,15 @@
+import LoginForm from "@/features/auth/components/LoginForm";
+import { redirectSignedInFromAuthPage } from "@/lib/api/auth/server";
 import { Suspense } from "react";
 
-import LoginForm from "@/features/auth/components/LoginForm";
+type Props = {
+  searchParams: Promise<{ redirect?: string }>;
+};
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: Props) {
+  const { redirect } = await searchParams;
+  await redirectSignedInFromAuthPage(redirect);
+
   return (
     <Suspense fallback={null}>
       <LoginForm />

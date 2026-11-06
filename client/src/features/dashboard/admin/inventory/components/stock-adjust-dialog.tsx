@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,10 +44,10 @@ export type { StockAdjustDialogProps };
 
 export function StockAdjustDialog({ open, onOpenChange, item }: StockAdjustDialogProps) {
   const form = useForm<AdjustFormValues>({
-    resolver: zodResolver(adjustFormSchema),
+    resolver: zodResolver(adjustFormSchema) as Resolver<AdjustFormValues>,
     defaultValues: {
-      type: "increase",
-      quantity: 1,
+      type: "set",
+      quantity: "",
       reason: "RESTOCK",
       notes: "",
     },
@@ -56,8 +56,8 @@ export function StockAdjustDialog({ open, onOpenChange, item }: StockAdjustDialo
   useEffect(() => {
     if (!open) return;
     form.reset({
-      type: "increase",
-      quantity: 1,
+      type: "set",
+      quantity: item ? String(item.quantityOnHand) : "",
       reason: "RESTOCK",
       notes: "",
     });
@@ -95,7 +95,16 @@ export function StockAdjustDialog({ open, onOpenChange, item }: StockAdjustDialo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Adjustment type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue(
+                        "quantity",
+                        value === "set" && item ? String(item.quantityOnHand) : "",
+                      );
+                    }}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue />
@@ -120,18 +129,20 @@ export function StockAdjustDialog({ open, onOpenChange, item }: StockAdjustDialo
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={Number.isFinite(field.value) ? field.value : ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? 0 : e.target.valueAsNumber)
-                      }
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="Qty"
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                       onBlur={field.onBlur}
                       name={field.name}
                       ref={field.ref}
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Current on hand: {item?.quantityOnHand ?? 0}.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

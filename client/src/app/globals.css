@@ -2,19 +2,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Static brand palette. These are raw values and must never shadow the
+   semantic UI tokens below (primary/secondary/background/...). */
 @theme {
-  --color-primary: #3e3e3e;
+  --color-brand: #3e3e3e;
+  --color-ink: #1a1a1a;
   --color-btn-hover: #44381d;
-  --color-secondary: #1a1a1a;
   --color-dark-color: #111111;
   --color-light-color: #f4f1ea;
-  --color-light-color2: #8c857b;
-  --color-sky-color: #b8a16b;
   --color-border-dark: #44381d;
-  --color-border-color: #e6e2de;
-  --color-danger: #f44336;
   --color-bg-primary: #f4f1ea;
   --breakpoint-xs: 30rem;
+
 }
 
 @theme inline {
@@ -22,22 +21,31 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-border-color: var(--border);
+  --color-light-color2: var(--muted-foreground);
+  --color-sky-color: var(--brand-gold-muted);
+  --color-danger: var(--destructive);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -55,35 +63,48 @@
 
 :root {
   color-scheme: light;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
   --background: #fff;
   --foreground: #1a1a1a;
   --card: #fcfbfa;
   --card-foreground: #1a1a1a;
   --popover: #fcfbfa;
   --popover-foreground: #1a1a1a;
-  --primary: #86703c;
+  --primary: #7a6636;
   --primary-foreground: #ffffff;
   --secondary: #f7f6f3;
   --secondary-foreground: #1a1a1a;
   --muted: #f9f8f6;
-  --muted-foreground: #8c857b;
+  --muted-foreground: #6f675d;
   --accent: #f5f4ef;
   --accent-foreground: #1a1a1a;
   --border: #e6e2de;
   --input: #e6e2de;
-  --ring: #b8a16b;
+  --ring: #7a6636;
   --sidebar: #fcfbfa;
   --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #86703c;
+  --sidebar-primary: #7a6636;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f5f4ef;
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e6e2de;
-  --sidebar-ring: #b8a16b;
+  --sidebar-ring: #7a6636;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
+
+  --brand-gold-muted: #6f5c2f;
+
+  --chart-1: #86703c;
+  --chart-2: #0f766e;
+  --chart-3: #4338ca;
+  --chart-4: #b45309;
+  --chart-5: #475569;
+
+  /* Floating action stack (bottom nav + sticky cart + safe area). */
+  --bottom-nav-space: calc(4rem + env(safe-area-inset-bottom, 0px));
+  --sticky-cart-space: 0px;
+  --floating-gap: 1rem;
 }
 .dark {
   color-scheme: dark;
@@ -98,7 +119,7 @@
   --secondary: #241e0f;
   --secondary-foreground: #f4f1ea;
   --muted: #241e0f;
-  --muted-foreground: #8c857b;
+  --muted-foreground: #a8a196;
   --accent: #241e0f;
   --accent-foreground: #f4f1ea;
   --border: #44381d;
@@ -115,7 +136,28 @@
 
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
+
+  --brand-gold-muted: #c9b27e;
+
+  --chart-1: #d4b877;
+  --chart-2: #5eead4;
+  --chart-3: #a5b4fc;
+  --chart-4: #fbbf24;
+  --chart-5: #cbd5e1;
 }
+
+@media (min-width: 64rem) {
+  :root {
+    --bottom-nav-space: 0px;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  body:has([data-sticky-add-to-cart]) {
+    --sticky-cart-space: 5rem;
+  }
+}
+
 
 @utility container {
   width: 100%;
@@ -152,11 +194,22 @@
     @apply border-border;
   }
   html {
-    overflow-x: clip;
-    overflow-y: auto;
+    overflow-x: visible;
+    overflow-y: visible;
   }
   body {
     @apply bg-background text-foreground;
+    /* Jost ships Latin glyphs only. Keep it first for the Latin brand
+       typography, then fall back to any installed Bengali face so Bangla
+       copy renders instead of tofu. No webfont dependency is added. */
+    font-family:
+      var(--font-jost),
+      "Noto Sans Bengali",
+      "Hind Siliguri",
+      "SolaimanLipi",
+      ui-sans-serif,
+      system-ui,
+      sans-serif;
   }
 }
 
@@ -302,4 +355,65 @@ html body[data-scroll-locked][style] {
   height: 0;
   pointer-events: none;
   color: var(--muted-foreground);
+}
+
+@media (max-width: 47.5rem) {
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .responsive-table tbody {
+    display: block;
+  }
+
+  .responsive-table tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .responsive-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 0.25rem 0;
+    border: 0;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .responsive-table tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  /* Cells without a label are the leading selection checkbox and empty-state
+     rows. Render them as full-width blocks instead of reserving a label slot. */
+  .responsive-table tbody td:not([data-label]) {
+    display: block;
+    padding: 0.5rem 0;
+  }
+
+  .responsive-table tbody td:not([data-label])::before {
+    content: none;
+  }
+
+  /* Last, so it also wins over the label-less `display: block` above. */
+  .responsive-table tbody td:empty {
+    display: none;
+  }
 }

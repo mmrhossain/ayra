@@ -4,6 +4,8 @@ export {
   getOrCreateWarehouse,
   createTestProduct,
   createActiveCartWithItem,
+  createAttributeGroup,
+  attachVariantAttributeValues,
 } from "./catalog.ts";
 export {
   testAddress,

@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 export const authInputClass =
-  "h-11 w-full min-w-0 rounded-md border-gray-200 py-2 pl-3 pr-11 text-base shadow-none md:text-sm";
+  "h-11 w-full min-w-0 rounded-md border-gray-200 py-2 pr-11 pl-3 text-base shadow-none";
 
 export const authSubmitClass =
   "flex h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base";
@@ -49,7 +49,7 @@ export default function AuthCard({
             {title}
           </h1>
           {description ? (
-            <p className="mt-2 text-sm leading-relaxed text-secondary">{description}</p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground">{description}</p>
           ) : null}
         </div>
         {children}

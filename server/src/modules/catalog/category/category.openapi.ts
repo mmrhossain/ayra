@@ -28,7 +28,9 @@ registry.registerPath({
   method: "get",
   path: "/api/v1/categories/{slug}",
   tags: [TAG],
-  summary: "Get category by slug",
+  summary: "Get category by slug or nested path",
+  description:
+    "Resolve a category by slug (`/categories/saree`) or nested path (`/categories/saree/jamdani`). Nested paths must match parent then child.",
   request: { params: z.object({ slug: z.string().min(1) }) },
   responses: {
     200: successResponse("Category fetched"),
@@ -54,6 +56,8 @@ registry.registerPath({
   path: "/api/v1/admin/categories",
   tags: [TAG],
   summary: "Create category (admin)",
+  description:
+    "Create a category from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=category. The response variants array is [desktop 1920x820, mobile 960x1200]; use variants[0] / imageUrl as image and variants[1] / mobileImageUrl as mobileImage.",
   security: bearerAuth,
   request: { body: jsonBody(createCategorySchema) },
   responses: {

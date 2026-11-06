@@ -1,7 +1,10 @@
 "use client";
 
+import { TopProgressBar } from "@/components/shared/TopProgressBar";
 import { safeRedirectPath } from "@/features/auth/lib/oauth";
 import { mergeGuestCartOnLogin, toCartErrorMessage } from "@/features/cart/api";
+import { authClient } from "@/lib/api/auth/auth-client";
+import { isStaffRole, staffDashboardPath } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,17 +20,24 @@ function OAuthComplete() {
 
     const finish = async () => {
       try {
-        await mergeGuestCartOnLogin();
-        await Promise.all([
-          useCartStore.getState().fetchCart(),
-          useWishStore.getState().fetchWishList(),
-        ]);
+        const { data: session } = await authClient.getSession();
+        const dashboard = staffDashboardPath(session?.user?.role);
+        if (dashboard) {
+          if (!cancelled) router.replace(dashboard);
+          return;
+        }
+        if (!isStaffRole(session?.user?.role)) {
+          await mergeGuestCartOnLogin();
+          await Promise.all([
+            useCartStore.getState().fetchCart(),
+            useWishStore.getState().fetchWishList(),
+          ]);
+        }
       } catch (mergeErr) {
         console.error(toCartErrorMessage(mergeErr));
-      } finally {
-        if (!cancelled) {
-          router.replace(redirect);
-        }
+      }
+      if (!cancelled) {
+        router.replace(redirect);
       }
     };
 
@@ -38,8 +48,9 @@ function OAuthComplete() {
   }, [redirect, router]);
 
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center px-4">
-      <p className="text-sm text-slate-600">Signing you in...</p>
+    <div className="flex min-h-dvh w-full items-center justify-center bg-white px-4">
+      <TopProgressBar active />
+      <p className="sr-only">Signing you in</p>
     </div>
   );
 }
@@ -48,8 +59,9 @@ export default function OAuthCompletePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-dvh w-full items-center justify-center px-4">
-          <p className="text-sm text-slate-600">Signing you in...</p>
+        <div className="flex min-h-dvh w-full items-center justify-center bg-white px-4">
+          <TopProgressBar active />
+          <p className="sr-only">Signing you in</p>
         </div>
       }
     >

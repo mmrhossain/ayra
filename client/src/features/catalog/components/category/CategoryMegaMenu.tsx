@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CategoryListItem } from "../../types";
@@ -35,6 +36,8 @@ function findCategoryPath(
 }
 
 function categoryHref(categories: CategoryListItem[], category: CategoryListItem) {
+  if (category.path) return `/shop/${category.path}`;
+
   const path = findCategoryPath(categories, category.id);
 
   if (!path?.length) {
@@ -55,16 +58,34 @@ function CategoryTree({ categories, allCategories, onSelect, level = 0 }: Catego
   return (
     <div className={level === 0 ? "space-y-2" : "mt-1 space-y-1"}>
       {categories.map((category) => {
-        const hasChildren = (category.children?.length ?? 0) > 0;
+        const hasChildren = (category?.children?.length ?? 0) > 0;
 
         return (
-          <div key={category.id}>
+          <div key={category?.id}>
             <Link
               href={categoryHref(allCategories, category)}
-              onClick={() => onSelect(category.name)}
-              className="flex items-center justify-between gap-2 rounded-sm px-3 py-2 text-[13px] font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary"
+              onClick={() => onSelect(category?.name)}
+              className="flex items-center justify-between gap-2 rounded-sm px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary"
             >
-              <span className="min-w-0 truncate">{category.name}</span>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-slate-200 border border-slate-200/60">
+                  {category.mobileImage ? (
+                    <Image
+                      src={category.mobileImage}
+                      alt={category.name}
+                      width={64}
+                      height={64}
+                      loading="lazy"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xs font-bold uppercase text-slate-500">
+                      {category.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <span className="truncate">{category.name}</span>
+              </div>
 
               {hasChildren && <ChevronRight size={13} className="shrink-0 text-slate-300" />}
             </Link>
@@ -72,7 +93,7 @@ function CategoryTree({ categories, allCategories, onSelect, level = 0 }: Catego
             {hasChildren && (
               <div className="ml-3 border-l border-primary-200 pl-2">
                 <CategoryTree
-                  categories={category.children ?? []}
+                  categories={category?.children ?? []}
                   allCategories={allCategories}
                   onSelect={onSelect}
                   level={level + 1}
@@ -103,16 +124,16 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
       <div className="flex min-h-[300px] w-[620px] overflow-hidden rounded-md border border-slate-100 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.18)]">
         {/* Left Categories Column with Scrollbar */}
         <div className="w-[230px] shrink-0 border-r border-slate-100 bg-slate-50/80 py-3 max-h-[420px] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
-          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <p className="px-4 pb-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
             Collections
           </p>
 
           <Link
             href="/shop"
             onClick={() => onSelect("All Categories")}
-            className="mx-2 mb-1 flex items-center rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-white"
+            className="mx-2 mb-1 flex items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-white"
           >
-            All Categories
+            <span>All Categories</span>
           </Link>
 
           {categories.map((cat) => {
@@ -125,13 +146,31 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
                 onMouseEnter={() => setActiveId(cat.id)}
                 onFocus={() => setActiveId(cat.id)}
                 onClick={() => onSelect(cat.name)}
-                className={`mx-2 flex items-center justify-between rounded-sm px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
+                className={`mx-2 flex items-center justify-between gap-2.5 rounded-sm px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? "bg-white text-primary shadow-xs font-semibold"
                     : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
                 }`}
               >
-                <span className="truncate">{cat.name}</span>
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-slate-200 border border-slate-200/60">
+                    {cat.mobileImage ? (
+                      <Image
+                        src={cat.mobileImage}
+                        alt={cat.name}
+                        width={64}
+                        height={64}
+                        loading="lazy"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xs font-bold uppercase text-slate-500">
+                        {cat.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <span className="truncate">{cat.name}</span>
+                </div>
 
                 {(cat.children?.length ?? 0) > 0 && (
                   <ChevronRight
@@ -150,7 +189,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
             <>
               <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
                     Shop
                   </p>
 
@@ -162,7 +201,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
                 <Link
                   href={categoryHref(categories, active)}
                   onClick={() => onSelect(active.name)}
-                  className="text-[11px] font-bold uppercase tracking-wider text-primary hover:underline shrink-0"
+                  className="text-xs font-bold uppercase tracking-wider text-primary hover:underline shrink-0"
                 >
                   View all
                 </Link>

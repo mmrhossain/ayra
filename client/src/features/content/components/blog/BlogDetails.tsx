@@ -16,7 +16,7 @@ const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
         <div className="flex flex-col lg:flex-row items-start justify-between gap-8 md:gap-12">
           <div className="w-full lg:w-2/3">
             <header className="mb-8">
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">
+              <h1 className="mb-6 text-2xl leading-tight font-semibold tracking-tight text-slate-900 sm:text-3xl">
                 {blog.title}
               </h1>
               <div className="flex flex-wrap items-center gap-3 md:gap-4 text-sm text-gray-500 border-b pb-6">

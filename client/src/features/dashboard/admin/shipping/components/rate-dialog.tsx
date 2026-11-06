@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import {
   Select,
   SelectContent,
@@ -66,6 +66,21 @@ export function RateFormDialog({
     onSuccess: () => onOpenChange(false),
   });
 
+  const selectedZoneId = useWatch({
+    control: form.control,
+    name: "shippingZoneId",
+  });
+  const selectedMethodId = useWatch({
+    control: form.control,
+    name: "shippingMethodId",
+  });
+  const zoneOptions = zones.filter(
+    (zone) => zone.isActive || zone.id === selectedZoneId,
+  );
+  const methodOptions = methods.filter(
+    (method) => method.isActive || method.id === selectedMethodId,
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-lg flex-col overflow-hidden p-4 sm:p-6">
@@ -92,9 +107,10 @@ export function RateFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {zones.map((zone) => (
+                      {zoneOptions.map((zone) => (
                         <SelectItem key={zone.id} value={zone.id}>
                           {zone.name}
+                          {zone.isActive ? "" : " (inactive)"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -116,9 +132,10 @@ export function RateFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {methods.map((method) => (
+                      {methodOptions.map((method) => (
                         <SelectItem key={method.id} value={method.id}>
                           {method.name}
+                          {method.isActive ? "" : " (inactive)"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -134,14 +151,14 @@ export function RateFormDialog({
                 <FormItem>
                   <FormLabel>Price (BDT)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
+                    <NumberInput
+                      decimal
+                      placeholder="Amount"
                       value={field.value}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? 0 : Number(e.target.value))
-                      }
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                       disabled={mutation.isPending}
                     />
                   </FormControl>
@@ -156,14 +173,13 @@ export function RateFormDialog({
                 <FormItem>
                   <FormLabel>Free shipping from</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={field.value ?? ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? null : Number(e.target.value))
-                      }
+                    <NumberInput
+                      decimal
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                       placeholder="Optional"
                       disabled={mutation.isPending}
                     />

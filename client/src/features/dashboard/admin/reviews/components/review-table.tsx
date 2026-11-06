@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -145,17 +146,17 @@ export function ReviewTable({ initialData }: Props) {
                       {review.verifiedPurchase ? "Yes" : "No"}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${
+                      <StatusBadge
+                        variant={
                           review.isApproved
-                            ? "bg-primary text-primary-foreground"
+                            ? "success"
                             : isReviewRejected(review)
-                              ? "bg-destructive text-destructive-foreground"
-                              : "bg-secondary text-secondary-foreground"
-                        }`}
+                              ? "danger"
+                              : "neutral"
+                        }
                       >
                         {reviewStatusLabel(review)}
-                      </span>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">

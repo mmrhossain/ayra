@@ -1,17 +1,15 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type CategoryListItem = {
   id: string;
   name: string;
   slug?: string;
+  path?: string;
   description?: string | null;
   image?: string | null;
   imagePublicId?: string | null;
   mobileImage?: string | null;
+  mobileImagePublicId?: string | null;
   cardImage?: string | null;
   isActive: boolean;
   parentId?: string | null;
@@ -45,6 +43,8 @@ export type CreateCategoryBody = {
   description?: string;
   image?: string | null;
   imagePublicId?: string | null;
+  mobileImage?: string | null;
+  mobileImagePublicId?: string | null;
   isActive?: boolean;
   parentId?: string | null;
 };

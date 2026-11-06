@@ -2,13 +2,12 @@ import { prisma } from "../lib/prisma.ts"
 import { hashPassword } from "better-auth/crypto";
 
 import { env } from "../config/env.ts"
-import type { UserRole } from "../generated/prisma/enums.ts"
 
 async function seedAdmin() {
 
     const email = env.ADMIN_EMAIL
     const password = env.ADMIN_PASSWORD
-    const role = env.ADMIN_ROLE as UserRole | undefined
+    const role = env.ADMIN_ROLE
 
     if (!email || !password || !role) {
         console.error(
@@ -25,7 +24,12 @@ async function seedAdmin() {
         if (existingUser) {
             await prisma.user.update({
                 where: { email },
-                data: { role },
+                data: {
+                    role,
+                    ...(role.toUpperCase() === "ADMIN"
+                        ? { isSuperAdmin: true, staffStatus: "ACTIVE" as const }
+                        : {}),
+                },
             });
             console.log(`✅ User ${email} already exists. Role successfully updated to ${role}!`);
             return;
@@ -42,6 +46,9 @@ async function seedAdmin() {
                 email,
                 emailVerified: env.ADMIN_EMAIL_VERIFIED,
                 role,
+                ...(role.toUpperCase() === "ADMIN"
+                    ? { isSuperAdmin: true, staffStatus: "ACTIVE" as const }
+                    : {}),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -54,13 +61,14 @@ async function seedAdmin() {
                 accountId: userId,
                 providerId: "credential",
                 password: hashedPassword,
-                issuer: "credential",
+                issuer: "local:credential",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
         });
 
         console.log(`🚀 Admin user created successfully: ${email} with role ${role}`);
+        console.log(`Admin email verified: ${env.ADMIN_EMAIL_VERIFIED}`);
     } catch (error) {
         console.error("❌ Error seeding admin:", error);
     } finally {

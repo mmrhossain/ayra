@@ -6,21 +6,45 @@ import {
   applyInventoryRestocks,
   lockCheckoutInventory,
 } from "../../catalog/inventory/services/inventory.service.ts";
+import { reverseCouponUsage } from "../../coupon/coupon.service.ts";
 import type {
   CreateReturnRequestInput,
   InventoryTxn,
   ListReturnRequestsQuery,
   ReviewReturnRequestInput,
 } from "../types.ts";
+import { fromMinor, lineAmountsForRange, toMinor } from "../utils/order-helpers.ts";
+import { isReturnWindowOpen } from "../utils/return-window.ts";
+import { notifyOrderStatusChange } from "../../notification/services/notification.service.ts";
 
 const returnInclude = {
-  items: true,
+  items: {
+    include: {
+      orderItem: {
+        select: {
+          id: true,
+          productName: true,
+          sku: true,
+          variantName: true,
+          unitPrice: true,
+          subtotal: true,
+        },
+      },
+    },
+  },
   order: {
     select: {
       id: true,
       orderNumber: true,
       status: true,
       customerProfileId: true,
+      customerProfile: {
+        select: {
+          id: true,
+          customerCode: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
     },
   },
 } as const;
@@ -30,7 +54,7 @@ export const createReturnRequest = async (
   orderId: string,
   input: CreateReturnRequestInput
 ) => {
-  return transaction(async (tx) => {
+  const created = await transaction(async (tx) => {
     const order = await tx.order.findFirst({
       where: { id: orderId, customerProfileId, deletedAt: null },
       include: { items: true },
@@ -40,6 +64,14 @@ export const createReturnRequest = async (
 
     if (order.status !== "DELIVERED") {
       throw new AppError("Return requests are only allowed for delivered orders", 400);
+    }
+
+    if (!order.deliveredAt) {
+      throw new AppError("Order has no delivery timestamp", 400);
+    }
+
+    if (!isReturnWindowOpen(order.deliveredAt)) {
+      throw new AppError("The return window has expired", 400);
     }
 
     const existingPending = await tx.returnRequest.findFirst({
@@ -122,6 +154,9 @@ export const createReturnRequest = async (
 
     return returnRequest;
   });
+
+  await notifyOrderStatusChange(created.orderId, "RETURN_REQUESTED");
+  return created;
 };
 
 export const listReturnRequests = async (query: ListReturnRequestsQuery) => {
@@ -158,46 +193,147 @@ const applyApprovedReturn = async (
   orderId: string,
   adminNote: string | undefined,
   actorId: string,
-  items: Array<{ orderItemId: string; quantity: number; restockOrRefund: string }>,
+  items: Array<{
+    id: string;
+    orderItemId: string;
+    quantity: number;
+    restockOrRefund: string;
+  }>,
+  overrides: Array<{
+    orderItemId: string;
+    restockToStock?: boolean | undefined;
+    damaged?: boolean | undefined;
+  }> = [],
 ) => {
-  if (items.length === 0) return;
-
+  const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
   const orderItems = await tx.orderItem.findMany({
     where: { id: { in: items.map((item) => item.orderItemId) } },
   });
   const orderItemById = new Map(orderItems.map((item) => [item.id, item]));
+  const overrideByOrderItem = new Map(
+    overrides.map((override) => [override.orderItemId, override]),
+  );
 
-  const restockItems = items.filter((item) => item.restockOrRefund === "RESTOCK");
+  const [allOrderItems, approvedReturnItems] = await Promise.all([
+    tx.orderItem.findMany({
+      where: { orderId },
+      select: { quantity: true },
+    }),
+    tx.returnItem.findMany({
+      where: { returnRequest: { orderId, status: "APPROVED" } },
+      select: { orderItemId: true, quantity: true },
+    }),
+  ]);
+
+  const orderedQuantity = allOrderItems.reduce((sum, item) => sum + item.quantity, 0);
+  const returnedQuantity = approvedReturnItems.reduce((sum, item) => sum + item.quantity, 0);
+  const isFullReturn = orderedQuantity > 0 && returnedQuantity >= orderedQuantity;
+
+  if (items.length === 0) return { isFullReturn };
+
+  // Quantities already approved for each line before this request. The current
+  // request is already APPROVED at this point, so subtract its own quantity.
+  const approvedByOrderItem = new Map<string, number>();
+  for (const row of approvedReturnItems) {
+    approvedByOrderItem.set(
+      row.orderItemId,
+      (approvedByOrderItem.get(row.orderItemId) ?? 0) + row.quantity,
+    );
+  }
+
+  const restockItems: Array<{
+    orderItemId: string;
+    quantity: number;
+    orderItem: (typeof orderItems)[number];
+  }> = [];
+  const returnItemUpdates: Array<{
+    where: { id: string };
+    data: Prisma.ReturnItemUpdateInput;
+  }> = [];
+  let refundAmountMinor = 0;
+  let hasKnownCost = true;
+
+  for (const item of items) {
+    const orderItem = orderItemById.get(item.orderItemId);
+    if (!orderItem) continue;
+
+    const override = overrideByOrderItem.get(item.orderItemId);
+    const restockToStock =
+      override?.restockToStock ?? item.restockOrRefund === "RESTOCK";
+    const damaged = override?.damaged ?? false;
+    const resalable = restockToStock && !damaged;
+
+    const previousQuantity =
+      (approvedByOrderItem.get(item.orderItemId) ?? 0) - item.quantity;
+    const amounts = lineAmountsForRange(
+      order,
+      orderItem,
+      Math.max(0, previousQuantity),
+      item.quantity,
+    );
+    if (amounts.costMinor === null) hasKnownCost = false;
+
+    refundAmountMinor += amounts.cashRefundMinor;
+    returnItemUpdates.push({
+      where: { id: item.id },
+      data: {
+        restockToStock,
+        damaged,
+        salesAdjustmentAmount: fromMinor(amounts.netSalesMinor),
+        costAdjustmentAmount: fromMinor(
+          resalable ? amounts.costMinor ?? 0 : 0,
+        ),
+        allocationVersion: 1,
+      },
+    });
+
+    if (resalable) {
+      restockItems.push({
+        orderItemId: item.orderItemId,
+        quantity: item.quantity,
+        orderItem,
+      });
+    }
+  }
+
+  await Promise.all(
+    returnItemUpdates.map((update) => tx.returnItem.update(update)),
+  );
+
   if (restockItems.length > 0) {
     const restockVariantIds = restockItems
-      .map((item) => orderItemById.get(item.orderItemId)?.variantId)
+      .map((item) => item.orderItem.variantId)
       .filter((id): id is string => Boolean(id));
     const { warehouseId, rows } = await lockCheckoutInventory(tx, restockVariantIds);
     if (!warehouseId) throw new AppError("No active warehouse configured", 500);
 
-    const inventoryByVariant = new Map(rows.map((row) => [row.variantId ?? "", row]));
+    const inventoryByVariant = new Map(
+      rows.map((row) => [row.variantId ?? "", row]),
+    );
     const restockTransactions: InventoryTxn[] = [];
     const restockUpdates: Array<{ id: string; quantity: number }> = [];
 
     for (const item of restockItems) {
-      const orderItem = orderItemById.get(item.orderItemId);
-      if (!orderItem?.variantId) continue;
+      if (!item.orderItem.variantId) continue;
 
-      const invRow = inventoryByVariant.get(orderItem.variantId);
+      const invRow = inventoryByVariant.get(item.orderItem.variantId);
       if (!invRow) {
-        throw new AppError(`No inventory record for returned item ${orderItem.sku}`, 409);
+        throw new AppError(
+          `No inventory record for returned item ${item.orderItem.sku}`,
+          409,
+        );
       }
 
       restockUpdates.push({ id: invRow.id, quantity: item.quantity });
       restockTransactions.push({
         inventoryId: invRow.id,
-        variantId: orderItem.variantId,
+        variantId: item.orderItem.variantId,
         warehouseId,
         type: "RETURN_IN",
         quantity: item.quantity,
         referenceType: "RETURN_REQUEST",
         referenceId: returnRequestId,
-        remarks: adminNote ?? "Return approved; stock restocked",
+        remarks: adminNote ?? "Return approved; resalable stock restocked",
         createdBy: actorId,
       });
     }
@@ -209,15 +345,16 @@ const applyApprovedReturn = async (
     }
   }
 
-  const refundItems = items.filter((item) => item.restockOrRefund === "REFUND");
-  if (refundItems.length === 0) return;
+  const shippingRefundMinor = isFullReturn ? toMinor(order.shippingAmount) : 0;
+  if (shippingRefundMinor > 0) {
+    refundAmountMinor += shippingRefundMinor;
+    await tx.returnRequest.update({
+      where: { id: returnRequestId },
+      data: { shippingRefundAmount: fromMinor(shippingRefundMinor) },
+    });
+  }
 
-  const refundAmount = refundItems.reduce((sum, item) => {
-    const orderItem = orderItemById.get(item.orderItemId);
-    return sum + (orderItem ? Number(orderItem.unitPrice) * item.quantity : 0);
-  }, 0);
-
-  if (refundAmount <= 0) return;
+  if (refundAmountMinor <= 0) return { isFullReturn };
 
   const payment = await tx.payment.findFirst({
     where: {
@@ -228,7 +365,58 @@ const applyApprovedReturn = async (
     orderBy: { createdAt: "desc" },
   });
 
-  if (!payment) throw new AppError("No refundable payment found for this order", 400);
+  if (!payment) {
+    // Unpaid COD orders still need their stock and sales adjusted, but there is
+    // no captured cash to refund. Record that explicitly instead of blocking
+    // the return.
+    await tx.orderEvent.create({
+      data: {
+        orderId,
+        eventType: "RETURN_APPROVED",
+        metadata: {
+          returnRequestId,
+          refundSkipped: true,
+          reason: "NO_REFUNDABLE_PAYMENT",
+          refundAmount: fromMinor(refundAmountMinor),
+          initiatedBy: actorId,
+        },
+      },
+    });
+    return { isFullReturn };
+  }
+
+  // Serialize refund creation per payment so two returns approved at the same
+  // time cannot refund more than was captured.
+  await tx.$queryRaw`SELECT id FROM "payment" WHERE id = ${payment.id} FOR UPDATE`;
+  const reservedAgg = await tx.refund.aggregate({
+    where: {
+      paymentId: payment.id,
+      status: { in: ["PENDING", "APPROVED", "PROCESSING", "COMPLETED"] },
+    },
+    _sum: { amount: true },
+  });
+  const remainingRefundableMinor = Math.max(
+    0,
+    toMinor(payment.amount) - toMinor(reservedAgg._sum.amount ?? 0),
+  );
+  const refundMinor = Math.min(refundAmountMinor, remainingRefundableMinor);
+
+  if (refundMinor <= 0) {
+    await tx.orderEvent.create({
+      data: {
+        orderId,
+        eventType: "RETURN_APPROVED",
+        metadata: {
+          returnRequestId,
+          refundSkipped: true,
+          reason: "PAYMENT_FULLY_REFUNDED",
+          refundAmount: fromMinor(refundAmountMinor),
+          initiatedBy: actorId,
+        },
+      },
+    });
+    return { isFullReturn };
+  }
 
   // SSLCommerz exposes a refund API, but it requires the gateway `bank_tran_id`
   // which is not persisted in this codebase. Until that is captured and a
@@ -237,10 +425,12 @@ const applyApprovedReturn = async (
   const refund = await tx.refund.create({
     data: {
       paymentId: payment.id,
-      amount: refundAmount,
+      returnRequestId,
+      amount: fromMinor(refundMinor),
       reason: `Return request ${returnRequestId}`,
       status: "PENDING",
       requiresManualProcessing: true,
+      requestedBy: actorId,
     },
   });
 
@@ -250,13 +440,19 @@ const applyApprovedReturn = async (
       eventType: "REFUND_CREATED",
       metadata: {
         refundId: refund.id,
-        amount: refundAmount,
+        amount: fromMinor(refundMinor),
+        requestedRefundAmount: fromMinor(refundAmountMinor),
+        refundCapped: refundMinor < refundAmountMinor,
         returnRequestId,
         requiresManualProcessing: true,
         initiatedBy: actorId,
+        fullReturn: isFullReturn,
+        costCoverageComplete: hasKnownCost,
       },
     },
   });
+
+  return { isFullReturn };
 };
 
 export const reviewReturnRequest = async (
@@ -264,7 +460,11 @@ export const reviewReturnRequest = async (
   input: ReviewReturnRequestInput,
   actorId: string
 ) => {
-  return transaction(async (tx) => {
+  const result = await transaction(async (tx) => {
+    let fullReturn = false;
+    // Serialize concurrent reviews of the same request. Without this lock two
+    // approvals could both pass the PENDING check and double-restock/refund.
+    await tx.$queryRaw`SELECT id FROM "return_request" WHERE id = ${returnRequestId} FOR UPDATE`;
     const returnRequest = await tx.returnRequest.findUnique({
       where: { id: returnRequestId },
       include: returnInclude,
@@ -274,6 +474,21 @@ export const reviewReturnRequest = async (
 
     if (returnRequest.status !== "PENDING") {
       throw new AppError("Return request has already been reviewed", 400);
+    }
+
+    if (input.items) {
+      const knownOrderItemIds = new Set(
+        returnRequest.items.map((item) => item.orderItemId),
+      );
+      const unknown = input.items.find(
+        (item) => !knownOrderItemIds.has(item.orderItemId),
+      );
+      if (unknown) {
+        throw new AppError(
+          "Reviewed item does not belong to this return request",
+          400,
+        );
+      }
     }
 
     const updated = await tx.returnRequest.update({
@@ -288,36 +503,60 @@ export const reviewReturnRequest = async (
     });
 
     if (input.status === "APPROVED") {
-      await tx.order.update({
-        where: { id: returnRequest.orderId },
-        data: { status: "RETURNED" },
-      });
-
-      await tx.orderStatusHistory.create({
-        data: {
-          orderId: returnRequest.orderId,
-          status: "RETURNED",
-          remarks: input.adminNote ?? "Return approved",
-          changedBy: actorId,
-        },
-      });
-
-      await tx.orderEvent.create({
-        data: {
-          orderId: returnRequest.orderId,
-          eventType: "RETURN_APPROVED",
-          metadata: { returnRequestId: returnRequest.id, reviewedBy: actorId },
-        },
-      });
-
-      await applyApprovedReturn(
+      const { isFullReturn } = await applyApprovedReturn(
         tx,
         returnRequest.id,
         returnRequest.orderId,
         input.adminNote,
         actorId,
         returnRequest.items,
+        input.items ?? [],
       );
+      fullReturn = isFullReturn;
+
+      await tx.order.update({
+        where: { id: returnRequest.orderId },
+        data: {
+          status: isFullReturn ? "RETURNED" : "DELIVERED",
+          fulfillmentStatus: isFullReturn
+            ? "FULFILLED"
+            : "PARTIALLY_FULFILLED",
+        },
+      });
+
+      if (isFullReturn) {
+        await reverseCouponUsage(tx, returnRequest.orderId);
+
+        await tx.orderStatusHistory.create({
+          data: {
+            orderId: returnRequest.orderId,
+            status: "RETURNED",
+            remarks: input.adminNote ?? "Return approved",
+            changedBy: actorId,
+          },
+        });
+      } else {
+        await tx.orderStatusHistory.create({
+          data: {
+            orderId: returnRequest.orderId,
+            status: "DELIVERED",
+            remarks: input.adminNote ?? "Return partially approved",
+            changedBy: actorId,
+          },
+        });
+      }
+
+      await tx.orderEvent.create({
+        data: {
+          orderId: returnRequest.orderId,
+          eventType: "RETURN_APPROVED",
+          metadata: {
+            returnRequestId: returnRequest.id,
+            reviewedBy: actorId,
+            fullReturn: isFullReturn,
+          },
+        },
+      });
     }
 
     if (input.status === "REJECTED") {
@@ -338,6 +577,12 @@ export const reviewReturnRequest = async (
       }
     }
 
-    return updated;
+    return { updated, fullReturn };
   });
+
+  if (result.fullReturn) {
+    await notifyOrderStatusChange(result.updated.orderId, "RETURNED");
+  }
+
+  return result.updated;
 };

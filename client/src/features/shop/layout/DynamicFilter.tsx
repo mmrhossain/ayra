@@ -7,171 +7,114 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import type { CategoryItem } from "@/features/shop/types";
+import {
+  parseAttributesParam,
+  parseCategoriesParam,
+  serializeAttributesParam,
+  type ProductFacets,
+} from "@/features/catalog/api";
+import type { PriceBucket } from "@/features/catalog/types";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import FilterPanel from "./FilterPanel";
 
 interface DynamicFilterBarProps {
-  categories: CategoryItem[];
+  facets?: ProductFacets | null;
 }
 
-const DEFAULT_MIN_PRICE = 0;
-const DEFAULT_MAX_PRICE = 10000;
+const SORT_LABEL: Record<string, string> = {
+  newest: "Newest",
+  price_desc: "Price: High to Low",
+  price_asc: "Price: Low to High",
+};
 
-const RESERVED_PARAMS = new Set(["category", "sort", "minPrice", "maxPrice", "page"]);
-
-// Helper: Recursively search for category object by slug or id
-function findCategoryBySlug(categories: CategoryItem[], slug: string): CategoryItem | null {
-  for (const cat of categories) {
-    if (cat.slug === slug || cat.id === slug) return cat;
-    if (cat.children && cat.children.length > 0) {
-      const found = findCategoryBySlug(cat.children, slug);
-      if (found) return found;
-    }
-  }
-  return null;
-}
-
-export default function DynamicFilterBar({ categories }: DynamicFilterBarProps) {
+export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [isOpen, setIsOpen] = useState(false);
 
-  // 1. Core Params
-  const currentCategorySlug = useMemo(() => searchParams.get("category") || "all", [searchParams]);
-
-  const currentSort = useMemo(() => searchParams.get("sort") || "newest", [searchParams]);
-
-  const selectedPrice = useMemo(
-    () => ({
-      min: Number(searchParams.get("minPrice")) || DEFAULT_MIN_PRICE,
-      max: Number(searchParams.get("maxPrice")) || DEFAULT_MAX_PRICE,
-    }),
-    [searchParams]
+  const currentSort = useMemo(
+    () => searchParams.get("sort") || "newest",
+    [searchParams],
   );
 
-  // 2. Locate Active Category in Hierarchy
-  const activeCategory = useMemo(() => {
-    if (currentCategorySlug === "all") return null;
-    return findCategoryBySlug(categories, currentCategorySlug);
-  }, [categories, currentCategorySlug]);
+  const selectedAttributes = useMemo(
+    () => parseAttributesParam(searchParams.get("attrs")),
+    [searchParams],
+  );
 
-  // 3. Contextual Subcategories
-  // If active category has children, show children. If top-level, show top-level categories.
-  const displayCategories = useMemo(() => {
-    if (!activeCategory) {
-      // Direct /shop route: show top-level categories
-      return categories;
-    }
-    if (activeCategory.children && activeCategory.children.length > 0) {
-      // Parent category (e.g. Saree): show child categories (e.g. Jamdani, Silk)
-      return activeCategory.children;
-    }
-    // Leaf category: show siblings or self
-    return [activeCategory];
-  }, [categories, activeCategory]);
+  const selectedCategories = useMemo(
+    () => parseCategoriesParam(searchParams.get("categories")),
+    [searchParams],
+  );
 
-  // 4. Contextual Attributes
-  // Extract attributes specific to active category (fall back to all if on global shop)
-  const availableAttributes = useMemo(() => {
-    if (activeCategory?.attributes) {
-      return activeCategory.attributes;
-    }
-    // Merge or fallback to top-level attributes
-    return [];
-  }, [activeCategory]);
+  const priceBuckets = useMemo(() => facets?.price.buckets ?? [], [facets]);
 
-  // 5. Dynamic Attributes from URL
-  const selectedAttributes = useMemo(() => {
-    const attributes: Record<string, string[]> = {};
-    searchParams.forEach((value, key) => {
-      if (!RESERVED_PARAMS.has(key) && value) {
-        attributes[key] = value.split(",");
-      }
-    });
-    return attributes;
-  }, [searchParams]);
+  const selectedBucket = useMemo<PriceBucket | null>(() => {
+    const rawMax = searchParams.get("maxPrice");
+    if (rawMax === null) return null;
+    const min = Number(searchParams.get("minPrice"));
+    const max = Number(rawMax);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+    return (
+      priceBuckets.find((bucket) => bucket.from === min && bucket.to === max) ??
+      null
+    );
+  }, [searchParams, priceBuckets]);
 
-  // 6. Active Filter Count
-  const activeCount = useMemo(() => {
-    let count = 0;
-    if (currentCategorySlug !== "all") count += 1;
-    if (selectedPrice.min > DEFAULT_MIN_PRICE || selectedPrice.max < DEFAULT_MAX_PRICE) {
-      count += 1;
-    }
-    Object.values(selectedAttributes).forEach((vals) => {
-      if (vals.length > 0) count += 1;
-    });
-    return count;
-  }, [currentCategorySlug, selectedPrice, selectedAttributes]);
-
-  // 7. URL Update Handler
   const updateQueryParams = useCallback(
-    (newParams: Record<string, string | number | string[] | null>) => {
+    (newParams: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
 
       Object.entries(newParams).forEach(([key, value]) => {
-        if (
-          value === null ||
-          value === "" ||
-          value === undefined ||
-          value === "all" ||
-          (Array.isArray(value) && value.length === 0)
-        ) {
+        if (value === null || value === "") {
           params.delete(key);
-        } else if (Array.isArray(value)) {
-          params.set(key, value.join(","));
         } else {
-          params.set(key, String(value));
+          params.set(key, value);
         }
       });
 
       params.set("page", "1");
       router.push(`${pathname}?${params.toString()}`);
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   );
 
-  const handleSelectCategory = (catSlug: string) => {
-    // Reset dynamic attributes when changing category context
-    const resetAttributes: Record<string, null> = {};
-    Object.keys(selectedAttributes).forEach((key) => {
-      resetAttributes[key] = null;
-    });
-
-    updateQueryParams({
-      category: catSlug,
-      ...resetAttributes,
-    });
+  const handleToggleCategory = (slug: string) => {
+    const next = selectedCategories.includes(slug)
+      ? selectedCategories.filter((item) => item !== slug)
+      : [...selectedCategories, slug];
+    updateQueryParams({ categories: next.length > 0 ? next.join(",") : null });
   };
 
-  const handlePriceChange = (min: number, max: number) => {
-    updateQueryParams({
-      minPrice: min > DEFAULT_MIN_PRICE ? min : null,
-      maxPrice: max < DEFAULT_MAX_PRICE ? max : null,
-    });
+  const handleAttributeChange = (attributeId: string, valueIds: string[]) => {
+    const next = { ...selectedAttributes };
+    if (valueIds.length > 0) next[attributeId] = valueIds;
+    else delete next[attributeId];
+    updateQueryParams({ attrs: serializeAttributesParam(next) ?? null });
   };
 
-  const handleAttributeChange = (attributeKey: string, values: string[]) => {
+  const handleSelectBucket = (bucket: PriceBucket | null) => {
+    if (!bucket) {
+      updateQueryParams({ minPrice: null, maxPrice: null });
+      return;
+    }
     updateQueryParams({
-      [attributeKey]: values.length > 0 ? values : null,
+      minPrice: String(bucket.from),
+      maxPrice: String(bucket.to),
     });
   };
 
   const handleClearAll = () => {
-    const paramsToClear: Record<string, null> = {
-      category: null,
+    updateQueryParams({
+      categories: null,
+      attrs: null,
       minPrice: null,
       maxPrice: null,
-    };
-    Object.keys(selectedAttributes).forEach((key) => {
-      paramsToClear[key] = null;
     });
-    updateQueryParams(paramsToClear);
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -180,43 +123,46 @@ export default function DynamicFilterBar({ categories }: DynamicFilterBarProps) 
     });
   };
 
+  const activeCount =
+    selectedCategories.length +
+    Object.values(selectedAttributes).filter((values) => values.length > 0)
+      .length +
+    (selectedBucket ? 1 : 0);
+
   return (
     <>
-      {/* Filter Bar Bar */}
-      <div className="sticky top-[var(--header-height,68px)] z-40 border-b border-zinc-100 bg-white/90 backdrop-blur-xl">
+      <div className="sticky top-[var(--navbar-height,68px)] z-40 border-b border-zinc-100 bg-white/90 backdrop-blur-xl">
         <div className="container flex h-14 min-w-0 items-center justify-between gap-3 sm:h-16">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
+            aria-expanded={isOpen}
             className="group flex shrink-0 items-center gap-2 rounded-full bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-6"
           >
             <SlidersHorizontal
               size={14}
               className="transition-transform duration-500 group-hover:rotate-180"
             />
-            <span className="text-[11px] font-black uppercase tracking-[0.15em]">Filters</span>
+            <span className="text-xs font-semibold tracking-wide uppercase">
+              Filters
+            </span>
             {activeCount > 0 && (
-              <span className="animate-in zoom-in flex h-5 w-5 items-center justify-center rounded-full bg-white text-[9px] font-black text-black">
+              <span className="animate-in zoom-in flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
                 {activeCount}
               </span>
             )}
           </button>
 
-          {/* Sort Dropdown */}
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <div className="hidden items-center gap-2 text-zinc-400 md:flex">
-              <span className="text-[10px] font-bold uppercase tracking-widest">Sort By:</span>
+              <span className="text-xs font-bold uppercase tracking-widest">
+                Sort By:
+              </span>
             </div>
             <div className="group relative cursor-pointer">
               <div className="flex items-center gap-1 border-b-2 border-zinc-900 pb-0.5">
-                <span className="max-w-[9.5rem] truncate text-xs font-black uppercase tracking-tight sm:max-w-none">
-                  {currentSort === "price_asc"
-                    ? "Price: Low to High"
-                    : currentSort === "price_desc"
-                      ? "Price: High to Low"
-                      : currentSort === "popular"
-                        ? "Popular"
-                        : "Newest"}
+                <span className="max-w-[8rem] truncate text-xs font-semibold tracking-tight uppercase xs:max-w-[9.5rem] sm:max-w-none">
+                  {SORT_LABEL[currentSort] ?? "Newest"}
                 </span>
                 <ChevronDown
                   size={14}
@@ -229,46 +175,53 @@ export default function DynamicFilterBar({ categories }: DynamicFilterBarProps) 
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               >
                 <option value="newest">Newest</option>
-                <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>
-                <option value="popular">Popular</option>
+                <option value="price_asc">Price: Low to High</option>
               </select>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Drawer */}
       <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right">
-        <DrawerContent className="ml-auto h-dvh max-h-dvh w-[min(100%,24rem)] rounded-none border-l border-zinc-100 bg-white shadow-2xl md:max-w-md">
-          <DrawerHeader className="border-b px-8 py-6">
-            <div className="flex items-center justify-between">
-              <DrawerTitle className="text-2xl font-black italic uppercase tracking-tighter">
+        <DrawerContent className="ml-auto flex h-dvh max-h-dvh w-[min(100%,24rem)] flex-col rounded-none border-l border-zinc-100 bg-white shadow-2xl md:max-w-md">
+          <DrawerHeader className="shrink-0 border-b px-5 py-5 sm:px-8 sm:py-6">
+            <div className="flex items-center justify-between gap-3">
+              <DrawerTitle className="text-xl font-semibold italic tracking-tight uppercase sm:text-2xl">
                 Filters
               </DrawerTitle>
-              <DrawerClose className="rounded-full p-3 transition-all hover:bg-zinc-100">
+              <DrawerClose
+                aria-label="Close filters"
+                className="rounded-full p-3 transition-all hover:bg-zinc-100"
+              >
                 <X size={20} />
               </DrawerClose>
             </div>
           </DrawerHeader>
 
-          <div className="no-scrollbar flex-1 overflow-y-auto px-8 py-6">
+          <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
             <FilterPanel
-              // Scoped categories (Child categories if parent selected)
-              categoryObjects={displayCategories}
-              selectedCategory={currentCategorySlug}
-              onSelectCategory={handleSelectCategory}
-              // Scoped attributes for active category
-              availableAttributes={availableAttributes}
+              categories={facets?.categories}
+              selectedCategories={selectedCategories}
+              onToggleCategory={handleToggleCategory}
+              attributes={facets?.attributes}
               selectedAttributes={selectedAttributes}
               onAttributeChange={handleAttributeChange}
-              // Price
-              priceMin={DEFAULT_MIN_PRICE}
-              priceMax={DEFAULT_MAX_PRICE}
-              selectedPrice={selectedPrice}
-              onPriceChange={handlePriceChange}
+              priceBuckets={priceBuckets}
+              selectedBucket={selectedBucket}
+              onSelectBucket={handleSelectBucket}
               onClearAll={handleClearAll}
             />
+          </div>
+
+          <div className="shrink-0 border-t bg-white px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-8">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex min-h-11 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-black"
+            >
+              View results
+            </button>
           </div>
         </DrawerContent>
       </Drawer>

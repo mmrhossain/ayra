@@ -5,11 +5,14 @@ import HeaderHeightObserver from "@/components/layout/HeaderHeightObserver"; // 
 import Navbar from "@/components/layout/Navbar";
 import StorefrontProvider from "@/components/providers/StorefrontProvider";
 import SocialContact from "@/components/shared/SocialContact";
-import StorefrontChat from "@/features/content/components/chat/StorefrontChat";
-import { getCategories } from "@/features/catalog/categories-api";
+import { getCategories } from "@/features/catalog/api";
 import { CategoryListItem } from "@/features/catalog/types";
+import StorefrontChat from "@/features/content/components/chat/StorefrontChat";
+import { redirectStaffFromStorefront } from "@/lib/api/auth/server";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
+  await redirectStaffFromStorefront();
+
   let categories: CategoryListItem[] = [];
 
   try {
@@ -17,8 +20,8 @@ export default async function StorefrontLayout({ children }: { children: React.R
     if (Array.isArray(data)) {
       categories = data;
     }
-  } catch (error) {
-    console.error("Failed to fetch categories in layout:", error);
+  } catch {
+    categories = [];
   }
 
   return (
@@ -31,7 +34,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
         <StorefrontChat />
         {children}
         <Footer />
-        <FooterNavigationMenu />
+        <FooterNavigationMenu categories={categories} />
       </div>
     </StorefrontProvider>
   );

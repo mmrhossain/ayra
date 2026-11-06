@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Heart, ShoppingCart } from "lucide-react";
+import { ChevronDown, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,11 +14,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SITE_LOGO } from "@/config/site";
 import CategoryMegaMenu from "@/features/catalog/components/category/CategoryMegaMenu";
 import { CategoryListItem } from "@/features/catalog/types";
 import { successToast } from "@/helpers";
 import { useHydratedStore } from "@/hooks/useHydratedStore";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
 
@@ -45,11 +47,8 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
     });
   };
 
-  const getAccountHref = () => {
-    if (user?.role === "ADMIN") return "/admin";
-    if (user?.role === "VENDOR") return "/vendor";
-    return "/customer/account";
-  };
+  const getAccountHref = () => staffDashboardPath(user?.role) ?? "/customer/account";
+  const shoppingHref = staffShoppingRedirect(user?.role);
 
   return (
     <div className="container hidden min-w-0 items-center gap-4 py-2 lg:flex xl:gap-6">
@@ -57,11 +56,11 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
       <div className="flex h-9 w-[120px] shrink-0 items-center xl:w-[130px]">
         <Link href="/" className="relative block h-9 w-full" aria-label="Ayra Home">
           <Image
-            src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791364893/logo_juxcww.png"
+            src={SITE_LOGO}
             alt="Ayra"
             fill
             priority
-            sizes="(min-width: 1280px) 130px, 120px"
+            sizes="120px"
             className="object-contain object-left"
           />
         </Link>
@@ -74,7 +73,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
           <div className="group/cat relative h-full w-[140px] min-w-0 shrink-0 border-r border-gray-200 bg-white xl:w-[180px]">
             <button
               type="button"
-              className="flex h-full w-full items-center justify-between px-4 text-sm font-medium text-secondary"
+              className="flex h-full w-full items-center justify-between px-4 text-sm font-medium text-foreground"
             >
               <span className="truncate">{selectedCatName}</span>
 
@@ -97,29 +96,32 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
       {/* 3. Right Icons & Actions */}
       <div className="flex shrink-0 items-center gap-2 xl:gap-4">
         {/* Wishlist */}
-        <Link href="/customer/wish-list" className="group relative flex items-center gap-2">
+        <Link
+          href={shoppingHref ?? "/customer/wish-list"}
+          className="group relative flex items-center gap-2"
+        >
           <div className="relative p-2">
             <Heart
               size={24}
-              className="text-secondary transition-colors group-hover:text-primary"
+              className="text-foreground transition-colors group-hover:text-primary"
             />
 
-            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-              {String(wishCount).padStart(2, "0")}
+            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+              {String(wishCount).padStart(1, "0")}
             </span>
           </div>
         </Link>
 
         {/* Cart */}
-        <Link href="/cart" className="group flex items-center gap-3">
+        <Link href={shoppingHref ?? "/cart"} className="group flex items-center gap-3">
           <div className="relative p-2">
-            <ShoppingCart
+            <ShoppingBag
               size={24}
-              className="text-secondary transition-colors group-hover:text-primary"
+              className="text-foreground transition-colors group-hover:text-primary"
             />
 
-            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-              {String(cartCount).padStart(2, "0")}
+            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+              {String(cartCount).padStart(1, "0")}
             </span>
           </div>
         </Link>
@@ -141,14 +143,14 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
                 <UserAvatar
                   src={user.image}
                   name={user.name}
-                  className="h-10 w-10 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   iconSize={22}
                 />
 
                 <div className="hidden min-w-0 flex-col items-start truncate xl:flex">
-                  <span className="text-[11px] leading-none text-gray-500">Welcome</span>
+                  <span className="text-xs leading-snug text-gray-500">Welcome</span>
 
-                  <span className="w-full truncate text-sm font-bold capitalize text-secondary">
+                  <span className="w-full truncate text-sm font-medium capitalize text-foreground">
                     {user.name || "User"}
                   </span>
                 </div>
@@ -160,7 +162,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
                   className="cursor-pointer hover:bg-primary hover:text-white"
                 >
                   <Link href={getAccountHref()}>
-                    {user?.role === "ADMIN" ? "Dashboard" : "My Account"}
+                    {staffDashboardPath(user?.role) ? "Dashboard" : "My Account"}
                   </Link>
                 </DropdownMenuItem>
 
@@ -177,9 +179,9 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
               <UserAvatar className="h-10 w-10 shrink-0" iconSize={22} />
 
               <div className="hidden min-w-0 flex-col items-start truncate text-left xl:flex">
-                <span className="text-[12px] leading-none text-gray-500">Welcome</span>
+                <span className="text-xs leading-snug text-gray-500">Welcome</span>
 
-                <span className="truncate text-sm font-bold text-secondary transition-colors group-hover:text-primary">
+                <span className="truncate text-sm font-medium text-foreground transition-colors group-hover:text-primary">
                   Sign in/Register
                 </span>
               </div>

@@ -30,8 +30,8 @@ router.post(
   "/media/upload",
   requireAuth,
   uploadConcurrencyGuard,
-  singleImageUpload,
   requireSingleUploadPermission,
+  singleImageUpload,
   uploadSingleImageHandler
 );
 
@@ -39,8 +39,8 @@ router.post(
   "/media/uploads",
   requireAuth,
   uploadConcurrencyGuard,
-  productImagesUpload,
   requireMultipleUploadPermission,
+  productImagesUpload,
   uploadMultipleImagesHandler
 );
 

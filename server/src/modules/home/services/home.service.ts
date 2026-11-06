@@ -1,11 +1,7 @@
 import type { CollectionSource, Prisma } from "../../../generated/prisma/client.ts";
 import { prisma } from "../../../lib/prisma.ts";
 import { listActiveSliders } from "../../slider/services/slider.service.ts";
-import {
-  invalidateHomeCache,
-  readCachedHome,
-  writeCachedHome,
-} from "../cache.ts";
+import { invalidateHomeCache, readCachedHome, writeCachedHome } from "../cache.ts";
 import type { HomeCategoryCard, HomePayload, HomeProductCard, HomeSection } from "../types.ts";
 
 const DEFAULT_LIMIT = 8;
@@ -58,7 +54,7 @@ const toCard = (product: HomeProductRow): HomeProductCard => ({
     const { inventories, ...rest } = variant;
     const availableStock = (inventories ?? []).reduce(
       (sum, row) => sum + (row.quantityAvailable || 0),
-      0,
+      0
     );
     return { ...rest, availableStock };
   }),
@@ -111,7 +107,7 @@ const DEFAULT_SECTIONS: ResolvedCollection[] = [
 const findPublished = async (
   where: Prisma.ProductWhereInput,
   orderBy: Prisma.ProductOrderByWithRelationInput,
-  take: number,
+  take: number
 ) =>
   prisma.product.findMany({
     where: { ...publishedWhere, ...where },
@@ -135,9 +131,7 @@ const loadManualProducts = async (collectionId: string, take: number) => {
   return items.map((item) => item.product);
 };
 
-const resolveProducts = async (
-  collection: ResolvedCollection,
-): Promise<HomeProductRow[]> => {
+const resolveProducts = async (collection: ResolvedCollection): Promise<HomeProductRow[]> => {
   const take = collection.limit > 0 ? collection.limit : DEFAULT_LIMIT;
 
   switch (collection.source) {
@@ -148,11 +142,7 @@ const resolveProducts = async (
     case "TRENDING":
       return findPublished({}, { trendingScore: "desc" }, take);
     case "DISCOUNT":
-      return findPublished(
-        { variants: { some: onSaleVariantWhere } },
-        { createdAt: "desc" },
-        take,
-      );
+      return findPublished({ variants: { some: onSaleVariantWhere } }, { createdAt: "desc" }, take);
     case "FEATURED": {
       if (!collection.id.startsWith("default-")) {
         const curated = await loadManualProducts(collection.id, take);
@@ -198,6 +188,7 @@ const loadHomeCategories = async (): Promise<HomeCategoryCard[]> => {
       name: true,
       slug: true,
       image: true,
+      mobileImage: true,
       isActive: true,
       parentId: true,
     },
@@ -218,7 +209,7 @@ const buildHomePayload = async (): Promise<HomePayload> => {
   ]);
 
   const sectionProducts = await Promise.all(
-    collections.map((collection) => resolveProducts(collection)),
+    collections.map((collection) => resolveProducts(collection))
   );
 
   const sections: HomeSection[] = collections.flatMap((collection, index) => {

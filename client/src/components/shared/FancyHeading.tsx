@@ -1,11 +1,19 @@
 import { cn } from "@/lib/utils";
 
-const FancyHeading = ({ text, className }: { text: string; className?: string }) => {
+const FancyHeading = ({
+  text,
+  className,
+  as: Tag = "h2",
+}: {
+  text: string;
+  className?: string;
+  as?: "h1" | "h2";
+}) => {
   return (
-    <div className="flex items-center">
-      <h1 className={cn("font-bold text-xl md:text-2xl lg:text-3xl 2xl:text-4xl", className)}>
+    <div className="flex min-w-0 items-center">
+      <Tag className={cn("text-xl leading-tight font-semibold tracking-tight lg:text-2xl", className)}>
         {text}
-      </h1>
+      </Tag>
     </div>
   );
 };

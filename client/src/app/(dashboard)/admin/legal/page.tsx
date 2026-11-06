@@ -1,12 +1,16 @@
-import { LegalTable } from "@/features/dashboard/admin/legal/components/legal-table";
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
+import { LegalTabs } from "@/features/dashboard/admin/legal/components/legal-tabs";
 import {
   fetchLegalList,
   toLegalErrorMessage,
 } from "@/features/dashboard/admin/legal/api/legal";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminLegalPage() {
+  await requireAdminPageAccess("/admin/legal");
   let initial;
   let error: string | null = null;
 
@@ -18,24 +22,17 @@ export default async function AdminLegalPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Legal</h1>
-        <p className="text-sm text-muted-foreground">
-          Privacy and terms documents. Publish a draft to show it on the storefront.
-        </p>
-      </div>
+      <PageHeader
+        title="Legal"
+        description="Privacy and terms documents. Publish a draft to show it on the storefront."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load legal documents</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load legal documents"
+          message={error ?? "Unknown error"}
+        />
       ) : (
-        <LegalTable initialData={initial} />
+        <LegalTabs initialData={initial} />
       )}
     </section>
   );

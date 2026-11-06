@@ -42,7 +42,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blogItem }) => {
           <div className="flex items-center gap-2">
             <span className="w-8 h-[1px] bg-primary/40" />
             {dateLabel ? (
-              <time className="text-[11px] md:text-xs font-bold uppercase tracking-[0.12em] md:tracking-[0.2em] text-slate-400">
+              <time className="text-xs md:text-xs font-bold uppercase tracking-[0.12em] md:tracking-[0.2em] text-slate-400">
                 {dateLabel}
               </time>
             ) : null}
@@ -59,7 +59,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blogItem }) => {
         <CardFooter className="p-0">
           <Link
             href={href}
-            className="inline-flex items-center gap-2 min-h-11 text-xs md:text-sm font-extrabold uppercase tracking-[0.1em] md:tracking-widest text-slate-900 group/btn"
+            className="group/btn inline-flex min-h-11 items-center gap-2 text-sm font-medium tracking-wide uppercase text-slate-900"
           >
             <span className="relative">
               Read Article

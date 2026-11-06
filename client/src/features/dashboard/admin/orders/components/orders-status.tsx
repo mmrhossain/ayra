@@ -29,7 +29,7 @@ export function OrdersStatusBreakdown({
 
   if (total === 0) {
     return (
-      <Card>
+      <Card className="h-full min-w-0">
         <CardHeader>
           <CardTitle>Orders by status</CardTitle>
           <CardDescription>Current period breakdown</CardDescription>
@@ -44,7 +44,7 @@ export function OrdersStatusBreakdown({
   }
 
   return (
-    <Card>
+    <Card className="h-full min-w-0">
       <CardHeader>
         <CardTitle>Orders by status</CardTitle>
         <CardDescription>{total} orders in this period</CardDescription>

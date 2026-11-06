@@ -10,7 +10,7 @@ export default function Navbar({ categories }: { categories: CategoryListItem[] 
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm">
-      <MobileNavbar categories={categories} />
+      <MobileNavbar />
       <DeskTopNavbar categories={categories} />
     </nav>
   );

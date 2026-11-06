@@ -6,6 +6,7 @@ import type { z } from "zod";
 import type {
   initiatePaymentSchema,
   listPaymentsQuerySchema,
+  listRefundsQuerySchema,
   refundSchema,
   sslcommerzFailCancelSchema,
   sslcommerzIpnSchema,
@@ -15,6 +16,7 @@ import type {
 export type InitiatePaymentInput = z.infer<typeof initiatePaymentSchema>;
 export type RefundInput = z.infer<typeof refundSchema>;
 export type ListPaymentsQuery = z.infer<typeof listPaymentsQuerySchema>;
+export type ListRefundsQuery = z.infer<typeof listRefundsQuerySchema>;
 export type SslcommerzSuccessInput = z.infer<typeof sslcommerzSuccessSchema>;
 export type SslcommerzFailCancelInput = z.infer<typeof sslcommerzFailCancelSchema>;
 export type SslcommerzIpnInput = z.infer<typeof sslcommerzIpnSchema>;
@@ -68,7 +70,7 @@ export type PaymentProvider = {
   readonly method: PaymentMethod;
   initiate(order: GatewayOrder, callbackUrls: GatewayUrls): Promise<GatewaySession>;
   verifyTransaction(valId: string): Promise<GatewayVerification>;
-  verifyWebhookSignature(payload: Record<string, string>): boolean;
+  verifyWebhookSignature(payload: Record<string, string>): Promise<boolean>;
 };
 
 export type PublicPayment = {
@@ -79,4 +81,9 @@ export type PublicPayment = {
   currency: string;
   createdAt: Date;
   orderId?: string;
+};
+
+export type RefundStatusUpdateInput = {
+  status: "APPROVED" | "REJECTED" | "PROCESSING" | "COMPLETED";
+  providerReference?: string | undefined;
 };

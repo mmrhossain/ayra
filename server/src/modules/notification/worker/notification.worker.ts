@@ -152,7 +152,7 @@ export const processPendingNotifications = async (): Promise<number> => {
   const claimedRows = await withDbRetry(
     () =>
       prisma.$queryRaw<QueuedNotification[]>(Prisma.sql`
-        UPDATE "Notification"
+        UPDATE "notification"
         SET status = 'PROCESSING', "updatedAt" = now()
         WHERE id IN (${Prisma.join(ids)})
           AND status = 'PENDING'

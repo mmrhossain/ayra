@@ -42,7 +42,11 @@ export type RefundMinAggregateOutputType = {
   providerReference: string | null
   refundedAt: Date | null
   requiresManualProcessing: boolean | null
+  requestedBy: string | null
+  approvedBy: string | null
+  completedBy: string | null
   paymentId: string | null
+  returnRequestId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -55,7 +59,11 @@ export type RefundMaxAggregateOutputType = {
   providerReference: string | null
   refundedAt: Date | null
   requiresManualProcessing: boolean | null
+  requestedBy: string | null
+  approvedBy: string | null
+  completedBy: string | null
   paymentId: string | null
+  returnRequestId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,7 +76,11 @@ export type RefundCountAggregateOutputType = {
   providerReference: number
   refundedAt: number
   requiresManualProcessing: number
+  requestedBy: number
+  approvedBy: number
+  completedBy: number
   paymentId: number
+  returnRequestId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -91,7 +103,11 @@ export type RefundMinAggregateInputType = {
   providerReference?: true
   refundedAt?: true
   requiresManualProcessing?: true
+  requestedBy?: true
+  approvedBy?: true
+  completedBy?: true
   paymentId?: true
+  returnRequestId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,7 +120,11 @@ export type RefundMaxAggregateInputType = {
   providerReference?: true
   refundedAt?: true
   requiresManualProcessing?: true
+  requestedBy?: true
+  approvedBy?: true
+  completedBy?: true
   paymentId?: true
+  returnRequestId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -117,7 +137,11 @@ export type RefundCountAggregateInputType = {
   providerReference?: true
   refundedAt?: true
   requiresManualProcessing?: true
+  requestedBy?: true
+  approvedBy?: true
+  completedBy?: true
   paymentId?: true
+  returnRequestId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -217,7 +241,11 @@ export type RefundGroupByOutputType = {
   providerReference: string | null
   refundedAt: Date | null
   requiresManualProcessing: boolean
+  requestedBy: string | null
+  approvedBy: string | null
+  completedBy: string | null
   paymentId: string
+  returnRequestId: string | null
   createdAt: Date
   updatedAt: Date
   _count: RefundCountAggregateOutputType | null
@@ -253,10 +281,15 @@ export type RefundWhereInput = {
   providerReference?: Prisma.StringNullableFilter<"Refund"> | string | null
   refundedAt?: Prisma.DateTimeNullableFilter<"Refund"> | Date | string | null
   requiresManualProcessing?: Prisma.BoolFilter<"Refund"> | boolean
+  requestedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  completedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
   paymentId?: Prisma.StringFilter<"Refund"> | string
+  returnRequestId?: Prisma.StringNullableFilter<"Refund"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
   payment?: Prisma.XOR<Prisma.PaymentScalarRelationFilter, Prisma.PaymentWhereInput>
+  returnRequest?: Prisma.XOR<Prisma.ReturnRequestNullableScalarRelationFilter, Prisma.ReturnRequestWhereInput> | null
 }
 
 export type RefundOrderByWithRelationInput = {
@@ -267,14 +300,20 @@ export type RefundOrderByWithRelationInput = {
   providerReference?: Prisma.SortOrderInput | Prisma.SortOrder
   refundedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requiresManualProcessing?: Prisma.SortOrder
+  requestedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentId?: Prisma.SortOrder
+  returnRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   payment?: Prisma.PaymentOrderByWithRelationInput
+  returnRequest?: Prisma.ReturnRequestOrderByWithRelationInput
 }
 
 export type RefundWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  returnRequestId?: string
   AND?: Prisma.RefundWhereInput | Prisma.RefundWhereInput[]
   OR?: Prisma.RefundWhereInput[]
   NOT?: Prisma.RefundWhereInput | Prisma.RefundWhereInput[]
@@ -284,11 +323,15 @@ export type RefundWhereUniqueInput = Prisma.AtLeast<{
   providerReference?: Prisma.StringNullableFilter<"Refund"> | string | null
   refundedAt?: Prisma.DateTimeNullableFilter<"Refund"> | Date | string | null
   requiresManualProcessing?: Prisma.BoolFilter<"Refund"> | boolean
+  requestedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  completedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
   paymentId?: Prisma.StringFilter<"Refund"> | string
   createdAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
   payment?: Prisma.XOR<Prisma.PaymentScalarRelationFilter, Prisma.PaymentWhereInput>
-}, "id">
+  returnRequest?: Prisma.XOR<Prisma.ReturnRequestNullableScalarRelationFilter, Prisma.ReturnRequestWhereInput> | null
+}, "id" | "returnRequestId">
 
 export type RefundOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -298,7 +341,11 @@ export type RefundOrderByWithAggregationInput = {
   providerReference?: Prisma.SortOrderInput | Prisma.SortOrder
   refundedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   requiresManualProcessing?: Prisma.SortOrder
+  requestedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentId?: Prisma.SortOrder
+  returnRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RefundCountOrderByAggregateInput
@@ -319,7 +366,11 @@ export type RefundScalarWhereWithAggregatesInput = {
   providerReference?: Prisma.StringNullableWithAggregatesFilter<"Refund"> | string | null
   refundedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
   requiresManualProcessing?: Prisma.BoolWithAggregatesFilter<"Refund"> | boolean
+  requestedBy?: Prisma.StringNullableWithAggregatesFilter<"Refund"> | string | null
+  approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Refund"> | string | null
+  completedBy?: Prisma.StringNullableWithAggregatesFilter<"Refund"> | string | null
   paymentId?: Prisma.StringWithAggregatesFilter<"Refund"> | string
+  returnRequestId?: Prisma.StringNullableWithAggregatesFilter<"Refund"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Refund"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Refund"> | Date | string
 }
@@ -332,9 +383,13 @@ export type RefundCreateInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payment: Prisma.PaymentCreateNestedOneWithoutRefundsInput
+  returnRequest?: Prisma.ReturnRequestCreateNestedOneWithoutRefundInput
 }
 
 export type RefundUncheckedCreateInput = {
@@ -345,7 +400,11 @@ export type RefundUncheckedCreateInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
   paymentId: string
+  returnRequestId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -358,9 +417,13 @@ export type RefundUpdateInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payment?: Prisma.PaymentUpdateOneRequiredWithoutRefundsNestedInput
+  returnRequest?: Prisma.ReturnRequestUpdateOneWithoutRefundNestedInput
 }
 
 export type RefundUncheckedUpdateInput = {
@@ -371,7 +434,11 @@ export type RefundUncheckedUpdateInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
+  returnRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,7 +451,11 @@ export type RefundCreateManyInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
   paymentId: string
+  returnRequestId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -397,6 +468,9 @@ export type RefundUpdateManyMutationInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -409,9 +483,18 @@ export type RefundUncheckedUpdateManyInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
+  returnRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RefundNullableScalarRelationFilter = {
+  is?: Prisma.RefundWhereInput | null
+  isNot?: Prisma.RefundWhereInput | null
 }
 
 export type RefundListRelationFilter = {
@@ -432,7 +515,11 @@ export type RefundCountOrderByAggregateInput = {
   providerReference?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   requiresManualProcessing?: Prisma.SortOrder
+  requestedBy?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
+  completedBy?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
+  returnRequestId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -449,7 +536,11 @@ export type RefundMaxOrderByAggregateInput = {
   providerReference?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   requiresManualProcessing?: Prisma.SortOrder
+  requestedBy?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
+  completedBy?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
+  returnRequestId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -462,13 +553,49 @@ export type RefundMinOrderByAggregateInput = {
   providerReference?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   requiresManualProcessing?: Prisma.SortOrder
+  requestedBy?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
+  completedBy?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
+  returnRequestId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type RefundSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
+}
+
+export type RefundCreateNestedOneWithoutReturnRequestInput = {
+  create?: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutReturnRequestInput
+  connect?: Prisma.RefundWhereUniqueInput
+}
+
+export type RefundUncheckedCreateNestedOneWithoutReturnRequestInput = {
+  create?: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutReturnRequestInput
+  connect?: Prisma.RefundWhereUniqueInput
+}
+
+export type RefundUpdateOneWithoutReturnRequestNestedInput = {
+  create?: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutReturnRequestInput
+  upsert?: Prisma.RefundUpsertWithoutReturnRequestInput
+  disconnect?: Prisma.RefundWhereInput | boolean
+  delete?: Prisma.RefundWhereInput | boolean
+  connect?: Prisma.RefundWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RefundUpdateToOneWithWhereWithoutReturnRequestInput, Prisma.RefundUpdateWithoutReturnRequestInput>, Prisma.RefundUncheckedUpdateWithoutReturnRequestInput>
+}
+
+export type RefundUncheckedUpdateOneWithoutReturnRequestNestedInput = {
+  create?: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutReturnRequestInput
+  upsert?: Prisma.RefundUpsertWithoutReturnRequestInput
+  disconnect?: Prisma.RefundWhereInput | boolean
+  delete?: Prisma.RefundWhereInput | boolean
+  connect?: Prisma.RefundWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RefundUpdateToOneWithWhereWithoutReturnRequestInput, Prisma.RefundUpdateWithoutReturnRequestInput>, Prisma.RefundUncheckedUpdateWithoutReturnRequestInput>
 }
 
 export type RefundCreateNestedManyWithoutPaymentInput = {
@@ -517,6 +644,86 @@ export type EnumRefundStatusFieldUpdateOperationsInput = {
   set?: $Enums.RefundStatus
 }
 
+export type RefundCreateWithoutReturnRequestInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  reason?: string | null
+  status?: $Enums.RefundStatus
+  providerReference?: string | null
+  refundedAt?: Date | string | null
+  requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payment: Prisma.PaymentCreateNestedOneWithoutRefundsInput
+}
+
+export type RefundUncheckedCreateWithoutReturnRequestInput = {
+  id?: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  reason?: string | null
+  status?: $Enums.RefundStatus
+  providerReference?: string | null
+  refundedAt?: Date | string | null
+  requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
+  paymentId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RefundCreateOrConnectWithoutReturnRequestInput = {
+  where: Prisma.RefundWhereUniqueInput
+  create: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+}
+
+export type RefundUpsertWithoutReturnRequestInput = {
+  update: Prisma.XOR<Prisma.RefundUpdateWithoutReturnRequestInput, Prisma.RefundUncheckedUpdateWithoutReturnRequestInput>
+  create: Prisma.XOR<Prisma.RefundCreateWithoutReturnRequestInput, Prisma.RefundUncheckedCreateWithoutReturnRequestInput>
+  where?: Prisma.RefundWhereInput
+}
+
+export type RefundUpdateToOneWithWhereWithoutReturnRequestInput = {
+  where?: Prisma.RefundWhereInput
+  data: Prisma.XOR<Prisma.RefundUpdateWithoutReturnRequestInput, Prisma.RefundUncheckedUpdateWithoutReturnRequestInput>
+}
+
+export type RefundUpdateWithoutReturnRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+  providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payment?: Prisma.PaymentUpdateOneRequiredWithoutRefundsNestedInput
+}
+
+export type RefundUncheckedUpdateWithoutReturnRequestInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+  providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type RefundCreateWithoutPaymentInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -525,8 +732,12 @@ export type RefundCreateWithoutPaymentInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  returnRequest?: Prisma.ReturnRequestCreateNestedOneWithoutRefundInput
 }
 
 export type RefundUncheckedCreateWithoutPaymentInput = {
@@ -537,6 +748,10 @@ export type RefundUncheckedCreateWithoutPaymentInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
+  returnRequestId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -578,7 +793,11 @@ export type RefundScalarWhereInput = {
   providerReference?: Prisma.StringNullableFilter<"Refund"> | string | null
   refundedAt?: Prisma.DateTimeNullableFilter<"Refund"> | Date | string | null
   requiresManualProcessing?: Prisma.BoolFilter<"Refund"> | boolean
+  requestedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
+  completedBy?: Prisma.StringNullableFilter<"Refund"> | string | null
   paymentId?: Prisma.StringFilter<"Refund"> | string
+  returnRequestId?: Prisma.StringNullableFilter<"Refund"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Refund"> | Date | string
 }
@@ -591,6 +810,10 @@ export type RefundCreateManyPaymentInput = {
   providerReference?: string | null
   refundedAt?: Date | string | null
   requiresManualProcessing?: boolean
+  requestedBy?: string | null
+  approvedBy?: string | null
+  completedBy?: string | null
+  returnRequestId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -603,8 +826,12 @@ export type RefundUpdateWithoutPaymentInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnRequest?: Prisma.ReturnRequestUpdateOneWithoutRefundNestedInput
 }
 
 export type RefundUncheckedUpdateWithoutPaymentInput = {
@@ -615,6 +842,10 @@ export type RefundUncheckedUpdateWithoutPaymentInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -627,6 +858,10 @@ export type RefundUncheckedUpdateManyWithoutPaymentInput = {
   providerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   requiresManualProcessing?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requestedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -641,10 +876,15 @@ export type RefundSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   providerReference?: boolean
   refundedAt?: boolean
   requiresManualProcessing?: boolean
+  requestedBy?: boolean
+  approvedBy?: boolean
+  completedBy?: boolean
   paymentId?: boolean
+  returnRequestId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }, ExtArgs["result"]["refund"]>
 
 export type RefundSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -655,10 +895,15 @@ export type RefundSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   providerReference?: boolean
   refundedAt?: boolean
   requiresManualProcessing?: boolean
+  requestedBy?: boolean
+  approvedBy?: boolean
+  completedBy?: boolean
   paymentId?: boolean
+  returnRequestId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }, ExtArgs["result"]["refund"]>
 
 export type RefundSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -669,10 +914,15 @@ export type RefundSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   providerReference?: boolean
   refundedAt?: boolean
   requiresManualProcessing?: boolean
+  requestedBy?: boolean
+  approvedBy?: boolean
+  completedBy?: boolean
   paymentId?: boolean
+  returnRequestId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }, ExtArgs["result"]["refund"]>
 
 export type RefundSelectScalar = {
@@ -683,26 +933,34 @@ export type RefundSelectScalar = {
   providerReference?: boolean
   refundedAt?: boolean
   requiresManualProcessing?: boolean
+  requestedBy?: boolean
+  approvedBy?: boolean
+  completedBy?: boolean
   paymentId?: boolean
+  returnRequestId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RefundOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "reason" | "status" | "providerReference" | "refundedAt" | "requiresManualProcessing" | "paymentId" | "createdAt" | "updatedAt", ExtArgs["result"]["refund"]>
+export type RefundOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "reason" | "status" | "providerReference" | "refundedAt" | "requiresManualProcessing" | "requestedBy" | "approvedBy" | "completedBy" | "paymentId" | "returnRequestId" | "createdAt" | "updatedAt", ExtArgs["result"]["refund"]>
 export type RefundInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }
 export type RefundIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }
 export type RefundIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
+  returnRequest?: boolean | Prisma.Refund$returnRequestArgs<ExtArgs>
 }
 
 export type $RefundPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Refund"
   objects: {
     payment: Prisma.$PaymentPayload<ExtArgs>
+    returnRequest: Prisma.$ReturnRequestPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -712,7 +970,11 @@ export type $RefundPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     providerReference: string | null
     refundedAt: Date | null
     requiresManualProcessing: boolean
+    requestedBy: string | null
+    approvedBy: string | null
+    completedBy: string | null
     paymentId: string
+    returnRequestId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["refund"]>
@@ -1110,6 +1372,7 @@ readonly fields: RefundFieldRefs;
 export interface Prisma__RefundClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   payment<T extends Prisma.PaymentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentDefaultArgs<ExtArgs>>): Prisma.Prisma__PaymentClient<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  returnRequest<T extends Prisma.Refund$returnRequestArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Refund$returnRequestArgs<ExtArgs>>): Prisma.Prisma__ReturnRequestClient<runtime.Types.Result.GetResult<Prisma.$ReturnRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1146,7 +1409,11 @@ export interface RefundFieldRefs {
   readonly providerReference: Prisma.FieldRef<"Refund", 'String'>
   readonly refundedAt: Prisma.FieldRef<"Refund", 'DateTime'>
   readonly requiresManualProcessing: Prisma.FieldRef<"Refund", 'Boolean'>
+  readonly requestedBy: Prisma.FieldRef<"Refund", 'String'>
+  readonly approvedBy: Prisma.FieldRef<"Refund", 'String'>
+  readonly completedBy: Prisma.FieldRef<"Refund", 'String'>
   readonly paymentId: Prisma.FieldRef<"Refund", 'String'>
+  readonly returnRequestId: Prisma.FieldRef<"Refund", 'String'>
   readonly createdAt: Prisma.FieldRef<"Refund", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Refund", 'DateTime'>
 }
@@ -1547,6 +1814,25 @@ export type RefundDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Refunds to delete.
    */
   limit?: number
+}
+
+/**
+ * Refund.returnRequest
+ */
+export type Refund$returnRequestArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReturnRequest
+   */
+  select?: Prisma.ReturnRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReturnRequest
+   */
+  omit?: Prisma.ReturnRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReturnRequestInclude<ExtArgs> | null
+  where?: Prisma.ReturnRequestWhereInput
 }
 
 /**

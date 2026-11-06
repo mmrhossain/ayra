@@ -1,14 +1,24 @@
 "use client";
 
-import { LogOut, Moon, Sun } from "lucide-react";
+import { KeyRound, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
+import { ChangePasswordDialog } from "@/components/shared/change-password-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { successToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
 
@@ -32,6 +42,8 @@ export function DashboardTopbar() {
   const { data } = authClient.useSession();
   const user = data?.user;
 
+  const [passwordOpen, setPasswordOpen] = React.useState(false);
+
   const handleLogout = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -46,10 +58,11 @@ export function DashboardTopbar() {
   const isDark = resolvedTheme === "dark";
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border/70 bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarTrigger className="size-9" aria-label="Toggle sidebar" />
       <Separator orientation="vertical" className="h-6" />
-      <div className="ml-auto flex min-w-0 items-center gap-3">
+      <div className="ml-auto flex min-w-0 items-center gap-2">
+        <NotificationBell viewAllHref="/admin/notifications" />
         <Button
           type="button"
           variant="outline"
@@ -69,21 +82,46 @@ export function DashboardTopbar() {
             <span className="size-4" />
           )}
         </Button>
-        <div className="min-w-0 text-right">
-          <p className="truncate text-sm font-medium leading-none">{user?.name || "Account"}</p>
-          <p className="truncate text-xs text-muted-foreground">{user?.email || "Signed in"}</p>
-        </div>
-        <UserAvatar src={user?.image} name={user?.name} className="h-9 w-9 border" iconSize={18} />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="cursor-pointer"
-        >
-          <LogOut className="size-4" />
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Open account menu"
+              className="rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <UserAvatar
+                src={user?.image}
+                name={user?.name}
+                className="h-9 w-9 border"
+                iconSize={18}
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-60">
+            <DropdownMenuLabel className="flex flex-col gap-0.5">
+              <span className="truncate text-sm font-semibold">
+                {user?.name || "Account"}
+              </span>
+              <span className="truncate text-xs font-normal text-muted-foreground">
+                {user?.email || "Signed in"}
+              </span>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setPasswordOpen(true)}>
+              <KeyRound />
+              Change password
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
+              <LogOut />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <ChangePasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
     </header>
   );
 }

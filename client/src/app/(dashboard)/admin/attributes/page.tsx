@@ -1,12 +1,16 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { AttributeTable } from "@/features/dashboard/admin/attributes/components/attribute-table";
 import {
   fetchAttributeList,
   toAttributeErrorMessage,
 } from "@/features/dashboard/admin/attributes/api/attributes";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAttributesPage() {
+  await requireAdminPageAccess("/admin/attributes");
   let initial;
   let error: string | null = null;
 
@@ -18,22 +22,15 @@ export default async function AdminAttributesPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Attributes</h1>
-        <p className="text-sm text-muted-foreground">
-          Product attributes and values used by variants.
-        </p>
-      </div>
+      <PageHeader
+        title="Attributes"
+        description="Product attributes and values used by variants."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load attributes</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load attributes"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <AttributeTable initialData={initial} />
       )}

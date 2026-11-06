@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   requireAuth,
+  requireCustomer,
   requireRole,
 } from "../../../common/middleware/auth.middleware.ts";
 
@@ -20,10 +21,11 @@ router.get("/products/:productId/reviews", listProductReviewsHandler);
 router.post(
   "/products/:productId/reviews",
   requireAuth,
+  requireCustomer,
   createReviewHandler
 );
-router.patch("/reviews/:id", requireAuth, updateReviewHandler);
-router.delete("/reviews/:id", requireAuth, deleteReviewHandler);
+router.patch("/reviews/:id", requireAuth, requireCustomer, updateReviewHandler);
+router.delete("/reviews/:id", requireAuth, requireCustomer, deleteReviewHandler);
 
 const adminOnly = [requireAuth, requireRole("ADMIN")];
 

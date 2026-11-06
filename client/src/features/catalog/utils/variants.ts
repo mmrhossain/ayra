@@ -16,7 +16,11 @@ export function attributeGroupsFrom(
         values: [],
       };
       if (!group.values.some((item) => item.id === attr.id)) {
-        group.values.push({ id: attr.id, value: attr.value });
+        group.values.push({
+          id: attr.id,
+          value: attr.value,
+          color: attr.color ?? null,
+        });
       }
       groups.set(attr.attributeId, group);
     }

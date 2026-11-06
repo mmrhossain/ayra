@@ -9,6 +9,10 @@ import {
   orderDetailInclude,
   toCustomerStatusHistory,
 } from "../utils/order-helpers.ts";
+import {
+  getReturnDeadline,
+  isReturnWindowOpen,
+} from "../utils/return-window.ts";
 
 export const listMyOrders = async (
     customerProfileId: string,
@@ -19,7 +23,20 @@ export const listMyOrders = async (
   const [items, total] = await Promise.all([
     prisma.order.findMany({
       where,
-      include: { items: true },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        paymentStatus: true,
+        currency: true,
+        subtotal: true,
+        discountAmount: true,
+        taxAmount: true,
+        shippingAmount: true,
+        grandTotal: true,
+        createdAt: true,
+        _count: { select: { items: true } },
+      },
       orderBy: { createdAt: "desc" },
       skip: (query.page - 1) * query.limit,
       take: query.limit,
@@ -28,7 +45,7 @@ export const listMyOrders = async (
   ]);
 
   return {
-    items: items.map(omitOrderCostPrice),
+    items,
     pagination: paginate(query.page, query.limit, total),
   };
 };
@@ -57,7 +74,20 @@ export const getMyOrder = async (
         ]
   );
 
-  return omitOrderCostPrice({ ...order, statusHistory });
+  // Surface the return window so the storefront only offers "Request Return"
+  // while the server would actually accept it.
+  const returnDeadline = order.deliveredAt
+    ? getReturnDeadline(order.deliveredAt)
+    : null;
+  const canRequestReturn =
+    order.status === "DELIVERED" && isReturnWindowOpen(order.deliveredAt);
+
+  return omitOrderCostPrice({
+    ...order,
+    statusHistory,
+    returnDeadline,
+    canRequestReturn,
+  });
 };
 
 export const listOrders = async (query: ListOrdersQuery) => {
@@ -77,7 +107,7 @@ export const listOrders = async (query: ListOrdersQuery) => {
 
   if (search) {
     where.OR = [
-      { id: { contains: search, mode: "insensitive" } },
+      { id: search },
       { orderNumber: { contains: search, mode: "insensitive" } },
       {
         customerProfile: {
@@ -101,7 +131,7 @@ export const listOrders = async (query: ListOrdersQuery) => {
     prisma.order.findMany({
       where,
       include: {
-        items: true,
+        _count: { select: { items: true } },
         customerProfile: {
           select: {
             id: true,

@@ -38,10 +38,14 @@ export function ReturnRequestDialog({
   items,
 }: ReturnRequestDialogProps) {
   const [reason, setReason] = useState<string>("");
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
 
   const selectedCount = useMemo(
-    () => Object.values(quantities).filter((qty) => qty > 0).length,
+    () =>
+      Object.values(quantities).filter((qty) => {
+        const n = Number(qty);
+        return Number.isFinite(n) && n > 0;
+      }).length,
     [quantities],
   );
 
@@ -65,7 +69,7 @@ export function ReturnRequestDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Request Return</DialogTitle>
           <DialogDescription>
@@ -90,47 +94,54 @@ export function ReturnRequestDialog({
           </div>
           <div className="space-y-3">
             {items.map((item) => {
-              const qty = quantities[item.id] ?? 0;
+              const qty = quantities[item.id] ?? "";
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
                       {item.productName}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       Ordered: {item.quantity}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <Label
                       htmlFor={`qty-${item.id}`}
-                      className="text-xs text-slate-500"
+                      className="text-xs text-muted-foreground"
                     >
                       Qty
                     </Label>
                     <Input
                       id={`qty-${item.id}`}
-                      type="number"
-                      min={0}
-                      max={item.quantity}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Qty"
                       value={qty}
                       onChange={(e) => {
-                        const next = Number(e.target.value);
-                        const clamped = Number.isFinite(next)
-                          ? Math.min(
-                              item.quantity,
-                              Math.max(0, Math.trunc(next)),
-                            )
-                          : 0;
+                        const raw = e.target.value;
+                        if (raw === "") {
+                          setQuantities((prev) => ({
+                            ...prev,
+                            [item.id]: "",
+                          }));
+                          return;
+                        }
+                        const next = Number(raw);
+                        if (!Number.isFinite(next)) return;
+                        const clamped = Math.min(
+                          item.quantity,
+                          Math.max(0, Math.trunc(next)),
+                        );
                         setQuantities((prev) => ({
                           ...prev,
-                          [item.id]: clamped,
+                          [item.id]: String(clamped),
                         }));
                       }}
-                      className="h-8 w-16"
+                      className="h-11 w-20 text-center"
                     />
                   </div>
                 </div>
@@ -152,8 +163,12 @@ export function ReturnRequestDialog({
             disabled={mutation.isPending || selectedCount === 0 || !reason}
             onClick={() => {
               const payloadItems = Object.entries(quantities)
-                .filter(([, qty]) => qty > 0)
-                .map(([orderItemId, quantity]) => ({
+                .map(([orderItemId, raw]) => ({
+                  orderItemId,
+                  quantity: Number(raw),
+                }))
+                .filter((entry) => Number.isFinite(entry.quantity) && entry.quantity > 0)
+                .map(({ orderItemId, quantity }) => ({
                   orderItemId,
                   quantity,
                   restockOrRefund: "REFUND" as const,

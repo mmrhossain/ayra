@@ -25,15 +25,14 @@ describe("Attribute CRUD", () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
-  it("forbids vendor attribute mutations", async () => {
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `attrv-${Date.now()}`,
+  it("forbids customer attribute mutations", async () => {
+    const customer = await createTestUser(tracker, {
+      suffix: `attrc-${Date.now()}`,
     });
 
     const res = await api()
       .post("/api/v1/admin/attributes")
-      .set("Cookie", vendor.cookie)
+      .set("Cookie", customer.cookie)
       .send({ name: `Color-${randomUUID().slice(0, 8)}` });
 
     expect(res.status).toBe(403);

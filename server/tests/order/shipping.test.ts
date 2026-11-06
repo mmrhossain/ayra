@@ -5,6 +5,7 @@ import { AppError } from "../../src/common/errors/AppError.ts";
 import {
   CleanupTracker,
   createActiveCartWithItem,
+  createTestCoupon,
   createTestProduct,
   createTestUser,
   ensureDefaultShippingCatalog,
@@ -43,6 +44,10 @@ describe("Checkout shipping amount", () => {
     expect(Number(order.shippingAmount)).toBe(60);
     expect(order.shippingMethodCode).toBe("STANDARD");
     expect(order.shippingMethodName).toBe("Standard Delivery");
+    expect(order.shippingZoneCode).toBe("INSIDE_DHAKA");
+    expect(order.shippingZoneName).toBe("Inside Dhaka");
+    expect(order.shippingRateId).toBeTruthy();
+    expect(Number(order.shippingRatePrice)).toBe(60);
     expect(Number(order.taxAmount)).toBe(0);
     expect(Number(order.grandTotal)).toBe(160);
 
@@ -136,6 +141,48 @@ describe("Checkout shipping amount", () => {
 
     expect(Number(order.shippingAmount)).toBe(0);
     expect(Number(order.grandTotal)).toBe(200);
+  });
+
+  it("uses the post-discount subtotal for the free-shipping threshold", async () => {
+    const catalog = await ensureDefaultShippingCatalog();
+    const insideStandard = await prisma.shippingRate.findUniqueOrThrow({
+      where: {
+        shippingZoneId_shippingMethodId: {
+          shippingZoneId: catalog.insideDhaka.id,
+          shippingMethodId: catalog.standard.id,
+        },
+      },
+    });
+    await prisma.shippingRate.update({
+      where: { id: insideStandard.id },
+      data: { freeShippingFrom: 150 },
+    });
+
+    const product = await createTestProduct(tracker, { stock: 2, price: 200 });
+    const user = await createTestUser(tracker, { suffix: `shf2-${Date.now()}` });
+    await createActiveCartWithItem(
+      tracker,
+      user.customerProfileId,
+      product.variant,
+      product.product.name,
+      1
+    );
+    const coupon = await createTestCoupon(tracker, { discountValue: 100 });
+
+    const order = await checkout(user.customerProfileId, {
+      paymentMethod: "COD",
+      billingAddress: testAddress,
+      shippingAddress: testAddress,
+      shippingMethodCode: "STANDARD",
+      couponCode: coupon.code,
+    });
+    tracker.orderIds.push(order.id);
+
+    expect(Number(order.subtotal)).toBe(200);
+    expect(Number(order.discountAmount)).toBe(100);
+    expect(Number(order.shippingAmount)).toBe(60);
+    expect(Number(order.grandTotal)).toBe(160);
+    expect(order.shippingRateId).toBeTruthy();
   });
 
   it("rejects an invalid shipping method", async () => {

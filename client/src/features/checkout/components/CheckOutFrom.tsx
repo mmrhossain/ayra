@@ -51,9 +51,10 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
     handleChange,
     fetchDivisionList,
     fetchDistrictList,
-    fetchPostList,
+    fetchUpazilaList,
     divisionList,
     districtList,
+    geoError,
   } = locationStore();
 
   useEffect(() => {
@@ -88,6 +89,9 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
         handleChange("division", saved?.division || "");
         handleChange("district", saved?.district || "");
         handleChange("thana", saved?.thana || "");
+        handleChange("divisionCode", saved?.divisionCode || "");
+        handleChange("districtCode", saved?.districtCode || "");
+        handleChange("upazilaCode", saved?.upazilaCode || "");
         handleChange("postal_code", saved?.postalCode || "");
 
         const parts = splitFullName(saved?.fullName || activeUser.name || "");
@@ -95,16 +99,39 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
         setLastName(parts.lastName);
 
         if (saved?.division) {
-          const division = locationStore
-            .getState()
-            .divisionList?.find((d) => d.name === saved.division);
+          const state = locationStore.getState();
+          const division =
+            state.divisionList?.find((d) => d.code === saved.divisionCode) ??
+            state.divisionList?.find((d) => d.name === saved.division);
           if (division) {
-            await fetchDistrictList(division._id);
+            handleChange("division", division.name);
+            handleChange("divisionCode", division.code);
+            await fetchDistrictList(division.code);
             if (cancelled) return;
-            const district = locationStore
-              .getState()
-              .districtList?.find((d) => d.name === saved.district);
-            if (district) await fetchPostList(district._id);
+            const district =
+              locationStore
+                .getState()
+                .districtList?.find((d) => d.code === saved.districtCode) ??
+              locationStore
+                .getState()
+                .districtList?.find((d) => d.name === saved.district);
+            if (district) {
+              handleChange("district", district.name);
+              handleChange("districtCode", district.code);
+              await fetchUpazilaList(district.code);
+              if (cancelled) return;
+              const upazila =
+                locationStore
+                  .getState()
+                  .upazilaList?.find((u) => u.code === saved.upazilaCode) ??
+                locationStore
+                  .getState()
+                  .upazilaList?.find((u) => u.name === saved.thana);
+              if (upazila) {
+                handleChange("thana", upazila.name);
+                handleChange("upazilaCode", upazila.code);
+              }
+            }
           }
         }
       } finally {
@@ -125,25 +152,30 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
     user,
     fetchDivisionList,
     fetchDistrictList,
-    fetchPostList,
+    fetchUpazilaList,
     handleChange,
   ]);
 
   const handleDivisionChange = async (value: string) => {
-    const selected = divisionList?.find((d) => d._id === value);
+    const selected = divisionList?.find((d) => d.code === value);
     handleChange("division", selected?.name || "");
+    handleChange("divisionCode", value);
     handleChange("district", "");
+    handleChange("districtCode", "");
     handleChange("thana", "");
+    handleChange("upazilaCode", "");
     setErrors((prev) => ({ ...prev, division: "", district: "" }));
     if (value) await fetchDistrictList(value);
   };
 
   const handleDistrictChange = async (value: string) => {
-    const selected = districtList?.find((d) => d._id === value);
+    const selected = districtList?.find((d) => d.code === value);
     handleChange("district", selected?.name || "");
+    handleChange("districtCode", value);
     handleChange("thana", "");
+    handleChange("upazilaCode", "");
     setErrors((prev) => ({ ...prev, district: "" }));
-    if (value) await fetchPostList(value);
+    if (value) await fetchUpazilaList(value);
   };
 
   const updateFirstName = (value: string) => {
@@ -191,19 +223,19 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
         handleContinue();
       }}
     >
-      {/* ফুল-স্ক্রিন ব্যাকগ্রাউন্ড ব্লার ও মাঝখানে বাউন্সিং ডট স্পিনার ওভারলে */}
-      {formBusy && (
-        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-md flex flex-col items-center justify-center gap-4 transition-all duration-300">
-          <div className="flex items-center gap-2">
-            <span className="h-3.5 w-3.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-            <span className="h-3.5 w-3.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-            <span className="h-3.5 w-3.5 rounded-full bg-primary animate-bounce" />
-          </div>
-          <p className="text-sm font-medium text-muted-foreground tracking-wide animate-pulse">
-            Preparing your checkout...
-          </p>
-        </div>
-      )}
+      {formBusy ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-sm text-muted-foreground"
+        >
+          <span
+            className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent"
+            aria-hidden
+          />
+          Preparing your checkout...
+        </p>
+      ) : null}
 
       <CheckoutSection
         title="Contact info"
@@ -211,7 +243,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
           !user ? (
             <Link
               href="/login"
-              className="text-xs text-neutral-400 underline underline-offset-2 hover:text-secondary"
+              className="text-xs text-neutral-400 underline underline-offset-2 hover:text-foreground"
             >
               Log in
             </Link>
@@ -291,17 +323,26 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
         <CheckoutSelect
           label="State / Region"
           placeholder="State / Region"
-          value={divisionList?.find((d) => d.name === formState.division)?._id || ""}
+          value={
+            formState.divisionCode ||
+            divisionList?.find((d) => d.name === formState.division)?.code ||
+            ""
+          }
           onValueChange={handleDivisionChange}
           error={errors.division}
           disabled={formBusy}
         >
           {(divisionList ?? []).map((div) => (
-            <SelectItem key={div._id} value={div._id}>
+            <SelectItem key={div.code} value={div.code}>
               {div.name}
             </SelectItem>
           ))}
         </CheckoutSelect>
+        {geoError ? (
+          <p className="text-sm leading-snug text-danger" role="alert">
+            {geoError}
+          </p>
+        ) : null}
 
         <CheckoutField
           id="checkout-address"
@@ -322,13 +363,17 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
           <CheckoutSelect
             label="City"
             placeholder="City"
-            value={districtList?.find((d) => d.name === formState.district)?._id || ""}
+            value={
+              formState.districtCode ||
+              districtList?.find((d) => d.name === formState.district)?.code ||
+              ""
+            }
             onValueChange={handleDistrictChange}
             disabled={formBusy || !formState.division}
             error={errors.district}
           >
             {(districtList ?? []).map((dist) => (
-              <SelectItem key={dist._id} value={dist._id}>
+              <SelectItem key={dist.code} value={dist.code}>
                 {dist.name}
               </SelectItem>
             ))}
@@ -348,7 +393,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
 
       <CheckoutStepActions>
         <CheckoutCta type="submit" disabled={formBusy}>
-          {formBusy ? "Loading..." : "Shipping"}
+          Shipping
         </CheckoutCta>
       </CheckoutStepActions>
     </form>

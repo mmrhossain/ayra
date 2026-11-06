@@ -269,7 +269,8 @@ describe("Admin return requests", () => {
     const updatedOrder = await prisma.order.findUniqueOrThrow({
       where: { id: order.id },
     });
-    expect(updatedOrder.status).toBe("RETURNED");
+    expect(updatedOrder.status).toBe("DELIVERED");
+    expect(updatedOrder.fulfillmentStatus).toBe("PARTIALLY_FULFILLED");
   });
 
   it("lets admin reject a return request", async () => {
@@ -404,6 +405,21 @@ describe("Return approval fulfillment", () => {
     expect(returned).not.toBeNull();
     expect(returned?.quantity).toBe(2);
     expect(returned?.referenceId).toBe(returnRequestId);
+
+    const returnItem = await prisma.returnItem.findFirstOrThrow({
+      where: { returnRequestId },
+    });
+    expect(returnItem.restockToStock).toBe(true);
+    expect(returnItem.damaged).toBe(false);
+    expect(returnItem.allocationVersion).toBe(1);
+    expect(Number(returnItem.salesAdjustmentAmount)).toBe(200);
+    expect(Number(returnItem.costAdjustmentAmount)).toBe(80);
+
+    const updatedOrder = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+    });
+    expect(updatedOrder.status).toBe("RETURNED");
+    expect(updatedOrder.fulfillmentStatus).toBe("FULFILLED");
   });
 
   it("queues a manual refund when a REFUND item is approved", async () => {
@@ -455,5 +471,391 @@ describe("Return approval fulfillment", () => {
       where: { paymentId: payment.id, eventType: "REFUND_CREATED" },
     });
     expect(event).not.toBeNull();
+  });
+
+  it("prorates the order discount and tax into the refund amount", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `da-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, { suffix: `db-${Date.now()}` });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+    const order = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 200,
+      discountAmount: 50,
+      taxAmount: 15,
+      grandTotal: 165,
+    });
+    const item = await attachOrderItem(order.id, catalog);
+
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 165,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-DISC-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(payment.id);
+
+    const created = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 1, restockOrRefund: "REFUND" }],
+      });
+
+    expect(created.status).toBe(201);
+
+    const approved = await api()
+      .patch(`/api/v1/admin/return-requests/${created.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ status: "APPROVED" });
+
+    expect(approved.status).toBe(200);
+
+    const refund = await prisma.refund.findFirstOrThrow({
+      where: { paymentId: payment.id },
+    });
+    // 100 gross - 25 discount share + 7.50 tax share
+    expect(Number(refund.amount)).toBe(82.5);
+  });
+
+  it("refunds shipping only when the whole order is returned", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `fa-ship-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, { suffix: `fb-ship-${Date.now()}` });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+
+    const fullOrder = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 200,
+      shippingAmount: 60,
+      grandTotal: 260,
+    });
+    const fullItem = await attachOrderItem(fullOrder.id, catalog);
+    const fullPayment = await prisma.payment.create({
+      data: {
+        orderId: fullOrder.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 260,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-FULL-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(fullPayment.id);
+
+    const fullCreated = await api()
+      .post(`/api/v1/orders/${fullOrder.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: fullItem.id, quantity: 2, restockOrRefund: "REFUND" }],
+      });
+
+    expect(fullCreated.status).toBe(201);
+
+    await api()
+      .patch(`/api/v1/admin/return-requests/${fullCreated.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ status: "APPROVED" });
+
+    const fullRefund = await prisma.refund.findFirstOrThrow({
+      where: { paymentId: fullPayment.id },
+    });
+    expect(Number(fullRefund.amount)).toBe(260);
+
+    const partialOrder = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 200,
+      shippingAmount: 60,
+      grandTotal: 260,
+    });
+    const partialItem = await attachOrderItem(partialOrder.id, catalog);
+    const partialPayment = await prisma.payment.create({
+      data: {
+        orderId: partialOrder.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 260,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-PART-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(partialPayment.id);
+
+    const partialCreated = await api()
+      .post(`/api/v1/orders/${partialOrder.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: partialItem.id, quantity: 1, restockOrRefund: "REFUND" }],
+      });
+
+    expect(partialCreated.status).toBe(201);
+
+    await api()
+      .patch(`/api/v1/admin/return-requests/${partialCreated.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ status: "APPROVED" });
+
+    const partialRefund = await prisma.refund.findFirstOrThrow({
+      where: { paymentId: partialPayment.id },
+    });
+    expect(Number(partialRefund.amount)).toBe(100);
+  });
+
+  it("does not restock or reverse cost when the admin marks an item damaged", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `dmg-a-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `dmg-c-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+    const order = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 200,
+      grandTotal: 200,
+    });
+    const item = await attachOrderItem(order.id, catalog);
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 200,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-DMG-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(payment.id);
+
+    const created = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 2, restockOrRefund: "RESTOCK" }],
+      });
+    expect(created.status).toBe(201);
+    const returnRequestId = created.body.data.id as string;
+
+    const before = await prisma.inventory.findUniqueOrThrow({
+      where: { id: catalog.inventory.id },
+    });
+
+    const approved = await api()
+      .patch(`/api/v1/admin/return-requests/${returnRequestId}`)
+      .set("Cookie", admin.cookie)
+      .send({
+        status: "APPROVED",
+        items: [{ orderItemId: item.id, restockToStock: false, damaged: true }],
+      });
+    expect(approved.status).toBe(200);
+
+    const after = await prisma.inventory.findUniqueOrThrow({
+      where: { id: catalog.inventory.id },
+    });
+    expect(after.quantityOnHand).toBe(before.quantityOnHand);
+    expect(after.quantityAvailable).toBe(before.quantityAvailable);
+
+    const returnItem = await prisma.returnItem.findFirstOrThrow({
+      where: { returnRequestId },
+    });
+    expect(returnItem.restockToStock).toBe(false);
+    expect(returnItem.damaged).toBe(true);
+    expect(Number(returnItem.salesAdjustmentAmount)).toBe(200);
+    expect(Number(returnItem.costAdjustmentAmount)).toBe(0);
+
+    const refund = await prisma.refund.findFirstOrThrow({
+      where: { returnRequestId },
+    });
+    expect(Number(refund.amount)).toBe(200);
+  });
+
+  it("caps the refund at the amount actually captured", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `cap-a-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `cap-c-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+    const order = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 100,
+      grandTotal: 100,
+    });
+    const item = await prisma.orderItem.create({
+      data: {
+        orderId: order.id,
+        productName: catalog.product.name,
+        sku: catalog.variant.sku,
+        quantity: 1,
+        unitPrice: 100,
+        costPrice: 40,
+        subtotal: 100,
+        variantId: catalog.variant.id,
+      },
+    });
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 40,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-CAP-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(payment.id);
+
+    const created = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 1, restockOrRefund: "REFUND" }],
+      });
+    expect(created.status).toBe(201);
+    const returnRequestId = created.body.data.id as string;
+
+    const approved = await api()
+      .patch(`/api/v1/admin/return-requests/${returnRequestId}`)
+      .set("Cookie", admin.cookie)
+      .send({ status: "APPROVED" });
+    expect(approved.status).toBe(200);
+
+    const refund = await prisma.refund.findFirstOrThrow({
+      where: { returnRequestId },
+    });
+    expect(Number(refund.amount)).toBe(40);
+
+    const event = await prisma.paymentEvent.findFirstOrThrow({
+      where: { paymentId: payment.id, eventType: "REFUND_CREATED" },
+    });
+    expect(event.metadata).toMatchObject({
+      amount: 40,
+      requestedRefundAmount: 100,
+      refundCapped: true,
+    });
+  });
+
+  it("applies a concurrent approval exactly once", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `conc-a-${Date.now()}`,
+    });
+    const customer = await createTestUser(tracker, {
+      suffix: `conc-c-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+    const order = await createTestOrder(tracker, customer, {
+      status: "DELIVERED",
+      subtotal: 100,
+      grandTotal: 100,
+    });
+    const item = await prisma.orderItem.create({
+      data: {
+        orderId: order.id,
+        productName: catalog.product.name,
+        sku: catalog.variant.sku,
+        quantity: 1,
+        unitPrice: 100,
+        costPrice: 40,
+        subtotal: 100,
+        variantId: catalog.variant.id,
+      },
+    });
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        method: "SSLCOMMERZ",
+        status: "SUCCESS",
+        amount: 100,
+        provider: "SSLCOMMERZ",
+        providerReference: `TRAN-CONC-${Date.now()}`,
+      },
+    });
+    tracker.paymentIds.push(payment.id);
+
+    const created = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", customer.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 1, restockOrRefund: "RESTOCK" }],
+      });
+    expect(created.status).toBe(201);
+    const returnRequestId = created.body.data.id as string;
+
+    const responses = await Promise.all([
+      api()
+        .patch(`/api/v1/admin/return-requests/${returnRequestId}`)
+        .set("Cookie", admin.cookie)
+        .send({ status: "APPROVED" }),
+      api()
+        .patch(`/api/v1/admin/return-requests/${returnRequestId}`)
+        .set("Cookie", admin.cookie)
+        .send({ status: "APPROVED" }),
+    ]);
+
+    expect(responses.filter((res) => res.status === 200)).toHaveLength(1);
+    expect(responses.filter((res) => res.status === 400)).toHaveLength(1);
+
+    expect(
+      await prisma.refund.count({ where: { returnRequestId } }),
+    ).toBe(1);
+    expect(
+      await prisma.inventoryTransaction.count({
+        where: { referenceId: returnRequestId, type: "RETURN_IN" },
+      }),
+    ).toBe(1);
+  });
+
+  it("rejects returns requested after the 14 day window", async () => {
+    const user = await createTestUser(tracker, { suffix: `rw-${Date.now()}` });
+    const catalog = await createTestProduct(tracker);
+    const deliveredAt = new Date();
+    deliveredAt.setDate(deliveredAt.getDate() - 15);
+    const order = await createTestOrder(tracker, user, {
+      status: "DELIVERED",
+      deliveredAt,
+    });
+    const item = await attachOrderItem(order.id, catalog);
+
+    const res = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", user.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 1, restockOrRefund: "REFUND" }],
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/return window has expired/i);
+  });
+
+  it("rejects returns for orders without a delivery timestamp", async () => {
+    const user = await createTestUser(tracker, { suffix: `rd-${Date.now()}` });
+    const catalog = await createTestProduct(tracker);
+    const order = await createTestOrder(tracker, user, {
+      status: "DELIVERED",
+      deliveredAt: null,
+    });
+    const item = await attachOrderItem(order.id, catalog);
+
+    const res = await api()
+      .post(`/api/v1/orders/${order.id}/return-request`)
+      .set("Cookie", user.cookie)
+      .send({
+        items: [{ orderItemId: item.id, quantity: 1, restockOrRefund: "REFUND" }],
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/delivery timestamp/i);
   });
 });

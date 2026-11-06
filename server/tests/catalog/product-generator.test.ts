@@ -7,7 +7,12 @@ import {
   validatePricing,
   validateVariantOptions,
 } from "../../src/modules/catalog/product/utils/product-validation.ts";
-import { generateSku, ensureUniqueSku } from "../../src/modules/catalog/product/utils/sku-generator.ts";
+import {
+  assertTypedSku,
+  buildSuggestedSku,
+  ensureUniqueSku,
+  generateSku,
+} from "../../src/modules/catalog/product/utils/sku-generator.ts";
 import {
   generateVariantCombinations,
   makeVariantKey,
@@ -66,21 +71,103 @@ describe("variant-generator", () => {
     ]);
     expect(combos).toHaveLength(1);
   });
+
+  it("rejects more than 100 combinations", () => {
+    expect(() =>
+      generateVariantCombinations([
+        { attributeId: "a", attributeValueIds: Array.from({ length: 10 }, (_, i) => `a${i}`) },
+        { attributeId: "b", attributeValueIds: Array.from({ length: 11 }, (_, i) => `b${i}`) },
+      ]),
+    ).toThrow(/Too many variant combinations/);
+  });
 });
 
 describe("sku-generator", () => {
-  it("builds uppercase URL-safe SKUs", () => {
-    expect(generateSku("tshirt", ["Red", "M"])).toBe("TSHIRT-RED-M");
+  const colorSize = [
+    { attributeId: "size", attributeName: "Size", value: "M" },
+    { attributeId: "color", attributeName: "Color", value: "Black" },
+  ];
+
+  it("builds Brand-Style-Color-Size SKUs", () => {
+    expect(
+      buildSuggestedSku({
+        brandName: "Nike",
+        categoryName: "T-shirt",
+        attributes: colorSize,
+      }),
+    ).toBe("NIK-TSH-BLK-M");
   });
 
-  it("avoids duplicate SKUs", () => {
+  it("uses DEFAULT_BRAND_PREFIX when brand is empty", () => {
+    expect(
+      buildSuggestedSku({
+        categoryName: "T-shirt",
+        attributes: colorSize,
+      }),
+    ).toBe("AYR-TSH-BLK-M");
+  });
+
+  it("orders Color then Size regardless of input order", () => {
+    expect(
+      buildSuggestedSku({
+        brandName: "Ayra",
+        categoryName: "Tee",
+        attributes: colorSize,
+      }),
+    ).toBe("AYR-TSH-BLK-M");
+  });
+
+  it("appends extra attributes after Color and Size", () => {
+    expect(
+      buildSuggestedSku({
+        brandName: "Ayra",
+        categoryName: "T-shirt",
+        attributes: [
+          ...colorSize,
+          { attributeId: "mat", attributeName: "Material", value: "Cotton" },
+          { attributeId: "fit", attributeName: "Fit", value: "Regular" },
+        ],
+      }),
+    ).toBe("AYR-TSH-BLK-M-REG-COT");
+  });
+
+  it("uses three-letter mnemonics for unknown color and category", () => {
+    const sku = buildSuggestedSku({
+      brandName: "Nike",
+      categoryName: "Wallet",
+      attributes: [{ attributeId: "color", attributeName: "Color", value: "Turquoise" }],
+    });
+    expect(sku).toBe("NIK-WLT-TUR");
+    expect(sku.includes("WALLET")).toBe(false);
+    expect(sku.includes("TURQUOISE")).toBe(false);
+  });
+
+  it("rejects invalid typed SKUs without rewriting", () => {
+    for (const sku of ["AYR--TSH", "-AYR", "AYR-TSH-", "AYR_TSH", " AYR-TSH"]) {
+      expect(() => assertTypedSku(sku)).toThrow(AppError);
+      try {
+        assertTypedSku(sku);
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(400);
+        expect((err as AppError).message).toBe("Invalid SKU");
+      }
+    }
+  });
+
+  it("accepts mixed-case typed SKUs as-is", () => {
+    expect(() => assertTypedSku("nike-001")).not.toThrow();
+  });
+
+  it("still suffixes in-memory generated collisions", () => {
     const taken = new Set<string>();
-    expect(ensureUniqueSku("TSHIRT-RED-M", taken)).toBe("TSHIRT-RED-M");
-    expect(ensureUniqueSku("TSHIRT-RED-M", taken)).toBe("TSHIRT-RED-M-2");
+    expect(ensureUniqueSku("AYR-TSH-BLK-M", taken)).toBe("AYR-TSH-BLK-M");
+    expect(ensureUniqueSku("AYR-TSH-BLK-M", taken)).toBe("AYR-TSH-BLK-M-2");
   });
 
-  it("builds a default simple-product SKU", () => {
-    expect(generateSku("Leather Wallet", ["DEFAULT"])).toBe("LEATHER-WALLET-DEFAULT");
+  it("keeps the legacy product-name helper for compatibility", () => {
+    expect(generateSku("tshirt", ["Red", "M"])).toBe("TSHIRT-RED-M");
+    expect(generateSku("Leather Wallet", ["DEFAULT"])).toBe("LEATHERWALLET-DEFAULT");
   });
 });
 

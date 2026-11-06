@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export const LOW_STOCK_THRESHOLD = 10;
 
@@ -19,6 +15,9 @@ export type InventoryListItem = {
     sku: string;
     product: { id: string; name: string; slug: string };
   };
+  variantName?: string | null;
+  lastUpdatedAt?: string | null;
+  lastUpdatedByName?: string | null;
 };
 
 export type InventoryPagination = {
@@ -55,4 +54,26 @@ export type AdjustmentRecord = {
   difference: number;
   adjustedQuantity: number;
   status: string;
+};
+
+export type SetStockLevelItem = {
+  variantId: string;
+  targetQty: number;
+};
+
+export type SetStockLevelsBody = {
+  warehouseId?: string;
+  items: SetStockLevelItem[];
+};
+
+export type StockLevelChange = {
+  variantId: string;
+  quantityOnHand: number;
+  quantityAvailable: number;
+  difference: number;
+};
+
+export type SetStockLevelsResult = {
+  warehouseId: string;
+  items: StockLevelChange[];
 };

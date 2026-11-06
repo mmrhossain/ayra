@@ -5,6 +5,8 @@ import type {
   Envelope,
   InventoryListParams,
   InventoryListResult,
+  SetStockLevelsBody,
+  SetStockLevelsResult,
 } from "@/features/dashboard/admin/inventory/types";
 
 export type {
@@ -15,6 +17,10 @@ export type {
   InventoryListParams,
   InventoryListResult,
   InventoryPagination,
+  SetStockLevelItem,
+  SetStockLevelsBody,
+  SetStockLevelsResult,
+  StockLevelChange,
 } from "@/features/dashboard/admin/inventory/types";
 
 export { LOW_STOCK_THRESHOLD } from "@/features/dashboard/admin/inventory/types";
@@ -59,6 +65,21 @@ export async function approveInventoryAdjustment(
   const res = await dashboardApi.post<Envelope<AdjustmentRecord>>(
     `/admin/inventory/adjustments/${id}/approve`,
     { body: { approved: true } },
+  );
+  return res.data;
+}
+
+/**
+ * Applies desired stock levels for many variants in a single request. Applied
+ * auto-approved with an audit row on the server, so it replaces the
+ * create-then-approve pair that used to run once per variant.
+ */
+export async function setInventoryStock(
+  body: SetStockLevelsBody,
+): Promise<SetStockLevelsResult> {
+  const res = await dashboardApi.put<Envelope<SetStockLevelsResult>>(
+    "/admin/inventory/stock",
+    { body },
   );
   return res.data;
 }

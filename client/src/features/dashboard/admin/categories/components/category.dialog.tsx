@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,10 @@ import {
   categoryFormDefaults,
   parentCategoryOptions,
 } from "@/features/dashboard/admin/categories/utils";
-import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
+import {
+  ImageUpload,
+  type ImageUploadHandle,
+} from "@/features/dashboard/admin/shared/components/image-upload";
 
 const CATEGORY_FORM_ID = "category-form";
 
@@ -75,6 +79,25 @@ export function CategoryFormDialog({
     onSuccess: () => onOpenChange(false),
   });
 
+  const imageUploadRef = useRef<ImageUploadHandle>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSaving = isSubmitting || mutation.isPending;
+  const submitForm = form.handleSubmit((values) => mutation.mutateAsync(values));
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) return;
+    setIsSubmitting(true);
+    try {
+      await imageUploadRef.current?.flush();
+      await submitForm(event);
+    } catch {
+      // Errors are surfaced by the mutation/form layers.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-[95vw] flex-col overflow-hidden rounded-2xl p-5 sm:max-w-lg sm:p-6">
@@ -90,7 +113,7 @@ export function CategoryFormDialog({
         <Form {...form}>
           <form
             id={CATEGORY_FORM_ID}
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={handleSubmit}
             className="flex-1 space-y-4 overflow-y-auto scrollbar-hide"
           >
             <FormField
@@ -129,18 +152,26 @@ export function CategoryFormDialog({
                   <FormLabel>Image</FormLabel>
                   <FormControl>
                     <ImageUpload
+                      ref={imageUploadRef}
+                      deferUpload
                       mode="single"
                       folder="categories"
+                      variantIndex={0}
                       value={field.value}
                       onChange={(url) => {
                         field.onChange(url);
                         if (!url) {
                           form.setValue("imagePublicId", "");
+                          form.setValue("mobileImage", "");
+                          form.setValue("mobileImagePublicId", "");
                         }
                       }}
                       onUploaded={(asset) => {
                         form.setValue("image", asset.url);
                         form.setValue("imagePublicId", asset.publicId);
+                        const mobileUrl = asset.variants?.[1] || asset.url;
+                        form.setValue("mobileImage", mobileUrl);
+                        form.setValue("mobileImagePublicId", asset.publicId);
                       }}
                     />
                   </FormControl>
@@ -205,7 +236,7 @@ export function CategoryFormDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
+            disabled={isSaving}
             className="w-full sm:w-auto"
           >
             Cancel
@@ -213,14 +244,19 @@ export function CategoryFormDialog({
           <Button
             type="submit"
             form={CATEGORY_FORM_ID}
-            disabled={mutation.isPending}
+            disabled={isSaving}
             className="w-full sm:w-auto"
           >
-            {mutation.isPending
-              ? "Saving..."
-              : mode === "create"
-                ? "Create category"
-                : "Save changes"}
+            {isSaving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Saving...
+              </>
+            ) : mode === "create" ? (
+              "Create category"
+            ) : (
+              "Save changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

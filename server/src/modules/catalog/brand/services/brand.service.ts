@@ -2,7 +2,9 @@ import { CacheKeys, CacheTtl, cacheGet, cacheSet, invalidateCatalogCache } from 
 import { prisma } from "../../../../lib/prisma.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public-id.ts";
+import { paginated } from "../../../../common/utils/paginate.ts";
 import { generateSlug } from "../../../../common/utils/slug.ts";
+import type { Prisma } from "../../../../generated/prisma/client.ts";
 import {
   attachMediaAssets,
   deleteImages,
@@ -10,6 +12,7 @@ import {
 } from "../../../media/media.service.ts";
 import type {
   CreateBrandInput,
+  ListAdminBrandsQuery,
   UpdateBrandInput,
 } from "../types.ts";
 
@@ -32,6 +35,41 @@ export const listBrands = async () => {
   });
   await cacheSet(CacheKeys.brands, brands, CacheTtl.brand);
   return brands;
+};
+
+export const listAdminBrands = async (query: ListAdminBrandsQuery) => {
+  const search = query.search?.trim();
+  const where: Prisma.BrandWhereInput = {
+    deletedAt: null,
+    ...(search && {
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    }),
+  };
+
+  const [items, total] = await Promise.all([
+    prisma.brand.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        logo: true,
+        logoPublicId: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+      },
+    }),
+    prisma.brand.count({ where }),
+  ]);
+
+  return paginated(items, query.page, query.limit, total);
 };
 
 export const createBrand = async (input: CreateBrandInput) => {
@@ -69,6 +107,13 @@ export const updateBrand = async (id: string, input: UpdateBrandInput) => {
       : input.name !== undefined && input.name !== existing.name
         ? generateSlug(input.name, "Brand name")
         : undefined;
+
+  if (nextSlug !== undefined && nextSlug !== existing.slug) {
+    const collision = await prisma.brand.findFirst({
+      where: { slug: nextSlug, deletedAt: null, id: { not: id } },
+    });
+    if (collision) throw new AppError("Brand slug already exists", 409);
+  }
 
   const logoCleared = input.logo === null || input.logoPublicId === null;
   const nextLogo = logoCleared
@@ -116,6 +161,13 @@ export const updateBrand = async (id: string, input: UpdateBrandInput) => {
 export const deleteBrand = async (id: string) => {
   const existing = await prisma.brand.findUnique({ where: { id } });
   if (!existing) throw new AppError("Brand not found", 404);
+
+  const productCount = await prisma.product.count({
+    where: { brandId: id, deletedAt: null },
+  });
+  if (productCount > 0) {
+    throw new AppError("This brand has products. Remove those first.", 409);
+  }
 
   const deleted = await prisma.brand.update({
     where: { id },

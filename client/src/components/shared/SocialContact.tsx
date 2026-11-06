@@ -47,7 +47,7 @@ export default function SocialContact() {
 
   return (
     <div
-      className={`fixed right-4 md:right-6 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] md:bottom-6 z-[9999] group transition-all duration-500 ${
+      className={`fixed right-4 md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_var(--floating-gap))] lg:bottom-6 z-[9999] group transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
       }`}
     >

@@ -9,13 +9,23 @@
 * 🟢 You can import this file directly.
 */
 
-export const UserRole = {
-  CUSTOMER: 'CUSTOMER',
-  ADMIN: 'ADMIN',
-  VENDOR: 'VENDOR'
+export const StaffStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  OFFBOARDED: 'OFFBOARDED'
 } as const
 
-export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+export type StaffStatus = (typeof StaffStatus)[keyof typeof StaffStatus]
+
+
+export const StaffInvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REVOKED: 'REVOKED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type StaffInvitationStatus = (typeof StaffInvitationStatus)[keyof typeof StaffInvitationStatus]
 
 
 export const Gender = {

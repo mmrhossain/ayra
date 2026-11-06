@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -145,6 +146,7 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Email Verified</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -172,31 +174,23 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
                       <div className="flex items-center gap-2">
                         <span>{user.name}</span>
                         {isUserBanned(user) ? (
-                          <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          <StatusBadge variant="danger" className="uppercase tracking-wide">
                             Banned
-                          </span>
+                          </StatusBadge>
                         ) : null}
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell>
-                      <span className="inline-flex rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                        {user.role}
-                      </span>
+                      <StatusBadge variant="info">{user.role}</StatusBadge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {isUserBanned(user) ? "BANNED" : (user.status ?? "ACTIVE")}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${
-                          user.isApproved
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground"
-                        }`}
-                      >
-                        {user.isApproved ? "Approved" : "Pending"}
-                      </span>
+                      <StatusBadge variant={user.emailVerified ? "success" : "danger"}>
+                        {user.emailVerified ? "Verified" : "Not Verified"}
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}

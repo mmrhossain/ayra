@@ -9,19 +9,15 @@ import type {
   ShippingRate,
   ShippingZone,
 } from "@/features/shipping/shipping.types";
+import type { Envelope } from "@/lib/api/http";
 
 export { toShippingErrorMessage } from "@/features/dashboard/admin/shipping/utils";
-
-type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
 
 const noStore = { cache: "no-store" as const };
 
 export async function fetchShippingOptions(params: {
-  district: string;
+  district?: string;
+  districtCode?: string;
   subtotal?: number;
 }): Promise<ShippingOptionsResult> {
   const res = await dashboardApi.get<Envelope<ShippingOptionsResult>>(
@@ -29,8 +25,13 @@ export async function fetchShippingOptions(params: {
     {
       ...noStore,
       params: {
-        district: params.district,
-        subtotal: params.subtotal,
+        ...(params.district ? { district: params.district } : {}),
+        ...(params.districtCode
+          ? { districtCode: params.districtCode }
+          : {}),
+        ...(params.subtotal !== undefined
+          ? { subtotal: params.subtotal }
+          : {}),
       },
     },
   );
@@ -47,6 +48,9 @@ export async function quoteShipping(body: {
     division: string;
     district: string;
     thana?: string;
+    divisionCode?: string;
+    districtCode?: string;
+    upazilaCode?: string;
     postalCode?: string;
     addressLine1: string;
     addressLine2?: string;

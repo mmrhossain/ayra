@@ -9,6 +9,7 @@ import {
 import {
   createAttributeSchema,
   createAttributeValueSchema,
+  createAttributeValuesSchema,
   updateAttributeSchema,
   updateAttributeValueSchema,
 } from "./validators/attribute.validators.ts";
@@ -91,6 +92,22 @@ registry.registerPath({
   },
   responses: {
     201: successResponse("Attribute value created"),
+    ...errorResponses(400, 401, 403, 404, 409),
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/v1/admin/attributes/{attributeId}/values/bulk",
+  tags: [TAG],
+  summary: "Bulk create attribute values (admin)",
+  security: bearerAuth,
+  request: {
+    params: z.object({ attributeId: z.string().min(1) }),
+    body: jsonBody(createAttributeValuesSchema),
+  },
+  responses: {
+    201: successResponse("Attribute values created"),
     ...errorResponses(400, 401, 403, 404, 409),
   },
 });

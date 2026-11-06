@@ -47,6 +47,11 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model StaffInvitation
+ * 
+ */
+export type StaffInvitation = Prisma.StaffInvitationModel
+/**
  * Model Session
  * 
  */
@@ -66,11 +71,6 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type Jwks = Prisma.JwksModel
-/**
- * Model VendorProfile
- * 
- */
-export type VendorProfile = Prisma.VendorProfileModel
 /**
  * Model Category
  * 
@@ -157,11 +157,6 @@ export type CartCoupon = Prisma.CartCouponModel
  */
 export type CartActivity = Prisma.CartActivityModel
 /**
- * Model GuestCart
- * 
- */
-export type GuestCart = Prisma.GuestCartModel
-/**
  * Model Order
  * 
  */
@@ -221,6 +216,16 @@ export type PaymentWebhookLog = Prisma.PaymentWebhookLogModel
  * 
  */
 export type PaymentEvent = Prisma.PaymentEventModel
+/**
+ * Model PlatformSetting
+ * 
+ */
+export type PlatformSetting = Prisma.PlatformSettingModel
+/**
+ * Model PlatformSettingAudit
+ * 
+ */
+export type PlatformSettingAudit = Prisma.PlatformSettingAuditModel
 /**
  * Model Warehouse
  * 
@@ -426,3 +431,13 @@ export type SeoMetadata = Prisma.SeoMetadataModel
  * 
  */
 export type MediaAsset = Prisma.MediaAssetModel
+/**
+ * Model IdempotencyKey
+ * 
+ */
+export type IdempotencyKey = Prisma.IdempotencyKeyModel
+/**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel

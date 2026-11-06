@@ -1,27 +1,21 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BulkActionBar } from "@/features/dashboard/admin/products/components/bulk-actions.bar";
 import { DeleteDialog } from "@/features/dashboard/admin/products/components/delete.dialog";
 import { useProductList } from "@/features/dashboard/admin/products/hooks/use-product-list";
 import type { ProductListItem, ProductTableProps } from "@/features/dashboard/admin/products/types";
@@ -30,6 +24,9 @@ import {
   productStockSum,
   toErrorMessage,
 } from "@/features/dashboard/admin/products/utils";
+import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-state";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
+import { RowActions } from "@/features/dashboard/admin/shared/components/row-actions";
 
 const BDT = new Intl.NumberFormat("en-BD", {
   style: "currency",
@@ -60,11 +57,13 @@ export function ProductTable({ initialData }: ProductTableProps) {
   const [search, setSearch] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const t = window.setTimeout(() => {
       setSearch(searchInput.trim());
       setPage(1);
+      setSelected(new Set());
     }, 300);
     return () => window.clearTimeout(t);
   }, [searchInput]);
@@ -74,6 +73,33 @@ export function ProductTable({ initialData }: ProductTableProps) {
     page,
     search,
   });
+
+  // Selection only spans the current page; it is cleared whenever the page or
+  // search changes so ids from a previous view are never acted on.
+  const pageIds = items.map((product) => product.id);
+  const allSelected =
+    pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const someSelected = pageIds.some((id) => selected.has(id));
+
+  const toggleAll = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelected(new Set());
 
   return (
     <div className="space-y-4">
@@ -93,6 +119,8 @@ export function ProductTable({ initialData }: ProductTableProps) {
         </div>
       </div>
 
+      <BulkActionBar ids={[...selected]} onClear={clearSelection} />
+
       {query.isError ? (
         <div role="alert" className="rounded-xl border border-destructive/30 p-4">
           <p className="text-sm">{toErrorMessage(query.error)}</p>
@@ -107,9 +135,16 @@ export function ProductTable({ initialData }: ProductTableProps) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all products"
+                  />
+                </TableHead>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Status</TableHead>
@@ -123,17 +158,15 @@ export function ProductTable({ initialData }: ProductTableProps) {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
-                    <div className="space-y-2">
-                      <p>No products yet.</p>
-                      <div>
-                        {!hasCategories ? (
-                          <Link href="/admin/categories" className="underline">
-                            Need a category first?
-                          </Link>
-                        ) : null}
-                      </div>
-                    </div>
+                  <TableCell colSpan={9}>
+                    <EmptyState
+                      title="No products yet"
+                      body={
+                        hasCategories
+                          ? "Add a product to start selling."
+                          : "Add a category before creating your first product."
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -144,6 +177,13 @@ export function ProductTable({ initialData }: ProductTableProps) {
                   return (
                     <TableRow key={product.id}>
                       <TableCell>
+                        <Checkbox
+                          checked={selected.has(product.id)}
+                          onCheckedChange={() => toggleOne(product.id)}
+                          aria-label={`Select ${product.name}`}
+                        />
+                      </TableCell>
+                      <TableCell data-label="Image">
                         <div className="relative h-12 w-14 overflow-hidden rounded-md bg-gray-50 dark:bg-zinc-900 border">
                           <Image
                             src={imageUrl || "https://placehold.jp/160x96.png"}
@@ -154,8 +194,10 @@ export function ProductTable({ initialData }: ProductTableProps) {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium" data-label="Name">
+                        {product.name}
+                      </TableCell>
+                      <TableCell data-label="Status">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                             live
@@ -170,65 +212,62 @@ export function ProductTable({ initialData }: ProductTableProps) {
                               : "Draft"}
                         </span>
                       </TableCell>
-                      <TableCell className="tabular-nums text-muted-foreground">
+                      <TableCell
+                        className="tabular-nums text-muted-foreground"
+                        data-label="Variants"
+                      >
                         {product.variants.length}
                       </TableCell>
-                      <TableCell className="tabular-nums">{formatPriceRange(product)}</TableCell>
-                      <TableCell className="tabular-nums">{stockLabel(product)}</TableCell>
-                      <TableCell>
+                      <TableCell className="tabular-nums" data-label="Price">
+                        {formatPriceRange(product)}
+                      </TableCell>
+                      <TableCell className="tabular-nums" data-label="Stock">
+                        {stockLabel(product)}
+                      </TableCell>
+                      <TableCell data-label="Featured">
                         {product.isFeatured ? (
                           <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                             Featured
                           </span>
                         ) : null}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu modal={false}>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              aria-label={`Actions for ${product.name}`}
-                            >
-                              <MoreHorizontal />
-                              Actions
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}/edit`}>Edit</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}/edit?step=2`}>
-                                Manage variants
-                              </Link>
-                            </DropdownMenuItem>
-                            {variantId ? (
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/inventory?variantId=${variantId}`}>
-                                  Adjust stock
-                                </Link>
-                              </DropdownMenuItem>
-                            ) : null}
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => {
+                      <TableCell className="text-right" data-label="Actions">
+                        <RowActions
+                          label={`Actions for ${product.name}`}
+                          actions={[
+                            {
+                              label: "Edit",
+                              href: `/admin/products/${product.id}/edit`,
+                            },
+                            {
+                              label: "Manage variants",
+                              href: `/admin/products/${product.id}/edit?step=2`,
+                            },
+                            ...(variantId
+                              ? [
+                                  {
+                                    label: "Adjust stock",
+                                    href: `/admin/inventory?variantId=${variantId}`,
+                                  },
+                                ]
+                              : []),
+                            {
+                              label: "Delete",
+                              variant: "destructive" as const,
+                              onSelect: () => {
                                 setDeletingProduct(product);
                                 setDeleteOpen(true);
-                              }}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              },
+                            },
+                          ]}
+                        />
                       </TableCell>
                     </TableRow>
                   );
                 })
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 
@@ -242,7 +281,10 @@ export function ProductTable({ initialData }: ProductTableProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1 || query.isFetching}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => {
+              clearSelection();
+              setPage((p) => Math.max(1, p - 1));
+            }}
           >
             Previous
           </Button>
@@ -251,7 +293,10 @@ export function ProductTable({ initialData }: ProductTableProps) {
             variant="outline"
             size="sm"
             disabled={page >= pagination.totalPages || query.isFetching}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => {
+              clearSelection();
+              setPage((p) => p + 1);
+            }}
           >
             Next
           </Button>

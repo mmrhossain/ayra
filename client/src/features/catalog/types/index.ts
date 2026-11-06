@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type ProductListItem = {
   id: string;
@@ -36,6 +32,7 @@ export type ProductVariantAttribute = {
   attributeValue: {
     id: string;
     value: string;
+    color?: string | null;
     attributeId: string;
     attribute?: { id: string; name: string };
   };
@@ -47,16 +44,17 @@ export type ProductVariant = {
   barcode?: string | null;
   price: number | string;
   compareAtPrice?: number | string | null;
+  costPrice?: number | string | null;
   weight?: number | string | null;
   isDefault?: boolean;
   availableStock?: number;
-  images?: ProductImageAsset[];
   attributes?: ProductVariantAttribute[];
 };
 
 export type NormalizedVariantAttribute = {
   id: string;
   value: string;
+  color?: string | null;
   attributeId: string;
   attributeName?: string;
 };
@@ -91,6 +89,8 @@ export type ProductListResult = {
 
 export type ProductSort = "newest" | "price_asc" | "price_desc" | "popular";
 
+export type AttributeFilterGroups = Record<string, string[]>;
+
 export type ProductListParams = {
   page?: number;
   limit?: number;
@@ -103,6 +103,8 @@ export type ProductListParams = {
   onSale?: boolean;
   sort?: ProductSort;
   includeInactive?: boolean;
+  attributes?: AttributeFilterGroups;
+  categories?: string[];
 };
 
 export type CatalogOption = {
@@ -137,12 +139,12 @@ export type ProductReviewListResult = {
 export type AttributeGroup = {
   attributeId: string;
   name: string;
-  values: Array<{ id: string; value: string }>;
+  values: Array<{ id: string; value: string; color?: string | null }>;
 };
 
 export type GalleryImage = {
-  id?: string;
-  imageUrl: string;
+  id?: string | number;
+  imageUrl?: string;
   altText?: string | null;
   isPrimary?: boolean;
 };
@@ -159,6 +161,7 @@ export type CategoryListItem = {
   id: string;
   name: string;
   parentSlug?: string | null;
+  path?: string;
   slug: string;
   description?: string | null;
   image?: string | null;
@@ -169,6 +172,33 @@ export type CategoryListItem = {
   parentId?: string | null;
   children?: CategoryListItem[];
   productsCount?: number;
-  totalProducts?: number;
-  products?: unknown[];
+};
+
+export type FacetOption = {
+  valueId: string;
+  label: string;
+  color?: string | null;
+};
+
+export type FacetAttribute = {
+  attributeId: string;
+  name: string;
+  options: FacetOption[];
+};
+
+export type FacetCategory = {
+  id: string;
+  slug: string;
+  label: string;
+};
+
+export type PriceBucket = {
+  from: number;
+  to: number;
+};
+
+export type ProductFacets = {
+  price: { min: number | null; max: number | null; buckets: PriceBucket[] };
+  categories?: FacetCategory[];
+  attributes: FacetAttribute[];
 };

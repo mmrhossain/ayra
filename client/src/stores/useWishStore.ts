@@ -5,7 +5,7 @@ import {
   type WishlistItem,
 } from "@/features/dashboard/customer/wishlist/api/wishlist";
 import { DashboardApiError } from "@/lib/api/dashboard";
-import type { WishState } from "@/types/wish";
+import type { WishState } from "@/features/dashboard/customer/wishlist/types";
 import { create } from "zustand";
 
 export const useWishStore = create<WishState>((set, get) => ({
@@ -33,7 +33,10 @@ export const useWishStore = create<WishState>((set, get) => ({
       const data: WishlistItem[] = result.items ?? [];
       set({ wishes: data, wishCount: result.pagination?.total ?? data.length });
     } catch (err) {
-      if (err instanceof DashboardApiError && err.status === 401) {
+      if (
+        err instanceof DashboardApiError &&
+        (err.status === 401 || err.status === 403)
+      ) {
         set({ wishes: [], wishCount: 0 });
         return;
       }

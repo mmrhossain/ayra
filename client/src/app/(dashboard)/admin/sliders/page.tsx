@@ -1,12 +1,16 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import {
   fetchSliderList,
   toSliderErrorMessage,
 } from "@/features/dashboard/admin/sliders/api/slider";
 import { SliderTable } from "@/features/dashboard/admin/sliders/components/slider-table";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSlidersPage() {
+  await requireAdminPageAccess("/admin/sliders");
   let initial;
   let error: string | null = null;
 
@@ -18,14 +22,12 @@ export default async function AdminSlidersPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Sliders</h1>
-      </div>
+      <PageHeader title="Sliders" />
       {error || !initial ? (
-        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6">
-          <h2 className="text-lg font-semibold">Could not load sliders</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{error ?? "Unknown error"}</p>
-        </div>
+        <PageError
+          title="Could not load sliders"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <SliderTable initialData={initial} />
       )}

@@ -3,8 +3,10 @@ import type {
   AdminReturnRequest,
   Envelope,
   OrderDetail,
+  OrderListItem,
   OrderListParams,
   OrderListResult,
+  OrderPagination,
   ReturnRequestListParams,
   ReturnRequestListResult,
   UpdateOrderStatusBody,
@@ -37,14 +39,22 @@ export {
   itemCount,
   pickOrderAddress,
   returnCustomerLabel,
+  statusVariantFor,
 } from "@/features/dashboard/admin/orders/utils";
 
 const noStore = { cache: "no-store" as const };
 
+type OrderListResponse = {
+  items: Array<
+    Omit<OrderListItem, "itemCount"> & { _count?: { items: number } }
+  >;
+  pagination: OrderPagination;
+};
+
 export async function fetchOrderList(
   params: OrderListParams = {},
 ): Promise<OrderListResult> {
-  const res = await dashboardApi.get<Envelope<OrderListResult>>(
+  const res = await dashboardApi.get<Envelope<OrderListResponse>>(
     "/admin/orders",
     {
       ...noStore,
@@ -54,10 +64,17 @@ export async function fetchOrderList(
         status: params.status,
         from: params.from,
         to: params.to,
+        search: params.search,
       },
     },
   );
-  return res.data;
+  return {
+    ...res.data,
+    items: res.data.items.map(({ _count, ...order }) => ({
+      ...order,
+      itemCount: _count?.items ?? 0,
+    })),
+  };
 }
 
 export async function fetchOrderById(id: string): Promise<OrderDetail> {
@@ -100,7 +117,15 @@ export async function fetchReturnRequests(
 
 export async function reviewReturnRequest(
   id: string,
-  body: { status: "APPROVED" | "REJECTED"; adminNote?: string },
+  body: {
+    status: "APPROVED" | "REJECTED";
+    adminNote?: string;
+    items?: Array<{
+      orderItemId: string;
+      restockToStock?: boolean;
+      damaged?: boolean;
+    }>;
+  },
 ): Promise<AdminReturnRequest> {
   const res = await dashboardApi.patch<Envelope<AdminReturnRequest>>(
     `/admin/return-requests/${id}`,

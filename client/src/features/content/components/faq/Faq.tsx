@@ -73,7 +73,7 @@ const FAQPage = ({ categories }: Props) => {
             <input
               type="text"
               placeholder="Search for a topic"
-              className="w-full pl-12 md:pl-14 pr-4 md:pr-6 h-12 md:h-14 rounded-full border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm text-sm md:text-base"
+              className="h-12 w-full rounded-full border border-slate-200 pr-4 pl-12 text-base shadow-sm transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none md:h-14 md:pr-6 md:pl-14"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
@@ -86,7 +86,7 @@ const FAQPage = ({ categories }: Props) => {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 sm:px-6 md:px-8 h-10 md:h-11 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.08em] md:tracking-widest transition-all ${
+              className={`px-4 sm:px-6 md:px-8 h-10 md:h-11 rounded-full text-xs md:text-xs font-black uppercase tracking-[0.08em] md:tracking-widest transition-all ${
                 activeCategory === cat
                   ? "bg-primary text-white shadow-lg shadow-teal-600/20"
                   : "bg-white text-slate-500 border border-slate-200 hover:border-primary"
@@ -123,7 +123,7 @@ const FAQPage = ({ categories }: Props) => {
             <div className="flex flex-wrap justify-center gap-3 md:gap-4">
               <a
                 href="/contact"
-                className="bg-primary hover:bg-primary/80 text-white px-6 md:px-10 h-11 md:h-12 rounded-full font-black uppercase text-[10px] tracking-[0.08em] md:tracking-widest transition-all inline-flex items-center"
+                className="bg-primary hover:bg-primary/80 text-white px-6 md:px-10 h-11 md:h-12 rounded-full font-black uppercase text-xs tracking-[0.08em] md:tracking-widest transition-all inline-flex items-center"
               >
                 Contact Support
               </a>

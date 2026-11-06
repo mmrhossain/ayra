@@ -1,12 +1,17 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { WarehouseTable } from "@/features/dashboard/admin/warehouses/components/warehouse-table";
 import {
   fetchWarehouseList,
   toWarehouseErrorMessage,
 } from "@/features/dashboard/admin/warehouses/api/warehouses";
+import { Suspense } from "react";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminWarehousesPage() {
+  await requireAdminPageAccess("/admin/warehouses");
   let initial;
   let error: string | null = null;
 
@@ -18,24 +23,19 @@ export default async function AdminWarehousesPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Warehouses</h1>
-        <p className="text-sm text-muted-foreground">
-          Locations used by inventory stock and adjustments.
-        </p>
-      </div>
+      <PageHeader
+        title="Warehouses"
+        description="Locations used by inventory stock and adjustments."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load warehouses</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load warehouses"
+          message={error ?? "Unknown error"}
+        />
       ) : (
-        <WarehouseTable initialData={initial} />
+        <Suspense fallback={null}>
+          <WarehouseTable initialData={initial} />
+        </Suspense>
       )}
     </section>
   );

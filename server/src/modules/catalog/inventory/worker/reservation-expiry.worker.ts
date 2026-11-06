@@ -51,13 +51,13 @@ const releaseReservationRows = async (
   const reservationIds = sorted.map((row) => row.id);
   const deletedRows = requireExpired
     ? await tx.$queryRaw<Array<{ id: string }>>`
-        DELETE FROM "StockReservation"
+        DELETE FROM "stock_reservation"
         WHERE id IN (${Prisma.join(reservationIds)})
           AND "expiresAt" < now()
         RETURNING id
       `
     : await tx.$queryRaw<Array<{ id: string }>>`
-        DELETE FROM "StockReservation"
+        DELETE FROM "stock_reservation"
         WHERE id IN (${Prisma.join(reservationIds)})
         RETURNING id
       `;
@@ -134,7 +134,7 @@ export const releaseExpiredReservations = async (): Promise<number> => {
             paymentStatus: string;
             deletedAt: Date | null;
           }>
-        >`SELECT id, status, "paymentStatus", "deletedAt" FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+        >`SELECT id, status, "paymentStatus", "deletedAt" FROM "order" WHERE id = ${orderId} FOR UPDATE`;
         const order = lockedOrders[0];
 
         if (

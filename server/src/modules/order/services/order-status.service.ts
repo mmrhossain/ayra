@@ -1,6 +1,10 @@
 import { transaction } from "../../../lib/prisma.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
-import type { OrderStatus, PaymentStatus } from "../../../generated/prisma/enums.ts";
+import type {
+  FulfillmentStatus,
+  OrderStatus,
+  PaymentStatus,
+} from "../../../generated/prisma/enums.ts";
 import { reverseCouponUsage } from "../../coupon/coupon.service.ts";
 import type { UpdateOrderStatusInput } from "../types.ts";
 import { omitOrderCostPrice } from "../utils/order-helpers.ts";
@@ -12,13 +16,23 @@ import {
   STATUS_EVENTS,
 } from "../utils/order-validation.ts";
 import { releaseOrderStock } from "./order-stock.service.ts";
+import { notifyOrderStatusChange } from "../../notification/services/notification.service.ts";
+
+// Orders have no shipment module yet, so fulfillment is derived from the order
+// status. Partial fulfillment is only used when a return is approved.
+const FULFILLMENT_BY_STATUS: Partial<Record<OrderStatus, FulfillmentStatus>> = {
+  PACKED: "FULFILLED",
+  SHIPPED: "FULFILLED",
+  DELIVERED: "FULFILLED",
+  RETURNED: "PARTIALLY_FULFILLED",
+};
 
 export const updateOrderStatus = async (
     orderId: string,
     input: UpdateOrderStatusInput,
     actorId: string
 ) => {
-  return transaction(async (tx) => {
+  const updated = await transaction(async (tx) => {
     const locked = await tx.$queryRaw<
       Array<{
         id: string;
@@ -26,7 +40,7 @@ export const updateOrderStatus = async (
         status: OrderStatus;
         paymentStatus: PaymentStatus;
       }>
-    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "Order" WHERE id = ${orderId} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "order" WHERE id = ${orderId} AND "deletedAt" IS NULL FOR UPDATE`;
     const order = locked[0];
 
     if (!order) throw new AppError("Order not found", 404);
@@ -64,7 +78,13 @@ export const updateOrderStatus = async (
 
     const updated = await tx.order.update({
       where: { id: order.id },
-      data: { status: input.status },
+      data: {
+        status: input.status,
+        ...(input.status === "DELIVERED" ? { deliveredAt: new Date() } : {}),
+        ...(FULFILLMENT_BY_STATUS[input.status]
+          ? { fulfillmentStatus: FULFILLMENT_BY_STATUS[input.status] }
+          : {}),
+      },
       include: {
         items: true,
         statusHistory: { orderBy: { createdAt: "desc" } },
@@ -93,6 +113,9 @@ export const updateOrderStatus = async (
 
     return updated;
   });
+
+  await notifyOrderStatusChange(orderId, input.status);
+  return updated;
 };
 
 export const cancelOrder = async (
@@ -100,7 +123,7 @@ export const cancelOrder = async (
     orderId: string,
     reason?: string
 ) => {
-  return transaction(async (tx) => {
+  const cancelled = await transaction(async (tx) => {
     const locked = await tx.$queryRaw<
       Array<{
         id: string;
@@ -108,7 +131,7 @@ export const cancelOrder = async (
         status: OrderStatus;
         paymentStatus: PaymentStatus;
       }>
-    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "Order" WHERE id = ${orderId} AND "customerProfileId" = ${customerProfileId} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "order" WHERE id = ${orderId} AND "customerProfileId" = ${customerProfileId} AND "deletedAt" IS NULL FOR UPDATE`;
     const order = locked[0];
 
     if (!order) throw new AppError("Order not found", 404);
@@ -166,4 +189,7 @@ export const cancelOrder = async (
 
     return sanitized;
   });
+
+  await notifyOrderStatusChange(orderId, "CANCELLED");
+  return cancelled;
 };

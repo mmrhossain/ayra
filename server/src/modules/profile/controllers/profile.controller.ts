@@ -4,13 +4,13 @@ import { successResponse } from "../../../common/utils/response.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import {
   updateCustomerProfileSchema,
-  updateVendorProfileSchema,
+  updateNotificationPreferencesSchema,
 } from "../validators/profile.validators.ts";
 import {
   getCustomerProfile,
-  getVendorProfile,
+  getNotificationPreferences,
   saveCustomerProfile,
-  updateVendorProfile,
+  saveNotificationPreferences,
 } from "../services/profile.service.ts";
 
 export const getCustomerProfileHandler = asyncHandler(
@@ -41,28 +41,28 @@ export const saveCustomerProfileHandler = asyncHandler(
 
 export const updateCustomerProfileHandler = saveCustomerProfileHandler;
 
-export const getVendorProfileHandler = asyncHandler(
+export const getNotificationPreferencesHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     successResponse(
       res,
-      await getVendorProfile(req.auth.user.id),
-      "Vendor profile fetched"
+      await getNotificationPreferences(req.auth.user.id),
+      "Notification preferences fetched"
     );
   }
 );
 
-export const updateVendorProfileHandler = asyncHandler(
+export const saveNotificationPreferencesHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const input = updateVendorProfileSchema.parse(req.body);
+    const input = updateNotificationPreferencesSchema.parse(req.body);
 
     successResponse(
       res,
-      await updateVendorProfile(req.auth.user.id, input),
-      "Vendor profile updated"
+      await saveNotificationPreferences(req.auth.user.id, input),
+      "Notification preferences saved"
     );
   }
 );

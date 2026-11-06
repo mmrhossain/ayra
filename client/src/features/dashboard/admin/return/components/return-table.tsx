@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge, type StatusBadgeVariant } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -36,10 +37,10 @@ type Props = {
   initialData: ReturnRequestListResult;
 };
 
-function statusClassName(status: ReturnRequestStatus): string {
-  if (status === "REJECTED") return "bg-destructive text-white";
-  if (status === "APPROVED") return "bg-primary text-primary-foreground";
-  return "bg-secondary text-secondary-foreground";
+function statusVariant(status: ReturnRequestStatus): StatusBadgeVariant {
+  if (status === "REJECTED") return "danger";
+  if (status === "APPROVED") return "success";
+  return "warning";
 }
 
 export function ReturnTable({ initialData }: Props) {
@@ -149,11 +150,9 @@ export function ReturnTable({ initialData }: Props) {
                       {request.reason || "—"}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${statusClassName(request.status)}`}
-                      >
+                      <StatusBadge variant={statusVariant(request.status)}>
                         {request.status}
-                      </span>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {request.requestedAt || request.createdAt

@@ -48,10 +48,7 @@ export function useProductSelection(product: ProductDetail) {
   const stock = num(active?.availableStock);
   const canAddToCart = Boolean(selected) && stock > 0;
 
-  let galleryImages = active?.images ?? [];
-  if (galleryImages.length === 0) {
-    galleryImages = product.images ?? [];
-  }
+  const galleryImages = product.images ?? [];
 
   const setAttributeValue = (attributeId: string, valueId: string) => {
     setSelectedValues((prev) => ({ ...prev, [attributeId]: valueId }));

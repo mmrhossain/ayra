@@ -12,6 +12,8 @@ export const PAYMENT_CONFIRMATION_TEMPLATE = {
     userName: "{{customerName}}",
     message:
       "We have received your payment for order <strong>{{orderNumber}}</strong>.<br/><br/>Amount: <strong>{{amount}}</strong> {{currency}}<br/>Method: <strong>{{method}}</strong>.",
+    footerNote:
+      "Questions about your payment? Reply to this email and our team will help.",
   }),
   variables: ["customerName", "orderNumber", "amount", "currency", "method"],
 };

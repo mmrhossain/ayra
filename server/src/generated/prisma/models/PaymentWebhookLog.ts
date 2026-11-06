@@ -171,7 +171,7 @@ export type PaymentWebhookLogGroupByOutputType = {
   id: string
   provider: string
   eventType: string
-  externalEventId: string | null
+  externalEventId: string
   payload: runtime.JsonValue
   processed: boolean
   processedAt: Date | null
@@ -204,7 +204,7 @@ export type PaymentWebhookLogWhereInput = {
   id?: Prisma.StringFilter<"PaymentWebhookLog"> | string
   provider?: Prisma.StringFilter<"PaymentWebhookLog"> | string
   eventType?: Prisma.StringFilter<"PaymentWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableFilter<"PaymentWebhookLog"> | string | null
+  externalEventId?: Prisma.StringFilter<"PaymentWebhookLog"> | string
   payload?: Prisma.JsonFilter<"PaymentWebhookLog">
   processed?: Prisma.BoolFilter<"PaymentWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableFilter<"PaymentWebhookLog"> | Date | string | null
@@ -216,7 +216,7 @@ export type PaymentWebhookLogOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventType?: Prisma.SortOrder
-  externalEventId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalEventId?: Prisma.SortOrder
   payload?: Prisma.SortOrder
   processed?: Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -232,7 +232,7 @@ export type PaymentWebhookLogWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PaymentWebhookLogWhereInput | Prisma.PaymentWebhookLogWhereInput[]
   provider?: Prisma.StringFilter<"PaymentWebhookLog"> | string
   eventType?: Prisma.StringFilter<"PaymentWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableFilter<"PaymentWebhookLog"> | string | null
+  externalEventId?: Prisma.StringFilter<"PaymentWebhookLog"> | string
   payload?: Prisma.JsonFilter<"PaymentWebhookLog">
   processed?: Prisma.BoolFilter<"PaymentWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableFilter<"PaymentWebhookLog"> | Date | string | null
@@ -244,7 +244,7 @@ export type PaymentWebhookLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventType?: Prisma.SortOrder
-  externalEventId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalEventId?: Prisma.SortOrder
   payload?: Prisma.SortOrder
   processed?: Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -262,7 +262,7 @@ export type PaymentWebhookLogScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"PaymentWebhookLog"> | string
   provider?: Prisma.StringWithAggregatesFilter<"PaymentWebhookLog"> | string
   eventType?: Prisma.StringWithAggregatesFilter<"PaymentWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableWithAggregatesFilter<"PaymentWebhookLog"> | string | null
+  externalEventId?: Prisma.StringWithAggregatesFilter<"PaymentWebhookLog"> | string
   payload?: Prisma.JsonWithAggregatesFilter<"PaymentWebhookLog">
   processed?: Prisma.BoolWithAggregatesFilter<"PaymentWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PaymentWebhookLog"> | Date | string | null
@@ -274,7 +274,7 @@ export type PaymentWebhookLogCreateInput = {
   id?: string
   provider: string
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -286,7 +286,7 @@ export type PaymentWebhookLogUncheckedCreateInput = {
   id?: string
   provider: string
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -298,7 +298,7 @@ export type PaymentWebhookLogUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -310,7 +310,7 @@ export type PaymentWebhookLogUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -322,7 +322,7 @@ export type PaymentWebhookLogCreateManyInput = {
   id?: string
   provider: string
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -334,7 +334,7 @@ export type PaymentWebhookLogUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -346,7 +346,7 @@ export type PaymentWebhookLogUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -452,7 +452,7 @@ export type $PaymentWebhookLogPayload<ExtArgs extends runtime.Types.Extensions.I
     id: string
     provider: string
     eventType: string
-    externalEventId: string | null
+    externalEventId: string
     payload: runtime.JsonValue
     processed: boolean
     processedAt: Date | null

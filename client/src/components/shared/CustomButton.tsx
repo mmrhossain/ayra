@@ -1,34 +1,38 @@
 "use client";
 
-import React from "react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CustomButtonProps } from "@/types/button";
-import {Button} from "@/components/ui/button";
+import type { MouseEventHandler, ReactNode } from "react";
 
-
-
+type CustomButtonProps = {
+  ctaText: string;
+  icon?: ReactNode;
+  className?: string;
+  path?: string;
+  type?: "submit" | "reset" | "button";
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+};
 
 const CustomButton = ({
-                          ctaText,
-                          className,
-                          icon,
-                          path,
-                          type = "button",
-                          onClick,
-                      }: CustomButtonProps) => {
+  ctaText,
+  className,
+  icon,
+  path,
+  type = "button",
+  onClick,
+}: CustomButtonProps) => {
 
-    // If `path` exists, render as link
+    const buttonClassName = `flex items-center justify-center gap-2 font-normal tracking-wide transition-colors duration-300 ${className ?? ""}`;
+
+    // If `path` exists, render as a single link styled as a button.
     if (path) {
         return (
-            <Link href={path}>
-                <Button
-                    type="button"
-                    className={`text-white bg-primary hover:bg-btn-hover flex items-center gap-2 justify-center tracking-wide transition-colors duration-300 font-normal ${className}`}
-                >
+            <Button asChild variant="brand" className={buttonClassName}>
+                <Link href={path}>
                     {ctaText}
                     {icon && <span className="flex-shrink-0">{icon}</span>}
-                </Button>
-            </Link>
+                </Link>
+            </Button>
         );
     }
 
@@ -36,8 +40,9 @@ const CustomButton = ({
     return (
         <Button
             type={type}
+            variant="brand"
             onClick={onClick}
-            className={`text-white bg-primary hover:bg-btn-hover flex items-center gap-2 justify-center tracking-wide transition-colors duration-300 font-normal ${className}`}
+            className={buttonClassName}
         >
             {ctaText}
             {icon && <span className="flex-shrink-0">{icon}</span>}

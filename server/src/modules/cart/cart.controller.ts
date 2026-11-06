@@ -8,8 +8,6 @@ import {
     addItemSchema,
     updateItemSchema,
     applyCouponSchema,
-    guestCartSchema,
-    saveGuestCartSchema,
     mergeGuestCartSchema,
 } from "./cart.validator.ts";
 import {
@@ -18,8 +16,6 @@ import {
     updateItemQuantity,
     removeItem,
     clearCart,
-    getGuestCart,
-    saveGuestCart,
     mergeGuestCart,
     applyCoupon,
     removeCoupon,
@@ -84,36 +80,14 @@ export const clearCartHandler = asyncHandler(
     }
 );
 
-export const getGuestCartHandler = asyncHandler(
-    async (req: Request, res: Response) => {
-        const input = guestCartSchema.parse({ sessionId: req.query.sessionId });
-        successResponse(res, await getGuestCart(input.sessionId), "Guest cart fetched");
-    }
-);
-
-export const saveGuestCartHandler = asyncHandler(
-    async (req: Request, res: Response) => {
-        // Fixed: using saveGuestCartSchema to correctly validate body including cartData
-        const input = saveGuestCartSchema.parse(req.body);
-        successResponse(
-            res,
-            await saveGuestCart(input.sessionId, input.cartData),
-            "Guest cart saved"
-        );
-    }
-);
-
 export const mergeGuestCartHandler = asyncHandler(
     async (req: Request, res: Response) => {
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
-        const input = mergeGuestCartSchema.parse(req.body);
+        const input = mergeGuestCartSchema.parse(req.body ?? {});
         const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
-        successResponse(
-            res,
-            await mergeGuestCart(customerProfile.id, input.sessionId),
-            "Guest cart merged"
-        );
+        const cart = await mergeGuestCart(customerProfile.id, input.items);
+        successResponse(res, cart, "Guest cart merged");
     }
 );
 

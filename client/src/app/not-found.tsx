@@ -20,15 +20,15 @@ export default function NotFound() {
 
             {/* Content Section */}
             <div className="max-w-md space-y-4">
-                <h1 className="text-6xl md:text-8xl font-black text-secondary/10 tracking-tighter absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-20 select-none">
+                <span aria-hidden="true" className="absolute top-1/2 left-1/2 -z-20 -translate-x-1/2 -translate-y-1/2 text-6xl font-semibold tracking-tight text-foreground/10 select-none md:text-8xl">
                     404
+                </span>
+
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                    Lost in <span className="text-primary italic">Space?</span>
                 </h1>
                 
-                <h2 className="text-3xl md:text-4xl font-black text-secondary tracking-tight">
-                    Lost in <span className="text-primary italic">Space?</span>
-                </h2>
-                
-                <p className="text-secondary/60 text-sm md:text-base font-medium leading-relaxed">
+                <p className="text-foreground/60 text-sm md:text-base font-medium leading-relaxed">
                     {/* FIXED: Using &apos; for the apostrophe */}
                     The page you are looking for doesn&apos;t exist or has been moved. 
                     Let&apos;s get you back to the collection.
@@ -39,7 +39,7 @@ export default function NotFound() {
             <div className="mt-10">
                 <Link 
                     href="/"
-                    className="group flex items-center gap-3 bg-slate-900 hover:bg-primary text-white py-4 px-8 rounded-full font-bold text-sm uppercase tracking-widest transition-all duration-500 shadow-xl shadow-slate-900/20 hover:shadow-primary/30"
+                    className="group flex items-center gap-3 bg-slate-900 hover:bg-primary text-white py-4 px-8 rounded-full text-sm font-medium uppercase tracking-wide transition-all duration-500 shadow-xl shadow-slate-900/20 hover:shadow-primary/30"
                 >
                     <Home size={18} className="group-hover:-translate-y-0.5 transition-transform" />
                     Return Home

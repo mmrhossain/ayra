@@ -1,11 +1,16 @@
 import Features from "@/components/shared/Features";
-import { fetchCategories, type ProductSort } from "@/features/catalog/api";
-import { getCategoryBySlug } from "@/features/catalog/categories-api";
+import {
+  fetchProductFacets,
+  getCategoryBySlug,
+  parseAttributesParam,
+  parseCategoriesParam,
+  type ProductSort,
+} from "@/features/catalog/api";
 import Subcategories from "@/features/catalog/components/category/Subcategories";
 import ShopContent from "@/features/catalog/components/shop/ShopContent";
 import DynamicFilterBar from "@/features/shop/layout/DynamicFilter";
-import ProductsSkeleton from "@/skeleton/productsSkeleton";
-import SubcategoriesSkeleton from "@/skeleton/SubcategoriesSkeleton";
+import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
+import SubcategoriesSkeleton from "@/features/catalog/skeleton/SubcategoriesSkeleton";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +24,8 @@ type SearchParams = {
   minPrice?: string;
   maxPrice?: string;
   search?: string;
+  attrs?: string;
+  categories?: string;
 };
 
 export default async function ShopPage({
@@ -31,23 +38,16 @@ export default async function ShopPage({
   const { slug } = await params;
   const sp = await searchParams;
 
-  const routeCategorySlug = slug?.length ? slug[slug.length - 1] : undefined;
+  const routeCategoryPath = slug?.length ? slug.join("/") : undefined;
 
-  const categoryDetails = routeCategorySlug
-    ? await getCategoryBySlug(routeCategorySlug).catch(() => null)
+  const categoryDetails = routeCategoryPath
+    ? await getCategoryBySlug(routeCategoryPath)
     : null;
-
-  const categories = await fetchCategories().catch(() => []);
 
   const children = categoryDetails?.children ?? [];
   const hasChildren = children.length > 0;
 
-  // ✅ FIX: Check actual product fields from API response
-  const directProductsCount =
-    categoryDetails?.productsCount ??
-    categoryDetails?.products?.length ??
-    categoryDetails?.totalProducts ??
-    0;
+  const directProductsCount = categoryDetails?.productsCount ?? 0;
 
   // Has direct products if count > 0, OR if we're at root /shop (categoryDetails is null)
   const hasProducts = directProductsCount > 0 || !categoryDetails;
@@ -71,6 +71,17 @@ export default async function ShopPage({
   const maxPriceRaw = Number(sp.maxPrice);
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : undefined;
 
+  const facets = isPureCategoryHub
+    ? null
+    : await fetchProductFacets({
+        category: routeCategoryPath,
+        search: sp.search,
+        minPrice,
+        maxPrice,
+        attributes: parseAttributesParam(sp.attrs),
+        categories: parseCategoriesParam(sp.categories),
+      });
+
   return (
     <div className="relative min-h-dvh min-w-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
       {isPureCategoryHub ? (
@@ -82,7 +93,7 @@ export default async function ShopPage({
         /* Scenario B: Has direct products (even if it has subcategories) -> Direct Product Grid */
         <>
           <Suspense fallback={null}>
-            <DynamicFilterBar categories={categories} />
+            <DynamicFilterBar facets={facets} />
           </Suspense>
 
           <Suspense

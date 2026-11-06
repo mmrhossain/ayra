@@ -28,6 +28,33 @@ const cloudName = env.CLOUDINARY_CLOUD_NAME || "demo";
 const desktopUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,f_webp/heroid.webp`;
 const mobileUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,f_webp/mobileheroid.webp`;
 
+const seedSliderAsset = async (
+  publicId: string,
+  ownerUserId: string,
+  url: string
+) => {
+  const asset = await prisma.mediaAsset.upsert({
+    where: { publicId },
+    create: {
+      publicId,
+      url,
+      type: "slider",
+      status: "PENDING",
+      ownerUserId,
+    },
+    update: {
+      status: "PENDING",
+      ownerUserId,
+      detachedAt: null,
+      type: "slider",
+      entityType: null,
+      entityId: null,
+    },
+  });
+  tracker.mediaAssetIds.push(asset.id);
+  return asset;
+};
+
 describe("Slider public list", () => {
   it("returns active sliders that have an imageUrl without requiring READY status", async () => {
     const ready = await prisma.slider.create({
@@ -99,6 +126,8 @@ describe("Slider admin", () => {
       role: "ADMIN",
       suffix: `sc-${Date.now()}`,
     });
+    await seedSliderAsset("heroid", admin.id, desktopUrl);
+    await seedSliderAsset("mobileheroid", admin.id, mobileUrl);
 
     const res = await api()
       .post("/api/v1/admin/sliders")
@@ -125,6 +154,8 @@ describe("Slider admin", () => {
       role: "ADMIN",
       suffix: `su-${Date.now()}`,
     });
+    await seedSliderAsset("originalid", admin.id, desktopUrl);
+    await seedSliderAsset("mobileoriginalid", admin.id, mobileUrl);
 
     const created = await api()
       .post("/api/v1/admin/sliders")

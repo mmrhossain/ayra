@@ -21,7 +21,9 @@ export type ShippingOptionsQuery = z.infer<typeof shippingOptionsQuerySchema>;
 
 export type AddressLike = {
   district?: string | null | undefined;
+  districtCode?: string | null | undefined;
   division?: string | null | undefined;
+  divisionCode?: string | null | undefined;
 };
 
 export type ShippingQuote = {

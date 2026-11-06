@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   requireAuth,
+  requireCustomer,
   requireRole,
 } from "../../common/middleware/auth.middleware.ts";
 
@@ -14,7 +15,7 @@ import {
 
 const router = Router();
 
-router.get("/coupons/validate", requireAuth, validateCoupon);
+router.get("/coupons/validate", requireAuth, requireCustomer, validateCoupon);
 
 router.get("/admin/coupons", requireAuth, requireRole("ADMIN"), adminListCoupons);
 router.post("/admin/coupons", requireAuth, requireRole("ADMIN"), adminCreateCoupon);

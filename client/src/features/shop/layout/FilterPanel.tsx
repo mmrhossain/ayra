@@ -1,70 +1,48 @@
 "use client";
 
-import type { CategoryItem } from "@/features/shop/types";
+import type {
+  FacetAttribute,
+  FacetCategory,
+  PriceBucket,
+} from "@/features/catalog/types";
 import { formatPrice } from "@/lib/format";
 import { RotateCcw } from "lucide-react";
 
-export type { CategoryItem };
-
-export interface CategoryAttributeOption {
-  label: string;
-  value: string;
-}
-
-export interface CategoryAttribute {
-  id?: string;
-  name: string; // e.g., "Color", "Fabric", "Size"
-  key: string; // e.g., "color", "fabric", "size"
-  options: CategoryAttributeOption[];
-}
-
 type FilterPanelProps = {
-  categories?: string[];
-  categoryObjects?: CategoryItem[];
-  selectedCategory: string;
-  onSelectCategory: (category: string) => void;
-  // Dynamic attribute filtering props
-  availableAttributes?: CategoryAttribute[];
-  selectedAttributes?: Record<string, string[]>;
-  onAttributeChange?: (attributeKey: string, values: string[]) => void;
-  // Price range props
-  priceMin: number;
-  priceMax: number;
-  selectedPrice: { min: number; max: number };
-  onPriceChange: (min: number, max: number) => void;
+  categories?: FacetCategory[];
+  selectedCategories: string[];
+  onToggleCategory: (slug: string) => void;
+  attributes?: FacetAttribute[];
+  selectedAttributes: Record<string, string[]>;
+  onAttributeChange: (attributeId: string, valueIds: string[]) => void;
+  priceBuckets: PriceBucket[];
+  selectedBucket: PriceBucket | null;
+  onSelectBucket: (bucket: PriceBucket) => void;
   onClearAll: () => void;
 };
 
 const FilterPanel = ({
-  categoryObjects = [],
-  selectedCategory,
-  onSelectCategory,
-  availableAttributes = [],
-  selectedAttributes = {},
+  categories = [],
+  selectedCategories,
+  onToggleCategory,
+  attributes = [],
+  selectedAttributes,
   onAttributeChange,
-  priceMin,
-  priceMax,
-  selectedPrice,
-  onPriceChange,
+  priceBuckets,
+  selectedBucket,
+  onSelectBucket,
   onClearAll,
 }: FilterPanelProps) => {
-  // Toggle individual attribute options (e.g. adding or removing 'red' from 'color')
-  const handleToggleAttributeOption = (attributeKey: string, optionValue: string) => {
-    if (!onAttributeChange) return;
-
-    const currentValues = selectedAttributes[attributeKey] || [];
-    const isSelected = currentValues.includes(optionValue);
-
-    const updatedValues = isSelected
-      ? currentValues.filter((val) => val !== optionValue)
-      : [...currentValues, optionValue];
-
-    onAttributeChange(attributeKey, updatedValues);
+  const toggleValue = (attributeId: string, valueId: string) => {
+    const current = selectedAttributes[attributeId] ?? [];
+    const next = current.includes(valueId)
+      ? current.filter((id) => id !== valueId)
+      : [...current, valueId];
+    onAttributeChange(attributeId, next);
   };
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">Filters</h3>
         <button
@@ -76,106 +54,92 @@ const FilterPanel = ({
         </button>
       </div>
 
-      {/* Categories Radio Filter */}
-      {categoryObjects.length > 0 && (
+      {priceBuckets.length > 0 && (
         <div className="space-y-3 rounded-xl border border-gray-200 p-4">
-          <h4 className="text-sm font-semibold text-slate-900">Categories</h4>
+          <h4 className="text-sm font-semibold text-slate-900">Price</h4>
           <div className="space-y-2">
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-secondary">
-              <input
-                type="radio"
-                name="category"
-                value="all"
-                checked={selectedCategory === "all" || !selectedCategory}
-                onChange={() => onSelectCategory("all")}
-              />
-              All
-            </label>
-            {categoryObjects.map((cat, index) => (
+            {priceBuckets.map((bucket) => {
+              const checked =
+                selectedBucket?.from === bucket.from &&
+                selectedBucket?.to === bucket.to;
+              return (
+                <label
+                  key={`${bucket.from}-${bucket.to}`}
+                  className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                >
+                  <input
+                    type="radio"
+                    name="price-bucket"
+                    checked={checked}
+                    onChange={() => onSelectBucket(bucket)}
+                  />
+                  {formatPrice(bucket.from)} - {formatPrice(bucket.to)}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {categories.length > 0 && (
+        <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+          <h4 className="text-sm font-semibold text-slate-900">Category</h4>
+          <div className="space-y-2">
+            {categories.map((category) => (
               <label
-                key={cat.id || cat.slug || index}
-                className="flex cursor-pointer items-center gap-2 text-sm text-secondary"
+                key={category.id}
+                className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
               >
                 <input
-                  type="radio"
-                  name="category"
-                  value={cat.slug}
-                  checked={selectedCategory === cat.slug}
-                  onChange={() => onSelectCategory(cat.slug)}
+                  type="checkbox"
+                  checked={selectedCategories.includes(category.slug)}
+                  onChange={() => onToggleCategory(category.slug)}
+                  className="rounded border-gray-300 text-primary focus:ring-primary/20"
                 />
-                {cat.name}
+                {category.label}
               </label>
             ))}
           </div>
         </div>
       )}
 
-      {/* Dynamic Category Attributes */}
-      {availableAttributes.map((attr) => {
-        const activeValues = selectedAttributes[attr.key] || [];
-
+      {attributes.map((attribute) => {
+        const activeValues = selectedAttributes[attribute.attributeId] ?? [];
         return (
           <div
-            key={attr.id || attr.key}
+            key={attribute.attributeId}
             className="space-y-3 rounded-xl border border-gray-200 p-4"
           >
-            <h4 className="text-sm font-semibold text-slate-900">{attr.name}</h4>
+            <h4 className="text-sm font-semibold text-slate-900">
+              {attribute.name}
+            </h4>
             <div className="space-y-2">
-              {attr.options.map((option) => {
-                const isChecked = activeValues.includes(option.value);
-
-                return (
-                  <label
-                    key={option.value}
-                    className="flex cursor-pointer items-center gap-2 text-sm text-secondary"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => handleToggleAttributeOption(attr.key, option.value)}
-                      className="rounded border-gray-300 text-primary focus:ring-primary/20"
+              {attribute.options.map((option) => (
+                <label
+                  key={option.valueId}
+                  className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                >
+                  <input
+                    type="checkbox"
+                    checked={activeValues.includes(option.valueId)}
+                    onChange={() =>
+                      toggleValue(attribute.attributeId, option.valueId)
+                    }
+                    className="rounded border-gray-300 text-primary focus:ring-primary/20"
+                  />
+                  {option.color ? (
+                    <span
+                      className="inline-block h-3 w-3 rounded-full border border-gray-200"
+                      style={{ backgroundColor: option.color }}
                     />
-                    {option.label}
-                  </label>
-                );
-              })}
+                  ) : null}
+                  {option.label}
+                </label>
+              ))}
             </div>
           </div>
         );
       })}
-
-      {/* Price Range Filter */}
-      <div className="space-y-3 rounded-xl border border-gray-200 p-4">
-        <h4 className="text-sm font-semibold text-slate-900">Price range</h4>
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label className="text-xs text-secondary">Min</label>
-            <input
-              type="number"
-              min={priceMin}
-              max={selectedPrice.max}
-              value={selectedPrice.min}
-              onChange={(e) => onPriceChange(Number(e.target.value) || 0, selectedPrice.max)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-xs text-secondary">Max</label>
-            <input
-              type="number"
-              min={selectedPrice.min}
-              max={priceMax}
-              value={selectedPrice.max}
-              onChange={(e) => onPriceChange(selectedPrice.min, Number(e.target.value) || priceMax)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-secondary">
-          Showing products between {formatPrice(selectedPrice.min)} and{" "}
-          {formatPrice(selectedPrice.max)}.
-        </p>
-      </div>
     </div>
   );
 };

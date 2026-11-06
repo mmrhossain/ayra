@@ -45,7 +45,6 @@ export type ProductMinAggregateOutputType = {
   name: string | null
   slug: string | null
   description: string | null
-  sku: string | null
   status: $Enums.ProductStatus | null
   isFeatured: boolean | null
   salesCount30d: number | null
@@ -66,7 +65,6 @@ export type ProductMaxAggregateOutputType = {
   name: string | null
   slug: string | null
   description: string | null
-  sku: string | null
   status: $Enums.ProductStatus | null
   isFeatured: boolean | null
   salesCount30d: number | null
@@ -87,7 +85,6 @@ export type ProductCountAggregateOutputType = {
   name: number
   slug: number
   description: number
-  sku: number
   status: number
   isFeatured: number
   salesCount30d: number
@@ -124,7 +121,6 @@ export type ProductMinAggregateInputType = {
   name?: true
   slug?: true
   description?: true
-  sku?: true
   status?: true
   isFeatured?: true
   salesCount30d?: true
@@ -145,7 +141,6 @@ export type ProductMaxAggregateInputType = {
   name?: true
   slug?: true
   description?: true
-  sku?: true
   status?: true
   isFeatured?: true
   salesCount30d?: true
@@ -166,7 +161,6 @@ export type ProductCountAggregateInputType = {
   name?: true
   slug?: true
   description?: true
-  sku?: true
   status?: true
   isFeatured?: true
   salesCount30d?: true
@@ -274,7 +268,6 @@ export type ProductGroupByOutputType = {
   name: string
   slug: string
   description: string | null
-  sku: string | null
   status: $Enums.ProductStatus
   isFeatured: boolean
   salesCount30d: number
@@ -318,7 +311,6 @@ export type ProductWhereInput = {
   name?: Prisma.StringFilter<"Product"> | string
   slug?: Prisma.StringFilter<"Product"> | string
   description?: Prisma.StringNullableFilter<"Product"> | string | null
-  sku?: Prisma.StringNullableFilter<"Product"> | string | null
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   salesCount30d?: Prisma.IntFilter<"Product"> | number
@@ -347,7 +339,6 @@ export type ProductOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  sku?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   salesCount30d?: Prisma.SortOrder
@@ -373,13 +364,12 @@ export type ProductOrderByWithRelationInput = {
 
 export type ProductWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  slug?: string
   AND?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   OR?: Prisma.ProductWhereInput[]
   NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   name?: Prisma.StringFilter<"Product"> | string
+  slug?: Prisma.StringFilter<"Product"> | string
   description?: Prisma.StringNullableFilter<"Product"> | string | null
-  sku?: Prisma.StringNullableFilter<"Product"> | string | null
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   salesCount30d?: Prisma.IntFilter<"Product"> | number
@@ -401,14 +391,13 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   couponProducts?: Prisma.CouponProductListRelationFilter
   cartItems?: Prisma.CartItemListRelationFilter
   collectionItems?: Prisma.ProductCollectionItemListRelationFilter
-}, "id" | "slug">
+}, "id">
 
 export type ProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  sku?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   salesCount30d?: Prisma.SortOrder
@@ -437,7 +426,6 @@ export type ProductScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Product"> | string
   slug?: Prisma.StringWithAggregatesFilter<"Product"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
-  sku?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   status?: Prisma.EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
   isFeatured?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   salesCount30d?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -458,7 +446,6 @@ export type ProductCreateInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -485,7 +472,6 @@ export type ProductUncheckedCreateInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -512,7 +498,6 @@ export type ProductUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -539,7 +524,6 @@ export type ProductUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -566,7 +550,6 @@ export type ProductCreateManyInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -587,7 +570,6 @@ export type ProductUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -606,7 +588,6 @@ export type ProductUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -637,7 +618,6 @@ export type ProductCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  sku?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   salesCount30d?: Prisma.SortOrder
@@ -665,7 +645,6 @@ export type ProductMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  sku?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   salesCount30d?: Prisma.SortOrder
@@ -686,7 +665,6 @@ export type ProductMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  sku?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isFeatured?: Prisma.SortOrder
   salesCount30d?: Prisma.SortOrder
@@ -907,7 +885,6 @@ export type ProductCreateWithoutCategoryInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -933,7 +910,6 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -988,7 +964,6 @@ export type ProductScalarWhereInput = {
   name?: Prisma.StringFilter<"Product"> | string
   slug?: Prisma.StringFilter<"Product"> | string
   description?: Prisma.StringNullableFilter<"Product"> | string | null
-  sku?: Prisma.StringNullableFilter<"Product"> | string | null
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFilter<"Product"> | boolean
   salesCount30d?: Prisma.IntFilter<"Product"> | number
@@ -1009,7 +984,6 @@ export type ProductCreateWithoutBrandInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1035,7 +1009,6 @@ export type ProductUncheckedCreateWithoutBrandInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1087,7 +1060,6 @@ export type ProductCreateWithoutVariantsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1113,7 +1085,6 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1155,7 +1126,6 @@ export type ProductUpdateWithoutVariantsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1181,7 +1151,6 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1207,7 +1176,6 @@ export type ProductCreateWithoutImagesInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1233,7 +1201,6 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1275,7 +1242,6 @@ export type ProductUpdateWithoutImagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1301,7 +1267,6 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1327,7 +1292,6 @@ export type ProductCreateWithoutReviewsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1353,7 +1317,6 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1395,7 +1358,6 @@ export type ProductUpdateWithoutReviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1421,7 +1383,6 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1447,7 +1408,6 @@ export type ProductCreateWithoutCartItemsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1473,7 +1433,6 @@ export type ProductUncheckedCreateWithoutCartItemsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1515,7 +1474,6 @@ export type ProductUpdateWithoutCartItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1541,7 +1499,6 @@ export type ProductUncheckedUpdateWithoutCartItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1567,7 +1524,6 @@ export type ProductCreateWithoutCouponProductsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1593,7 +1549,6 @@ export type ProductUncheckedCreateWithoutCouponProductsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1635,7 +1590,6 @@ export type ProductUpdateWithoutCouponProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1661,7 +1615,6 @@ export type ProductUncheckedUpdateWithoutCouponProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1687,7 +1640,6 @@ export type ProductCreateWithoutCollectionItemsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1713,7 +1665,6 @@ export type ProductUncheckedCreateWithoutCollectionItemsInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1755,7 +1706,6 @@ export type ProductUpdateWithoutCollectionItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1781,7 +1731,6 @@ export type ProductUncheckedUpdateWithoutCollectionItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1807,7 +1756,6 @@ export type ProductCreateManyCategoryInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1827,7 +1775,6 @@ export type ProductUpdateWithoutCategoryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1853,7 +1800,6 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1879,7 +1825,6 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1899,7 +1844,6 @@ export type ProductCreateManyBrandInput = {
   name: string
   slug: string
   description?: string | null
-  sku?: string | null
   status?: $Enums.ProductStatus
   isFeatured?: boolean
   salesCount30d?: number
@@ -1919,7 +1863,6 @@ export type ProductUpdateWithoutBrandInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1945,7 +1888,6 @@ export type ProductUncheckedUpdateWithoutBrandInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1971,7 +1913,6 @@ export type ProductUncheckedUpdateManyWithoutBrandInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   salesCount30d?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2067,7 +2008,6 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name?: boolean
   slug?: boolean
   description?: boolean
-  sku?: boolean
   status?: boolean
   isFeatured?: boolean
   salesCount30d?: boolean
@@ -2097,7 +2037,6 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   slug?: boolean
   description?: boolean
-  sku?: boolean
   status?: boolean
   isFeatured?: boolean
   salesCount30d?: boolean
@@ -2120,7 +2059,6 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   slug?: boolean
   description?: boolean
-  sku?: boolean
   status?: boolean
   isFeatured?: boolean
   salesCount30d?: boolean
@@ -2143,7 +2081,6 @@ export type ProductSelectScalar = {
   name?: boolean
   slug?: boolean
   description?: boolean
-  sku?: boolean
   status?: boolean
   isFeatured?: boolean
   salesCount30d?: boolean
@@ -2159,7 +2096,7 @@ export type ProductSelectScalar = {
   deletedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "sku" | "status" | "isFeatured" | "salesCount30d" | "trendingScore" | "averageRating" | "reviewCount" | "metaTitle" | "metaDescription" | "categoryId" | "brandId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "status" | "isFeatured" | "salesCount30d" | "trendingScore" | "averageRating" | "reviewCount" | "metaTitle" | "metaDescription" | "categoryId" | "brandId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.Product$brandArgs<ExtArgs>
@@ -2197,7 +2134,6 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     name: string
     slug: string
     description: string | null
-    sku: string | null
     status: $Enums.ProductStatus
     isFeatured: boolean
     salesCount30d: number
@@ -2646,7 +2582,6 @@ export interface ProductFieldRefs {
   readonly name: Prisma.FieldRef<"Product", 'String'>
   readonly slug: Prisma.FieldRef<"Product", 'String'>
   readonly description: Prisma.FieldRef<"Product", 'String'>
-  readonly sku: Prisma.FieldRef<"Product", 'String'>
   readonly status: Prisma.FieldRef<"Product", 'ProductStatus'>
   readonly isFeatured: Prisma.FieldRef<"Product", 'Boolean'>
   readonly salesCount30d: Prisma.FieldRef<"Product", 'Int'>

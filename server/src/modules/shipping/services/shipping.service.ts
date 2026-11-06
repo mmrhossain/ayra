@@ -1,6 +1,10 @@
 import { prisma, type TransactionClient } from "../../../lib/prisma.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { isPrismaCode } from "../../../common/utils/prisma-error.ts";
+import {
+  normalizeZoneDistrictCodes,
+  resolveDistrictCodesByName,
+} from "../../geography/utils/address-geo.ts";
 import type {
   AddressLike,
   CreateShippingMethodInput,
@@ -36,6 +40,7 @@ const zoneSelect = {
   isActive: true,
   isFallback: true,
   matchDistricts: true,
+  matchDistrictCodes: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -78,39 +83,24 @@ const serializeRate = (rate: {
   shippingMethod: rate.shippingMethod,
 });
 
-const districtMatches = (zoneDistricts: string[], district: string) => {
-  const needle = normalizeDistrict(district);
-  if (!needle) return false;
-  return zoneDistricts.some((item) => normalizeDistrict(item) === needle);
-};
+const normalizeCode = (value: string | null | undefined) =>
+  (value ?? "").trim().toUpperCase();
 
-export const resolveShippingZone = async (
-  address: AddressLike,
-  db: DbClient = prisma
+export const zoneMatchesDistrict = (
+  zone: { matchDistricts: string[]; matchDistrictCodes: string[] },
+  address: AddressLike
 ) => {
-  const district = address.district?.trim() ?? "";
-  if (!district) {
-    throw new AppError("Delivery district is required to calculate shipping", 400);
+  const districtCode = normalizeCode(address.districtCode);
+  if (
+    districtCode &&
+    zone.matchDistrictCodes.some((item) => normalizeCode(item) === districtCode)
+  ) {
+    return true;
   }
 
-  const zones = await db.shippingZone.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (zones.length === 0) {
-    throw new AppError("No shipping zones are configured", 400);
-  }
-
-  const matched = zones.find(
-    (zone) => !zone.isFallback && districtMatches(zone.matchDistricts, district)
-  );
-  if (matched) return matched;
-
-  const fallback = zones.find((zone) => zone.isFallback);
-  if (fallback) return fallback;
-
-  throw new AppError("No shipping zone is available for this address", 400);
+  const needle = normalizeDistrict(address.district);
+  if (!needle) return false;
+  return zone.matchDistricts.some((item) => normalizeDistrict(item) === needle);
 };
 
 export const calculateQuoteFromRate = (
@@ -150,7 +140,8 @@ export const listShippingOptions = async (
   db: DbClient = prisma
 ) => {
   const district = address.district?.trim() ?? "";
-  if (!district) {
+  const districtCode = address.districtCode?.trim() ?? "";
+  if (!district && !districtCode) {
     throw new AppError("Delivery district is required to calculate shipping", 400);
   }
 
@@ -171,7 +162,7 @@ export const listShippingOptions = async (
   }
 
   const matched = zones.find(
-    (zone) => !zone.isFallback && districtMatches(zone.matchDistricts, district)
+    (zone) => !zone.isFallback && zoneMatchesDistrict(zone, address)
   );
   const zone = matched ?? zones.find((item) => item.isFallback);
   if (!zone) {
@@ -200,7 +191,8 @@ export const quoteShipping = async (
   db: DbClient = prisma
 ): Promise<ShippingQuote> => {
   const district = address.district?.trim() ?? "";
-  if (!district) {
+  const districtCode = address.districtCode?.trim() ?? "";
+  if (!district && !districtCode) {
     throw new AppError("Delivery district is required to calculate shipping", 400);
   }
 
@@ -221,7 +213,7 @@ export const quoteShipping = async (
   }
 
   const matched = zones.find(
-    (zone) => !zone.isFallback && districtMatches(zone.matchDistricts, district)
+    (zone) => !zone.isFallback && zoneMatchesDistrict(zone, address)
   );
   const zone = matched ?? zones.find((item) => item.isFallback);
   if (!zone) {
@@ -279,6 +271,14 @@ export const getShippingZoneById = async (id: string) => {
   return zone;
 };
 
+const resolveZoneDistrictCodes = async (
+  names: string[],
+  codes: string[] | undefined
+) =>
+  codes !== undefined
+    ? normalizeZoneDistrictCodes(codes)
+    : resolveDistrictCodesByName(names);
+
 export const createShippingZone = async (input: CreateShippingZoneInput) => {
   const code = input.code.trim().toUpperCase();
   const existing = await prisma.shippingZone.findUnique({
@@ -286,22 +286,30 @@ export const createShippingZone = async (input: CreateShippingZoneInput) => {
   });
   if (existing) throw new AppError("Shipping zone code already exists", 409);
 
-  if (input.isFallback) {
-    await prisma.shippingZone.updateMany({
-      data: { isFallback: false },
-      where: { isFallback: true },
-    });
-  }
+  const matchDistrictCodes = await resolveZoneDistrictCodes(
+    input.matchDistricts,
+    input.matchDistrictCodes
+  );
 
-  return prisma.shippingZone.create({
-    data: {
-      name: input.name,
-      code,
-      isActive: input.isActive,
-      isFallback: input.isFallback,
-      matchDistricts: input.matchDistricts,
-    },
-    select: zoneSelect,
+  return prisma.$transaction(async (tx) => {
+    if (input.isFallback) {
+      await tx.shippingZone.updateMany({
+        data: { isFallback: false },
+        where: { isFallback: true },
+      });
+    }
+
+    return tx.shippingZone.create({
+      data: {
+        name: input.name,
+        code,
+        isActive: input.isActive,
+        isFallback: input.isFallback,
+        matchDistricts: input.matchDistricts,
+        matchDistrictCodes,
+      },
+      select: zoneSelect,
+    });
   });
 };
 
@@ -320,31 +328,80 @@ export const updateShippingZone = async (
     if (taken) throw new AppError("Shipping zone code already exists", 409);
   }
 
-  if (input.isFallback) {
-    await prisma.shippingZone.updateMany({
-      data: { isFallback: false },
-      where: { isFallback: true, id: { not: id } },
+  const nextIsActive = input.isActive ?? existing.isActive;
+  if (existing.isActive && !nextIsActive) {
+    const activeCount = await prisma.shippingZone.count({
+      where: { isActive: true },
     });
+    if (activeCount <= 1) {
+      throw new AppError("Cannot deactivate the last active shipping zone", 409);
+    }
   }
 
-  return prisma.shippingZone.update({
-    where: { id },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(nextZoneCode !== undefined && { code: nextZoneCode }),
-      ...(input.isActive !== undefined && { isActive: input.isActive }),
-      ...(input.isFallback !== undefined && { isFallback: input.isFallback }),
-      ...(input.matchDistricts !== undefined && {
-        matchDistricts: input.matchDistricts,
-      }),
-    },
-    select: zoneSelect,
+  if (existing.isActive && existing.isFallback && !nextIsActive) {
+    throw new AppError("Reassign the fallback zone before deactivating it", 409);
+  }
+
+  if (input.isFallback === true && !nextIsActive) {
+    throw new AppError("The fallback zone must be active", 409);
+  }
+
+  let nextMatchDistrictCodes: string[] | undefined;
+  if (input.matchDistrictCodes !== undefined) {
+    nextMatchDistrictCodes = normalizeZoneDistrictCodes(
+      input.matchDistrictCodes
+    );
+  } else if (input.matchDistricts !== undefined) {
+    const resolved = await resolveDistrictCodesByName(input.matchDistricts);
+    nextMatchDistrictCodes =
+      resolved.length > 0 || input.matchDistricts.length === 0
+        ? resolved
+        : undefined;
+  }
+
+  return prisma.$transaction(async (tx) => {
+    if (input.isFallback) {
+      await tx.shippingZone.updateMany({
+        data: { isFallback: false },
+        where: { isFallback: true, id: { not: id } },
+      });
+    }
+
+    return tx.shippingZone.update({
+      where: { id },
+      data: {
+        ...(input.name !== undefined && { name: input.name }),
+        ...(nextZoneCode !== undefined && { code: nextZoneCode }),
+        ...(input.isActive !== undefined && { isActive: input.isActive }),
+        ...(input.isFallback !== undefined && { isFallback: input.isFallback }),
+        ...(input.matchDistricts !== undefined && {
+          matchDistricts: input.matchDistricts,
+        }),
+        ...(nextMatchDistrictCodes !== undefined && {
+          matchDistrictCodes: nextMatchDistrictCodes,
+        }),
+      },
+      select: zoneSelect,
+    });
   });
 };
 
 export const deleteShippingZone = async (id: string) => {
   const existing = await prisma.shippingZone.findUnique({ where: { id } });
   if (!existing) throw new AppError("Shipping zone not found", 404);
+
+  if (existing.isActive && existing.isFallback) {
+    throw new AppError("Reassign the fallback zone before deleting it", 409);
+  }
+
+  if (existing.isActive) {
+    const activeCount = await prisma.shippingZone.count({
+      where: { isActive: true },
+    });
+    if (activeCount <= 1) {
+      throw new AppError("Cannot delete the last active shipping zone", 409);
+    }
+  }
 
   await prisma.shippingZone.delete({ where: { id } });
   return { id };

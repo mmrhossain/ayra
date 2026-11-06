@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   extractCloudinaryPublicId,
+  generateCloudinaryPublicId,
   resolveImagePublicId,
   uniquePublicId,
 } from "../../src/common/utils/cloudinary-public-id.ts";
@@ -41,5 +42,26 @@ describe("cloudinary public id", () => {
         "https://res.cloudinary.com/demo/image/upload/categories/men.jpg"
       )
     ).toBe("men");
+  });
+});
+
+describe("generateCloudinaryPublicId", () => {
+  it("produces a single-segment lowercase alphanumeric id", () => {
+    const id = generateCloudinaryPublicId();
+
+    expect(id).toMatch(/^[a-z0-9]{20}$/);
+    // Slash-free is the invariant that keeps uniquePublicId, delivery URLs,
+    // attach/detach and destroy working unchanged.
+    expect(id).not.toContain("/");
+  });
+
+  it("survives uniquePublicId unchanged (round-trips through the destroy path)", () => {
+    const id = generateCloudinaryPublicId();
+    expect(uniquePublicId(id)).toBe(id);
+  });
+
+  it("generates distinct ids", () => {
+    const ids = new Set(Array.from({ length: 100 }, () => generateCloudinaryPublicId()));
+    expect(ids.size).toBe(100);
   });
 });

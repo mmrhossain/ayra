@@ -4,7 +4,7 @@ import { prisma } from "../../src/lib/prisma.ts";
 import { env } from "../../src/config/env.ts";
 import type { CleanupTracker } from "./tracker.ts";
 
-export type TestRole = "CUSTOMER" | "ADMIN" | "VENDOR";
+export type TestRole = "CUSTOMER" | "ADMIN";
 
 export interface TestUser {
   id: string;
@@ -15,7 +15,20 @@ export interface TestUser {
   customerProfileId: string;
 }
 
-const cookieName = "rangalay.session_token";
+export interface CreateTestUserOptions {
+  role?: TestRole;
+  suffix?: string;
+  /**
+   * Scopes for a scoped ADMIN. Pass `[]` (default for ADMIN) for a super admin,
+   * or a non-empty list for a restricted staff account.
+   */
+  adminPermissions?: string[];
+  adminActions?: string[];
+  /** Explicitly force super-admin status for an ADMIN fixture. */
+  isSuperAdmin?: boolean;
+}
+
+const cookieName = "ayra.session_token";
 
 export const sessionCookie = async (sessionToken: string) => {
   const signature = await makeSignature(sessionToken, env.BETTER_AUTH_SECRET);
@@ -24,12 +37,14 @@ export const sessionCookie = async (sessionToken: string) => {
 
 export const createTestUser = async (
   tracker: CleanupTracker,
-  opts?: { role?: TestRole; suffix?: string; isApproved?: boolean }
+  opts?: CreateTestUserOptions
 ): Promise<TestUser> => {
   const id = randomUUID();
   const suffix = opts?.suffix ?? randomUUID().slice(0, 8);
   const email = `test-${suffix}@example.test`;
   const role = opts?.role ?? "CUSTOMER";
+  const isSuperAdmin =
+    opts?.isSuperAdmin ?? (role === "ADMIN" && (opts?.adminPermissions ?? []).length === 0);
 
   await prisma.user.create({
     data: {
@@ -38,20 +53,12 @@ export const createTestUser = async (
       email,
       emailVerified: true,
       role,
+      adminPermissions: opts?.adminPermissions ?? [],
+      adminActions: opts?.adminActions ?? [],
+      isSuperAdmin,
     },
   });
   tracker.userIds.push(id);
-
-  if (role === "VENDOR") {
-    await prisma.vendorProfile.create({
-      data: {
-        userId: id,
-        shopSlug: `shop-${suffix}`,
-        shopName: `Shop ${suffix}`,
-        isApproved: opts?.isApproved ?? true,
-      },
-    });
-  }
 
   const sessionToken = randomUUID();
   await prisma.session.create({

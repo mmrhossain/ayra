@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import {
   Select,
   SelectContent,
@@ -48,12 +49,12 @@ export function FaqItemFormDialog({
   defaultCategoryId,
 }: FaqItemFormDialogProps) {
   const form = useForm<FaqItemFormValues>({
-    resolver: zodResolver(faqItemFormSchema),
+    resolver: zodResolver(faqItemFormSchema) as Resolver<FaqItemFormValues>,
     defaultValues: {
       categoryId: "",
       question: "",
       answer: "",
-      sortOrder: 0,
+      sortOrder: undefined as unknown as number,
       isPublished: false,
     },
   });
@@ -64,7 +65,7 @@ export function FaqItemFormDialog({
       categoryId: initialData?.categoryId ?? defaultCategoryId ?? categories[0]?.id ?? "",
       question: initialData?.question ?? "",
       answer: initialData?.answer ?? "",
-      sortOrder: initialData?.sortOrder ?? 0,
+      sortOrder: initialData?.sortOrder ?? (undefined as unknown as number),
       isPublished: initialData?.isPublished ?? false,
     });
   }, [open, initialData, defaultCategoryId, categories, form]);
@@ -156,13 +157,13 @@ export function FaqItemFormDialog({
                 <FormItem>
                   <FormLabel>Sort order</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={Number.isFinite(field.value) ? field.value : 0}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? 0 : e.target.valueAsNumber)
-                      }
+                    <NumberInput
+                      placeholder="Order"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                       disabled={mutation.isPending}
                     />
                   </FormControl>

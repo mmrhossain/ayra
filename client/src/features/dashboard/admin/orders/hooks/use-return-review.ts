@@ -21,11 +21,19 @@ export function useReturnReviewMutation({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (adminNote: string) => {
+    mutationFn: async (input: {
+      adminNote: string;
+      items?: Array<{
+        orderItemId: string;
+        restockToStock?: boolean;
+        damaged?: boolean;
+      }>;
+    }) => {
       if (!request) throw new Error("Missing return request");
       return reviewReturnRequest(request.id, {
         status,
-        adminNote: adminNote.trim() || undefined,
+        adminNote: input.adminNote.trim() || undefined,
+        ...(input.items ? { items: input.items } : {}),
       });
     },
     onSuccess: (updated) => {

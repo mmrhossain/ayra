@@ -171,7 +171,7 @@ export type CourierWebhookLogGroupByOutputType = {
   id: string
   provider: $Enums.CourierProvider
   eventType: string
-  externalEventId: string | null
+  externalEventId: string
   payload: runtime.JsonValue
   processed: boolean
   processedAt: Date | null
@@ -204,7 +204,7 @@ export type CourierWebhookLogWhereInput = {
   id?: Prisma.StringFilter<"CourierWebhookLog"> | string
   provider?: Prisma.EnumCourierProviderFilter<"CourierWebhookLog"> | $Enums.CourierProvider
   eventType?: Prisma.StringFilter<"CourierWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableFilter<"CourierWebhookLog"> | string | null
+  externalEventId?: Prisma.StringFilter<"CourierWebhookLog"> | string
   payload?: Prisma.JsonFilter<"CourierWebhookLog">
   processed?: Prisma.BoolFilter<"CourierWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableFilter<"CourierWebhookLog"> | Date | string | null
@@ -216,7 +216,7 @@ export type CourierWebhookLogOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventType?: Prisma.SortOrder
-  externalEventId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalEventId?: Prisma.SortOrder
   payload?: Prisma.SortOrder
   processed?: Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -226,24 +226,25 @@ export type CourierWebhookLogOrderByWithRelationInput = {
 
 export type CourierWebhookLogWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  provider_externalEventId?: Prisma.CourierWebhookLogProviderExternalEventIdCompoundUniqueInput
   AND?: Prisma.CourierWebhookLogWhereInput | Prisma.CourierWebhookLogWhereInput[]
   OR?: Prisma.CourierWebhookLogWhereInput[]
   NOT?: Prisma.CourierWebhookLogWhereInput | Prisma.CourierWebhookLogWhereInput[]
   provider?: Prisma.EnumCourierProviderFilter<"CourierWebhookLog"> | $Enums.CourierProvider
   eventType?: Prisma.StringFilter<"CourierWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableFilter<"CourierWebhookLog"> | string | null
+  externalEventId?: Prisma.StringFilter<"CourierWebhookLog"> | string
   payload?: Prisma.JsonFilter<"CourierWebhookLog">
   processed?: Prisma.BoolFilter<"CourierWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableFilter<"CourierWebhookLog"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"CourierWebhookLog"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CourierWebhookLog"> | Date | string
-}, "id">
+}, "id" | "provider_externalEventId">
 
 export type CourierWebhookLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventType?: Prisma.SortOrder
-  externalEventId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalEventId?: Prisma.SortOrder
   payload?: Prisma.SortOrder
   processed?: Prisma.SortOrder
   processedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -261,7 +262,7 @@ export type CourierWebhookLogScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"CourierWebhookLog"> | string
   provider?: Prisma.EnumCourierProviderWithAggregatesFilter<"CourierWebhookLog"> | $Enums.CourierProvider
   eventType?: Prisma.StringWithAggregatesFilter<"CourierWebhookLog"> | string
-  externalEventId?: Prisma.StringNullableWithAggregatesFilter<"CourierWebhookLog"> | string | null
+  externalEventId?: Prisma.StringWithAggregatesFilter<"CourierWebhookLog"> | string
   payload?: Prisma.JsonWithAggregatesFilter<"CourierWebhookLog">
   processed?: Prisma.BoolWithAggregatesFilter<"CourierWebhookLog"> | boolean
   processedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CourierWebhookLog"> | Date | string | null
@@ -273,7 +274,7 @@ export type CourierWebhookLogCreateInput = {
   id?: string
   provider: $Enums.CourierProvider
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -285,7 +286,7 @@ export type CourierWebhookLogUncheckedCreateInput = {
   id?: string
   provider: $Enums.CourierProvider
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -297,7 +298,7 @@ export type CourierWebhookLogUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumCourierProviderFieldUpdateOperationsInput | $Enums.CourierProvider
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -309,7 +310,7 @@ export type CourierWebhookLogUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumCourierProviderFieldUpdateOperationsInput | $Enums.CourierProvider
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -321,7 +322,7 @@ export type CourierWebhookLogCreateManyInput = {
   id?: string
   provider: $Enums.CourierProvider
   eventType: string
-  externalEventId?: string | null
+  externalEventId: string
   payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: boolean
   processedAt?: Date | string | null
@@ -333,7 +334,7 @@ export type CourierWebhookLogUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumCourierProviderFieldUpdateOperationsInput | $Enums.CourierProvider
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -345,12 +346,17 @@ export type CourierWebhookLogUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumCourierProviderFieldUpdateOperationsInput | $Enums.CourierProvider
   eventType?: Prisma.StringFieldUpdateOperationsInput | string
-  externalEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalEventId?: Prisma.StringFieldUpdateOperationsInput | string
   payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   processed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CourierWebhookLogProviderExternalEventIdCompoundUniqueInput = {
+  provider: $Enums.CourierProvider
+  externalEventId: string
 }
 
 export type CourierWebhookLogCountOrderByAggregateInput = {
@@ -446,7 +452,7 @@ export type $CourierWebhookLogPayload<ExtArgs extends runtime.Types.Extensions.I
     id: string
     provider: $Enums.CourierProvider
     eventType: string
-    externalEventId: string | null
+    externalEventId: string
     payload: runtime.JsonValue
     processed: boolean
     processedAt: Date | null

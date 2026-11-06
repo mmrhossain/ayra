@@ -3,12 +3,12 @@ import type { TransactionClient } from "../../../../lib/prisma.ts";
 import {
   attachMediaAssets,
   detachMediaAssets,
+  type MediaDbClient,
 } from "../../../media/media.service.ts";
 import type {
   ImageRef,
   ProductImageInput,
   ProductImageRow,
-  VariantImageInput,
 } from "../types/product.types.ts";
 
 export const toProductImageRows = (
@@ -26,20 +26,6 @@ export const toProductImageRows = (
     };
   });
 
-export const toVariantImageRows = (
-  images: VariantImageInput[],
-  productId: string,
-  variantId: string,
-): ProductImageRow[] =>
-  images.map((image) => ({
-    imageUrl: image.imageUrl,
-    publicId: resolveImagePublicId(image.publicId, image.imageUrl),
-    isPrimary: image.isPrimary,
-    altText: image.altText ?? null,
-    productId,
-    variantId,
-  }));
-
 export const imagePublicIds = (images: ImageRef[]): string[] =>
   images
     .map((image) => resolveImagePublicId(image.publicId, image.imageUrl))
@@ -47,7 +33,7 @@ export const imagePublicIds = (images: ImageRef[]): string[] =>
 
 export const replaceImages = async (
   tx: TransactionClient,
-  where: { productId?: string; variantId?: string | null },
+  where: { productId?: string },
   nextRows: ProductImageRow[],
 ): Promise<string[]> => {
   const previous = await tx.productImage.findMany({
@@ -75,43 +61,17 @@ export const createProductImages = async (
   });
 };
 
-export const createVariantImages = async (
-  tx: TransactionClient,
-  productId: string,
-  variantId: string,
-  images: VariantImageInput[],
-): Promise<void> => {
-  if (!images.length) return;
-  await tx.productImage.createMany({
-    data: toVariantImageRows(images, productId, variantId),
-  });
-};
-
 export const attachProductMedia = async (
   publicIds: Array<string | null | undefined>,
   productId: string,
+  db?: MediaDbClient,
 ): Promise<void> => {
-  await attachMediaAssets(publicIds, "product", productId);
-};
-
-export const attachVariantMedia = async (
-  publicIds: Array<string | null | undefined>,
-  variantId: string,
-): Promise<void> => {
-  await attachMediaAssets(publicIds, "product_variant", variantId);
+  await attachMediaAssets(publicIds, "product", productId, undefined, db);
 };
 
 export const detachProductMedia = async (
   publicIds: Array<string | null | undefined>,
+  db?: MediaDbClient,
 ): Promise<void> => {
-  await detachMediaAssets(publicIds);
+  await detachMediaAssets(publicIds, db);
 };
-
-export const collectVariantImagePublicIds = (
-  variants?: Array<{ images?: VariantImageInput[] | undefined } | undefined>,
-): Array<string | null> =>
-  (variants ?? []).flatMap((variant) =>
-    (variant?.images ?? []).map((img) =>
-      resolveImagePublicId(img.publicId, img.imageUrl),
-    ),
-  );

@@ -6,6 +6,7 @@ import type {
   VariantOptionGroupInput,
   VariantOverrideInput,
 } from "../types/product.types.ts";
+import { assertTypedSku, isBlankSku } from "./sku-generator.ts";
 import { makeVariantKey } from "./variant-generator.ts";
 
 const PRODUCT_STATUSES: ProductStatus[] = ["DRAFT", "ACTIVE", "ARCHIVED"];
@@ -13,7 +14,7 @@ const PRODUCT_STATUSES: ProductStatus[] = ["DRAFT", "ACTIVE", "ARCHIVED"];
 type Priced = {
   price?: number | undefined;
   compareAtPrice?: number | undefined;
-  costPrice?: number | undefined;
+  costPrice?: number | null | undefined;
   weight?: number | undefined;
 };
 
@@ -21,7 +22,11 @@ export const validatePricing = (input: Priced, path = "variant"): void => {
   if (input.price !== undefined && !(input.price > 0)) {
     throw new AppError(`${path} price must be greater than 0`, 400);
   }
-  if (input.costPrice !== undefined && input.costPrice < 0) {
+  if (
+    input.costPrice !== undefined &&
+    input.costPrice !== null &&
+    input.costPrice < 0
+  ) {
     throw new AppError(`${path} costPrice must be greater than or equal to 0`, 400);
   }
   if (input.weight !== undefined && input.weight < 0) {
@@ -95,7 +100,13 @@ export const validateCreateProductPayload = (input: CreateProductPayload): void 
     throw new AppError("categoryId is required", 400);
   }
   validateProductStatus(input.status);
+  if (input.variants?.length && input.variantOptions?.length) {
+    throw new AppError("Provide either variants or variantOptions, not both", 400);
+  }
   if (input.variantOptions?.length) {
+    if (!input.variantDefaults) {
+      throw new AppError("variantDefaults is required when variantOptions are provided", 400);
+    }
     validateVariantOptions(input.variantOptions);
   }
   if (input.variantDefaults) {
@@ -105,15 +116,17 @@ export const validateCreateProductPayload = (input: CreateProductPayload): void 
     validateDefaultVariantCount(input.variants);
     for (const variant of input.variants) {
       validatePricing(variant);
+      if (!isBlankSku(variant.sku)) assertTypedSku(variant.sku as string);
     }
   }
   if (input.variantOverrides?.length) {
     for (const override of input.variantOverrides) {
       validatePricing(override, "variantOverride");
+      if (!isBlankSku(override.sku)) assertTypedSku(override.sku as string);
     }
   }
-  if (input.variants?.length && input.variantOptions?.length) {
-    throw new AppError("Provide either variants or variantOptions, not both", 400);
+  if (input.status === "ACTIVE" && !input.variants?.length && !input.variantOptions?.length && !input.variantDefaults) {
+    throw new AppError("An active product must have at least one variant", 400);
   }
 };
 

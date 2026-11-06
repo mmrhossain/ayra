@@ -15,18 +15,6 @@ export const detailsSchema = z.object({
   primaryImageUrl: z.string(),
   isFeatured: z.boolean(),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]),
-  price: z.string(),
-});
-
-export const createDetailsSchema = detailsSchema.superRefine((values, ctx) => {
-  const price = Number(values.price);
-  if (!values.price.trim() || !Number.isFinite(price) || price <= 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["price"],
-      message: "Price must be greater than 0",
-    });
-  }
 });
 
 export type DetailsFormValues = z.infer<typeof detailsSchema>;

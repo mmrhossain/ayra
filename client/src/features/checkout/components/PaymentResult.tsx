@@ -25,14 +25,14 @@ const copy: Record<
   success: {
     title: "Payment submitted",
     description:
-      "SSLCommerz reported a successful checkout. Final payment status is confirmed by our server (IPN) and may take a moment to update.",
+      "Your payment was verified and the order is confirmed. A confirmation email is on its way.",
     icon: CheckCircle2,
     tone: "bg-primary/10 text-primary",
   },
   fail: {
     title: "Payment failed",
     description:
-      "The online payment did not complete. This page is informational only — our records update from the payment gateway IPN.",
+      "The online payment could not be verified. If money left your account, contact support with the transaction ID below.",
     icon: CircleX,
     tone: "bg-red-50 text-red-600",
   },
@@ -66,25 +66,27 @@ export default function PaymentResult({ kind }: { kind: ResultKind }) {
   const tranId = firstParam(params, ["tran_id", "tranId", "transactionId"]);
 
   return (
-    <div className="container px-4 lg:px-10 py-16">
-      <div className="max-w-2xl mx-auto bg-white border border-gray-200 shadow-sm p-8 text-center space-y-4">
+    <div className="container py-12 sm:py-16">
+      <div className="mx-auto max-w-2xl space-y-4 border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8">
         <div
-          className={`mx-auto w-14 h-14 rounded-full flex items-center justify-center ${meta.tone}`}
+          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${meta.tone}`}
         >
-          <Icon />
+          <Icon aria-hidden />
         </div>
-        <h1 className="text-2xl font-semibold text-slate-900">{meta.title}</h1>
-        <p className="text-secondary">{meta.description}</p>
-        <dl className="text-sm text-left space-y-2 border border-gray-100 bg-gray-50 p-4">
+        <h1 className="text-2xl font-semibold leading-tight tracking-tight text-slate-900 lg:text-3xl">
+          {meta.title}
+        </h1>
+        <p className="text-foreground">{meta.description}</p>
+        <dl className="space-y-2 border border-gray-100 bg-gray-50 p-4 text-left text-sm">
           {orderNumber ? (
             <div className="flex justify-between gap-4">
-              <dt className="text-secondary">Order number</dt>
+              <dt className="text-foreground">Order number</dt>
               <dd className="font-medium text-slate-900">{orderNumber}</dd>
             </div>
           ) : null}
           {orderId ? (
             <div className="flex justify-between gap-4">
-              <dt className="text-secondary">Order id</dt>
+              <dt className="text-foreground">Order id</dt>
               <dd className="font-medium text-slate-900 break-all">
                 {orderId}
               </dd>
@@ -92,32 +94,32 @@ export default function PaymentResult({ kind }: { kind: ResultKind }) {
           ) : null}
           {tranId ? (
             <div className="flex justify-between gap-4">
-              <dt className="text-secondary">Transaction</dt>
+              <dt className="text-foreground">Transaction</dt>
               <dd className="font-medium text-slate-900 break-all">{tranId}</dd>
             </div>
           ) : null}
           {status ? (
             <div className="flex justify-between gap-4">
-              <dt className="text-secondary">Reported status</dt>
+              <dt className="text-foreground">Reported status</dt>
               <dd className="font-medium text-slate-900 uppercase">{status}</dd>
             </div>
           ) : null}
           {!orderId && !orderNumber && !tranId && !status ? (
-            <p className="text-secondary">
+            <p className="text-foreground">
               No payment details were included in the URL.
             </p>
           ) : null}
         </dl>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row">
           <Link
             href="/customer/orders"
-            className="px-5 py-3 bg-primary text-white text-sm font-semibold hover:bg-black transition"
+            className="inline-flex min-h-11 w-full items-center justify-center bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-black sm:w-auto"
           >
             View orders
           </Link>
           <Link
             href="/shop"
-            className="px-5 py-3 border border-gray-200 text-sm font-semibold hover:bg-gray-100 transition"
+            className="inline-flex min-h-11 w-full items-center justify-center border border-gray-200 px-5 py-3 text-sm font-semibold transition-colors hover:bg-gray-100 sm:w-auto"
           >
             Continue shopping
           </Link>

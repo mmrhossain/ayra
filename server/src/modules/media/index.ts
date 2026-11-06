@@ -14,8 +14,6 @@ export {
   deleteImages,
   attachMediaAssets,
   detachMediaAssets,
-  replaceAttachedAssets,
-  buildImageUrl,
   buildImageUrls,
   purgeExpiredMediaAssets,
 } from "./media.service.ts";
@@ -26,8 +24,6 @@ export {
 } from "./media.types.ts";
 export {
   IMAGE_TYPE_PRESETS,
-  SINGLE_IMAGE_TYPES,
-  MULTIPLE_IMAGE_TYPES,
   MAX_PRODUCT_IMAGES,
 } from "./media.constants.ts";
 export {

@@ -1,18 +1,25 @@
-import { unlink } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, unlink } from "node:fs/promises";
 import { AppError } from "../../common/errors/AppError.ts";
 import { logger } from "../../common/looger/logger.ts";
-import { uniquePublicId } from "../../common/utils/cloudinary-public-id.ts";
+import { withDbTimeout } from "../../common/utils/db-retry.ts";
+import {
+  generateCloudinaryPublicId,
+  uniquePublicId,
+} from "../../common/utils/cloudinary-public-id.ts";
 import { assertAllowedImageStream } from "../../common/utils/image-magic.ts";
 import {
   cloudinary,
   deleteCloudinaryAsset,
   uploadImageFileToCloudinary,
 } from "../../lib/cloudinary.ts";
+import { env } from "../../config/env.ts";
 import { paginated } from "../../common/utils/paginate.ts";
-import { prisma } from "../../lib/prisma.ts";
+import { prisma, type TransactionClient } from "../../lib/prisma.ts";
 import {
   IMAGE_TYPE_PRESETS,
   MEDIA_PENDING_TTL_MS,
+  MEDIA_PENDING_VISIBLE_MS,
   MEDIA_SOFT_DELETE_RETENTION_MS,
 } from "./media.constants.ts";
 import {
@@ -25,13 +32,12 @@ import {
   type UploadedImage,
 } from "./media.types.ts";
 
-// Optimized: Removed heavy 2000x2000 synchronous scaling limit on ingest
-// to speed up Cloudinary upload response times. Variants handle presentation sizes.
-const MASTER_TRANSFORMATION = {
-  fetch_format: "auto" as const,
-  quality: "auto" as const,
-  flags: "strip_profile",
-};
+/**
+ * Minimal database surface shared by `prisma` and an interactive
+ * `TransactionClient`. Attachment bookkeeping can therefore run inside the
+ * caller's product transaction while Cloudinary operations stay outside it.
+ */
+export type MediaDbClient = Pick<TransactionClient, "mediaAsset">;
 
 const unlinkQuietly = async (filePath: string) => {
   try {
@@ -39,6 +45,11 @@ const unlinkQuietly = async (filePath: string) => {
   } catch {
     // Suppress cleanup errors
   }
+};
+
+const hashImageFile = async (filePath: string): Promise<string> => {
+  const buffer = await readFile(filePath);
+  return createHash("sha256").update(buffer).digest("hex");
 };
 
 const toUploadedImage = (
@@ -57,6 +68,8 @@ const toUploadedImage = (
     url: fallbackUrl ?? first,
     secure_url: first,
     variants,
+    imageUrl: first,
+    ...(variants[1] ? { mobileImageUrl: variants[1] } : {}),
   };
 };
 
@@ -64,10 +77,7 @@ const uploadOptionsFor = (type: ImageType) => {
   const preset = IMAGE_TYPE_PRESETS[type];
   return {
     asset_folder: preset.folder,
-    unique_filename: true,
     use_filename: false,
-    transformation: [MASTER_TRANSFORMATION],
-    timeout: 120000,
   };
 };
 
@@ -77,28 +87,39 @@ const recordPendingAsset = async (input: {
   type: ImageType;
   ownerUserId: string;
   bytes?: number;
+  contentHash?: string;
 }) => {
-  await prisma.mediaAsset.upsert({
-    where: { publicId: input.publicId },
-    create: {
-      publicId: input.publicId,
-      url: input.url,
-      type: input.type,
-      status: "PENDING",
-      ownerUserId: input.ownerUserId,
-      bytes: input.bytes ?? null,
-    },
-    update: {
-      url: input.url,
-      type: input.type,
-      status: "PENDING",
-      ownerUserId: input.ownerUserId,
-      entityType: null,
-      entityId: null,
-      detachedAt: null,
-      bytes: input.bytes ?? null,
-    },
-  });
+  const hashField = input.contentHash ? { contentHash: input.contentHash } : {};
+  // Bound the write: a suspended/unreachable database must fail the request
+  // fast with a clear message instead of hanging for the pool query timeout.
+  await withDbTimeout(
+    () =>
+      prisma.mediaAsset.upsert({
+        where: { publicId: input.publicId },
+        create: {
+          publicId: input.publicId,
+          url: input.url,
+          type: input.type,
+          status: "PENDING",
+          ownerUserId: input.ownerUserId,
+          bytes: input.bytes ?? null,
+          ...hashField,
+        },
+        update: {
+          url: input.url,
+          type: input.type,
+          status: "PENDING",
+          ownerUserId: input.ownerUserId,
+          entityType: null,
+          entityId: null,
+          detachedAt: null,
+          bytes: input.bytes ?? null,
+          ...hashField,
+        },
+      }),
+    env.MEDIA_DB_WRITE_TIMEOUT_MS,
+    () => new AppError("Database is busy. Please try again.", 503)
+  );
 };
 
 export const uploadSingleImage = async (
@@ -108,16 +129,76 @@ export const uploadSingleImage = async (
 ): Promise<UploadedImage> => {
   try {
     await assertAllowedImageStream(file.path, file.mimetype, file.originalname);
-    const result = await uploadImageFileToCloudinary(file.path, uploadOptionsFor(type));
-    const media = toUploadedImage(result.public_id, type, result.secure_url ?? result.url);
-    await recordPendingAsset({
-      publicId: media.publicId,
-      url: media.secure_url,
+
+    const contentHash = await hashImageFile(file.path).catch(() => undefined);
+
+    // A retried upload (for example, after a product save rolled back) reuses
+    // the still-pending asset for identical bytes instead of creating a second
+    // Cloudinary object. The 10s floor avoids returning an upload that another
+    // request is still writing.
+    const reusable = contentHash
+      ? await withDbTimeout(
+          () =>
+            prisma.mediaAsset.findFirst({
+              where: {
+                ownerUserId,
+                type,
+                contentHash,
+                status: "PENDING",
+                createdAt: { lt: new Date(Date.now() - 10_000) },
+              },
+              orderBy: { createdAt: "desc" },
+            }),
+          env.MEDIA_DB_WRITE_TIMEOUT_MS,
+          () => new AppError("Database is busy. Please try again.", 503)
+        )
+      : null;
+    if (reusable) {
+      return toUploadedImage(reusable.publicId, type, reusable.url);
+    }
+
+    // The delivery URL is derived purely from the public id, so the PENDING row
+    // can be written in parallel with the Cloudinary upload: the client waits
+    // for max(cloudinary, db) instead of cloudinary + db.
+    const publicId = generateCloudinaryPublicId();
+    const predicted = toUploadedImage(publicId, type);
+
+    const [uploadResult, recordResult] = await Promise.allSettled([
+      uploadImageFileToCloudinary(file.path, {
+        ...uploadOptionsFor(type),
+        public_id: publicId,
+      }),
+      recordPendingAsset({
+        publicId: predicted.publicId,
+        url: predicted.secure_url,
+        type,
+        ownerUserId,
+        bytes: file.size,
+        ...(contentHash ? { contentHash } : {}),
+      }),
+    ]);
+
+    if (uploadResult.status === "rejected") {
+      // Cloudinary never stored the asset; drop the PENDING row we wrote.
+      await destroyUploadedAsset(predicted.publicId);
+      const reason = uploadResult.reason;
+      if (reason instanceof AppError) throw reason;
+      throw new AppError("Cloudinary upload failed", 502);
+    }
+
+    if (recordResult.status === "rejected") {
+      // The asset exists but we could not track it; remove it so it is not
+      // orphaned in Cloudinary, then surface the original error (e.g. 503).
+      await deleteCloudinaryAsset(predicted.publicId);
+      throw recordResult.reason;
+    }
+
+    const result = uploadResult.value;
+    return toUploadedImage(
+      result.public_id ?? publicId,
       type,
-      ownerUserId,
-      bytes: file.size,
-    });
-    return media;
+      result.secure_url ?? result.url
+    );
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError("Cloudinary upload failed", 502);
@@ -193,7 +274,13 @@ const toLibraryItem = (asset: {
 export const listMediaLibrary = async (query: ListMediaQuery) => {
   const where = {
     type: query.type,
-    status: { in: ["PENDING" as const, "ATTACHED" as const] },
+    OR: [
+      { status: "ATTACHED" as const },
+      {
+        status: "PENDING" as const,
+        createdAt: { gte: new Date(Date.now() - MEDIA_PENDING_VISIBLE_MS) },
+      },
+    ],
   };
   const [total, assets] = await Promise.all([
     prisma.mediaAsset.count({ where }),
@@ -219,10 +306,20 @@ export const listMediaLibrary = async (query: ListMediaQuery) => {
   );
 };
 
-const destroyUploadedAsset = async (publicId: string) => {
+const destroyUploadedAsset = async (publicId: string): Promise<boolean> => {
   const storedId = uniquePublicId(publicId) ?? publicId;
-  await deleteCloudinaryAsset(storedId);
+  const destroyed = await deleteCloudinaryAsset(storedId);
+  if (destroyed === false) {
+    // CDN delete failed. Flag the row as SOFT_DELETED so the janitor retries it
+    // later instead of deleting the row now and orphaning the Cloudinary object.
+    await prisma.mediaAsset.updateMany({
+      where: { publicId: storedId },
+      data: { status: "SOFT_DELETED", detachedAt: new Date() },
+    });
+    return false;
+  }
   await prisma.mediaAsset.deleteMany({ where: { publicId: storedId } });
+  return true;
 };
 
 export const deleteImage = async (publicId: string, ownerUserId?: string): Promise<void> => {
@@ -277,18 +374,47 @@ export const deleteImages = async (
 export const attachMediaAssets = async (
   publicIds: Array<string | null | undefined>,
   entityType: MediaOwner,
-  entityId: string
+  entityId: string,
+  ownerUserId?: string,
+  db: MediaDbClient = prisma
 ): Promise<void> => {
   const uniqueIds = storedPublicIds(publicIds);
   if (uniqueIds.length === 0) return;
-  await prisma.mediaAsset.updateMany({
+  // When the acting user is known (personal assets: avatar), scope
+  // every read/write to assets they own so one user cannot attach another user's
+  // pending asset. Admin-managed catalog entities omit it (admins are trusted).
+  const ownerScope = ownerUserId ? { ownerUserId } : {};
+
+  // Reject missing claims: every referenced asset must exist (and, when scoped,
+  // be owned by the caller). A silent no-op would leave the entity pointing at an
+  // untracked public id.
+  const assets = await db.mediaAsset.findMany({
+    where: { publicId: { in: uniqueIds }, ...ownerScope },
+    select: { publicId: true, status: true, entityType: true, entityId: true },
+  });
+  const found = new Set(assets.map((asset) => asset.publicId));
+  const missing = uniqueIds.filter((publicId) => !found.has(publicId));
+  if (missing.length > 0) {
+    throw new AppError("Media asset not found or not owned by you", 404);
+  }
+
+  // Reject conflicting claims: an asset already attached to a different entity
+  // (or queued for CDN deletion) must not be silently re-pointed.
+  const conflicting = assets.filter(
+    (asset) =>
+      asset.status === "SOFT_DELETED" ||
+      (asset.status === "ATTACHED" &&
+        !(asset.entityType === entityType && asset.entityId === entityId))
+  );
+  if (conflicting.length > 0) {
+    throw new AppError("Media asset is already in use", 409);
+  }
+
+  await db.mediaAsset.updateMany({
     where: {
       publicId: { in: uniqueIds },
-      OR: [
-        { status: "PENDING" },
-        { entityType: null },
-        { entityId: null },
-      ],
+      ...ownerScope,
+      status: { not: "SOFT_DELETED" },
     },
     data: {
       status: "ATTACHED",
@@ -297,35 +423,26 @@ export const attachMediaAssets = async (
       detachedAt: null,
     },
   });
-  await prisma.mediaAsset.updateMany({
+};
+
+export const detachMediaAssets = async (
+  publicIds: Array<string | null | undefined>,
+  db: MediaDbClient = prisma
+): Promise<void> => {
+  const uniqueIds = storedPublicIds(publicIds);
+  if (uniqueIds.length === 0) return;
+  await db.mediaAsset.updateMany({
     where: {
       publicId: { in: uniqueIds },
       status: { not: "SOFT_DELETED" },
     },
     data: {
-      status: "ATTACHED",
-      detachedAt: null,
+      status: "PENDING",
+      entityType: null,
+      entityId: null,
+      detachedAt: new Date(),
     },
   });
-};
-
-export const detachMediaAssets = async (
-  _publicIds: Array<string | null | undefined>
-): Promise<void> => {
-};
-
-export const replaceAttachedAssets = async (input: {
-  previousPublicIds: Array<string | null | undefined>;
-  nextPublicIds: Array<string | null | undefined>;
-  entityType: MediaOwner;
-  entityId: string;
-}): Promise<void> => {
-  const previous = storedPublicIds(input.previousPublicIds);
-  const next = storedPublicIds(input.nextPublicIds);
-  const nextSet = new Set(next);
-  const stale = previous.filter((id) => !nextSet.has(id));
-  await attachMediaAssets(next, input.entityType, input.entityId);
-  await detachMediaAssets(stale);
 };
 
 export const buildImageUrls = (publicId: string, type: ImageType): string[] => {
@@ -341,20 +458,12 @@ export const buildImageUrls = (publicId: string, type: ImageType): string[] => {
           crop: transformation.crop,
           ...(transformation.gravity ? { gravity: transformation.gravity } : {}),
           fetch_format: "auto",
-          quality: "auto",
+          quality: "auto:good",
+          dpr: "auto",
         },
       ],
     })
   );
-};
-
-export const buildImageUrl = (publicId: string, type: ImageType): string => {
-  const urls = buildImageUrls(publicId, type);
-  const firstUrl = urls[0];
-  if (!firstUrl) {
-    throw new AppError("Image transformation not found", 500);
-  }
-  return firstUrl;
 };
 
 export const purgeExpiredMediaAssets = async (): Promise<number> => {
@@ -378,8 +487,9 @@ export const purgeExpiredMediaAssets = async (): Promise<number> => {
   let purged = 0;
   for (const asset of expired) {
     try {
-      await destroyUploadedAsset(asset.publicId);
-      purged += 1;
+      // On failure the row is kept so the next cycle retries it.
+      const destroyed = await destroyUploadedAsset(asset.publicId);
+      if (destroyed) purged += 1;
     } catch (error) {
       logger.error({
         message: `Media janitor failed for ${asset.publicId}`,

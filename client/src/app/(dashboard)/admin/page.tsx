@@ -1,95 +1,177 @@
+import { Suspense } from "react";
+
 import { OrdersStatusBreakdown } from "@/features/dashboard/admin/orders/components/orders-status";
+import { fetchOrderList } from "@/features/dashboard/admin/orders/api/orders";
 import {
   fetchOrdersByStatus,
   fetchOverview,
   fetchSales,
   fetchTopProducts,
   toErrorMessage,
+  type AnalyticsQuery,
+  type OverviewMetrics,
 } from "@/features/dashboard/admin/overview/api/analytics";
-import { OverviewMetricsGrid } from "@/features/dashboard/admin/overview/components/overview-metrics";
+import { AttentionStrip } from "@/features/dashboard/admin/overview/components/attention-strip";
+import { DetailedMetrics } from "@/features/dashboard/admin/overview/components/detailed-metrics";
+import { KpiGrid } from "@/features/dashboard/admin/overview/components/kpi-grid";
 import {
   ChartSkeleton,
   MetricsSkeleton,
   OverviewError,
   WidgetSkeleton,
 } from "@/features/dashboard/admin/overview/components/overview-states";
+import { RecentOrders } from "@/features/dashboard/admin/overview/components/recent-orders";
 import { SalesChart } from "@/features/dashboard/admin/overview/components/sales-chart";
 import { TopProductsTable } from "@/features/dashboard/admin/overview/components/top-products";
-import { Suspense } from "react";
+import { GRANULARITY_BY_RANGE } from "@/features/dashboard/admin/overview/utils/range";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
+import { requireAdminPageAccess, toAdminAccess } from "@/lib/api/auth/server";
 
-export const revalidate = 60;
+const RANGE = "day" as const;
 
-async function MetricsSection() {
-  let overview;
+function previousWindow(data: OverviewMetrics) {
+  const from = new Date(data.dateFrom).getTime();
+  const to = new Date(data.dateTo).getTime();
+  const span = to - from + 1;
+  return {
+    dateFrom: new Date(from - span).toISOString(),
+    dateTo: new Date(from - 1).toISOString(),
+  };
+}
+
+async function HeadlineSection({
+  query,
+  access,
+}: {
+  query: AnalyticsQuery;
+  access: ReturnType<typeof toAdminAccess>;
+}) {
+  let data;
   try {
-    overview = await fetchOverview();
+    data = await fetchOverview(query);
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
-  return <OverviewMetricsGrid data={overview} />;
+
+  let previous: OverviewMetrics | null = null;
+  try {
+    previous = await fetchOverview({
+      ...query,
+      ...previousWindow(data),
+    });
+  } catch {
+    previous = null;
+  }
+
+  return (
+    <>
+      <KpiGrid data={data} previous={previous} />
+      <AttentionStrip data={data} access={access} />
+    </>
+  );
 }
 
-async function SalesSection() {
+async function SalesSection({ query }: { query: AnalyticsQuery }) {
   let sales;
   try {
-    sales = await fetchSales("day");
+    sales = await fetchSales(query);
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
-
-  return <SalesChart initialData={sales} />;
+  return <SalesChart initialData={sales} initialRange={RANGE} />;
 }
 
-async function OrdersStatusSection() {
+async function RecentOrdersSection() {
+  let orders;
+  try {
+    orders = await fetchOrderList({ page: 1, limit: 6 });
+  } catch (err) {
+    return <OverviewError message={toErrorMessage(err)} />;
+  }
+  return <RecentOrders orders={orders.items} />;
+}
+
+async function OrdersStatusSection({ query }: { query: AnalyticsQuery }) {
   let ordersByStatus;
   try {
-    ordersByStatus = await fetchOrdersByStatus();
+    ordersByStatus = await fetchOrdersByStatus(query);
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
   return <OrdersStatusBreakdown data={ordersByStatus} />;
 }
 
-async function TopProductsSection() {
+async function TopProductsSection({ query }: { query: AnalyticsQuery }) {
   let topProducts;
   try {
-    topProducts = await fetchTopProducts();
+    topProducts = await fetchTopProducts(query);
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
   return <TopProductsTable data={topProducts} />;
 }
 
-export default function DashboardOverviewPage() {
+async function DetailedSection({ query }: { query: AnalyticsQuery }) {
+  let data;
+  try {
+    data = await fetchOverview(query);
+  } catch (err) {
+    return <OverviewError message={toErrorMessage(err)} />;
+  }
+  return <DetailedMetrics data={data} />;
+}
+
+type Props = {
+  searchParams: Promise<{ notice?: string }>;
+};
+
+export default async function DashboardOverviewPage({ searchParams }: Props) {
+  const { notice } = await searchParams;
+  const query: AnalyticsQuery = {
+    range: RANGE,
+    groupBy: GRANULARITY_BY_RANGE[RANGE],
+  };
+
+  const redirectQuery =
+    typeof notice === "string" ? `?notice=${encodeURIComponent(notice)}` : "";
+
+  const session = await requireAdminPageAccess("/admin", redirectQuery);
+  const access = toAdminAccess(session.user);
+
   return (
-    <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-        <p className="text-sm text-muted-foreground">
-          Live store metrics from the last reporting period.
-        </p>
-      </div>
+    <section className="min-w-0 space-y-6">
+      <PageHeader
+        title="Overview"
+        description="Store health at a glance. Switch the sales trend between day, month and year."
+      />
 
-      <div className="space-y-6">
-        <Suspense fallback={<MetricsSkeleton />}>
-          <MetricsSection />
-        </Suspense>
+      <Suspense fallback={<MetricsSkeleton />}>
+        <HeadlineSection query={query} access={access} />
+      </Suspense>
 
-        {/* Only this section will update and show skeleton when toggled */}
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
         <Suspense fallback={<ChartSkeleton />}>
-          <SalesSection />
+          <SalesSection query={query} />
         </Suspense>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Suspense fallback={<WidgetSkeleton />}>
-            <OrdersStatusSection />
-          </Suspense>
-
-          <Suspense fallback={<WidgetSkeleton />}>
-            <TopProductsSection />
-          </Suspense>
-        </div>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <RecentOrdersSection />
+        </Suspense>
       </div>
+
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <Suspense fallback={<WidgetSkeleton />}>
+          <OrdersStatusSection query={query} />
+        </Suspense>
+
+        <Suspense fallback={<WidgetSkeleton />}>
+          <TopProductsSection query={query} />
+        </Suspense>
+      </div>
+
+      <Suspense fallback={<MetricsSkeleton />}>
+        <DetailedSection query={query} />
+      </Suspense>
     </section>
   );
 }

@@ -32,6 +32,8 @@ export type UserMinAggregateOutputType = {
   image: string | null
   imagePublicId: string | null
   role: string | null
+  isSuperAdmin: boolean | null
+  staffStatus: $Enums.StaffStatus | null
   banned: boolean | null
   banReason: string | null
   banExpires: Date | null
@@ -48,6 +50,8 @@ export type UserMaxAggregateOutputType = {
   image: string | null
   imagePublicId: string | null
   role: string | null
+  isSuperAdmin: boolean | null
+  staffStatus: $Enums.StaffStatus | null
   banned: boolean | null
   banReason: string | null
   banExpires: Date | null
@@ -64,6 +68,10 @@ export type UserCountAggregateOutputType = {
   image: number
   imagePublicId: number
   role: number
+  adminPermissions: number
+  adminActions: number
+  isSuperAdmin: number
+  staffStatus: number
   banned: number
   banReason: number
   banExpires: number
@@ -82,6 +90,8 @@ export type UserMinAggregateInputType = {
   image?: true
   imagePublicId?: true
   role?: true
+  isSuperAdmin?: true
+  staffStatus?: true
   banned?: true
   banReason?: true
   banExpires?: true
@@ -98,6 +108,8 @@ export type UserMaxAggregateInputType = {
   image?: true
   imagePublicId?: true
   role?: true
+  isSuperAdmin?: true
+  staffStatus?: true
   banned?: true
   banReason?: true
   banExpires?: true
@@ -114,6 +126,10 @@ export type UserCountAggregateInputType = {
   image?: true
   imagePublicId?: true
   role?: true
+  adminPermissions?: true
+  adminActions?: true
+  isSuperAdmin?: true
+  staffStatus?: true
   banned?: true
   banReason?: true
   banExpires?: true
@@ -203,6 +219,10 @@ export type UserGroupByOutputType = {
   image: string | null
   imagePublicId: string | null
   role: string | null
+  adminPermissions: string[]
+  adminActions: string[]
+  isSuperAdmin: boolean
+  staffStatus: $Enums.StaffStatus
   banned: boolean | null
   banReason: string | null
   banExpires: Date | null
@@ -240,6 +260,10 @@ export type UserWhereInput = {
   image?: Prisma.StringNullableFilter<"User"> | string | null
   imagePublicId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.StringNullableFilter<"User"> | string | null
+  adminPermissions?: Prisma.StringNullableListFilter<"User">
+  adminActions?: Prisma.StringNullableListFilter<"User">
+  isSuperAdmin?: Prisma.BoolFilter<"User"> | boolean
+  staffStatus?: Prisma.EnumStaffStatusFilter<"User"> | $Enums.StaffStatus
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -252,7 +276,8 @@ export type UserWhereInput = {
   notificationPreference?: Prisma.XOR<Prisma.UserNotificationPreferenceNullableScalarRelationFilter, Prisma.UserNotificationPreferenceWhereInput> | null
   customerProfile?: Prisma.XOR<Prisma.CustomerProfileNullableScalarRelationFilter, Prisma.CustomerProfileWhereInput> | null
   pushDevices?: Prisma.PushDeviceListRelationFilter
-  vendorProfile?: Prisma.XOR<Prisma.VendorProfileNullableScalarRelationFilter, Prisma.VendorProfileWhereInput> | null
+  staffInvitationsSent?: Prisma.StaffInvitationListRelationFilter
+  staffInvitationsAccepted?: Prisma.StaffInvitationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -263,6 +288,10 @@ export type UserOrderByWithRelationInput = {
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrderInput | Prisma.SortOrder
+  adminPermissions?: Prisma.SortOrder
+  adminActions?: Prisma.SortOrder
+  isSuperAdmin?: Prisma.SortOrder
+  staffStatus?: Prisma.SortOrder
   banned?: Prisma.SortOrderInput | Prisma.SortOrder
   banReason?: Prisma.SortOrderInput | Prisma.SortOrder
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -275,7 +304,8 @@ export type UserOrderByWithRelationInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceOrderByWithRelationInput
   customerProfile?: Prisma.CustomerProfileOrderByWithRelationInput
   pushDevices?: Prisma.PushDeviceOrderByRelationAggregateInput
-  vendorProfile?: Prisma.VendorProfileOrderByWithRelationInput
+  staffInvitationsSent?: Prisma.StaffInvitationOrderByRelationAggregateInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -289,6 +319,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   image?: Prisma.StringNullableFilter<"User"> | string | null
   imagePublicId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.StringNullableFilter<"User"> | string | null
+  adminPermissions?: Prisma.StringNullableListFilter<"User">
+  adminActions?: Prisma.StringNullableListFilter<"User">
+  isSuperAdmin?: Prisma.BoolFilter<"User"> | boolean
+  staffStatus?: Prisma.EnumStaffStatusFilter<"User"> | $Enums.StaffStatus
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -301,7 +335,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   notificationPreference?: Prisma.XOR<Prisma.UserNotificationPreferenceNullableScalarRelationFilter, Prisma.UserNotificationPreferenceWhereInput> | null
   customerProfile?: Prisma.XOR<Prisma.CustomerProfileNullableScalarRelationFilter, Prisma.CustomerProfileWhereInput> | null
   pushDevices?: Prisma.PushDeviceListRelationFilter
-  vendorProfile?: Prisma.XOR<Prisma.VendorProfileNullableScalarRelationFilter, Prisma.VendorProfileWhereInput> | null
+  staffInvitationsSent?: Prisma.StaffInvitationListRelationFilter
+  staffInvitationsAccepted?: Prisma.StaffInvitationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -312,6 +347,10 @@ export type UserOrderByWithAggregationInput = {
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePublicId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrderInput | Prisma.SortOrder
+  adminPermissions?: Prisma.SortOrder
+  adminActions?: Prisma.SortOrder
+  isSuperAdmin?: Prisma.SortOrder
+  staffStatus?: Prisma.SortOrder
   banned?: Prisma.SortOrderInput | Prisma.SortOrder
   banReason?: Prisma.SortOrderInput | Prisma.SortOrder
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -334,6 +373,10 @@ export type UserScalarWhereWithAggregatesInput = {
   image?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   imagePublicId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  adminPermissions?: Prisma.StringNullableListFilter<"User">
+  adminActions?: Prisma.StringNullableListFilter<"User">
+  isSuperAdmin?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  staffStatus?: Prisma.EnumStaffStatusWithAggregatesFilter<"User"> | $Enums.StaffStatus
   banned?: Prisma.BoolNullableWithAggregatesFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -350,6 +393,10 @@ export type UserCreateInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -362,7 +409,8 @@ export type UserCreateInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -373,6 +421,10 @@ export type UserUncheckedCreateInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -385,7 +437,8 @@ export type UserUncheckedCreateInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUpdateInput = {
@@ -396,6 +449,10 @@ export type UserUpdateInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -408,7 +465,8 @@ export type UserUpdateInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -419,6 +477,10 @@ export type UserUncheckedUpdateInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -431,7 +493,8 @@ export type UserUncheckedUpdateInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -442,6 +505,10 @@ export type UserCreateManyInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -458,6 +525,10 @@ export type UserUpdateManyMutationInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -474,12 +545,24 @@ export type UserUncheckedUpdateManyInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -490,6 +573,10 @@ export type UserCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  adminPermissions?: Prisma.SortOrder
+  adminActions?: Prisma.SortOrder
+  isSuperAdmin?: Prisma.SortOrder
+  staffStatus?: Prisma.SortOrder
   banned?: Prisma.SortOrder
   banReason?: Prisma.SortOrder
   banExpires?: Prisma.SortOrder
@@ -506,6 +593,8 @@ export type UserMaxOrderByAggregateInput = {
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  isSuperAdmin?: Prisma.SortOrder
+  staffStatus?: Prisma.SortOrder
   banned?: Prisma.SortOrder
   banReason?: Prisma.SortOrder
   banExpires?: Prisma.SortOrder
@@ -522,6 +611,8 @@ export type UserMinOrderByAggregateInput = {
   image?: Prisma.SortOrder
   imagePublicId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  isSuperAdmin?: Prisma.SortOrder
+  staffStatus?: Prisma.SortOrder
   banned?: Prisma.SortOrder
   banReason?: Prisma.SortOrder
   banExpires?: Prisma.SortOrder
@@ -540,6 +631,14 @@ export type UserNullableScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput | null
 }
 
+export type UserCreateadminPermissionsInput = {
+  set: string[]
+}
+
+export type UserCreateadminActionsInput = {
+  set: string[]
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -552,6 +651,20 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type UserUpdateadminPermissionsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type UserUpdateadminActionsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type EnumStaffStatusFieldUpdateOperationsInput = {
+  set?: $Enums.StaffStatus
+}
+
 export type NullableBoolFieldUpdateOperationsInput = {
   set?: boolean | null
 }
@@ -562,6 +675,36 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UserCreateNestedOneWithoutStaffInvitationsSentInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaffInvitationsSentInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutStaffInvitationsAcceptedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsAcceptedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaffInvitationsAcceptedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutStaffInvitationsSentNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsSentInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaffInvitationsSentInput
+  upsert?: Prisma.UserUpsertWithoutStaffInvitationsSentInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStaffInvitationsSentInput, Prisma.UserUpdateWithoutStaffInvitationsSentInput>, Prisma.UserUncheckedUpdateWithoutStaffInvitationsSentInput>
+}
+
+export type UserUpdateOneWithoutStaffInvitationsAcceptedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsAcceptedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaffInvitationsAcceptedInput
+  upsert?: Prisma.UserUpsertWithoutStaffInvitationsAcceptedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStaffInvitationsAcceptedInput, Prisma.UserUpdateWithoutStaffInvitationsAcceptedInput>, Prisma.UserUncheckedUpdateWithoutStaffInvitationsAcceptedInput>
 }
 
 export type UserCreateNestedOneWithoutSessionsInput = {
@@ -590,20 +733,6 @@ export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutAccountsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
-}
-
-export type UserCreateNestedOneWithoutVendorProfileInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVendorProfileInput, Prisma.UserUncheckedCreateWithoutVendorProfileInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVendorProfileInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutVendorProfileNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVendorProfileInput, Prisma.UserUncheckedCreateWithoutVendorProfileInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVendorProfileInput
-  upsert?: Prisma.UserUpsertWithoutVendorProfileInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVendorProfileInput, Prisma.UserUpdateWithoutVendorProfileInput>, Prisma.UserUncheckedUpdateWithoutVendorProfileInput>
 }
 
 export type UserCreateNestedOneWithoutCustomerProfileInput = {
@@ -664,6 +793,254 @@ export type UserUpdateOneRequiredWithoutPushDevicesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPushDevicesInput, Prisma.UserUpdateWithoutPushDevicesInput>, Prisma.UserUncheckedUpdateWithoutPushDevicesInput>
 }
 
+export type UserCreateWithoutStaffInvitationsSentInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  imagePublicId?: string | null
+  role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
+  customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
+  pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
+}
+
+export type UserUncheckedCreateWithoutStaffInvitationsSentInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  imagePublicId?: string | null
+  role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
+  customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
+  pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
+}
+
+export type UserCreateOrConnectWithoutStaffInvitationsSentInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsSentInput>
+}
+
+export type UserCreateWithoutStaffInvitationsAcceptedInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  imagePublicId?: string | null
+  role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
+  customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
+  pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+}
+
+export type UserUncheckedCreateWithoutStaffInvitationsAcceptedInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  imagePublicId?: string | null
+  role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
+  customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
+  pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+}
+
+export type UserCreateOrConnectWithoutStaffInvitationsAcceptedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsAcceptedInput>
+}
+
+export type UserUpsertWithoutStaffInvitationsSentInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedUpdateWithoutStaffInvitationsSentInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsSentInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutStaffInvitationsSentInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStaffInvitationsSentInput, Prisma.UserUncheckedUpdateWithoutStaffInvitationsSentInput>
+}
+
+export type UserUpdateWithoutStaffInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
+  customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
+  pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStaffInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
+  pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
+}
+
+export type UserUpsertWithoutStaffInvitationsAcceptedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedUpdateWithoutStaffInvitationsAcceptedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedCreateWithoutStaffInvitationsAcceptedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutStaffInvitationsAcceptedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStaffInvitationsAcceptedInput, Prisma.UserUncheckedUpdateWithoutStaffInvitationsAcceptedInput>
+}
+
+export type UserUpdateWithoutStaffInvitationsAcceptedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
+  customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
+  pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStaffInvitationsAcceptedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
+  pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -672,6 +1049,10 @@ export type UserCreateWithoutSessionsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -683,7 +1064,8 @@ export type UserCreateWithoutSessionsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -694,6 +1076,10 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -705,7 +1091,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -732,6 +1119,10 @@ export type UserUpdateWithoutSessionsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -743,7 +1134,8 @@ export type UserUpdateWithoutSessionsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -754,6 +1146,10 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -765,7 +1161,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -776,6 +1173,10 @@ export type UserCreateWithoutAccountsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -787,7 +1188,8 @@ export type UserCreateWithoutAccountsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -798,6 +1200,10 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -809,7 +1215,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -836,6 +1243,10 @@ export type UserUpdateWithoutAccountsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -847,7 +1258,8 @@ export type UserUpdateWithoutAccountsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -858,6 +1270,10 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -869,111 +1285,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
-}
-
-export type UserCreateWithoutVendorProfileInput = {
-  id: string
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  imagePublicId?: string | null
-  role?: string | null
-  banned?: boolean | null
-  banReason?: string | null
-  banExpires?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
-  customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
-  pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutVendorProfileInput = {
-  id: string
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  imagePublicId?: string | null
-  role?: string | null
-  banned?: boolean | null
-  banReason?: string | null
-  banExpires?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
-  customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
-  pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutVendorProfileInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutVendorProfileInput, Prisma.UserUncheckedCreateWithoutVendorProfileInput>
-}
-
-export type UserUpsertWithoutVendorProfileInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutVendorProfileInput, Prisma.UserUncheckedUpdateWithoutVendorProfileInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutVendorProfileInput, Prisma.UserUncheckedCreateWithoutVendorProfileInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutVendorProfileInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutVendorProfileInput, Prisma.UserUncheckedUpdateWithoutVendorProfileInput>
-}
-
-export type UserUpdateWithoutVendorProfileInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
-  customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
-  pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutVendorProfileInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
-  customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
-  pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutCustomerProfileInput = {
@@ -984,6 +1297,10 @@ export type UserCreateWithoutCustomerProfileInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -995,7 +1312,8 @@ export type UserCreateWithoutCustomerProfileInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutCustomerProfileInput = {
@@ -1006,6 +1324,10 @@ export type UserUncheckedCreateWithoutCustomerProfileInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1017,7 +1339,8 @@ export type UserUncheckedCreateWithoutCustomerProfileInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutCustomerProfileInput = {
@@ -1044,6 +1367,10 @@ export type UserUpdateWithoutCustomerProfileInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1055,7 +1382,8 @@ export type UserUpdateWithoutCustomerProfileInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCustomerProfileInput = {
@@ -1066,6 +1394,10 @@ export type UserUncheckedUpdateWithoutCustomerProfileInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1077,7 +1409,8 @@ export type UserUncheckedUpdateWithoutCustomerProfileInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1088,6 +1421,10 @@ export type UserCreateWithoutNotificationsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1099,7 +1436,8 @@ export type UserCreateWithoutNotificationsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1110,6 +1448,10 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1121,7 +1463,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1148,6 +1491,10 @@ export type UserUpdateWithoutNotificationsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1159,7 +1506,8 @@ export type UserUpdateWithoutNotificationsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1170,6 +1518,10 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1181,7 +1533,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutNotificationPreferenceInput = {
@@ -1192,6 +1545,10 @@ export type UserCreateWithoutNotificationPreferenceInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1203,7 +1560,8 @@ export type UserCreateWithoutNotificationPreferenceInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutNotificationPreferenceInput = {
@@ -1214,6 +1572,10 @@ export type UserUncheckedCreateWithoutNotificationPreferenceInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1225,7 +1587,8 @@ export type UserUncheckedCreateWithoutNotificationPreferenceInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
   pushDevices?: Prisma.PushDeviceUncheckedCreateNestedManyWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutNotificationPreferenceInput = {
@@ -1252,6 +1615,10 @@ export type UserUpdateWithoutNotificationPreferenceInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1263,7 +1630,8 @@ export type UserUpdateWithoutNotificationPreferenceInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationPreferenceInput = {
@@ -1274,6 +1642,10 @@ export type UserUncheckedUpdateWithoutNotificationPreferenceInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1285,7 +1657,8 @@ export type UserUncheckedUpdateWithoutNotificationPreferenceInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
   pushDevices?: Prisma.PushDeviceUncheckedUpdateManyWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserCreateWithoutPushDevicesInput = {
@@ -1296,6 +1669,10 @@ export type UserCreateWithoutPushDevicesInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1307,7 +1684,8 @@ export type UserCreateWithoutPushDevicesInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.UserNotificationPreferenceCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileCreateNestedOneWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserUncheckedCreateWithoutPushDevicesInput = {
@@ -1318,6 +1696,10 @@ export type UserUncheckedCreateWithoutPushDevicesInput = {
   image?: string | null
   imagePublicId?: string | null
   role?: string | null
+  adminPermissions?: Prisma.UserCreateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserCreateadminActionsInput | string[]
+  isSuperAdmin?: boolean
+  staffStatus?: $Enums.StaffStatus
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
@@ -1329,7 +1711,8 @@ export type UserUncheckedCreateWithoutPushDevicesInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   customerProfile?: Prisma.CustomerProfileUncheckedCreateNestedOneWithoutUserInput
-  vendorProfile?: Prisma.VendorProfileUncheckedCreateNestedOneWithoutUserInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutAcceptedByInput
 }
 
 export type UserCreateOrConnectWithoutPushDevicesInput = {
@@ -1356,6 +1739,10 @@ export type UserUpdateWithoutPushDevicesInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1367,7 +1754,8 @@ export type UserUpdateWithoutPushDevicesInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.UserNotificationPreferenceUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUpdateOneWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUpdateManyWithoutAcceptedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushDevicesInput = {
@@ -1378,6 +1766,10 @@ export type UserUncheckedUpdateWithoutPushDevicesInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imagePublicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  adminPermissions?: Prisma.UserUpdateadminPermissionsInput | string[]
+  adminActions?: Prisma.UserUpdateadminActionsInput | string[]
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  staffStatus?: Prisma.EnumStaffStatusFieldUpdateOperationsInput | $Enums.StaffStatus
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1389,7 +1781,8 @@ export type UserUncheckedUpdateWithoutPushDevicesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.UserNotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   customerProfile?: Prisma.CustomerProfileUncheckedUpdateOneWithoutUserNestedInput
-  vendorProfile?: Prisma.VendorProfileUncheckedUpdateOneWithoutUserNestedInput
+  staffInvitationsSent?: Prisma.StaffInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  staffInvitationsAccepted?: Prisma.StaffInvitationUncheckedUpdateManyWithoutAcceptedByNestedInput
 }
 
 
@@ -1402,6 +1795,8 @@ export type UserCountOutputType = {
   accounts: number
   notifications: number
   pushDevices: number
+  staffInvitationsSent: number
+  staffInvitationsAccepted: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1409,6 +1804,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   pushDevices?: boolean | UserCountOutputTypeCountPushDevicesArgs
+  staffInvitationsSent?: boolean | UserCountOutputTypeCountStaffInvitationsSentArgs
+  staffInvitationsAccepted?: boolean | UserCountOutputTypeCountStaffInvitationsAcceptedArgs
 }
 
 /**
@@ -1449,6 +1846,20 @@ export type UserCountOutputTypeCountPushDevicesArgs<ExtArgs extends runtime.Type
   where?: Prisma.PushDeviceWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountStaffInvitationsSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StaffInvitationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountStaffInvitationsAcceptedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StaffInvitationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1458,6 +1869,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   image?: boolean
   imagePublicId?: boolean
   role?: boolean
+  adminPermissions?: boolean
+  adminActions?: boolean
+  isSuperAdmin?: boolean
+  staffStatus?: boolean
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
@@ -1470,7 +1885,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   notificationPreference?: boolean | Prisma.User$notificationPreferenceArgs<ExtArgs>
   customerProfile?: boolean | Prisma.User$customerProfileArgs<ExtArgs>
   pushDevices?: boolean | Prisma.User$pushDevicesArgs<ExtArgs>
-  vendorProfile?: boolean | Prisma.User$vendorProfileArgs<ExtArgs>
+  staffInvitationsSent?: boolean | Prisma.User$staffInvitationsSentArgs<ExtArgs>
+  staffInvitationsAccepted?: boolean | Prisma.User$staffInvitationsAcceptedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1482,6 +1898,10 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   image?: boolean
   imagePublicId?: boolean
   role?: boolean
+  adminPermissions?: boolean
+  adminActions?: boolean
+  isSuperAdmin?: boolean
+  staffStatus?: boolean
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
@@ -1498,6 +1918,10 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   image?: boolean
   imagePublicId?: boolean
   role?: boolean
+  adminPermissions?: boolean
+  adminActions?: boolean
+  isSuperAdmin?: boolean
+  staffStatus?: boolean
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
@@ -1514,6 +1938,10 @@ export type UserSelectScalar = {
   image?: boolean
   imagePublicId?: boolean
   role?: boolean
+  adminPermissions?: boolean
+  adminActions?: boolean
+  isSuperAdmin?: boolean
+  staffStatus?: boolean
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
@@ -1522,7 +1950,7 @@ export type UserSelectScalar = {
   deletedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "imagePublicId" | "role" | "banned" | "banReason" | "banExpires" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "imagePublicId" | "role" | "adminPermissions" | "adminActions" | "isSuperAdmin" | "staffStatus" | "banned" | "banReason" | "banExpires" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
@@ -1530,7 +1958,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notificationPreference?: boolean | Prisma.User$notificationPreferenceArgs<ExtArgs>
   customerProfile?: boolean | Prisma.User$customerProfileArgs<ExtArgs>
   pushDevices?: boolean | Prisma.User$pushDevicesArgs<ExtArgs>
-  vendorProfile?: boolean | Prisma.User$vendorProfileArgs<ExtArgs>
+  staffInvitationsSent?: boolean | Prisma.User$staffInvitationsSentArgs<ExtArgs>
+  staffInvitationsAccepted?: boolean | Prisma.User$staffInvitationsAcceptedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1545,7 +1974,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     notificationPreference: Prisma.$UserNotificationPreferencePayload<ExtArgs> | null
     customerProfile: Prisma.$CustomerProfilePayload<ExtArgs> | null
     pushDevices: Prisma.$PushDevicePayload<ExtArgs>[]
-    vendorProfile: Prisma.$VendorProfilePayload<ExtArgs> | null
+    staffInvitationsSent: Prisma.$StaffInvitationPayload<ExtArgs>[]
+    staffInvitationsAccepted: Prisma.$StaffInvitationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1555,6 +1985,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     image: string | null
     imagePublicId: string | null
     role: string | null
+    adminPermissions: string[]
+    adminActions: string[]
+    isSuperAdmin: boolean
+    staffStatus: $Enums.StaffStatus
     banned: boolean | null
     banReason: string | null
     banExpires: Date | null
@@ -1961,7 +2395,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   notificationPreference<T extends Prisma.User$notificationPreferenceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationPreferenceArgs<ExtArgs>>): Prisma.Prisma__UserNotificationPreferenceClient<runtime.Types.Result.GetResult<Prisma.$UserNotificationPreferencePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   customerProfile<T extends Prisma.User$customerProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$customerProfileArgs<ExtArgs>>): Prisma.Prisma__CustomerProfileClient<runtime.Types.Result.GetResult<Prisma.$CustomerProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   pushDevices<T extends Prisma.User$pushDevicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushDevicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  vendorProfile<T extends Prisma.User$vendorProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$vendorProfileArgs<ExtArgs>>): Prisma.Prisma__VendorProfileClient<runtime.Types.Result.GetResult<Prisma.$VendorProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  staffInvitationsSent<T extends Prisma.User$staffInvitationsSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$staffInvitationsSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StaffInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  staffInvitationsAccepted<T extends Prisma.User$staffInvitationsAcceptedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$staffInvitationsAcceptedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StaffInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1998,6 +2433,10 @@ export interface UserFieldRefs {
   readonly image: Prisma.FieldRef<"User", 'String'>
   readonly imagePublicId: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'String'>
+  readonly adminPermissions: Prisma.FieldRef<"User", 'String[]'>
+  readonly adminActions: Prisma.FieldRef<"User", 'String[]'>
+  readonly isSuperAdmin: Prisma.FieldRef<"User", 'Boolean'>
+  readonly staffStatus: Prisma.FieldRef<"User", 'StaffStatus'>
   readonly banned: Prisma.FieldRef<"User", 'Boolean'>
   readonly banReason: Prisma.FieldRef<"User", 'String'>
   readonly banExpires: Prisma.FieldRef<"User", 'DateTime'>
@@ -2531,22 +2970,51 @@ export type User$pushDevicesArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * User.vendorProfile
+ * User.staffInvitationsSent
  */
-export type User$vendorProfileArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$staffInvitationsSentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the VendorProfile
+   * Select specific fields to fetch from the StaffInvitation
    */
-  select?: Prisma.VendorProfileSelect<ExtArgs> | null
+  select?: Prisma.StaffInvitationSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the VendorProfile
+   * Omit specific fields from the StaffInvitation
    */
-  omit?: Prisma.VendorProfileOmit<ExtArgs> | null
+  omit?: Prisma.StaffInvitationOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.VendorProfileInclude<ExtArgs> | null
-  where?: Prisma.VendorProfileWhereInput
+  include?: Prisma.StaffInvitationInclude<ExtArgs> | null
+  where?: Prisma.StaffInvitationWhereInput
+  orderBy?: Prisma.StaffInvitationOrderByWithRelationInput | Prisma.StaffInvitationOrderByWithRelationInput[]
+  cursor?: Prisma.StaffInvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StaffInvitationScalarFieldEnum | Prisma.StaffInvitationScalarFieldEnum[]
+}
+
+/**
+ * User.staffInvitationsAccepted
+ */
+export type User$staffInvitationsAcceptedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StaffInvitation
+   */
+  select?: Prisma.StaffInvitationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StaffInvitation
+   */
+  omit?: Prisma.StaffInvitationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StaffInvitationInclude<ExtArgs> | null
+  where?: Prisma.StaffInvitationWhereInput
+  orderBy?: Prisma.StaffInvitationOrderByWithRelationInput | Prisma.StaffInvitationOrderByWithRelationInput[]
+  cursor?: Prisma.StaffInvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StaffInvitationScalarFieldEnum | Prisma.StaffInvitationScalarFieldEnum[]
 }
 
 /**

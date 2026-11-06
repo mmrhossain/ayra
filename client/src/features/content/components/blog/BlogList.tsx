@@ -23,7 +23,7 @@ const BlogList: React.FC<Props> = ({ posts }) => {
   if (posts.length === 0) {
     return (
       <div className="container mt-8">
-        <FancyHeading text="Recent Blogs" />
+        <FancyHeading text="Recent Blogs" as="h1" />
         <p className="mt-12 text-sm text-muted-foreground">
           No published posts yet.
         </p>
@@ -33,7 +33,7 @@ const BlogList: React.FC<Props> = ({ posts }) => {
 
   const renderGrid = () => (
     <div className="container mt-8">
-      <FancyHeading text="Recent Blogs" />
+      <FancyHeading text="Recent Blogs" as="h1" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8 mt-12">
         {posts.map((blog) => (
           <BlogCard key={blog.id} blogItem={blog} />
@@ -44,7 +44,7 @@ const BlogList: React.FC<Props> = ({ posts }) => {
 
   const renderCarousel = () => (
     <div className="container mt-8 overflow-x-hidden relative">
-      <FancyHeading text="Recent Blogs" />
+      <FancyHeading text="Recent Blogs" as="h1" />
 
       <div className="relative mt-12">
         <Carousel opts={{ align: "start", loop: true }} className="w-full">

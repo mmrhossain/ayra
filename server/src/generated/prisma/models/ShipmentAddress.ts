@@ -34,6 +34,9 @@ export type ShipmentAddressMinAggregateOutputType = {
   city: string | null
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   shipmentId: string | null
@@ -49,6 +52,9 @@ export type ShipmentAddressMaxAggregateOutputType = {
   city: string | null
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   shipmentId: string | null
@@ -64,6 +70,9 @@ export type ShipmentAddressCountAggregateOutputType = {
   city: number
   area: number
   postalCode: number
+  divisionCode: number
+  districtCode: number
+  upazilaCode: number
   addressLine1: number
   addressLine2: number
   shipmentId: number
@@ -81,6 +90,9 @@ export type ShipmentAddressMinAggregateInputType = {
   city?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   shipmentId?: true
@@ -96,6 +108,9 @@ export type ShipmentAddressMaxAggregateInputType = {
   city?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   shipmentId?: true
@@ -111,6 +126,9 @@ export type ShipmentAddressCountAggregateInputType = {
   city?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   shipmentId?: true
@@ -199,6 +217,9 @@ export type ShipmentAddressGroupByOutputType = {
   city: string
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string
   addressLine2: string | null
   shipmentId: string
@@ -235,6 +256,9 @@ export type ShipmentAddressWhereInput = {
   city?: Prisma.StringFilter<"ShipmentAddress"> | string
   area?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   postalCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   addressLine1?: Prisma.StringFilter<"ShipmentAddress"> | string
   addressLine2?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   shipmentId?: Prisma.StringFilter<"ShipmentAddress"> | string
@@ -251,6 +275,9 @@ export type ShipmentAddressOrderByWithRelationInput = {
   city?: Prisma.SortOrder
   area?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
@@ -271,6 +298,9 @@ export type ShipmentAddressWhereUniqueInput = Prisma.AtLeast<{
   city?: Prisma.StringFilter<"ShipmentAddress"> | string
   area?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   postalCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   addressLine1?: Prisma.StringFilter<"ShipmentAddress"> | string
   addressLine2?: Prisma.StringNullableFilter<"ShipmentAddress"> | string | null
   shipment?: Prisma.XOR<Prisma.ShipmentScalarRelationFilter, Prisma.ShipmentWhereInput>
@@ -286,6 +316,9 @@ export type ShipmentAddressOrderByWithAggregationInput = {
   city?: Prisma.SortOrder
   area?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
@@ -307,6 +340,9 @@ export type ShipmentAddressScalarWhereWithAggregatesInput = {
   city?: Prisma.StringWithAggregatesFilter<"ShipmentAddress"> | string
   area?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
+  divisionCode?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
+  districtCode?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
+  upazilaCode?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
   addressLine1?: Prisma.StringWithAggregatesFilter<"ShipmentAddress"> | string
   addressLine2?: Prisma.StringNullableWithAggregatesFilter<"ShipmentAddress"> | string | null
   shipmentId?: Prisma.StringWithAggregatesFilter<"ShipmentAddress"> | string
@@ -322,6 +358,9 @@ export type ShipmentAddressCreateInput = {
   city: string
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   shipment: Prisma.ShipmentCreateNestedOneWithoutShipmentAddressInput
@@ -337,6 +376,9 @@ export type ShipmentAddressUncheckedCreateInput = {
   city: string
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   shipmentId: string
@@ -352,6 +394,9 @@ export type ShipmentAddressUpdateInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shipment?: Prisma.ShipmentUpdateOneRequiredWithoutShipmentAddressNestedInput
@@ -367,6 +412,9 @@ export type ShipmentAddressUncheckedUpdateInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -382,6 +430,9 @@ export type ShipmentAddressCreateManyInput = {
   city: string
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   shipmentId: string
@@ -397,6 +448,9 @@ export type ShipmentAddressUpdateManyMutationInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -411,6 +465,9 @@ export type ShipmentAddressUncheckedUpdateManyInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -431,6 +488,9 @@ export type ShipmentAddressCountOrderByAggregateInput = {
   city?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
@@ -446,6 +506,9 @@ export type ShipmentAddressMaxOrderByAggregateInput = {
   city?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
@@ -461,6 +524,9 @@ export type ShipmentAddressMinOrderByAggregateInput = {
   city?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
@@ -508,6 +574,9 @@ export type ShipmentAddressCreateWithoutShipmentInput = {
   city: string
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
 }
@@ -522,6 +591,9 @@ export type ShipmentAddressUncheckedCreateWithoutShipmentInput = {
   city: string
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
 }
@@ -552,6 +624,9 @@ export type ShipmentAddressUpdateWithoutShipmentInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -566,6 +641,9 @@ export type ShipmentAddressUncheckedUpdateWithoutShipmentInput = {
   city?: Prisma.StringFieldUpdateOperationsInput | string
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -582,6 +660,9 @@ export type ShipmentAddressSelect<ExtArgs extends runtime.Types.Extensions.Inter
   city?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   shipmentId?: boolean
@@ -598,6 +679,9 @@ export type ShipmentAddressSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   city?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   shipmentId?: boolean
@@ -614,6 +698,9 @@ export type ShipmentAddressSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   city?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   shipmentId?: boolean
@@ -630,12 +717,15 @@ export type ShipmentAddressSelectScalar = {
   city?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   shipmentId?: boolean
 }
 
-export type ShipmentAddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fullName" | "phone" | "email" | "country" | "state" | "city" | "area" | "postalCode" | "addressLine1" | "addressLine2" | "shipmentId", ExtArgs["result"]["shipmentAddress"]>
+export type ShipmentAddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fullName" | "phone" | "email" | "country" | "state" | "city" | "area" | "postalCode" | "divisionCode" | "districtCode" | "upazilaCode" | "addressLine1" | "addressLine2" | "shipmentId", ExtArgs["result"]["shipmentAddress"]>
 export type ShipmentAddressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   shipment?: boolean | Prisma.ShipmentDefaultArgs<ExtArgs>
 }
@@ -661,6 +751,9 @@ export type $ShipmentAddressPayload<ExtArgs extends runtime.Types.Extensions.Int
     city: string
     area: string | null
     postalCode: string | null
+    divisionCode: string | null
+    districtCode: string | null
+    upazilaCode: string | null
     addressLine1: string
     addressLine2: string | null
     shipmentId: string
@@ -1097,6 +1190,9 @@ export interface ShipmentAddressFieldRefs {
   readonly city: Prisma.FieldRef<"ShipmentAddress", 'String'>
   readonly area: Prisma.FieldRef<"ShipmentAddress", 'String'>
   readonly postalCode: Prisma.FieldRef<"ShipmentAddress", 'String'>
+  readonly divisionCode: Prisma.FieldRef<"ShipmentAddress", 'String'>
+  readonly districtCode: Prisma.FieldRef<"ShipmentAddress", 'String'>
+  readonly upazilaCode: Prisma.FieldRef<"ShipmentAddress", 'String'>
   readonly addressLine1: Prisma.FieldRef<"ShipmentAddress", 'String'>
   readonly addressLine2: Prisma.FieldRef<"ShipmentAddress", 'String'>
   readonly shipmentId: Prisma.FieldRef<"ShipmentAddress", 'String'>

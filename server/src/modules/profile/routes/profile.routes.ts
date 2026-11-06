@@ -1,32 +1,29 @@
 import { Router } from "express";
 import {
-  requireApprovedVendor,
   requireAuth,
-  requireRole,
+  requireCustomer,
 } from "../../../common/middleware/auth.middleware.ts";
 import {
   getCustomerProfileHandler,
-  getVendorProfileHandler,
+  getNotificationPreferencesHandler,
   saveCustomerProfileHandler,
-  updateVendorProfileHandler,
+  saveNotificationPreferencesHandler,
 } from "../controllers/profile.controller.ts";
 
 const router = Router();
 
-router.get("/customer/profile", requireAuth, getCustomerProfileHandler);
-router.patch("/customer/profile", requireAuth, saveCustomerProfileHandler);
+router.get("/customer/profile", requireAuth, requireCustomer, getCustomerProfileHandler);
+router.patch("/customer/profile", requireAuth, requireCustomer, saveCustomerProfileHandler);
 router.get(
-  "/vendor/profile",
+  "/customer/notification-preferences",
   requireAuth,
-  requireRole("VENDOR"),
-  getVendorProfileHandler
+  requireCustomer,
+  getNotificationPreferencesHandler
 );
 router.patch(
-  "/vendor/profile",
+  "/customer/notification-preferences",
   requireAuth,
-  requireRole("VENDOR"),
-  requireApprovedVendor,
-  updateVendorProfileHandler
+  requireCustomer,
+  saveNotificationPreferencesHandler
 );
-
 export default router;

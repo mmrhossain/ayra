@@ -28,6 +28,11 @@ export function ZoneDeleteDialog({ open, onOpenChange, zone }: ZoneDeleteDialogP
           <DialogDescription>
             {zone ? `Delete "${zone.name}" and its rates?` : "Delete this shipping zone?"}
           </DialogDescription>
+          {zone?.isActive && zone.isFallback ? (
+            <p className="text-sm text-destructive">
+              This is the active fallback zone. Assign another zone as fallback before deleting it.
+            </p>
+          ) : null}
         </DialogHeader>
         <DialogFooter className="shrink-0 border-t pt-4">
           <Button
@@ -41,7 +46,9 @@ export function ZoneDeleteDialog({ open, onOpenChange, zone }: ZoneDeleteDialogP
           <Button
             type="button"
             variant="destructive"
-            disabled={!zone || mutation.isPending}
+            disabled={
+              !zone || mutation.isPending || (zone.isActive && zone.isFallback)
+            }
             onClick={() => mutation.mutate()}
           >
             {mutation.isPending ? "Deleting..." : "Delete"}

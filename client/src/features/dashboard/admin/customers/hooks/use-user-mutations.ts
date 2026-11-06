@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
-  approveUser,
   banUser,
   toUserErrorMessage,
   unbanUser,
@@ -14,34 +13,6 @@ import {
 function invalidateUserQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ["users"] });
   queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-  queryClient.invalidateQueries({ queryKey: ["admin-vendors"] });
-}
-
-export function useUserApproveMutation({
-  user,
-  approve,
-  onSuccess,
-}: {
-  user: AdminUserItem | null;
-  approve: boolean;
-  onSuccess: () => void;
-}) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!user) throw new Error("Missing user");
-      await approveUser(user.id, approve);
-    },
-    onSuccess: () => {
-      invalidateUserQueries(queryClient);
-      toast.success(approve ? "User approved" : "User approval revoked");
-      onSuccess();
-    },
-    onError: (err) => {
-      toast.error(toUserErrorMessage(err));
-    },
-  });
 }
 
 export function useUserBanMutation({

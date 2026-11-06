@@ -1,4 +1,5 @@
 import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { env } from "../../config/env.ts";
 import { registry } from "./registry.ts";
 import "./security.ts";
 import "./common-schemas.ts";
@@ -14,6 +15,7 @@ import "../../modules/catalog/attribute/attribute.openapi.ts";
 import "../../modules/cart/cart.openapi.ts";
 import "../../modules/order/order.openapi.ts";
 import "../../modules/payment/payment.openapi.ts";
+import "../../modules/settings/settings.openapi.ts";
 import "../../modules/coupon/coupon.openapi.ts";
 import "../../modules/wishlist/wishlist.openapi.ts";
 import "../../modules/review/review.openapi.ts";
@@ -25,8 +27,14 @@ import "../../modules/content/faq/faq.openapi.ts";
 import "../../modules/content/blog/blog.openapi.ts";
 import "../../modules/analytics/analytics.openapi.ts";
 import "../../modules/address/address.openapi.ts";
+import "../../modules/geography/geography.openapi.ts";
 import "../../modules/profile/profile.openapi.ts";
 import "../../modules/media/media.openapi.ts";
+import "../../modules/staff/staff.openapi.ts";
+import "../../modules/shipments/shipments.openapi.ts";
+import "../../modules/courier/courier.openapi.ts";
+import "../../modules/audit/admin-audit.openapi.ts";
+import "../../modules/notification/in-app.openapi.ts";
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -34,10 +42,10 @@ export function generateOpenApiDocument() {
   return generator.generateDocument({
     openapi: "3.0.3",
     info: {
-      title: "Raangalay API",
+      title: `${env.BETTER_AUTH_APP_NAME} API`,
       version: "1.0.0",
       description:
-        "HTTP API for the Raangalay e-commerce backend. Authenticate with a Better Auth bearer token unless a route is public or webhook-signed.",
+        `HTTP API for the ${env.BETTER_AUTH_APP_NAME} e-commerce backend. Authenticate with a Better Auth bearer token unless a route is public or webhook-signed.`,
     },
     servers: [{ url: "/", description: "Current host" }],
   });

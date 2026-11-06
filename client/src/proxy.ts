@@ -18,12 +18,9 @@ export function proxy(request: NextRequest) {
     pathname === "/register" ||
     pathname === "/account-suspended";
 
-  // Prevent authenticated users from visiting auth pages
-  if (isLoggedIn && isAuthPage) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // Protect private routes
+  // Auth pages resolve their own destination server-side by role, so a
+  // signed-in admin goes straight to /admin instead of bouncing through the
+  // storefront root first. Only unauthenticated access is guarded here.
   if (!isLoggedIn && !isAuthPage) {
     const loginUrl = new URL("/login", request.url);
 
@@ -40,7 +37,6 @@ export const config = {
     "/login",
     "/register",
     "/admin/:path*",
-    "/vendor/:path*",
     "/customer/:path*",
     "/checkout",
   ],

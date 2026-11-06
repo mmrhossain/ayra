@@ -13,6 +13,19 @@ export const approveInventoryAdjustmentSchema = z.object({
   remarks: z.string().optional(),
 });
 
+export const stockLevelItemSchema = z.object({
+  variantId: z.string().min(1),
+  targetQty: z.coerce.number().int().nonnegative(),
+});
+
+// Bulk "set stock level" command. It takes the desired level (not a delta) so it
+// is idempotent: resending the same payload changes nothing. Applied
+// auto-approved with an audit row, unlike the maker-checker correction flow.
+export const setStockLevelsSchema = z.object({
+  warehouseId: z.string().min(1).optional(),
+  items: z.array(stockLevelItemSchema).min(1).max(500),
+});
+
 export const inventoryTransferItemSchema = z.object({
   variantId: z.string().min(1),
   quantity: z.coerce.number().int().positive(),

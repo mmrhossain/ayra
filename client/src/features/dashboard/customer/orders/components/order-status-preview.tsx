@@ -5,8 +5,14 @@ import {
   toOrderStatusPreview,
   type OrderStatusHistoryEntry,
 } from "@/features/dashboard/customer/orders/utils/status-preview";
+import type { CustomerShipment } from "@/features/dashboard/customer/orders/types";
+import {
+  formatTrackingDate,
+  SHIPMENT_STATUS_LABELS,
+} from "@/features/tracking/api/tracking";
 import clsx from "clsx";
-import { Check, CircleAlert } from "lucide-react";
+import { Check, CircleAlert, ExternalLink, PackageCheck } from "lucide-react";
+import Link from "next/link";
 
 const EXCEPTION_COPY: Record<string, string> = {
   CANCELLED: "This order was cancelled and will not continue through delivery.",
@@ -18,6 +24,7 @@ const EXCEPTION_COPY: Record<string, string> = {
 type OrderStatusPreviewProps = {
   status: string;
   history?: OrderStatusHistoryEntry[];
+  shipments?: CustomerShipment[];
 };
 
 const formatWhen = (value: string) => {
@@ -29,6 +36,7 @@ const formatWhen = (value: string) => {
 export const OrderStatusPreview = ({
   status,
   history = [],
+  shipments = [],
 }: OrderStatusPreviewProps) => {
   const preview = toOrderStatusPreview(status, history);
   const currentStep = preview.steps[preview.currentIndex];
@@ -38,12 +46,12 @@ export const OrderStatusPreview = ({
 
   return (
     <section
-      className="print:hidden space-y-6 rounded-2xl border border-slate-100 bg-white p-4 sm:p-6"
+      className="print:hidden space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6"
       aria-label="Order status"
     >
       <div className="space-y-1">
-        <h2 className="text-sm font-bold text-slate-900">Order status</h2>
-        <p className="text-sm text-slate-600">
+        <h2 className="text-sm font-bold text-foreground">Order status</h2>
+        <p className="text-sm text-muted-foreground">
           {preview.exception
             ? exceptionCopy
             : currentStep?.copy}
@@ -68,7 +76,7 @@ export const OrderStatusPreview = ({
                       ? "bg-transparent"
                       : reached
                         ? "bg-primary"
-                        : "bg-slate-200",
+                        : "bg-muted",
                   )}
                   aria-hidden
                 />
@@ -77,7 +85,7 @@ export const OrderStatusPreview = ({
                     "flex size-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-colors duration-200",
                     reached
                       ? "border-primary bg-primary text-white"
-                      : "border-slate-200 bg-slate-50 text-slate-400",
+                      : "border-border bg-muted text-muted-foreground",
                     current && "ring-2 ring-primary/30 ring-offset-2",
                   )}
                   aria-current={current ? "step" : undefined}
@@ -91,15 +99,15 @@ export const OrderStatusPreview = ({
                       ? "bg-transparent"
                       : index < preview.currentIndex
                         ? "bg-primary"
-                        : "bg-slate-200",
+                        : "bg-muted",
                   )}
                   aria-hidden
                 />
               </div>
               <span
                 className={clsx(
-                  "text-center text-[10px] font-bold uppercase tracking-wider",
-                  reached ? "text-slate-900" : "text-slate-400",
+                  "text-center text-xs font-bold uppercase tracking-wider",
+                  reached ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 {step.label}
@@ -121,35 +129,101 @@ export const OrderStatusPreview = ({
 
       {preview.events.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Updates
           </h3>
-          <ol className="space-y-3 border-l border-slate-200 pl-4">
+          <ol className="space-y-3 border-l border-border pl-4">
             {preview.events.map((event) => (
               <li key={event.id} className="relative">
                 <span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-primary" />
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={clsx(
-                      "rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                      "rounded-full border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
                       statusColor(event.status),
                     )}
                   >
                     {event.label}
                   </span>
                   <time
-                    className="text-xs text-slate-500"
+                    className="text-xs text-muted-foreground"
                     dateTime={event.createdAt}
                   >
                     {formatWhen(event.createdAt)}
                   </time>
                 </div>
                 {event.remarks ? (
-                  <p className="mt-1 text-xs text-slate-600">{event.remarks}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{event.remarks}</p>
                 ) : null}
               </li>
             ))}
           </ol>
+        </div>
+      ) : null}
+
+      {shipments.length > 0 ? (
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Shipments
+          </h3>
+          <div className="space-y-3">
+            {shipments.map((shipment) => {
+              const latest =
+                shipment.trackingEvents[shipment.trackingEvents.length - 1];
+
+              return (
+                <div
+                  key={shipment.id}
+                  className="rounded-xl border border-border px-3 py-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <PackageCheck
+                        size={16}
+                        className="text-primary"
+                        aria-hidden
+                      />
+                      <p className="font-mono text-sm font-bold text-foreground">
+                        {shipment.shipmentNumber}
+                      </p>
+                    </div>
+                    <span
+                      className={clsx(
+                        "rounded-full border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+                        statusColor(shipment.status),
+                      )}
+                    >
+                      {SHIPMENT_STATUS_LABELS[shipment.status] ??
+                        shipment.status}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {shipment.courierProvider}
+                    {shipment.trackingNumber
+                      ? ` · Tracking ${shipment.trackingNumber}`
+                      : ""}
+                  </p>
+                  {latest ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {SHIPMENT_STATUS_LABELS[latest.status] ?? latest.status}
+                      {latest.description ? ` - ${latest.description}` : ""}
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {formatTrackingDate(latest.eventTime)}
+                      </span>
+                    </p>
+                  ) : null}
+                  <Link
+                    href={`/track?number=${encodeURIComponent(shipment.shipmentNumber)}`}
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                  >
+                    View tracking
+                    <ExternalLink size={12} aria-hidden />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : null}
     </section>

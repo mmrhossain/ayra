@@ -191,42 +191,6 @@ describe("Upload API single", () => {
     expect(uploadImageFileToCloudinary).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects an unapproved vendor uploading a vendor avatar", async () => {
-    const user = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `up-vend-unapp-${Date.now()}`,
-      isApproved: false,
-    });
-
-    const res = await api()
-      .post("/api/v1/media/upload")
-      .set("Cookie", user.cookie)
-      .query({ type: "vendor_avatar" })
-      .attach("image", PNG_1X1, { filename: "shop.png", contentType: "image/png" });
-
-    expect(res.status).toBe(403);
-    expect(uploadImageFileToCloudinary).not.toHaveBeenCalled();
-  });
-
-  it("allows an approved vendor to upload a vendor avatar", async () => {
-    const user = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `up-vend-app-${Date.now()}`,
-      isApproved: true,
-    });
-    uploadImageFileToCloudinary.mockResolvedValue(
-      uploadResult("vendoravatar1")
-    );
-
-    const res = await api()
-      .post("/api/v1/media/upload")
-      .set("Cookie", user.cookie)
-      .query({ type: "vendor_avatar" })
-      .attach("image", PNG_1X1, { filename: "shop.png", contentType: "image/png" });
-
-    expect(res.status).toBe(201);
-    expect(res.body.data.publicId).toBe("vendoravatar1");
-  });
 });
 
 describe("Upload API multiple product images", () => {

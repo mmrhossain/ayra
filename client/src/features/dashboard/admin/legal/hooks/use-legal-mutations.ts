@@ -14,6 +14,7 @@ import type {
   LegalDocumentItem,
 } from "@/features/dashboard/admin/legal/types";
 import { toLegalErrorMessage } from "@/features/dashboard/admin/legal/utils";
+import { revalidateStorefrontTags } from "@/lib/api/revalidate";
 
 export function useLegalFormMutation({
   mode,
@@ -50,6 +51,7 @@ export function useLegalFormMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-legal"] });
+      void revalidateStorefrontTags(["legal"]);
       toast.success(mode === "edit" ? "Document updated" : "Document created");
       onSuccess();
     },
@@ -75,6 +77,7 @@ export function useLegalPublishMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-legal"] });
+      void revalidateStorefrontTags(["legal"]);
       toast.success("Document published");
       onSuccess();
     },

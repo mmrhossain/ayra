@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import EmptyState from "@/components/shared/EmptyState";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import PageBreadcrumb from "@/components/shared/page-breadcrumb";
 import { toCartErrorMessage } from "@/features/cart/api";
 import CartItemRow from "@/features/cart/components/CartItemRow";
 import Subtotal from "@/features/cart/components/Subtotal";
-import CartListSkeleton from "@/skeleton/CartListSkeleton";
+import CartListSkeleton from "@/features/cart/skeleton/CartListSkeleton";
 import { useCartStore } from "@/stores/useCartStore";
-import { CartItem } from "@/types/cart";
-import { DeleteAlert, errorToast, successToast } from "@/helpers";
+import { CartItem } from "@/features/cart/types";
+import { errorToast, successToast } from "@/helpers";
 
 const CartList = () => {
   const {
@@ -22,17 +23,23 @@ const CartList = () => {
     fetchCart,
   } = useCartStore();
 
+  const [pendingRemove, setPendingRemove] = useState<CartItem | null>(null);
+  const [removing, setRemoving] = useState(false);
+
   useEffect(() => {
     void fetchCart();
   }, [fetchCart]);
 
-  const handleCartRemove = async (variantId: string) => {
+  const handleCartRemove = async () => {
+    if (!pendingRemove) return;
     try {
-      const confirmed = await DeleteAlert();
-      if (!confirmed) return;
-      await removeFromCart(variantId);
+      setRemoving(true);
+      await removeFromCart(pendingRemove.variantId);
+      setPendingRemove(null);
     } catch (err) {
       errorToast(toCartErrorMessage(err));
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -62,7 +69,7 @@ const CartList = () => {
         ]}
       />
 
-      <h1 className="mb-5 text-2xl font-black uppercase tracking-tight text-secondary sm:mb-6 sm:text-3xl md:mb-8 md:text-4xl">
+      <h1 className="mb-5 text-2xl leading-tight font-semibold tracking-tight text-foreground uppercase sm:mb-6 sm:text-3xl md:mb-8 lg:text-4xl">
         Your Cart
       </h1>
 
@@ -78,7 +85,7 @@ const CartList = () => {
                   ? "border-b border-border-color"
                   : undefined
               }
-              onRemove={() => void handleCartRemove(item.variantId)}
+              onRemove={() => setPendingRemove(item)}
               onDecrease={() =>
                 void handleCartUpdate(item.variantId, Number(item.quantity) - 1)
               }
@@ -90,6 +97,24 @@ const CartList = () => {
         </div>
         <Subtotal />
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingRemove)}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemove(null);
+        }}
+        title="Remove item from cart"
+        description={
+          pendingRemove
+            ? `Remove ${pendingRemove.productName || "this item"} from your cart?`
+            : undefined
+        }
+        confirmLabel="Remove"
+        pendingLabel="Removing..."
+        pending={removing}
+        destructive
+        onConfirm={() => void handleCartRemove()}
+      />
     </section>
   );
 };

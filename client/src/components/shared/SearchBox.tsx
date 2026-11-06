@@ -46,7 +46,7 @@ const SearchBox = ({
         onChange={(e) => setSearchValue(e.target.value)}
         type="text"
         placeholder="Search products..."
-        className="pl-8 xl:pl-10 pr-8 border-0 py-6 rounded-none focus-visible:ring-0 bg-transparent text-[13px] 2xl:text-base placeholder:font-light tracking-wide"
+        className="border-0 bg-transparent py-6 pr-8 pl-8 text-base placeholder:font-light focus-visible:ring-0 xl:pl-10"
       />
 
       {searchValue && (

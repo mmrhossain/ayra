@@ -141,18 +141,21 @@ export function InventoryTable({
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
+                <TableHead>Variant</TableHead>
                 <TableHead>SKU</TableHead>
                 <TableHead>Warehouse</TableHead>
                 <TableHead>On hand</TableHead>
                 <TableHead>Reserved</TableHead>
                 <TableHead>Available</TableHead>
+                <TableHead>Last updated</TableHead>
+                <TableHead>Updated by</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={10} className="h-24 text-center">
                     No inventory found.
                   </TableCell>
                 </TableRow>
@@ -175,6 +178,9 @@ export function InventoryTable({
                     >
                       <TableCell className="font-medium">
                         {item.variant.product.name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {item.variantName ?? "—"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {item.variant.sku}
@@ -201,6 +207,14 @@ export function InventoryTable({
                             </span>
                           ) : null}
                         </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {item.lastUpdatedAt
+                          ? new Date(item.lastUpdatedAt).toLocaleString()
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {item.lastUpdatedByName ?? "—"}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

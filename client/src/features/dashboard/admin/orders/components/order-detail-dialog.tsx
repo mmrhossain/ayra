@@ -25,7 +25,15 @@ import {
 } from "@/features/dashboard/admin/orders/utils";
 import { CollectCodDialog } from "@/features/dashboard/admin/payments/components/collect-cod-dialog";
 import { RefundDialog } from "@/features/dashboard/admin/payments/components/refund-dialog";
+import {
+  formatShipmentDate,
+  SHIPMENT_STATUS_LABELS,
+} from "@/features/dashboard/admin/shipments/utils";
+import type { ShipmentStatus } from "@/features/dashboard/admin/shipments/types/models";
+import { statusColor } from "@/helpers";
 import { formatMoney } from "@/lib/format";
+import clsx from "clsx";
+import Link from "next/link";
 
 export { ALLOWED_TRANSITIONS };
 export type { OrderDetailDialogProps };
@@ -55,6 +63,7 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
 
   const history = detailQuery.data?.statusHistory ?? [];
   const payments = detailQuery.data?.payments ?? [];
+  const shipments = detailQuery.data?.shipments ?? [];
   const shippingText = detailQuery.data
     ? formatAddress(pickOrderAddress(detailQuery.data, "SHIPPING"))
     : null;
@@ -79,10 +88,32 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
         ) : null}
 
         {!detail && detailQuery.isFetching ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-8 w-full" />
-            ))}
+          <div className="space-y-6" aria-busy="true" aria-live="polite">
+            <span className="sr-only">Loading order details</span>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <div className="overflow-hidden rounded-lg border">
+                <Skeleton className="h-9 w-full rounded-none" />
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-10 w-full rounded-none border-t"
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-16 w-full" />
+            </div>
           </div>
         ) : null}
 
@@ -97,7 +128,68 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
               billingText={billingText}
             />
 
-            <OrderDetailLines items={detail.items} />
+            <OrderDetailLines items={detailQuery.data?.items ?? []} />
+
+            {shipments.length > 0 ? (
+              <div>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-medium">Shipments</p>
+                  <Link
+                    href="/admin/shipments"
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    Manage shipments
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {shipments.map((shipment) => {
+                    const latest = shipment.trackingEvents[0];
+                    const itemCount = shipment.items.reduce(
+                      (total, item) => total + item.quantity,
+                      0,
+                    );
+
+                    return (
+                      <div
+                        key={shipment.id}
+                        className="rounded-lg border px-3 py-2 text-sm"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-mono font-medium">
+                            {shipment.shipmentNumber}
+                          </p>
+                          <span
+                            className={clsx(
+                              "rounded-full border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+                              statusColor(shipment.status),
+                            )}
+                          >
+                            {SHIPMENT_STATUS_LABELS[
+                              shipment.status as ShipmentStatus
+                            ] ?? shipment.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {shipment.courierProvider} · {itemCount} item
+                          {itemCount === 1 ? "" : "s"}
+                          {shipment.trackingNumber
+                            ? ` · ${shipment.trackingNumber}`
+                            : ""}
+                        </p>
+                        {latest ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {latest.description || latest.status}
+                            {latest.location ? ` · ${latest.location}` : ""}
+                            {" · "}
+                            {formatShipmentDate(latest.eventTime)}
+                          </p>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
 
             {(returnsQuery.data?.items.length ?? 0) > 0 ? (
               <div>

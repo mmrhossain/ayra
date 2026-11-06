@@ -20,6 +20,7 @@ export function DashboardQueryProvider({
           queries: {
             staleTime: 30_000,
             refetchOnWindowFocus: false,
+            retry: 2,
             throwOnError: isAuthError,
           },
           mutations: {

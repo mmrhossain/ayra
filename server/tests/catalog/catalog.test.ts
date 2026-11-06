@@ -7,8 +7,30 @@ import {
   createTestProduct,
   createTestUser,
 } from "../helpers/index.ts";
+import { buildSuggestedSku } from "../../src/modules/catalog/product/utils/sku-generator.ts";
 
 const tracker = new CleanupTracker();
+
+const cloudinaryTestUrl = (name: string) => {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim() || "ayra-test";
+  return `https://res.cloudinary.com/${cloudName}/image/upload/v1/products/${name}`;
+};
+
+// The remote Neon compute auto-suspends, so the first connections after a cold
+// start intermittently fail with a raw socket ETIMEDOUT before the pool
+// establishes itself. Retry only 5xx responses so a genuine server bug still
+// fails the assertion.
+const withDbRetry = async <T extends { status: number }>(
+  send: () => Promise<T>,
+  attempts = 4,
+): Promise<T> => {
+  let res = await send();
+  for (let attempt = 2; attempt <= attempts && res.status >= 500; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+    res = await send();
+  }
+  return res;
+};
 
 afterEach(async () => {
   await tracker.cleanup();
@@ -151,6 +173,27 @@ describe("Product images", () => {
     });
     const catalog = await createTestProduct(tracker);
     const slug = `multi-img-${randomUUID().slice(0, 8)}`;
+    const tag = randomUUID().slice(0, 8);
+    const firstPublicId = `product-a-${tag}`;
+    const secondPublicId = `product-b-${tag}`;
+    const firstImageUrl = cloudinaryTestUrl(`${firstPublicId}.webp`);
+    const secondImageUrl = cloudinaryTestUrl(`${secondPublicId}.webp`);
+
+    for (const [publicId, url] of [
+      [firstPublicId, firstImageUrl],
+      [secondPublicId, secondImageUrl],
+    ] as const) {
+      const asset = await prisma.mediaAsset.create({
+        data: {
+          publicId,
+          url,
+          type: "product",
+          status: "PENDING",
+          ownerUserId: admin.id,
+        },
+      });
+      tracker.mediaAssetIds.push(asset.id);
+    }
 
     const res = await api()
       .post("/api/v1/admin/products")
@@ -161,12 +204,12 @@ describe("Product images", () => {
         categoryId: catalog.category.id,
         images: [
           {
-            imageUrl: "https://cdn.example.com/a.webp",
+            imageUrl: firstImageUrl,
             isPrimary: true,
             sortOrder: 0,
           },
           {
-            url: "https://cdn.example.com/b.webp",
+            url: secondImageUrl,
             isPrimary: false,
             sortOrder: 1,
           },
@@ -282,7 +325,9 @@ describe("Product variant generation", () => {
     expect(
       variants.some((variant) => Number(variant.price) === 1300),
     ).toBe(true);
-    expect(variants.some((variant) => variant.sku === "TSHIRT-RED-S")).toBe(true);
+    expect(variants.map((variant) => variant.sku)).toContain(
+      `${buildSuggestedSku({ categoryName: catalog.category.name })}-RED-S`,
+    );
   });
 
   it("creates a simple product with one default variant when only defaults are provided", async () => {
@@ -308,7 +353,59 @@ describe("Product variant generation", () => {
     expect(res.body.data.status).toBe("DRAFT");
     expect(res.body.data.variants).toHaveLength(1);
     expect(res.body.data.variants[0].isDefault).toBe(true);
-    expect(res.body.data.variants[0].sku).toBe("LEATHER-WALLET-DEFAULT");
+    expect(res.body.data.variants[0].sku).toBe(
+      buildSuggestedSku({ categoryName: catalog.category.name }),
+    );
+  });
+
+  it("stores, updates and clears the admin buying cost without conflating it with zero", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `cost-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker);
+
+    const created = await api()
+      .post(`/api/v1/admin/products/${catalog.product.id}/variants`)
+      .set("Cookie", admin.cookie)
+      .send({
+        sku: `SKU-COST-${randomUUID().slice(0, 8)}`,
+        price: 150,
+        costPrice: 80,
+        isDefault: false,
+      });
+    expect(created.status).toBe(201);
+    tracker.variantIds.push(created.body.data.id);
+    expect(Number(created.body.data.costPrice)).toBe(80);
+
+    const cleared = await api()
+      .put(`/api/v1/admin/variants/${created.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ costPrice: null });
+    expect(cleared.status).toBe(200);
+    expect(
+      await prisma.productVariant.findUniqueOrThrow({
+        where: { id: created.body.data.id },
+      }),
+    ).toMatchObject({ costPrice: null });
+
+    const zero = await api()
+      .put(`/api/v1/admin/variants/${created.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ costPrice: 0 });
+    expect(zero.status).toBe(200);
+    expect(Number(zero.body.data.costPrice)).toBe(0);
+
+    const untouched = await api()
+      .put(`/api/v1/admin/variants/${created.body.data.id}`)
+      .set("Cookie", admin.cookie)
+      .send({ price: 160 });
+    expect(untouched.status).toBe(200);
+    const stored = await prisma.productVariant.findUniqueOrThrow({
+      where: { id: created.body.data.id },
+    });
+    expect(Number(stored.costPrice)).toBe(0);
+    expect(Number(stored.price)).toBe(160);
   });
 
   it("rejects attribute values that belong to a different attribute", async () => {
@@ -383,7 +480,7 @@ describe("Product variant generation", () => {
 });
 
 describe("Catalog authorization", () => {
-  it("forbids product create without admin or vendor role", async () => {
+  it("forbids product create without admin role", async () => {
     const customer = await createTestUser(tracker, {
       suffix: `cust-${Date.now()}`,
     });
@@ -475,7 +572,7 @@ describe("Catalog authorization", () => {
       data: { name: `Size-${tag}` },
     });
     const value = await prisma.attributeValue.create({
-      data: { attributeId: attribute.id, value: "M" },
+      data: { attributeId: attribute.id, value: "M", color: "#123456" },
     });
     await prisma.variantAttribute.create({
       data: {
@@ -497,6 +594,7 @@ describe("Catalog authorization", () => {
     ).find((v) => v.id === catalog.variant.id);
     expect(variant?.attributes[0]?.attributeValue.id).toBe(value.id);
     expect(variant?.attributes[0]?.attributeValue.value).toBe("M");
+    expect(variant?.attributes[0]?.attributeValue.color).toBe("#123456");
     expect(variant?.attributes[0]?.attributeValue.attributeId).toBe(attribute.id);
     expect(variant?.attributes[0]?.attributeValue.attribute?.name).toBe(
       `Size-${tag}`
@@ -514,6 +612,7 @@ describe("Catalog authorization", () => {
           attributeValue: {
             id: string;
             value: string;
+            color?: string | null;
             attributeId: string;
             attribute?: { id: string; name: string };
           };
@@ -524,34 +623,36 @@ describe("Catalog authorization", () => {
     expect(publicVariant?.attributes[0]?.attributeValue.attributeId).toBe(
       attribute.id
     );
+    // The storefront swatch must use the admin-configured color, not a guess
+    // derived from the value label.
+    expect(publicVariant?.attributes[0]?.attributeValue.color).toBe("#123456");
   });
 
-  it("forbids vendor product POST/PUT/DELETE (admin-only CUD)", async () => {
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `vend-cud-${Date.now()}`,
+  it("forbids customer product POST/PUT/DELETE (admin-only CUD)", async () => {
+    const customer = await createTestUser(tracker, {
+      suffix: `cust-cud-${Date.now()}`,
     });
     const catalog = await createTestProduct(tracker);
 
     const createRes = await api()
       .post("/api/v1/admin/products")
-      .set("Cookie", vendor.cookie)
+      .set("Cookie", customer.cookie)
       .send({
-        name: "Vendor product",
-        slug: `vendor-${randomUUID().slice(0, 8)}`,
+        name: "Customer product",
+        slug: `customer-${randomUUID().slice(0, 8)}`,
         categoryId: catalog.category.id,
       });
     expect(createRes.status).toBe(403);
 
     const updateRes = await api()
       .put(`/api/v1/admin/products/${catalog.product.id}`)
-      .set("Cookie", vendor.cookie)
+      .set("Cookie", customer.cookie)
       .send({ name: "Hijack" });
     expect(updateRes.status).toBe(403);
 
     const deleteRes = await api()
       .delete(`/api/v1/admin/products/${catalog.product.id}`)
-      .set("Cookie", vendor.cookie);
+      .set("Cookie", customer.cookie);
     expect(deleteRes.status).toBe(403);
   });
 
@@ -559,10 +660,6 @@ describe("Catalog authorization", () => {
     const catalog = await createTestProduct(tracker, { stock: 5 });
     const customer = await createTestUser(tracker, {
       suffix: `invc-${Date.now()}`,
-    });
-    const vendor = await createTestUser(tracker, {
-      role: "VENDOR",
-      suffix: `invv-${Date.now()}`,
     });
     const admin = await createTestUser(tracker, {
       role: "ADMIN",
@@ -581,12 +678,6 @@ describe("Catalog authorization", () => {
       .set("Cookie", customer.cookie)
       .send(body);
     expect(customerRes.status).toBe(403);
-
-    const vendorRes = await api()
-      .post("/api/v1/admin/inventory/adjustments")
-      .set("Cookie", vendor.cookie)
-      .send(body);
-    expect(vendorRes.status).toBe(403);
 
     const adminList = await api()
       .get("/api/v1/admin/inventory")
@@ -658,7 +749,52 @@ describe("Variant inventory bootstrap", () => {
         "No active warehouse found — create a warehouse first"
       );
 
-      const created = await prisma.productVariant.findUnique({ where: { sku } });
+      const created = await prisma.productVariant.findFirst({ where: { sku } });
+      expect(created).toBeNull();
+    } finally {
+      await prisma.warehouse.updateMany({
+        where: { id: { in: activeWarehouses.map((w) => w.id) } },
+        data: { isActive: true },
+      });
+    }
+  });
+
+  it("does not persist a product when no active warehouse exists", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `nowh-prod-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker);
+    const slug = `nowh-prod-${randomUUID().slice(0, 8)}`;
+
+    const activeWarehouses = await prisma.warehouse.findMany({
+      where: { isActive: true, deletedAt: null },
+      select: { id: true },
+    });
+    await prisma.warehouse.updateMany({
+      where: { id: { in: activeWarehouses.map((w) => w.id) } },
+      data: { isActive: false },
+    });
+
+    try {
+      const res = await api()
+        .post("/api/v1/admin/products")
+        .set("Cookie", admin.cookie)
+        .send({
+          name: "Orphan product",
+          slug,
+          categoryId: catalog.category.id,
+          variantDefaults: { price: 100 },
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        "No active warehouse found — create a warehouse first"
+      );
+
+      const created = await prisma.product.findFirst({
+        where: { slug, deletedAt: null },
+      });
       expect(created).toBeNull();
     } finally {
       await prisma.warehouse.updateMany({
@@ -760,7 +896,7 @@ describe("Variant inventory bootstrap", () => {
 });
 
 describe("Category delete", () => {
-  it("soft-deletes a category that has a child category", async () => {
+  it("soft-deletes a category and its child categories", async () => {
     const admin = await createTestUser(tracker, {
       role: "ADMIN",
       suffix: `cat-${Date.now()}`,
@@ -792,10 +928,10 @@ describe("Category delete", () => {
     });
     expect(deleted.deletedAt).not.toBeNull();
 
-    const remainingChild = await prisma.category.findUniqueOrThrow({
+    const deletedChild = await prisma.category.findUniqueOrThrow({
       where: { id: child.id },
     });
-    expect(remainingChild.deletedAt).toBeNull();
+    expect(deletedChild.deletedAt).not.toBeNull();
   });
 
   it("soft-deletes a category that still has products", async () => {
@@ -814,6 +950,50 @@ describe("Category delete", () => {
       where: { id: catalog.category.id },
     });
     expect(deleted.deletedAt).not.toBeNull();
+  });
+});
+
+describe("Nested category path", () => {
+  it("resolves nested category paths and filters products by that path", async () => {
+    const tag = randomUUID().slice(0, 8);
+    const parent = await prisma.category.create({
+      data: { name: `Parent ${tag}`, slug: `parent-${tag}`, isActive: true },
+    });
+    tracker.categoryIds.push(parent.id);
+
+    const child = await prisma.category.create({
+      data: {
+        name: `Child ${tag}`,
+        slug: `child-${tag}`,
+        isActive: true,
+        parentId: parent.id,
+      },
+    });
+    tracker.categoryIds.push(child.id);
+
+    const catalog = await createTestProduct(tracker);
+    await prisma.product.update({
+      where: { id: catalog.product.id },
+      data: { categoryId: child.id },
+    });
+
+    const nested = await api().get(`/api/v1/categories/${parent.slug}/${child.slug}`);
+    expect(nested.status).toBe(200);
+    expect(nested.body.data.id).toBe(child.id);
+    expect(nested.body.data.path).toBe(`${parent.slug}/${child.slug}`);
+    expect(nested.body.data.parentSlug).toBe(parent.slug);
+    expect(nested.body.data.products).toBeUndefined();
+    expect(nested.body.data.productsCount).toBe(1);
+
+    const products = await api()
+      .get("/api/v1/products")
+      .query({ category: `${parent.slug}/${child.slug}`, limit: 100 });
+    expect(products.status).toBe(200);
+    const ids = (products.body.data.items as Array<{ id: string }>).map((p) => p.id);
+    expect(ids).toContain(catalog.product.id);
+
+    const missing = await api().get(`/api/v1/categories/${child.slug}/${parent.slug}`);
+    expect(missing.status).toBe(404);
   });
 });
 
@@ -837,5 +1017,143 @@ describe("Unique field race handling", () => {
       });
 
     expect(res.status).toBe(409);
+  });
+});
+
+describe("Product variant id validation", () => {
+  it("rejects a payload that lists the same variant id twice", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `dupid-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker);
+
+    const res = await withDbRetry(() =>
+      api()
+        .put(`/api/v1/admin/products/${catalog.product.id}`)
+        .set("Cookie", admin.cookie)
+        .send({
+          variants: [
+            { id: catalog.variant.id, price: 111 },
+            { id: catalog.variant.id, price: 222 },
+          ],
+        }),
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Duplicate variant ids in payload");
+  });
+
+  it("rejects an unknown variant id instead of silently creating a variant", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `unkid-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker);
+
+    const res = await withDbRetry(() =>
+      api()
+        .put(`/api/v1/admin/products/${catalog.product.id}`)
+        .set("Cookie", admin.cookie)
+        .send({
+          variants: [{ id: randomUUID(), price: 123 }],
+        }),
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Unknown variant id for this product");
+
+    const stillThere = await prisma.productVariant.findUniqueOrThrow({
+      where: { id: catalog.variant.id },
+    });
+    expect(stillThere.deletedAt).toBeNull();
+  });
+
+  it("rejects a variant id owned by a different product", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `foreignid-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker);
+    const other = await createTestProduct(tracker);
+
+    const res = await withDbRetry(() =>
+      api()
+        .put(`/api/v1/admin/products/${catalog.product.id}`)
+        .set("Cookie", admin.cookie)
+        .send({
+          variants: [{ id: other.variant.id, price: 200 }],
+        }),
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Unknown variant id for this product");
+
+    const untouched = await prisma.productVariant.findUniqueOrThrow({
+      where: { id: other.variant.id },
+    });
+    expect(untouched.deletedAt).toBeNull();
+    expect(Number(untouched.price)).toBe(100);
+  });
+});
+
+describe("Price filter and price-sort count consistency", () => {
+  it("reports a total that matches the price-filtered items", async () => {
+    const tag = randomUUID().slice(0, 8);
+    const cheap = await createTestProduct(tracker, { price: 100 });
+    const pricey = await createTestProduct(tracker, { price: 500 });
+
+    await prisma.product.updateMany({
+      where: { id: { in: [cheap.product.id, pricey.product.id] } },
+      data: { name: `PriceCount ${tag}`, status: "ACTIVE" },
+    });
+    await prisma.product.update({
+      where: { id: cheap.product.id },
+      data: { slug: `pricecount-${tag}-cheap` },
+    });
+    await prisma.product.update({
+      where: { id: pricey.product.id },
+      data: { slug: `pricecount-${tag}-pricey` },
+    });
+
+    const res = await withDbRetry(() =>
+      api()
+        .get("/api/v1/products")
+        .query({
+          search: tag,
+          minPrice: 200,
+          maxPrice: 600,
+          sort: "price_asc",
+          limit: 100,
+        }),
+    );
+
+    expect(res.status).toBe(200);
+    const items = res.body.data.items as Array<{ id: string }>;
+    expect(items.map((item) => item.id)).toEqual([pricey.product.id]);
+    expect(res.body.data.pagination.total).toBe(1);
+  });
+
+  it("keeps total consistent when using price_desc sort", async () => {
+    const tag = randomUUID().slice(0, 8);
+    const low = await createTestProduct(tracker, { price: 250 });
+    const high = await createTestProduct(tracker, { price: 450 });
+
+    await prisma.product.updateMany({
+      where: { id: { in: [low.product.id, high.product.id] } },
+      data: { name: `PriceDesc ${tag}`, status: "ACTIVE" },
+    });
+
+    const res = await withDbRetry(() =>
+      api()
+        .get("/api/v1/products")
+        .query({ search: tag, maxPrice: 500, sort: "price_desc", limit: 100 }),
+    );
+
+    expect(res.status).toBe(200);
+    const items = res.body.data.items as Array<{ id: string }>;
+    expect(items).toHaveLength(2);
+    expect(res.body.data.pagination.total).toBe(2);
+    expect(items[0]?.id).toBe(high.product.id);
   });
 });

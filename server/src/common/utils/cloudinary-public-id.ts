@@ -1,3 +1,22 @@
+import { randomBytes } from "node:crypto";
+
+const PUBLIC_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+const PUBLIC_ID_LENGTH = 20;
+
+/**
+ * Generates a Cloudinary-style public id: a single path segment of lowercase
+ * alphanumerics (e.g. "ldqslqlohxtmpcazn7mq"). Must stay slash-free so that
+ * `uniquePublicId`, delivery URLs, attach/detach and destroy keep working.
+ */
+export const generateCloudinaryPublicId = (): string => {
+  const bytes = randomBytes(PUBLIC_ID_LENGTH);
+  let id = "";
+  for (let i = 0; i < PUBLIC_ID_LENGTH; i += 1) {
+    id += PUBLIC_ID_ALPHABET[bytes[i]! % PUBLIC_ID_ALPHABET.length];
+  }
+  return id;
+};
+
 export const uniquePublicId = (value?: string | null): string | null => {
   if (!value) return null;
   const trimmed = value.trim();

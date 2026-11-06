@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { useFaqCategoryFormMutation } from "@/features/dashboard/admin/faqs/hooks/use-faq-mutations";
 import {
   faqCategoryFormSchema,
@@ -44,7 +45,7 @@ export function FaqCategoryFormDialog({
   const slugManual = useRef(false);
 
   const form = useForm<FaqCategoryFormValues>({
-    resolver: zodResolver(faqCategoryFormSchema),
+    resolver: zodResolver(faqCategoryFormSchema) as Resolver<FaqCategoryFormValues>,
     defaultValues: faqCategoryFormDefaults(initialData),
   });
 
@@ -132,13 +133,13 @@ export function FaqCategoryFormDialog({
                 <FormItem>
                   <FormLabel>Sort order</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={Number.isFinite(field.value) ? field.value : 0}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? 0 : e.target.valueAsNumber)
-                      }
+                    <NumberInput
+                      placeholder="Order"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                       disabled={mutation.isPending}
                     />
                   </FormControl>

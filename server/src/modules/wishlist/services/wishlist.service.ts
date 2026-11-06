@@ -1,4 +1,5 @@
 import { AppError } from "../../../common/errors/AppError.ts";
+import { withDbRetry } from "../../../common/utils/db-retry.ts";
 import { paginate } from "../../../common/utils/paginate.ts";
 import { prisma } from "../../../lib/prisma.ts";
 import type { ListWishlistQuery } from "../types.ts";
@@ -11,10 +12,17 @@ const wishlistItemInclude = {
       price: true,
       compareAtPrice: true,
       isDefault: true,
-      images: {
-        select: { id: true, imageUrl: true, altText: true, isPrimary: true },
+      product: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          images: {
+            select: { id: true, imageUrl: true, altText: true, isPrimary: true },
+            orderBy: { isPrimary: "desc" },
+          },
+        },
       },
-      product: { select: { id: true, name: true, slug: true } },
     },
   },
 } as const;
@@ -44,24 +52,26 @@ export const getWishlist = async (customerProfileId: string) => {
 };
 
 export const listWishlistItems = async (customerProfileId: string, query: ListWishlistQuery) => {
-  const wishlist = await getOrCreateWishlist(customerProfileId);
-  const where = { wishlistId: wishlist.id };
+  return withDbRetry(async () => {
+    const wishlist = await getOrCreateWishlist(customerProfileId);
+    const where = { wishlistId: wishlist.id };
 
-  const [items, total] = await Promise.all([
-    prisma.wishlistItem.findMany({
-      where,
-      include: wishlistItemInclude,
-      orderBy: { createdAt: "desc" },
-      skip: (query.page - 1) * query.limit,
-      take: query.limit,
-    }),
-    prisma.wishlistItem.count({ where }),
-  ]);
+    const [items, total] = await Promise.all([
+      prisma.wishlistItem.findMany({
+        where,
+        include: wishlistItemInclude,
+        orderBy: { createdAt: "desc" },
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+      }),
+      prisma.wishlistItem.count({ where }),
+    ]);
 
-  return {
-    items,
-    pagination: paginate(query.page, query.limit, total),
-  };
+    return {
+      items,
+      pagination: paginate(query.page, query.limit, total),
+    };
+  });
 };
 
 export const addWishlistItem = async (customerProfileId: string, variantId: string) => {

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "../../lib/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import { isPrismaCode } from "./prisma-error.ts";
+import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE } from "./roles.ts";
 
 const generateCustomerCode = () => {
   const suffix = randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
@@ -12,6 +13,9 @@ export const getOrCreateCustomerProfile = async (userId: string) => {
   const userExists = await prisma.user.findUnique({ where: { id: userId } });
   if (!userExists) {
     throw new AppError("User account not found in database", 404);
+  }
+  if (isStaffRole(userExists.role)) {
+    throw new AppError(STAFF_CANNOT_SHOP_MESSAGE, 403);
   }
   const customerProfile = await prisma.customerProfile.findUnique({ where: { userId } });
 

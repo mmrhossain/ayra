@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -25,17 +25,16 @@ import type {
   ShippingZone,
 } from "@/features/dashboard/admin/shipping/types";
 import { toShippingErrorMessage } from "@/features/dashboard/admin/shipping/utils";
+import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-state";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
+import { SectionTabs } from "@/features/dashboard/admin/shared/components/section-tabs";
 import { formatMoney } from "@/lib/format";
 
-function StatusBadge({ active }: { active: boolean }) {
+function ActiveStatusBadge({ active }: { active: boolean }) {
   return (
-    <span
-      className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${
-        active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-      }`}
-    >
+    <StatusBadge variant={active ? "success" : "neutral"}>
       {active ? "Active" : "Inactive"}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -51,8 +50,12 @@ export function ShippingTable({
   const [deletingZone, setDeletingZone] = useState<ShippingZone | null>(null);
 
   const [methodFormOpen, setMethodFormOpen] = useState(false);
-  const [methodFormMode, setMethodFormMode] = useState<"create" | "edit">("create");
-  const [editingMethod, setEditingMethod] = useState<ShippingMethod | undefined>();
+  const [methodFormMode, setMethodFormMode] = useState<"create" | "edit">(
+    "create",
+  );
+  const [editingMethod, setEditingMethod] = useState<
+    ShippingMethod | undefined
+  >();
 
   const [rateFormOpen, setRateFormOpen] = useState(false);
   const [rateFormMode, setRateFormMode] = useState<"create" | "edit">("create");
@@ -71,252 +74,103 @@ export function ShippingTable({
     toggleMethod,
   } = useShipping({ initialZones, initialMethods, initialRates });
 
-  return (
-    <div className="space-y-8">
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Zones</h2>
-          <Button
-            type="button"
-            onClick={() => {
-              setZoneFormMode("create");
-              setEditingZone(undefined);
-              setZoneFormOpen(true);
-            }}
-          >
-            Add Zone
-          </Button>
+  const zonesSection = (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold">Zones</h2>
+        <Button
+          type="button"
+          onClick={() => {
+            setZoneFormMode("create");
+            setEditingZone(undefined);
+            setZoneFormOpen(true);
+          }}
+        >
+          Add Zone
+        </Button>
+      </div>
+      {zonesQuery.isError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 p-4"
+        >
+          <p className="text-sm">{toShippingErrorMessage(zonesQuery.error)}</p>
         </div>
-        {zonesQuery.isError ? (
-          <div role="alert" className="rounded-xl border border-destructive/30 p-4">
-            <p className="text-sm">{toShippingErrorMessage(zonesQuery.error)}</p>
+      ) : null}
+      <div className="rounded-xl border">
+        {zonesQuery.isFetching && zones.length === 0 ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
           </div>
-        ) : null}
-        <div className="rounded-xl border">
-          {zonesQuery.isFetching && zones.length === 0 ? (
-            <div className="space-y-2 p-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Districts</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {zones.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No shipping zones.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  zones.map((zone) => (
-                    <TableRow key={zone.id}>
-                      <TableCell className="font-medium">
-                        {zone.name}
-                        {zone.isFallback ? (
-                          <span className="ml-2 text-xs text-muted-foreground">Fallback</span>
-                        ) : null}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{zone.code}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {zone.matchDistricts.length ? zone.matchDistricts.join(", ") : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge active={zone.isActive} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleZone.mutate(zone)}
-                          >
-                            {zone.isActive ? "Deactivate" : "Activate"}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setZoneFormMode("edit");
-                              setEditingZone(zone);
-                              setZoneFormOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setDeletingZone(zone);
-                              setZoneDeleteOpen(true);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Methods</h2>
-          <Button
-            type="button"
-            onClick={() => {
-              setMethodFormMode("create");
-              setEditingMethod(undefined);
-              setMethodFormOpen(true);
-            }}
-          >
-            Add Method
-          </Button>
-        </div>
-        {methodsQuery.isError ? (
-          <div role="alert" className="rounded-xl border border-destructive/30 p-4">
-            <p className="text-sm">{toShippingErrorMessage(methodsQuery.error)}</p>
-          </div>
-        ) : null}
-        <div className="rounded-xl border">
-          <Table>
+        ) : (
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Code</TableHead>
+                <TableHead>Districts</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {methods.length === 0 ? (
+              {zones.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    No shipping methods.
+                  <TableCell colSpan={5}>
+                    <EmptyState
+                      title="No shipping zones"
+                      body="Add a zone to control where you deliver."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
-                methods.map((method) => (
-                  <TableRow key={method.id}>
-                    <TableCell className="font-medium">{method.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{method.code}</TableCell>
-                    <TableCell>
-                      <StatusBadge active={method.isActive} />
+                zones.map((zone) => (
+                  <TableRow key={zone.id}>
+                    <TableCell className="font-medium" data-label="Name">
+                      {zone.name}
+                      {zone.isFallback ? (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          Fallback
+                        </span>
+                      ) : null}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Code"
+                    >
+                      {zone.code}
+                    </TableCell>
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Districts"
+                    >
+                      {zone.matchDistricts.length
+                        ? zone.matchDistricts.join(", ")
+                        : "—"}
+                    </TableCell>
+                    <TableCell data-label="Status">
+                      <ActiveStatusBadge active={zone.isActive} />
+                    </TableCell>
+                    <TableCell className="text-right" data-label="Actions">
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => toggleMethod.mutate(method)}
+                          onClick={() => toggleZone.mutate(zone)}
                         >
-                          {method.isActive ? "Deactivate" : "Activate"}
+                          {zone.isActive ? "Deactivate" : "Activate"}
                         </Button>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setMethodFormMode("edit");
-                            setEditingMethod(method);
-                            setMethodFormOpen(true);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Rates</h2>
-          <Button
-            type="button"
-            onClick={() => {
-              setRateFormMode("create");
-              setEditingRate(undefined);
-              setRateFormOpen(true);
-            }}
-          >
-            Add Rate
-          </Button>
-        </div>
-        {ratesQuery.isError ? (
-          <div role="alert" className="rounded-xl border border-destructive/30 p-4">
-            <p className="text-sm">{toShippingErrorMessage(ratesQuery.error)}</p>
-          </div>
-        ) : null}
-        <div className="rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Zone</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Free from</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rates.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No shipping rates.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rates.map((rate) => (
-                  <TableRow key={rate.id}>
-                    <TableCell className="font-medium">
-                      {rate.shippingZone?.name ?? rate.shippingZoneId}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {rate.shippingMethod?.name ?? rate.shippingMethodId}
-                    </TableCell>
-                    <TableCell>{formatMoney(rate.price)}</TableCell>
-                    <TableCell>
-                      {rate.freeShippingFrom == null ? "—" : formatMoney(rate.freeShippingFrom)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge active={rate.isActive} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setRateFormMode("edit");
-                            setEditingRate(rate);
-                            setRateFormOpen(true);
+                            setZoneFormMode("edit");
+                            setEditingZone(zone);
+                            setZoneFormOpen(true);
                           }}
                         >
                           Edit
@@ -326,8 +180,8 @@ export function ShippingTable({
                           variant="destructive"
                           size="sm"
                           onClick={() => {
-                            setDeletingRate(rate);
-                            setRateDeleteOpen(true);
+                            setDeletingZone(zone);
+                            setZoneDeleteOpen(true);
                           }}
                         >
                           Delete
@@ -338,9 +192,219 @@ export function ShippingTable({
                 ))
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
+        )}
+      </div>
+    </section>
+  );
+
+  const methodsSection = (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold">Methods</h2>
+        <Button
+          type="button"
+          onClick={() => {
+            setMethodFormMode("create");
+            setEditingMethod(undefined);
+            setMethodFormOpen(true);
+          }}
+        >
+          Add Method
+        </Button>
+      </div>
+      {methodsQuery.isError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 p-4"
+        >
+          <p className="text-sm">
+            {toShippingErrorMessage(methodsQuery.error)}
+          </p>
         </div>
-      </section>
+      ) : null}
+      <div className="rounded-xl border">
+        <ResponsiveTable>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {methods.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4}>
+                  <EmptyState
+                    title="No shipping methods"
+                    body="Add a method such as standard or express delivery."
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+              methods.map((method) => (
+                <TableRow key={method.id}>
+                  <TableCell className="font-medium" data-label="Name">
+                    {method.name}
+                  </TableCell>
+                  <TableCell
+                    className="text-muted-foreground"
+                    data-label="Code"
+                  >
+                    {method.code}
+                  </TableCell>
+                  <TableCell data-label="Status">
+                    <ActiveStatusBadge active={method.isActive} />
+                  </TableCell>
+                  <TableCell className="text-right" data-label="Actions">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleMethod.mutate(method)}
+                      >
+                        {method.isActive ? "Deactivate" : "Activate"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setMethodFormMode("edit");
+                          setEditingMethod(method);
+                          setMethodFormOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </ResponsiveTable>
+      </div>
+    </section>
+  );
+
+  const ratesSection = (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold">Rates</h2>
+        <Button
+          type="button"
+          onClick={() => {
+            setRateFormMode("create");
+            setEditingRate(undefined);
+            setRateFormOpen(true);
+          }}
+        >
+          Add Rate
+        </Button>
+      </div>
+      {ratesQuery.isError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 p-4"
+        >
+          <p className="text-sm">{toShippingErrorMessage(ratesQuery.error)}</p>
+        </div>
+      ) : null}
+      <div className="rounded-xl border">
+        <ResponsiveTable>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Zone</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Free from</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rates.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <EmptyState
+                    title="No shipping rates"
+                    body="Add a rate to price delivery for a zone and method."
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+              rates.map((rate) => (
+                <TableRow key={rate.id}>
+                  <TableCell className="font-medium" data-label="Zone">
+                    {rate.shippingZone?.name ?? rate.shippingZoneId}
+                  </TableCell>
+                  <TableCell
+                    className="text-muted-foreground"
+                    data-label="Method"
+                  >
+                    {rate.shippingMethod?.name ?? rate.shippingMethodId}
+                  </TableCell>
+                  <TableCell data-label="Price">
+                    {formatMoney(rate.price)}
+                  </TableCell>
+                  <TableCell data-label="Free from">
+                    {rate.freeShippingFrom == null
+                      ? "—"
+                      : formatMoney(rate.freeShippingFrom)}
+                  </TableCell>
+                  <TableCell data-label="Status">
+                    <ActiveStatusBadge active={rate.isActive} />
+                  </TableCell>
+                  <TableCell className="text-right" data-label="Actions">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setRateFormMode("edit");
+                          setEditingRate(rate);
+                          setRateFormOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setDeletingRate(rate);
+                          setRateDeleteOpen(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </ResponsiveTable>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="space-y-8">
+      <SectionTabs
+        label="Shipping sections"
+        sections={[
+          { value: "zones", label: "Zones", content: zonesSection },
+          { value: "methods", label: "Methods", content: methodsSection },
+          { value: "rates", label: "Rates", content: ratesSection },
+        ]}
+      />
 
       <ZoneFormDialog
         open={zoneFormOpen}

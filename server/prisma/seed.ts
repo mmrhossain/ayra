@@ -3,7 +3,7 @@ import { prisma } from "../src/lib/prisma.ts";
 import { ORDER_CONFIRMATION_TEMPLATE } from "../src/template/order-confirmation.ts";
 import { PAYMENT_CONFIRMATION_TEMPLATE } from "../src/template/payment-confirmation.ts";
 
-const ROLES = ["CUSTOMER", "ADMIN", "VENDOR"] as const;
+const ROLES = ["CUSTOMER", "ADMIN"] as const;
 
 async function main() {
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? process.env.ADMIN_EMAIL;
@@ -19,7 +19,7 @@ async function main() {
     throw new Error("SEED_ADMIN_PASSWORD must be at least 8 characters");
   }
 
-  let user = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const user = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!user) {
     const result = await auth.api.signUpEmail({
@@ -35,12 +35,15 @@ async function main() {
       throw new Error("Better Auth signUpEmail did not return a user id");
     }
 
-    user = await prisma.user.update({
+    await prisma.user.update({
       where: { id: createdId },
       data: {
         role: "ADMIN",
         emailVerified: true,
-        isApproved: true,
+        // Bootstrap staff member is the initial owner. Privileges are explicit
+        // now: an ADMIN with no scopes is not an administrator.
+        isSuperAdmin: true,
+        staffStatus: "ACTIVE",
       },
     });
 
@@ -51,7 +54,8 @@ async function main() {
       data: {
         role: "ADMIN",
         emailVerified: true,
-        isApproved: true,
+        isSuperAdmin: true,
+        staffStatus: "ACTIVE",
       },
     });
     console.log(`[seed] admin user already exists: ${adminEmail}`);

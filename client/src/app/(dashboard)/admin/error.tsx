@@ -41,10 +41,14 @@ export default function Error({
     >
       <div className="flex items-center gap-3">
         <div className="rounded-full bg-destructive/10 p-2 text-destructive">
-          {isForbidden ? <Lock className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+          {isForbidden ? (
+            <Lock className="h-5 w-5" />
+          ) : (
+            <AlertTriangle className="h-5 w-5" />
+          )}
         </div>
         <div>
-          <h2 className="text-base font-semibold leading-none">
+          <h2 className="text-base font-semibold leading-snug">
             {isForbidden ? "Access Denied" : "Something went wrong"}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground font-mono">
@@ -56,7 +60,8 @@ export default function Error({
       <p className="mt-3 text-sm text-muted-foreground">
         {isForbidden
           ? "You do not have the required permissions to view this dashboard section."
-          : error.message || "An unexpected error occurred while loading this page."}
+          : error.message ||
+            "An unexpected error occurred while loading this page."}
       </p>
 
       <div className="mt-5 flex items-center gap-2">

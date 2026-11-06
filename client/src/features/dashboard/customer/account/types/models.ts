@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type CustomerGender = "MALE" | "FEMALE" | "OTHER";
 
@@ -37,3 +33,14 @@ export type CustomerProfileUpdate = {
   dateOfBirth?: string;
   gender?: CustomerGender;
 };
+
+export type NotificationPreferences = {
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  smsEnabled: boolean;
+  updatedAt?: string | null;
+};
+
+export type NotificationPreferencesUpdate = Partial<
+  Pick<NotificationPreferences, "emailEnabled" | "pushEnabled" | "smsEnabled">
+>;

@@ -1,6 +1,7 @@
 import { prisma, type TransactionClient } from "../../lib/prisma.ts";
 import { AppError } from "../../common/errors/AppError.ts";
 import { paginated } from "../../common/utils/paginate.ts";
+import { fromMinor, toMinor } from "../order/utils/order-helpers.ts";
 import { Prisma } from "../../generated/prisma/client.ts";
 import type {
   CouponContext,
@@ -49,11 +50,11 @@ const loadCouponRestrictions = async (
 ): Promise<CouponRestrictions> => {
   const rows = await db.$queryRaw<Array<{ kind: string; id: string }>>`
     SELECT 'product' AS kind, "productId" AS id
-    FROM "CouponProduct"
+    FROM "coupon_product"
     WHERE "couponId" = ${couponId}
     UNION ALL
     SELECT 'category', "categoryId"
-    FROM "CouponCategory"
+    FROM "coupon_category"
     WHERE "couponId" = ${couponId}
   `;
   const productIds = new Set<string>();
@@ -83,14 +84,17 @@ const assertCouponApplicable = (
   }
 };
 
-const eligibleSubtotalFromRestrictions = (
+const eligibleSubtotalMinorFromRestrictions = (
   restrictions: CouponRestrictions,
   ctx: CouponContext,
 ) => {
   const restricted =
     restrictions.productIds.size > 0 || restrictions.categoryIds.size > 0;
-  if (!restricted || !ctx.lines || ctx.lines.length === 0) {
-    return ctx.subtotal;
+  if (!restricted) {
+    return toMinor(ctx.subtotal);
+  }
+  if (!ctx.lines || ctx.lines.length === 0) {
+    return 0;
   }
 
   return ctx.lines.reduce((sum, line) => {
@@ -98,29 +102,53 @@ const eligibleSubtotalFromRestrictions = (
       restrictions.productIds.size === 0 || restrictions.productIds.has(line.productId);
     const categoryMatch =
       restrictions.categoryIds.size === 0 || restrictions.categoryIds.has(line.categoryId);
-    return productMatch && categoryMatch ? sum + line.subtotal : sum;
+    return productMatch && categoryMatch ? sum + toMinor(line.subtotal) : sum;
   }, 0);
 };
 
 const calculateDiscount = (
   coupon: { discountType: string; discountValue: number; maximumDiscountAmount: number | null },
-  subtotal: number
+  subtotalMinor: number
 ) => {
   switch (coupon.discountType) {
     case "PERCENTAGE": {
-      const discount = (subtotal * coupon.discountValue) / 100;
-      return coupon.maximumDiscountAmount
-        ? Math.min(discount, coupon.maximumDiscountAmount)
-        : discount;
+      const rawMinor = Math.round((subtotalMinor * coupon.discountValue) / 100);
+      const discountMinor = Math.min(rawMinor, subtotalMinor);
+      const maximumMinor =
+        coupon.maximumDiscountAmount !== null
+          ? toMinor(coupon.maximumDiscountAmount)
+          : null;
+      return fromMinor(
+        maximumMinor !== null ? Math.min(discountMinor, maximumMinor) : discountMinor
+      );
     }
     case "FIXED_AMOUNT":
-      return Math.min(coupon.discountValue, subtotal);
+      return fromMinor(Math.min(toMinor(coupon.discountValue), subtotalMinor));
     case "FREE_SHIPPING":
       return 0;
     default:
       return 0;
   }
 };
+
+export const calculateCouponDiscount = async (
+  db: Pick<TransactionClient, "$queryRaw">,
+  coupon: CouponSnapshot,
+  ctx: CouponContext,
+) => {
+  const restrictions = await loadCouponRestrictions(db, coupon.id);
+  assertCouponApplicable(restrictions, ctx);
+  return calculateDiscount(
+    coupon,
+    eligibleSubtotalMinorFromRestrictions(restrictions, ctx),
+  );
+};
+
+export const calculateCouponDiscountForRecord = async (
+  db: Pick<TransactionClient, "$queryRaw">,
+  coupon: CouponRecord,
+  ctx: CouponContext,
+) => calculateCouponDiscount(db, toCouponSnapshot(coupon), ctx);
 
 export const validateCouponRow = async (
   coupon: CouponSnapshot,
@@ -135,7 +163,10 @@ export const validateCouponRow = async (
   if (now < coupon.startsAt || now > coupon.expiresAt) {
     throw new AppError("Coupon is not valid at this time", 400);
   }
-  if (coupon.minimumOrderAmount !== null && ctx.subtotal < coupon.minimumOrderAmount) {
+  if (
+    coupon.minimumOrderAmount !== null &&
+    toMinor(ctx.subtotal) < toMinor(coupon.minimumOrderAmount)
+  ) {
     throw new AppError("Order subtotal is below the coupon minimum", 400);
   }
   if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) {
@@ -150,11 +181,7 @@ export const validateCouponRow = async (
     }
   }
 
-  const restrictions = await loadCouponRestrictions(prisma, coupon.id);
-  assertCouponApplicable(restrictions, ctx);
-
-  const basis = eligibleSubtotalFromRestrictions(restrictions, ctx);
-  return calculateDiscount(coupon, basis);
+  return calculateCouponDiscount(prisma, coupon, ctx);
 };
 
 export const reverseCouponUsage = async (tx: TransactionClient, orderId: string) => {
@@ -168,7 +195,7 @@ export const reverseCouponUsage = async (tx: TransactionClient, orderId: string)
     a.localeCompare(b),
   );
   await tx.$queryRaw`
-    SELECT id FROM "Coupon"
+    SELECT id FROM "coupon"
     WHERE id IN (${Prisma.join(couponIds)})
     ORDER BY id ASC
     FOR UPDATE`;
@@ -252,7 +279,7 @@ export const applyCouponAtomic = async (
     SELECT id, code, "isActive", status, "startsAt", "expiresAt",
            "minimumOrderAmount", "usageLimit", "usageCount", "usageLimitPerCustomer",
            "discountType", "discountValue", "maximumDiscountAmount", "deletedAt"
-    FROM "Coupon"
+    FROM "coupon"
     WHERE UPPER(code) = ${normalizedCode}
     FOR UPDATE`;
 
@@ -272,7 +299,7 @@ export const applyCouponAtomic = async (
   }
   if (
       snapshot.minimumOrderAmount !== null &&
-      ctx.subtotal < snapshot.minimumOrderAmount
+      toMinor(ctx.subtotal) < toMinor(snapshot.minimumOrderAmount)
   ) {
     throw new AppError("Order subtotal is below the coupon minimum", 400);
   }
@@ -281,7 +308,7 @@ export const applyCouponAtomic = async (
   }
   if (snapshot.usageLimitPerCustomer !== null) {
     const usageRows = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT id FROM "CouponUsage"
+      SELECT id FROM "coupon_usage"
       WHERE "couponId" = ${coupon.id} AND "customerProfileId" = ${customerProfileId}
       FOR UPDATE`;
     if (usageRows.length >= snapshot.usageLimitPerCustomer) {
@@ -292,8 +319,8 @@ export const applyCouponAtomic = async (
   const restrictions = await loadCouponRestrictions(tx, coupon.id);
   assertCouponApplicable(restrictions, ctx);
 
-  const basis = eligibleSubtotalFromRestrictions(restrictions, ctx);
-  const discountAmount = calculateDiscount(snapshot, basis);
+  const basisMinor = eligibleSubtotalMinorFromRestrictions(restrictions, ctx);
+  const discountAmount = calculateDiscount(snapshot, basisMinor);
 
   return { coupon, discountAmount };
 };
@@ -412,6 +439,13 @@ export const updateCoupon = async (
       : input.discountValue !== undefined
         ? input.discountValue
         : undefined;
+  const effectiveDiscountValue =
+    discountType === "FREE_SHIPPING"
+      ? 0
+      : (input.discountValue ?? moneyValue(existing.discountValue) ?? 0);
+  if (discountType === "PERCENTAGE" && effectiveDiscountValue > 100) {
+    throw new AppError("Percentage discount cannot exceed 100", 400);
+  }
 
   return prisma.coupon.update({
     where: { id },

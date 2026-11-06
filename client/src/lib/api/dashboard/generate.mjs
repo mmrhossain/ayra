@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import openapiTS, { astToString } from "openapi-typescript";
 
-const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const localSpec =
   process.env.BACKEND_OPENAPI_JSON ||
   resolve(rootDir, "openapi-dashboard.json");

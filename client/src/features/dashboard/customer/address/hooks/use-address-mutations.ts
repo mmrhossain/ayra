@@ -30,6 +30,9 @@ function toPayload(
   if (values.email) payload.email = values.email;
   if (values.thana) payload.thana = values.thana;
   if (values.postalCode) payload.postalCode = values.postalCode;
+  if (values.divisionCode) payload.divisionCode = values.divisionCode;
+  if (values.districtCode) payload.districtCode = values.districtCode;
+  if (values.upazilaCode) payload.upazilaCode = values.upazilaCode;
   return payload;
 }
 

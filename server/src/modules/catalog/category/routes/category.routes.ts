@@ -16,7 +16,7 @@ const router = Router();
 
 // Public catalog
 router.get("/categories", getCategories);
-router.get("/categories/:slug", getCategory);
+router.get("/categories/*slug", getCategory);
 
 const adminOnly = [requireAuth, requireRole("ADMIN")];
 

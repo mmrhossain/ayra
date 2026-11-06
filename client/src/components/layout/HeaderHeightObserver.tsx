@@ -16,6 +16,10 @@ export default function HeaderHeightObserver() {
         "--header-height",
         `${totalHeight}px`,
       );
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${navbarHeight}px`,
+      );
     };
 
     updateHeight();

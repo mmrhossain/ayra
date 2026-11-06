@@ -1,12 +1,16 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { ReturnTable } from "@/features/dashboard/admin/return/components/return-table";
 import {
   fetchReturnRequests,
   toOrderErrorMessage,
 } from "@/features/dashboard/admin/orders/api/orders";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReturnsPage() {
+  await requireAdminPageAccess("/admin/returns");
   let initial;
   let error: string | null = null;
 
@@ -18,22 +22,15 @@ export default async function AdminReturnsPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Returns</h1>
-        <p className="text-sm text-muted-foreground">
-          Review customer return requests.
-        </p>
-      </div>
+      <PageHeader
+        title="Returns"
+        description="Review customer return requests."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load returns</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load returns"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <ReturnTable initialData={initial} />
       )}

@@ -5,7 +5,9 @@ import {
   applyInventoryReservations,
   lockCheckoutInventory,
   lockInventoryForVariants,
+  type LowStockAlert,
 } from "../../catalog/inventory/services/inventory.service.ts";
+import { isLowStockTrigger } from "../../catalog/inventory/utils/low-stock.ts";
 import type { InventoryTxn, StockReservationDraft } from "../types.ts";
 import { RESERVATION_TTL_MS } from "../utils/order-helpers.ts";
 
@@ -86,6 +88,7 @@ export const reserveCheckoutStock = async (
 ): Promise<{
   reservations: StockReservationDraft[];
   inventoryTransactionsData: InventoryTxn[];
+  lowStockAlerts: LowStockAlert[];
 }> => {
   const sortedItems = [...items].sort((a, b) =>
       a.variantId.localeCompare(b.variantId)
@@ -105,6 +108,7 @@ export const reserveCheckoutStock = async (
   const inventoryTransactionsData: InventoryTxn[] = [];
   const reservationUpdates: Array<{ id: string; quantity: number }> = [];
   const reservedAvailable = new Map<string, number>();
+  const touchedRows = new Map<string, (typeof lockedRows)[number]>();
 
   for (const item of sortedItems) {
     const invRow = inventoryByVariant.get(item.variantId);
@@ -119,6 +123,7 @@ export const reserveCheckoutStock = async (
       );
     }
     reservedAvailable.set(invRow.id, remaining - item.quantity);
+    touchedRows.set(invRow.id, invRow);
 
     reservationUpdates.push({ id: invRow.id, quantity: item.quantity });
 
@@ -144,5 +149,17 @@ export const reserveCheckoutStock = async (
 
   await applyInventoryReservations(tx, reservationUpdates);
 
-  return { reservations, inventoryTransactionsData };
+  const lowStockAlerts: LowStockAlert[] = [];
+  for (const [inventoryId, remaining] of reservedAvailable) {
+    const row = touchedRows.get(inventoryId);
+    if (!row?.variantId || !row.warehouseId) continue;
+    if (!isLowStockTrigger(row.quantityAvailable, remaining)) continue;
+    lowStockAlerts.push({
+      variantId: row.variantId,
+      warehouseId: row.warehouseId,
+      quantityAvailable: remaining,
+    });
+  }
+
+  return { reservations, inventoryTransactionsData, lowStockAlerts };
 };

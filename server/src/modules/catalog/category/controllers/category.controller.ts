@@ -47,10 +47,18 @@ export const getAdminCategories = asyncHandler(
   },
 );
 
+const categoryPathFromParam = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value.filter((segment): segment is string => typeof segment === "string").join("/");
+  }
+
+  return requireParam(value, "slug");
+};
+
 export const getCategory = asyncHandler(async (req: Request, res: Response) => {
   successResponse(
     res,
-    await getCategoryBySlug(requireParam(req.params.slug, "slug")),
+    await getCategoryBySlug(categoryPathFromParam(req.params.slug)),
     "Category fetched",
   );
 });

@@ -1,4 +1,4 @@
-import type { CustomerProfile } from "./models";
+import type { CustomerProfile, NotificationPreferences } from "./models";
 
 export type {
   Envelope,
@@ -6,10 +6,13 @@ export type {
   CustomerProfileUser,
   CustomerProfile,
   CustomerProfileUpdate,
+  NotificationPreferences,
+  NotificationPreferencesUpdate,
 } from "./models";
 
 export type AccountCardProps = {
   initialData: CustomerProfile;
+  initialPreferences: NotificationPreferences;
 };
 
 export type AccountEditDialogProps = {

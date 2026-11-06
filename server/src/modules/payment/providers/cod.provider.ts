@@ -27,7 +27,7 @@ export const codProvider: PaymentProvider = {
     };
   },
 
-  verifyWebhookSignature() {
+  async verifyWebhookSignature() {
     return false;
   },
 };

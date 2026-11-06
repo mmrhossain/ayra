@@ -4,10 +4,12 @@ import { requireParam } from "../../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../../common/utils/response.ts";
 import {
   createBrandSchema,
+  listAdminBrandsQuerySchema,
   updateBrandSchema,
 } from "../validators/brand.validators.ts";
 import {
   listBrands,
+  listAdminBrands,
   createBrand,
   updateBrand,
   deleteBrand,
@@ -15,6 +17,11 @@ import {
 
 export const getBrands = asyncHandler(async (_req: Request, res: Response) => {
   successResponse(res, await listBrands(), "Brands fetched");
+});
+
+export const getAdminBrands = asyncHandler(async (req: Request, res: Response) => {
+  const query = listAdminBrandsQuerySchema.parse(req.query);
+  successResponse(res, await listAdminBrands(query), "Admin brands fetched");
 });
 
 export const createBrandHandler = asyncHandler(

@@ -1,6 +1,7 @@
 import { AccountCard } from "@/features/dashboard/customer/account/components/account-card";
 import {
   fetchCustomerProfile,
+  fetchNotificationPreferences,
   toProfileError,
 } from "@/features/dashboard/customer/account/api/profile";
 
@@ -8,15 +9,19 @@ export const dynamic = "force-dynamic";
 
 export default async function CustomerAccountPage() {
   let initial;
+  let preferences;
   let error: string | null = null;
 
   try {
-    initial = await fetchCustomerProfile();
+    [initial, preferences] = await Promise.all([
+      fetchCustomerProfile(),
+      fetchNotificationPreferences(),
+    ]);
   } catch (err) {
     error = toProfileError(err);
   }
 
-  if (error || !initial) {
+  if (error || !initial || !preferences) {
     return (
       <div
         role="alert"
@@ -30,5 +35,7 @@ export default async function CustomerAccountPage() {
     );
   }
 
-  return <AccountCard initialData={initial} />;
+  return (
+    <AccountCard initialData={initial} initialPreferences={preferences} />
+  );
 }

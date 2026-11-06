@@ -1,7 +1,10 @@
 import { Router } from "express";
 import {
   requireAuth,
+  requireCustomer,
 } from "../../../common/middleware/auth.middleware.ts";
+import { idempotency } from "../../../common/middleware/idempotency.middleware.ts";
+import { checkoutLimiter } from "../../../common/middleware/rate-limit.middleware.ts";
 
 import {
   checkoutHandler,
@@ -13,10 +16,18 @@ import { createReturnRequestHandler } from "../controllers/return.controller.ts"
 
 const router = Router();
 
-router.post("/checkout", requireAuth, checkoutHandler);
-router.get("/orders", requireAuth, listMyOrdersHandler);
-router.get("/orders/:id", requireAuth, getMyOrderHandler);
-router.post("/orders/:id/cancel", requireAuth, cancelOrderHandler);
-router.post("/orders/:id/return-request", requireAuth, createReturnRequestHandler);
+const customerOnly = [requireAuth, requireCustomer];
+
+router.post(
+  "/checkout",
+  ...customerOnly,
+  checkoutLimiter,
+  idempotency("checkout"),
+  checkoutHandler,
+);
+router.get("/orders", ...customerOnly, listMyOrdersHandler);
+router.get("/orders/:id", ...customerOnly, getMyOrderHandler);
+router.post("/orders/:id/cancel", ...customerOnly, cancelOrderHandler);
+router.post("/orders/:id/return-request", ...customerOnly, createReturnRequestHandler);
 
 export default router;

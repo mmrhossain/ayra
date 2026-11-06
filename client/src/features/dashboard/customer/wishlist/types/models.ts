@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type WishlistVariantImage = {
   id: string;
@@ -18,11 +14,11 @@ export type WishlistVariant = {
   compareAtPrice?: number | string | null;
   isDefault?: boolean;
   availableStock?: number | null;
-  images?: WishlistVariantImage[];
   product?: {
     id: string;
     name: string;
     slug: string;
+    images?: WishlistVariantImage[];
   } | null;
 };
 

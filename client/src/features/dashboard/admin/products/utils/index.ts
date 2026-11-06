@@ -49,6 +49,27 @@ export function toErrorMessage(err: unknown): string {
   return "Something went wrong";
 }
 
+export function sanitizeDecimal(value: string): string {
+  const cleaned = value.replace(/[^\d.]/g, "");
+  const dot = cleaned.indexOf(".");
+  if (dot === -1) return cleaned;
+  return `${cleaned.slice(0, dot + 1)}${cleaned.slice(dot + 1).replace(/\./g, "")}`;
+}
+
+export function sanitizeInteger(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+export function blockInvalidNumberKey(
+  event: { key: string; preventDefault: () => void },
+  integer = false,
+) {
+  const blocked = integer
+    ? ["e", "E", "+", "-", "."]
+    : ["e", "E", "+", "-"];
+  if (blocked.includes(event.key)) event.preventDefault();
+}
+
 export function productPrice(item: ProductListItem): number | null {
   const prices = item.variants
     .map((v) => Number(v.price))
@@ -126,12 +147,6 @@ export function detailsFromProduct(product?: ProductDetail): DetailsValues {
     primaryImageUrl: primary,
     isFeatured: product?.isFeatured ?? false,
     status: product?.status ?? "DRAFT",
-    price:
-      product?.variants.find((variant) => variant.isDefault)?.price != null
-        ? String(product.variants.find((variant) => variant.isDefault)?.price)
-        : product?.variants[0]?.price != null
-          ? String(product.variants[0].price)
-          : "",
   };
 }
 
@@ -140,12 +155,16 @@ export function variantsFromProduct(product?: ProductDetail): VariantRow[] {
     return [
       {
         key: "default",
-        sku: product?.slug ? `${product.slug}-default` : "",
+        sku: "",
+        skuEdited: false,
+        lastSuggested: "",
         price: "",
+        costPrice: "",
         isDefault: true,
         attributeValueIds: [],
         label: "Default",
-        initialQty: 0,
+        initialQty: "",
+        existingQty: 0,
       },
     ];
   }
@@ -157,15 +176,28 @@ export function variantsFromProduct(product?: ProductDetail): VariantRow[] {
         .map((a) => a.value)
         .filter(Boolean)
         .join(" / ") || (variant.isDefault ? "Default" : variant.sku);
+    const currentQty =
+      typeof variant.availableStock === "number" && variant.availableStock > 0
+        ? variant.availableStock
+        : 0;
     return {
       key: ids.length ? comboKey(ids) : variant.id,
       id: variant.id,
       sku: variant.sku,
+      skuEdited: true,
+      lastSuggested: variant.sku,
       price: String(variant.price ?? ""),
+      costPrice:
+        variant.costPrice === null || variant.costPrice === undefined
+          ? ""
+          : String(variant.costPrice),
       isDefault: Boolean(variant.isDefault),
       attributeValueIds: ids,
       label,
-      initialQty: 0,
+      // Show the stock that is already on hand so the wizard reflects reality
+      // and an unchanged value becomes a no-op instead of a re-entry.
+      initialQty: currentQty > 0 ? String(currentQty) : "",
+      existingQty: currentQty,
     };
   });
 }

@@ -7,6 +7,8 @@ export const categoryFormSchema = z.object({
   isActive: z.boolean(),
   image: z.string().optional(),
   imagePublicId: z.string().optional(),
+  mobileImage: z.string().optional(),
+  mobileImagePublicId: z.string().optional(),
 });
 
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>;

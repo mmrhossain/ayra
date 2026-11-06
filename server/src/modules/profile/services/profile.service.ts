@@ -1,11 +1,8 @@
-import { prisma } from "../../../lib/prisma.ts";
-import { AppError } from "../../../common/errors/AppError.ts";
 import { getOrCreateCustomerProfile } from "../../../common/utils/customerProfile.ts";
-import { resolveImagePublicId } from "../../../common/utils/cloudinary-public-id.ts";
-import { attachMediaAssets, deleteImages } from "../../media/media.service.ts";
+import { prisma } from "../../../lib/prisma.ts";
 import type {
   UpdateCustomerProfileInput,
-  UpdateVendorProfileInput,
+  UpdateNotificationPreferencesInput,
 } from "../types.ts";
 
 const customerProfileSelect = {
@@ -16,9 +13,6 @@ const customerProfileSelect = {
   loyaltyPoints: true,
   totalOrders: true,
   totalSpent: true,
-  facebookId: true,
-  googleId: true,
-  appleId: true,
   userId: true,
   createdAt: true,
   updatedAt: true,
@@ -44,10 +38,7 @@ export const getCustomerProfile = async (userId: string) => {
   });
 };
 
-export const saveCustomerProfile = async (
-  userId: string,
-  input: UpdateCustomerProfileInput
-) => {
+export const saveCustomerProfile = async (userId: string, input: UpdateCustomerProfileInput) => {
   const profile = await getOrCreateCustomerProfile(userId);
 
   return prisma.customerProfile.update({
@@ -62,81 +53,50 @@ export const saveCustomerProfile = async (
 
 export const updateCustomerProfile = saveCustomerProfile;
 
-const vendorProfileSelect = {
-  id: true,
-  shopName: true,
-  shopSlug: true,
-  description: true,
-  logo: true,
-  logoPublicId: true,
-  phone: true,
-  isApproved: true,
-  createdAt: true,
+const notificationPreferenceSelect = {
+  emailEnabled: true,
+  pushEnabled: true,
+  smsEnabled: true,
   updatedAt: true,
 } as const;
 
-export const getVendorProfile = async (userId: string) => {
-  const profile = await prisma.vendorProfile.findUnique({
-    where: { userId },
-    select: vendorProfileSelect,
-  });
-
-  if (!profile) throw new AppError("Vendor profile not found", 404);
-
-  return profile;
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  emailEnabled: true,
+  pushEnabled: true,
+  smsEnabled: false,
+  updatedAt: null,
 };
 
-export const updateVendorProfile = async (
+export const getNotificationPreferences = async (userId: string) => {
+  const preferences = await prisma.userNotificationPreference.findUnique({
+    where: { userId },
+    select: notificationPreferenceSelect,
+  });
+
+  return preferences ?? DEFAULT_NOTIFICATION_PREFERENCES;
+};
+
+export const saveNotificationPreferences = async (
   userId: string,
-  input: UpdateVendorProfileInput
+  input: UpdateNotificationPreferencesInput,
 ) => {
-  const profile = await prisma.vendorProfile.findUnique({
+  return prisma.userNotificationPreference.upsert({
     where: { userId },
-  });
-
-  if (!profile) throw new AppError("Vendor profile not found", 404);
-
-  const logoCleared = input.logo === null || input.logoPublicId === null;
-  const nextLogo = logoCleared
-    ? null
-    : input.logo !== undefined
-      ? input.logo
-      : profile.logo;
-  const nextPublicId = logoCleared
-    ? null
-    : input.logo !== undefined || input.logoPublicId !== undefined
-      ? resolveImagePublicId(
-          input.logoPublicId ?? profile.logoPublicId,
-          nextLogo
-        )
-      : profile.logoPublicId;
-
-  const updated = await prisma.vendorProfile.update({
-    where: { userId },
-    data: {
-      ...(input.shopName !== undefined && { shopName: input.shopName }),
-      ...(input.description !== undefined && {
-        description: input.description ?? null,
-      }),
-      ...((input.logo !== undefined || logoCleared) && { logo: nextLogo }),
-      ...((input.logo !== undefined ||
-        input.logoPublicId !== undefined ||
-        logoCleared) && {
-        logoPublicId: nextPublicId,
-      }),
-      ...(input.phone !== undefined && { phone: input.phone }),
+    create: {
+      userId,
+      emailEnabled: input.emailEnabled ?? true,
+      pushEnabled: input.pushEnabled ?? true,
+      smsEnabled: input.smsEnabled ?? false,
     },
-    select: vendorProfileSelect,
+    update: {
+      ...(input.emailEnabled !== undefined && {
+        emailEnabled: input.emailEnabled,
+      }),
+      ...(input.pushEnabled !== undefined && {
+        pushEnabled: input.pushEnabled,
+      }),
+      ...(input.smsEnabled !== undefined && { smsEnabled: input.smsEnabled }),
+    },
+    select: notificationPreferenceSelect,
   });
-
-  const previousPublicId = resolveImagePublicId(
-    profile.logoPublicId,
-    profile.logo
-  );
-  if (previousPublicId && previousPublicId !== nextPublicId) {
-    await deleteImages([previousPublicId]);
-  }
-  await attachMediaAssets([nextPublicId], "vendor_profile", updated.id);
-
-  return updated;
 };

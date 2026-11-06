@@ -1,11 +1,13 @@
 import CategoriesGrid from "@/features/catalog/components/category/CategoriesGrid";
 import HomeProductSection from "@/features/catalog/components/product/HomeProductSection";
 import SliderCarousel from "@/features/slider/components/SliderCarousel";
+import { SITE_NAME } from "@/config/site";
 import type { HomePayload } from "../types";
 
 export default function HomePage({ data }: { data: HomePayload }) {
   return (
     <div className="space-y-12 pb-16">
+      <h1 className="sr-only">{SITE_NAME} — Modern online shopping in Bangladesh</h1>
       <section>
         {data.sliders.length ? (
           <div className="w-full overflow-hidden">
@@ -19,7 +21,7 @@ export default function HomePage({ data }: { data: HomePayload }) {
       </section>
 
       {data.categories.length > 0 ? (
-        <section>
+        <section className="container">
           <CategoriesGrid categories={data.categories} />
         </section>
       ) : null}

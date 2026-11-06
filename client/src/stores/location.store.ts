@@ -1,70 +1,147 @@
+import { create } from "zustand";
 
+import {
+  fetchDistricts,
+  fetchDivisions,
+  fetchUpazilas,
+} from "@/features/geography/api/geography";
+import type { GeoEntity } from "@/features/geography/types/models";
 
-import {create} from "zustand"
-import axios from "axios";
-import {LocationState} from "@/types/loaction";
-const base_url = "https://bangladesh-geo-location.vercel.app/api/v1"
+export type AreaOption = {
+  code: string;
+  name: string;
+};
 
+export type FormState = {
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  address: string;
+  division: string;
+  district: string;
+  thana: string;
+  divisionCode: string;
+  districtCode: string;
+  upazilaCode: string;
+  postal_code: string;
+  shippingMethodCode: string;
+};
 
-export const locationStore = create<LocationState>((set)=>({
+export type LocationState = {
+  formState: FormState;
+  handleChange: (name: keyof FormState, value: string) => void;
+  resetFormState: () => void;
+  divisionList: AreaOption[] | null;
+  divisionParentCode: string | null;
+  fetchDivisionList: () => Promise<void>;
+  districtList: AreaOption[] | null;
+  districtParentCode: string | null;
+  fetchDistrictList: (divisionCode: string) => Promise<void>;
+  upazilaList: AreaOption[] | null;
+  upazilaParentCode: string | null;
+  fetchUpazilaList: (districtCode: string) => Promise<void>;
+  geoError: string | null;
+};
 
-    formState: {
-        name: "",
-        email: "",
-        phone: "",
-        country: "Bangladesh",
-        address: "",
-        division: "",
-        district: "",
-        thana: "",
-        postal_code: "",
-        shippingMethodCode: "",
-    },
+const emptyFormState: FormState = {
+  name: "",
+  email: "",
+  phone: "",
+  country: "Bangladesh",
+  address: "",
+  division: "",
+  district: "",
+  thana: "",
+  divisionCode: "",
+  districtCode: "",
+  upazilaCode: "",
+  postal_code: "",
+  shippingMethodCode: "",
+};
 
-    handleChange: (name, value) =>
-        set((state) => ({
-            formState: {
-                ...state.formState,
-                [name]: value,
-            },
-        })),
+const toOptions = (items: GeoEntity[]): AreaOption[] =>
+  items.map((item) => ({ code: item.code, name: item.name }));
 
-    resetFormState: () =>
-        set({
-            formState: {
-                name: "",
-                email: "",
-                phone: "",
-                country: "Bangladesh",
-                address: "",
-                division: "",
-                district: "",
-                thana: "",
-                postal_code: "",
-                shippingMethodCode: "",
-            },
-        }),
+const GEO_ERROR = "Could not load locations. Please check your connection and retry.";
 
-    divisionList: null,
+export const locationStore = create<LocationState>((set, get) => ({
+  formState: { ...emptyFormState },
 
-    fetchDivisionList: async ()=>{
-        const result = await axios.get(`${base_url}/division-list`)
-        const data = result?.data?.data
-        set({divisionList: data})
-    },
+  handleChange: (name, value) =>
+    set((state) => ({
+      formState: {
+        ...state.formState,
+        [name]: value,
+      },
+    })),
 
-    districtList: null,
-    fetchDistrictList: async (divisionID: string)=>{
-        const result = await axios.get(`${base_url}/district-list/${divisionID}`)
-        const data = result?.data?.data
-        set({districtList: data})
-    },
+  resetFormState: () => set({ formState: { ...emptyFormState } }),
 
-    postList: null,
-    fetchPostList: async (districtID: string)=>{
-        const result = await axios.get(`${base_url}/post-list/${districtID}`)
-        const data = result?.data?.data
-        set({postList: data})
-    },
+  divisionList: null,
+  divisionParentCode: null,
 
-}))
+  fetchDivisionList: async () => {
+    if (get().divisionList?.length) return;
+    try {
+      const list = await fetchDivisions();
+      set({ divisionList: toOptions(list), geoError: null });
+    } catch {
+      set({ divisionList: [], geoError: GEO_ERROR });
+    }
+  },
+
+  districtList: null,
+  districtParentCode: null,
+
+  fetchDistrictList: async (divisionCode: string) => {
+    if (!divisionCode) {
+      set({ districtList: [], districtParentCode: null });
+      return;
+    }
+    if (
+      get().districtParentCode === divisionCode &&
+      get().districtList?.length
+    ) {
+      return;
+    }
+    try {
+      const list = await fetchDistricts(divisionCode);
+      set({
+        districtList: toOptions(list),
+        districtParentCode: divisionCode,
+        geoError: null,
+      });
+    } catch {
+      set({ districtList: [], districtParentCode: divisionCode, geoError: GEO_ERROR });
+    }
+  },
+
+  upazilaList: null,
+  upazilaParentCode: null,
+
+  fetchUpazilaList: async (districtCode: string) => {
+    if (!districtCode) {
+      set({ upazilaList: [], upazilaParentCode: null });
+      return;
+    }
+    if (
+      get().upazilaParentCode === districtCode &&
+      get().upazilaList?.length
+    ) {
+      return;
+    }
+    try {
+      const list = await fetchUpazilas(districtCode);
+      set({
+        upazilaList: toOptions(list),
+        upazilaParentCode: districtCode,
+        geoError: null,
+      });
+    } catch {
+      set({ upazilaList: [], upazilaParentCode: districtCode, geoError: GEO_ERROR });
+    }
+  },
+
+  geoError: null,
+}));

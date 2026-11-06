@@ -8,14 +8,43 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]),
   PORT: z.coerce.number().default(5000),
   FRONTEND_URL: z.string(),
+  // Additional browser origins accepted by Better Auth (comma-separated).
+  // Supports wildcards, e.g. "https://*.preview.example.com". Use this for
+  // hosted preview/staging hosts without hardcoding them in source.
+  EXTRA_TRUSTED_ORIGINS: z
+    .string()
+    .optional()
+    .transform((value) =>
+      (value ?? "")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0)
+    ),
 
   // Database
   DATABASE_URL: z.string(),
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(20),
+  DATABASE_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
+  DATABASE_IDLE_TIMEOUT_MS: z.coerce.number().int().positive().default(20000),
+  DATABASE_QUERY_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
+  DATABASE_KEEPALIVE_INITIAL_DELAY_MS: z.coerce.number().int().nonnegative().default(10000),
+  // Interactive transaction budget. Cross-region databases (e.g. a remote Neon
+  // endpoint) add ~250ms per round-trip, so a multi-variant product insert can
+  // exceed the previous 10s cap. Keep this high enough for the heaviest write.
+  DATABASE_TRANSACTION_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
+  DATABASE_TRANSACTION_MAX_WAIT_MS: z.coerce.number().int().positive().default(10000),
   DIRECT_URL: z.string(),
 
   // Inventory
   LOW_STOCK_THRESHOLD: z.coerce.number().int().min(0).default(10),
+
+  // Bangladesh geography reference API (server-side proxy with caching)
+  GEO_API_URL: z
+    .string()
+    .url()
+    .default("https://bd-geo-location.vercel.app/api/v1"),
+  GEO_API_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
+  GEO_CACHE_TTL_SECONDS: z.coerce.number().int().nonnegative().default(86400),
 
   // Redis (required in production)
   REDIS_URL: z.string().optional(),
@@ -33,11 +62,14 @@ const envSchema = z.object({
   // Better Auth
   BETTER_AUTH_SECRET: z.string(),
   BETTER_AUTH_URL: z.string(),
+  BETTER_AUTH_APP_NAME: z.string().min(1).default("Ayra"),
+  SETTINGS_ENCRYPTION_KEY: z.string().min(16).optional(),
 
   // SSLCommerz
   SSLCOMMERZ_STORE_ID: z.string().optional(),
   SSLCOMMERZ_STORE_PASSWORD: z.string().optional(),
   SSLCOMMERZ_SANDBOX: z.string().default("true"),
+  PAYMENT_CALLBACK_BASE_URL: z.string().optional(),
 
   // Google OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -54,10 +86,34 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().min(1),
 
+  // Courier integrations (optional; booking/webhooks are disabled when unset)
+  COURIER_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
+  PATHAO_BASE_URL: z.string().url().optional(),
+  PATHAO_CLIENT_ID: z.string().optional(),
+  PATHAO_CLIENT_SECRET: z.string().optional(),
+  PATHAO_USERNAME: z.string().optional(),
+  PATHAO_PASSWORD: z.string().optional(),
+  PATHAO_STORE_ID: z.coerce.number().int().positive().optional(),
+  PATHAO_DEFAULT_CITY_ID: z.coerce.number().int().positive().optional(),
+  PATHAO_DEFAULT_ZONE_ID: z.coerce.number().int().positive().optional(),
+  PATHAO_DEFAULT_AREA_ID: z.coerce.number().int().positive().optional(),
+  PATHAO_WEBHOOK_SECRET: z.string().optional(),
+  STEADFAST_BASE_URL: z.string().url().default("https://portal.packzy.com/api/v1"),
+  STEADFAST_API_KEY: z.string().optional(),
+  STEADFAST_SECRET_KEY: z.string().optional(),
+  STEADFAST_WEBHOOK_SECRET: z.string().optional(),
+
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_UPLOAD_TIMEOUT_MS: z.coerce.number().int().positive().default(60000),
+  CLOUDINARY_DESTROY_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
+  CLOUDINARY_RECONCILE_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
+
+  // Media upload path: bound the synchronous DB write so a suspended/unreachable
+  // database fails fast with a clear error instead of hanging for DATABASE_QUERY_TIMEOUT_MS.
+  MEDIA_DB_WRITE_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
 
   // Upload
   MAX_JSON_SIZE: z.string().default("1mb"),
@@ -87,7 +143,7 @@ const envSchema = z.object({
   ADMIN_EMAIL_VERIFIED: z
     .string()
     .optional()
-    .default("false")
+    .default("true")
     .transform((val) => val === "true"),
 }).superRefine((data, ctx) => {
   if (data.NODE_ENV === "test") return;

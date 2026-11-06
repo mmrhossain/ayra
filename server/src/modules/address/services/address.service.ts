@@ -5,6 +5,7 @@ import type {
   DefaultAddressFlags,
   UpdateAddressInput,
 } from "../types.ts";
+import { assertAddressGeoHierarchy } from "../../geography/utils/address-geo.ts";
 
 const findOwnedAddress = async (customerProfileId: string, id: string) => {
   const address = await prisma.address.findFirst({
@@ -49,8 +50,10 @@ export const createAddress = async (
   customerProfileId: string,
   input: CreateAddressInput
 ) => {
+  await assertAddressGeoHierarchy(input);
+
   return transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "CustomerProfile" WHERE id = ${customerProfileId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM "customer_profile" WHERE id = ${customerProfileId} FOR UPDATE`;
 
     const address = await tx.address.create({
       data: {
@@ -65,6 +68,9 @@ export const createAddress = async (
         thana: input.thana ?? null,
         area: input.area ?? null,
         postalCode: input.postalCode ?? null,
+        divisionCode: input.divisionCode ?? null,
+        districtCode: input.districtCode ?? null,
+        upazilaCode: input.upazilaCode ?? null,
         addressLine1: input.addressLine1,
         addressLine2: input.addressLine2 ?? null,
         isDefaultShipping: input.isDefaultShipping ?? false,
@@ -101,8 +107,42 @@ export const updateAddress = async (
   id: string,
   input: UpdateAddressInput
 ) => {
+  const current = await findOwnedAddress(customerProfileId, id);
+
+  const divisionChanged = input.divisionCode !== undefined;
+  const districtChanged = input.districtCode !== undefined;
+  const cascade = divisionChanged || districtChanged;
+
+  const nextDivisionCode = divisionChanged
+    ? input.divisionCode ?? null
+    : undefined;
+  const nextDistrictCode = divisionChanged
+    ? input.districtCode ?? null
+    : input.districtCode !== undefined
+      ? input.districtCode ?? null
+      : undefined;
+  const nextUpazilaCode = cascade
+    ? input.upazilaCode ?? null
+    : input.upazilaCode !== undefined
+      ? input.upazilaCode ?? null
+      : undefined;
+
+  await assertAddressGeoHierarchy({
+    divisionCode: divisionChanged ? input.divisionCode : current.divisionCode,
+    districtCode: divisionChanged
+      ? input.districtCode
+      : input.districtCode !== undefined
+        ? input.districtCode
+        : current.districtCode,
+    upazilaCode: cascade
+      ? input.upazilaCode
+      : input.upazilaCode !== undefined
+        ? input.upazilaCode
+        : current.upazilaCode,
+  });
+
   return transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "CustomerProfile" WHERE id = ${customerProfileId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM "customer_profile" WHERE id = ${customerProfileId} FOR UPDATE`;
 
     const existing = await tx.address.findFirst({
       where: { id, customerProfileId },
@@ -124,6 +164,15 @@ export const updateAddress = async (
         ...(input.area !== undefined && { area: input.area ?? null }),
         ...(input.postalCode !== undefined && {
           postalCode: input.postalCode ?? null,
+        }),
+        ...(nextDivisionCode !== undefined && {
+          divisionCode: nextDivisionCode,
+        }),
+        ...(nextDistrictCode !== undefined && {
+          districtCode: nextDistrictCode,
+        }),
+        ...(nextUpazilaCode !== undefined && {
+          upazilaCode: nextUpazilaCode,
         }),
         ...(input.addressLine1 !== undefined && {
           addressLine1: input.addressLine1,

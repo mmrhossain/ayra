@@ -11,7 +11,7 @@ declare global {
           email: string;
           emailVerified?: boolean;
           role?: string | AuthRole | null | undefined;
-          isApproved?: boolean | null | undefined;
+          adminPermissions?: string[] | null | undefined;
           banned?: boolean | null | undefined;
           banReason?: string | null | undefined;
           banExpires?: Date | null | undefined;

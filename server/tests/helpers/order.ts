@@ -19,19 +19,45 @@ export const createTestOrder = async (
   user: TestUser,
   opts?: {
     status?: "PENDING" | "CONFIRMED" | "PROCESSING" | "PACKED" | "SHIPPED" | "DELIVERED";
+    subtotal?: number;
+    discountAmount?: number;
+    taxAmount?: number;
+    shippingAmount?: number;
     grandTotal?: number;
+    deliveredAt?: Date | null;
+    pricesIncludeTax?: boolean;
+    taxRatePercent?: number;
+    currency?: "BDT" | "USD";
   }
 ) => {
   const orderNumber = `ORD-TEST-${randomUUID().slice(0, 10).toUpperCase()}`;
-  const grandTotal = opts?.grandTotal ?? 100;
+  const status = opts?.status ?? "PENDING";
+  const subtotal = opts?.subtotal ?? opts?.grandTotal ?? 100;
+  const grandTotal = opts?.grandTotal ?? subtotal;
+  const taxAmount = opts?.taxAmount ?? 0;
+  const deliveredAt =
+    opts && "deliveredAt" in opts
+      ? opts.deliveredAt
+      : status === "DELIVERED"
+        ? new Date()
+        : null;
 
   const order = await prisma.order.create({
     data: {
       orderNumber,
-      status: opts?.status ?? "PENDING",
+      status,
       paymentStatus: "PENDING",
-      subtotal: grandTotal,
+      subtotal,
+      discountAmount: opts?.discountAmount ?? 0,
+      taxAmount,
+      shippingAmount: opts?.shippingAmount ?? 0,
       grandTotal,
+      currency: opts?.currency ?? "BDT",
+      // Historic test orders with recorded tax used tax-exclusive prices.
+      pricesIncludeTax:
+        opts?.pricesIncludeTax ?? !(taxAmount > 0),
+      taxRatePercent: opts?.taxRatePercent ?? 0,
+      deliveredAt,
       customerProfileId: user.customerProfileId,
       addresses: {
         create: [

@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export const BLOG_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 export type BlogStatus = (typeof BLOG_STATUSES)[number];

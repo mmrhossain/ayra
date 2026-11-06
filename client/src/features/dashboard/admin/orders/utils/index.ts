@@ -1,3 +1,4 @@
+import type { StatusBadgeVariant } from "@/components/ui/status-badge";
 import { DashboardApiError } from "@/lib/api/dashboard";
 import { formatMoney } from "@/lib/format";
 import type {
@@ -39,8 +40,25 @@ export function customerLabel(order: OrderListItem): string {
   );
 }
 
-export function itemCount(order: Pick<OrderListItem, "items">): number {
-  return order.items.reduce((sum, item) => sum + item.quantity, 0);
+export function itemCount(order: Pick<OrderListItem, "itemCount">): number {
+  return order.itemCount ?? 0;
+}
+
+const ORDER_STATUS_VARIANTS: Record<OrderStatus, StatusBadgeVariant> = {
+  PENDING: "warning",
+  CONFIRMED: "info",
+  PROCESSING: "info",
+  PACKED: "info",
+  SHIPPED: "info",
+  DELIVERED: "success",
+  CANCELLED: "danger",
+  RETURN_REQUESTED: "warning",
+  RETURNED: "danger",
+  REFUNDED: "neutral",
+};
+
+export function statusVariantFor(status: OrderStatus): StatusBadgeVariant {
+  return ORDER_STATUS_VARIANTS[status] ?? "neutral";
 }
 
 export function pickOrderAddress(

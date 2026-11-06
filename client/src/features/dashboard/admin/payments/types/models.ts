@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type PaymentMethod = "COD" | "SSLCOMMERZ" | string;
 
@@ -77,7 +73,51 @@ export type RefundRecord = {
   amount: number | string;
   reason?: string | null;
   status: string;
+  providerReference?: string | null;
+  refundedAt?: string | null;
+  requiresManualProcessing?: boolean;
   createdAt: string;
+  updatedAt?: string;
+};
+
+export type RefundQueuePayment = {
+  id: string;
+  method: PaymentMethod;
+  status: string;
+  amount: number | string;
+  currency?: string;
+  providerReference?: string | null;
+  order?: PaymentOrder | null;
+};
+
+export type RefundQueueItem = RefundRecord & {
+  payment: RefundQueuePayment;
+};
+
+export const REFUND_STATUSES = [
+  "PENDING",
+  "APPROVED",
+  "PROCESSING",
+  "COMPLETED",
+  "REJECTED",
+] as const;
+
+export type RefundStatus = (typeof REFUND_STATUSES)[number];
+
+export type RefundListParams = {
+  page?: number;
+  limit?: number;
+  status?: RefundStatus;
+  method?: PaymentMethodFilter;
+  search?: string;
+  requiresManualProcessing?: boolean;
+  from?: string;
+  to?: string;
+};
+
+export type RefundListResult = {
+  items: RefundQueueItem[];
+  pagination: PaymentPagination;
 };
 
 export type PaymentDetail = PaymentRecord & {

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/lib/prisma.ts";
 import { checkout } from "../../src/modules/order/services/order.service.ts";
+import { addItem, applyCoupon, getCart } from "../../src/modules/cart/cart.service.ts";
 import {
   createCoupon,
   deleteCoupon,
@@ -606,5 +607,80 @@ describe("Coupon admin create/update", () => {
         message: "Coupon not found",
       } satisfies Partial<AppError>,
     );
+  });
+
+  it("rejects switching to percentage above 100 without a new value", async () => {
+    const coupon = await createTestCoupon(tracker, {
+      discountType: "FIXED_AMOUNT",
+      discountValue: 150,
+    });
+
+    await expect(
+      updateCoupon(coupon.id, { discountType: "PERCENTAGE" }),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: "Percentage discount cannot exceed 100",
+    } satisfies Partial<AppError>);
+  });
+
+  it("caps percentage discounts at the eligible subtotal", async () => {
+    const coupon = await createTestCoupon(tracker, {
+      discountType: "PERCENTAGE",
+      discountValue: 150,
+    });
+    const user = await createTestUser(tracker, { suffix: `cap-${Date.now()}` });
+
+    const result = await validateCouponCode(coupon.code, user.customerProfileId, {
+      subtotal: 100,
+      productIds: [],
+      productCategoryIds: [],
+    });
+
+    expect(result.discountAmount).toBe(100);
+  });
+
+  it("does not discount restricted coupons without line details", async () => {
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const coupon = await createTestCoupon(tracker, {
+      productIds: [catalog.product.id],
+    });
+    const user = await createTestUser(tracker, { suffix: `nl-${Date.now()}` });
+
+    const result = await validateCouponCode(coupon.code, user.customerProfileId, {
+      subtotal: 100,
+      productIds: [catalog.product.id],
+      productCategoryIds: [catalog.category.id],
+    });
+
+    expect(result.discountAmount).toBe(0);
+  });
+
+  it("recalculates the cart discount when items change", async () => {
+    const first = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const second = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const coupon = await createTestCoupon(tracker, {
+      discountType: "PERCENTAGE",
+      discountValue: 10,
+    });
+    const user = await createTestUser(tracker, { suffix: `rc-${Date.now()}` });
+
+    await createActiveCartWithItem(
+      tracker,
+      user.customerProfileId,
+      first.variant,
+      first.product.name,
+      1,
+    );
+    await applyCoupon(user.customerProfileId, coupon.code);
+
+    const initial = await getCart(user.customerProfileId);
+    expect(Number(initial.discountAmount)).toBe(10);
+
+    await addItem(user.customerProfileId, second.variant.id, 1);
+
+    const updated = await getCart(user.customerProfileId);
+    expect(Number(updated.subtotal)).toBe(200);
+    expect(Number(updated.discountAmount)).toBe(20);
+    expect(Number(updated.grandTotal)).toBe(180);
   });
 });

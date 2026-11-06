@@ -4,6 +4,9 @@ import type { WishlistItem } from "@/features/dashboard/customer/wishlist/types"
 export function toWishlistErrorMessage(err: unknown): string {
   if (err instanceof DashboardApiError) {
     if (err.status === 401) return "Please sign in to manage your wishlist";
+    if (err.status === 403) {
+      return err.message || "Staff accounts cannot shop. Sign in with a customer account.";
+    }
     return err.message;
   }
   if (err instanceof Error) return err.message;
@@ -23,19 +26,24 @@ export function wishlistItemPrice(item: WishlistItem): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function wishlistItemImage(item: WishlistItem): string {
-  const url =
-    item.variant?.images?.find((img) => img.isPrimary)?.imageUrl ||
-    item.variant?.images?.[0]?.imageUrl;
+function firstValidImageUrl(images?: Array<{ imageUrl?: string; isPrimary?: boolean }>): string | null {
+  const primary = images?.find((img) => img.isPrimary)?.imageUrl;
+  const fallback = images?.[0]?.imageUrl;
+  const url = primary || fallback;
   if (
     url &&
-    (url.startsWith("http://") ||
-      url.startsWith("https://") ||
-      url.startsWith("/"))
+    (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/"))
   ) {
     return url;
   }
-  return "https://placehold.jp/400x400.png";
+  return null;
+}
+
+export function wishlistItemImage(item: WishlistItem): string {
+  return (
+    firstValidImageUrl(item.variant?.product?.images) ||
+    "https://placehold.jp/400x400.png"
+  );
 }
 
 export function wishlistItemInStock(item: WishlistItem): boolean | null {

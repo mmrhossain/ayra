@@ -26,6 +26,7 @@ export const getOrCreateWarehouse = async (tracker: CleanupTracker) => {
 export const createTestProduct = async (
   tracker: CleanupTracker,
   opts?: {
+    name?: string;
     stock?: number;
     price?: number;
     compareAtPrice?: number;
@@ -47,7 +48,7 @@ export const createTestProduct = async (
 
   const product = await prisma.product.create({
     data: {
-      name: `Test Product ${tag}`,
+      name: opts?.name ?? `Test Product ${tag}`,
       slug: `test-product-${tag}`,
       status: opts?.status ?? "ACTIVE",
       isFeatured: opts?.isFeatured ?? false,
@@ -82,6 +83,41 @@ export const createTestProduct = async (
   tracker.inventoryIds.push(inventory.id);
 
   return { category, product, variant, warehouse, inventory };
+};
+
+export const createAttributeGroup = async (
+  tracker: CleanupTracker,
+  name: string,
+  values: string[],
+) => {
+  const tag = randomUUID().slice(0, 8);
+  const attribute = await prisma.attribute.create({
+    data: { name: `${name} ${tag}` },
+  });
+  tracker.attributeIds.push(attribute.id);
+
+  const created: Array<{ id: string; value: string }> = [];
+  for (const value of values) {
+    const attributeValue = await prisma.attributeValue.create({
+      data: { value, attributeId: attribute.id },
+    });
+    tracker.attributeValueIds.push(attributeValue.id);
+    created.push({ id: attributeValue.id, value: attributeValue.value });
+  }
+
+  return { attribute, values: created };
+};
+
+export const attachVariantAttributeValues = async (
+  variantId: string,
+  attributeValueIds: string[],
+) => {
+  await prisma.variantAttribute.createMany({
+    data: attributeValueIds.map((attributeValueId) => ({
+      variantId,
+      attributeValueId,
+    })),
+  });
 };
 
 export const createActiveCartWithItem = async (

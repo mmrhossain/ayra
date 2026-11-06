@@ -8,8 +8,8 @@ import { redis } from "../../lib/redis.ts";
 const skipInTest = () => env.NODE_ENV === "test";
 
 const SESSION_COOKIES = [
-  "rangalay.session_token",
-  "__Secure-rangalay.session_token",
+  "ayra.session_token",
+  "__Secure-ayra.session_token",
 ] as const;
 
 const hashToken = (token: string) =>
@@ -93,7 +93,7 @@ const createLimiter = ({
   });
 };
 
-const perEndpointLimiter = (
+export const perEndpointLimiter = (
   windowMs: number,
   max: number,
   label: string,
@@ -130,10 +130,11 @@ export const authLimiter = createLimiter({
 });
 
 export const checkoutLimiter = perEndpointLimiter(
-  15 * 60 * 1000,
-  30,
+  60 * 1000,
+  5,
   "checkout",
-  "checkout:rl:",
+  "checkout:user:rl:",
+  (req) => req.auth?.user.id ?? identityKey(req),
 );
 
 export const paymentLimiter = perEndpointLimiter(
@@ -227,11 +228,6 @@ export const domainLimiter = (req: Request, res: Response, next: NextFunction) =
   const path = normalizePath(req);
   const method = req.method.toUpperCase();
 
-  if (method === "POST" && (path === "/api/v1/checkout" || path === "/api/v1/cart/checkout")) {
-    checkoutLimiter(req, res, next);
-    return;
-  }
-
   if (method === "POST" && /^\/api\/v1\/payments\/[^/]+\/initiate$/.test(path)) {
     paymentLimiter(req, res, next);
     return;
@@ -291,7 +287,6 @@ export const domainLimiter = (req: Request, res: Response, next: NextFunction) =
 
   if (
     path === "/api/v1/cart" ||
-    path === "/api/v1/cart/guest" ||
     path.startsWith("/api/v1/cart/")
   ) {
     cartLimiter(req, res, next);

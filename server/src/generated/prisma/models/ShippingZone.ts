@@ -51,6 +51,7 @@ export type ShippingZoneCountAggregateOutputType = {
   isActive: number
   isFallback: number
   matchDistricts: number
+  matchDistrictCodes: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +85,7 @@ export type ShippingZoneCountAggregateInputType = {
   isActive?: true
   isFallback?: true
   matchDistricts?: true
+  matchDistrictCodes?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -168,6 +170,7 @@ export type ShippingZoneGroupByOutputType = {
   isActive: boolean
   isFallback: boolean
   matchDistricts: string[]
+  matchDistrictCodes: string[]
   createdAt: Date
   updatedAt: Date
   _count: ShippingZoneCountAggregateOutputType | null
@@ -200,6 +203,7 @@ export type ShippingZoneWhereInput = {
   isActive?: Prisma.BoolFilter<"ShippingZone"> | boolean
   isFallback?: Prisma.BoolFilter<"ShippingZone"> | boolean
   matchDistricts?: Prisma.StringNullableListFilter<"ShippingZone">
+  matchDistrictCodes?: Prisma.StringNullableListFilter<"ShippingZone">
   createdAt?: Prisma.DateTimeFilter<"ShippingZone"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingZone"> | Date | string
   rates?: Prisma.ShippingRateListRelationFilter
@@ -212,6 +216,7 @@ export type ShippingZoneOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   isFallback?: Prisma.SortOrder
   matchDistricts?: Prisma.SortOrder
+  matchDistrictCodes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   rates?: Prisma.ShippingRateOrderByRelationAggregateInput
@@ -227,6 +232,7 @@ export type ShippingZoneWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"ShippingZone"> | boolean
   isFallback?: Prisma.BoolFilter<"ShippingZone"> | boolean
   matchDistricts?: Prisma.StringNullableListFilter<"ShippingZone">
+  matchDistrictCodes?: Prisma.StringNullableListFilter<"ShippingZone">
   createdAt?: Prisma.DateTimeFilter<"ShippingZone"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingZone"> | Date | string
   rates?: Prisma.ShippingRateListRelationFilter
@@ -239,6 +245,7 @@ export type ShippingZoneOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   isFallback?: Prisma.SortOrder
   matchDistricts?: Prisma.SortOrder
+  matchDistrictCodes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ShippingZoneCountOrderByAggregateInput
@@ -256,6 +263,7 @@ export type ShippingZoneScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"ShippingZone"> | boolean
   isFallback?: Prisma.BoolWithAggregatesFilter<"ShippingZone"> | boolean
   matchDistricts?: Prisma.StringNullableListFilter<"ShippingZone">
+  matchDistrictCodes?: Prisma.StringNullableListFilter<"ShippingZone">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ShippingZone"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ShippingZone"> | Date | string
 }
@@ -267,6 +275,7 @@ export type ShippingZoneCreateInput = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: Prisma.ShippingZoneCreatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneCreatematchDistrictCodesInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   rates?: Prisma.ShippingRateCreateNestedManyWithoutShippingZoneInput
@@ -279,6 +288,7 @@ export type ShippingZoneUncheckedCreateInput = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: Prisma.ShippingZoneCreatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneCreatematchDistrictCodesInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
   rates?: Prisma.ShippingRateUncheckedCreateNestedManyWithoutShippingZoneInput
@@ -291,6 +301,7 @@ export type ShippingZoneUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rates?: Prisma.ShippingRateUpdateManyWithoutShippingZoneNestedInput
@@ -303,6 +314,7 @@ export type ShippingZoneUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rates?: Prisma.ShippingRateUncheckedUpdateManyWithoutShippingZoneNestedInput
@@ -315,6 +327,7 @@ export type ShippingZoneCreateManyInput = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: Prisma.ShippingZoneCreatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneCreatematchDistrictCodesInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -326,6 +339,7 @@ export type ShippingZoneUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -337,6 +351,7 @@ export type ShippingZoneUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -348,6 +363,7 @@ export type ShippingZoneCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   isFallback?: Prisma.SortOrder
   matchDistricts?: Prisma.SortOrder
+  matchDistrictCodes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -381,7 +397,16 @@ export type ShippingZoneCreatematchDistrictsInput = {
   set: string[]
 }
 
+export type ShippingZoneCreatematchDistrictCodesInput = {
+  set: string[]
+}
+
 export type ShippingZoneUpdatematchDistrictsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type ShippingZoneUpdatematchDistrictCodesInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -407,6 +432,7 @@ export type ShippingZoneCreateWithoutRatesInput = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: Prisma.ShippingZoneCreatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneCreatematchDistrictCodesInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -418,6 +444,7 @@ export type ShippingZoneUncheckedCreateWithoutRatesInput = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: Prisma.ShippingZoneCreatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneCreatematchDistrictCodesInput | string[]
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -445,6 +472,7 @@ export type ShippingZoneUpdateWithoutRatesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -456,6 +484,7 @@ export type ShippingZoneUncheckedUpdateWithoutRatesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFallback?: Prisma.BoolFieldUpdateOperationsInput | boolean
   matchDistricts?: Prisma.ShippingZoneUpdatematchDistrictsInput | string[]
+  matchDistrictCodes?: Prisma.ShippingZoneUpdatematchDistrictCodesInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -498,6 +527,7 @@ export type ShippingZoneSelect<ExtArgs extends runtime.Types.Extensions.Internal
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: boolean
+  matchDistrictCodes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   rates?: boolean | Prisma.ShippingZone$ratesArgs<ExtArgs>
@@ -511,6 +541,7 @@ export type ShippingZoneSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: boolean
+  matchDistrictCodes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["shippingZone"]>
@@ -522,6 +553,7 @@ export type ShippingZoneSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: boolean
+  matchDistrictCodes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["shippingZone"]>
@@ -533,11 +565,12 @@ export type ShippingZoneSelectScalar = {
   isActive?: boolean
   isFallback?: boolean
   matchDistricts?: boolean
+  matchDistrictCodes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ShippingZoneOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "isActive" | "isFallback" | "matchDistricts" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingZone"]>
+export type ShippingZoneOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "isActive" | "isFallback" | "matchDistricts" | "matchDistrictCodes" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingZone"]>
 export type ShippingZoneInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   rates?: boolean | Prisma.ShippingZone$ratesArgs<ExtArgs>
   _count?: boolean | Prisma.ShippingZoneCountOutputTypeDefaultArgs<ExtArgs>
@@ -557,6 +590,7 @@ export type $ShippingZonePayload<ExtArgs extends runtime.Types.Extensions.Intern
     isActive: boolean
     isFallback: boolean
     matchDistricts: string[]
+    matchDistrictCodes: string[]
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["shippingZone"]>
@@ -989,6 +1023,7 @@ export interface ShippingZoneFieldRefs {
   readonly isActive: Prisma.FieldRef<"ShippingZone", 'Boolean'>
   readonly isFallback: Prisma.FieldRef<"ShippingZone", 'Boolean'>
   readonly matchDistricts: Prisma.FieldRef<"ShippingZone", 'String[]'>
+  readonly matchDistrictCodes: Prisma.FieldRef<"ShippingZone", 'String[]'>
   readonly createdAt: Prisma.FieldRef<"ShippingZone", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ShippingZone", 'DateTime'>
 }

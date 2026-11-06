@@ -37,7 +37,7 @@ const ForgotPasswordForm: React.FC = () => {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
     try {
-      const appUrl = CALLBACK_URL || (typeof window !== "undefined" ? window.location.origin : "");
+      const appUrl = typeof window !== "undefined" ? window.location.origin : CALLBACK_URL;
 
       const { error } = await authClient.requestPasswordReset({
         email: data.email,
@@ -102,7 +102,7 @@ const ForgotPasswordForm: React.FC = () => {
                       </div>
                     </div>
                   </FormControl>
-                  <FormMessage className="text-xs text-danger" />
+                  <FormMessage className="text-danger" />
                 </FormItem>
               )}
             />

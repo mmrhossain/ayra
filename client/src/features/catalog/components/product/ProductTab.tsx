@@ -1,6 +1,7 @@
 "use client";
 
 import { RichTextContent } from "@/components/shared/rich-text-content";
+import { SITE_NAME } from "@/config/site";
 import type { ProductDetail } from "@/features/catalog/api";
 import ReviewTab from "@/features/reviews/components/ReviewTab";
 import { formatPrice } from "@/helpers";
@@ -26,7 +27,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
     { label: "Price", value: price ? formatPrice(price) : "—" },
     { label: "SKU", value: defaultVariant?.sku || product.sku || "—" },
     { label: "Category", value: product.category?.name || "—" },
-    { label: "Brand", value: product.brand?.name || "Raangalay" },
+    { label: "Brand", value: product.brand?.name || SITE_NAME },
   ];
 
   return (
@@ -42,8 +43,8 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
               className={cn(
                 "relative flex-1 cursor-pointer px-1 pb-3 text-center text-xs font-medium transition-colors sm:pb-4 sm:text-sm md:text-base lg:text-lg",
                 isActive
-                  ? "text-secondary after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-secondary"
-                  : "text-sky-color hover:text-secondary",
+                  ? "text-foreground after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-ink"
+                  : "text-sky-color hover:text-foreground",
               )}
             >
               {tab.label}
@@ -56,13 +57,13 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
         {activeTab === "description" && (
           <div className="space-y-6 animate-in fade-in duration-300 sm:space-y-8">
             <div>
-              <h2 className="mb-3 text-base font-bold text-secondary sm:text-lg md:text-xl">
+              <h2 className="mb-3 text-base font-bold text-foreground sm:text-lg md:text-xl">
                 Description
               </h2>
               <RichTextContent
                 html={product.description}
                 fallback="Product description will appear here."
-                className="max-w-4xl text-sm leading-relaxed text-sky-color sm:text-[15px] md:text-base"
+                className="max-w-4xl text-sm leading-relaxed text-sky-color sm:text-base"
               />
             </div>
           </div>
@@ -71,7 +72,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
         {activeTab === "specifications" && (
           <div className="space-y-6 animate-in fade-in duration-300 sm:space-y-8">
             <div>
-              <h2 className="mb-3 text-base font-bold text-secondary sm:text-lg md:text-xl">
+              <h2 className="mb-3 text-base font-bold text-foreground sm:text-lg md:text-xl">
                 Specifications
               </h2>
               <div className="overflow-hidden rounded-xl border border-border-color sm:rounded-2xl">
@@ -84,7 +85,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
                         "border-b border-border-color",
                     )}
                   >
-                    <span className="text-sm font-semibold text-secondary">
+                    <span className="text-sm font-semibold text-foreground">
                       {row.label}
                     </span>
                     <span className="text-sm text-sky-color">{row.value}</span>

@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export const LEGAL_TYPES = ["PRIVACY", "TERMS"] as const;
 export type LegalType = (typeof LEGAL_TYPES)[number];

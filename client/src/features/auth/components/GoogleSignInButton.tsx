@@ -1,5 +1,6 @@
 "use client";
 
+import { TopProgressBar } from "@/components/shared/TopProgressBar";
 import { errorToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { useSearchParams } from "next/navigation";
@@ -53,15 +54,17 @@ export default function GoogleSignInButton() {
       });
       if (error) {
         errorToast(error.message ?? "Google sign-in failed");
+        setLoading(false);
       }
     } catch {
       errorToast("Could not reach the server. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
+    <>
+      <TopProgressBar active={loading} />
     <button
       type="button"
       onClick={onClick}
@@ -78,5 +81,6 @@ export default function GoogleSignInButton() {
       )}
       Continue with Google
     </button>
+    </>
   );
 }

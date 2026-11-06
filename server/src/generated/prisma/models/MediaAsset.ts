@@ -44,6 +44,7 @@ export type MediaAssetMinAggregateOutputType = {
   entityType: string | null
   entityId: string | null
   bytes: number | null
+  contentHash: string | null
   detachedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -59,6 +60,7 @@ export type MediaAssetMaxAggregateOutputType = {
   entityType: string | null
   entityId: string | null
   bytes: number | null
+  contentHash: string | null
   detachedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -74,6 +76,7 @@ export type MediaAssetCountAggregateOutputType = {
   entityType: number
   entityId: number
   bytes: number
+  contentHash: number
   detachedAt: number
   createdAt: number
   updatedAt: number
@@ -99,6 +102,7 @@ export type MediaAssetMinAggregateInputType = {
   entityType?: true
   entityId?: true
   bytes?: true
+  contentHash?: true
   detachedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -114,6 +118,7 @@ export type MediaAssetMaxAggregateInputType = {
   entityType?: true
   entityId?: true
   bytes?: true
+  contentHash?: true
   detachedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -129,6 +134,7 @@ export type MediaAssetCountAggregateInputType = {
   entityType?: true
   entityId?: true
   bytes?: true
+  contentHash?: true
   detachedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -231,6 +237,7 @@ export type MediaAssetGroupByOutputType = {
   entityType: string | null
   entityId: string | null
   bytes: number | null
+  contentHash: string | null
   detachedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -269,6 +276,7 @@ export type MediaAssetWhereInput = {
   entityType?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   entityId?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   bytes?: Prisma.IntNullableFilter<"MediaAsset"> | number | null
+  contentHash?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   detachedAt?: Prisma.DateTimeNullableFilter<"MediaAsset"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaAsset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaAsset"> | Date | string
@@ -284,6 +292,7 @@ export type MediaAssetOrderByWithRelationInput = {
   entityType?: Prisma.SortOrderInput | Prisma.SortOrder
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   bytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contentHash?: Prisma.SortOrderInput | Prisma.SortOrder
   detachedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -302,6 +311,7 @@ export type MediaAssetWhereUniqueInput = Prisma.AtLeast<{
   entityType?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   entityId?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   bytes?: Prisma.IntNullableFilter<"MediaAsset"> | number | null
+  contentHash?: Prisma.StringNullableFilter<"MediaAsset"> | string | null
   detachedAt?: Prisma.DateTimeNullableFilter<"MediaAsset"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaAsset"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaAsset"> | Date | string
@@ -317,6 +327,7 @@ export type MediaAssetOrderByWithAggregationInput = {
   entityType?: Prisma.SortOrderInput | Prisma.SortOrder
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   bytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contentHash?: Prisma.SortOrderInput | Prisma.SortOrder
   detachedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -340,6 +351,7 @@ export type MediaAssetScalarWhereWithAggregatesInput = {
   entityType?: Prisma.StringNullableWithAggregatesFilter<"MediaAsset"> | string | null
   entityId?: Prisma.StringNullableWithAggregatesFilter<"MediaAsset"> | string | null
   bytes?: Prisma.IntNullableWithAggregatesFilter<"MediaAsset"> | number | null
+  contentHash?: Prisma.StringNullableWithAggregatesFilter<"MediaAsset"> | string | null
   detachedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MediaAsset"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MediaAsset"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MediaAsset"> | Date | string
@@ -355,6 +367,7 @@ export type MediaAssetCreateInput = {
   entityType?: string | null
   entityId?: string | null
   bytes?: number | null
+  contentHash?: string | null
   detachedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -370,6 +383,7 @@ export type MediaAssetUncheckedCreateInput = {
   entityType?: string | null
   entityId?: string | null
   bytes?: number | null
+  contentHash?: string | null
   detachedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -385,6 +399,7 @@ export type MediaAssetUpdateInput = {
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detachedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -400,6 +415,7 @@ export type MediaAssetUncheckedUpdateInput = {
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detachedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -415,6 +431,7 @@ export type MediaAssetCreateManyInput = {
   entityType?: string | null
   entityId?: string | null
   bytes?: number | null
+  contentHash?: string | null
   detachedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -430,6 +447,7 @@ export type MediaAssetUpdateManyMutationInput = {
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detachedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -445,6 +463,7 @@ export type MediaAssetUncheckedUpdateManyInput = {
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detachedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -460,6 +479,7 @@ export type MediaAssetCountOrderByAggregateInput = {
   entityType?: Prisma.SortOrder
   entityId?: Prisma.SortOrder
   bytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
   detachedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -479,6 +499,7 @@ export type MediaAssetMaxOrderByAggregateInput = {
   entityType?: Prisma.SortOrder
   entityId?: Prisma.SortOrder
   bytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
   detachedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -494,6 +515,7 @@ export type MediaAssetMinOrderByAggregateInput = {
   entityType?: Prisma.SortOrder
   entityId?: Prisma.SortOrder
   bytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
   detachedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -519,6 +541,7 @@ export type MediaAssetSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   entityType?: boolean
   entityId?: boolean
   bytes?: boolean
+  contentHash?: boolean
   detachedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -534,6 +557,7 @@ export type MediaAssetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   entityType?: boolean
   entityId?: boolean
   bytes?: boolean
+  contentHash?: boolean
   detachedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -549,6 +573,7 @@ export type MediaAssetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   entityType?: boolean
   entityId?: boolean
   bytes?: boolean
+  contentHash?: boolean
   detachedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -564,12 +589,13 @@ export type MediaAssetSelectScalar = {
   entityType?: boolean
   entityId?: boolean
   bytes?: boolean
+  contentHash?: boolean
   detachedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MediaAssetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "publicId" | "url" | "type" | "status" | "ownerUserId" | "entityType" | "entityId" | "bytes" | "detachedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaAsset"]>
+export type MediaAssetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "publicId" | "url" | "type" | "status" | "ownerUserId" | "entityType" | "entityId" | "bytes" | "contentHash" | "detachedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaAsset"]>
 
 export type $MediaAssetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "MediaAsset"
@@ -584,6 +610,7 @@ export type $MediaAssetPayload<ExtArgs extends runtime.Types.Extensions.Internal
     entityType: string | null
     entityId: string | null
     bytes: number | null
+    contentHash: string | null
     detachedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -1019,6 +1046,7 @@ export interface MediaAssetFieldRefs {
   readonly entityType: Prisma.FieldRef<"MediaAsset", 'String'>
   readonly entityId: Prisma.FieldRef<"MediaAsset", 'String'>
   readonly bytes: Prisma.FieldRef<"MediaAsset", 'Int'>
+  readonly contentHash: Prisma.FieldRef<"MediaAsset", 'String'>
   readonly detachedAt: Prisma.FieldRef<"MediaAsset", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"MediaAsset", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MediaAsset", 'DateTime'>

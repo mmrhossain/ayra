@@ -3,12 +3,7 @@
  * Public review GET lives in `@/features/catalog/api`.
  */
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
-
-type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+import type { Envelope } from "@/lib/api/http";
 
 export async function submitProductReview(
   productId: string,

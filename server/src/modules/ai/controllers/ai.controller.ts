@@ -7,7 +7,8 @@ import { chat } from "../services/ai.service.ts";
 export const chatHandler = asyncHandler(async (req: Request, res: Response) => {
   const input = chatSchema.parse(req.body);
 
-  const result = await chat(input);
+  const userId = req.auth?.user.id;
+  const result = await chat(userId ? { ...input, userId } : input);
 
   successResponse(
     res,

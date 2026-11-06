@@ -20,6 +20,8 @@ export const createCategorySchema = z.object({
   description: z.string().optional(),
   image: optionalCloudinaryImageUrlSchema,
   imagePublicId: optionalMediaPublicIdSchema,
+  mobileImage: optionalCloudinaryImageUrlSchema,
+  mobileImagePublicId: optionalMediaPublicIdSchema,
   isActive: z.boolean().default(true),
   parentId: z.string().nullable().optional(),
 });
@@ -27,4 +29,6 @@ export const createCategorySchema = z.object({
 export const updateCategorySchema = createCategorySchema.partial().extend({
   image: nullableCloudinaryImageUrlSchema,
   imagePublicId: nullableMediaPublicIdSchema,
+  mobileImage: nullableCloudinaryImageUrlSchema,
+  mobileImagePublicId: nullableMediaPublicIdSchema,
 });

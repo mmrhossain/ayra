@@ -28,16 +28,27 @@ export type AggregateReturnItem = {
 
 export type ReturnItemAvgAggregateOutputType = {
   quantity: number | null
+  salesAdjustmentAmount: runtime.Decimal | null
+  costAdjustmentAmount: runtime.Decimal | null
+  allocationVersion: number | null
 }
 
 export type ReturnItemSumAggregateOutputType = {
   quantity: number | null
+  salesAdjustmentAmount: runtime.Decimal | null
+  costAdjustmentAmount: runtime.Decimal | null
+  allocationVersion: number | null
 }
 
 export type ReturnItemMinAggregateOutputType = {
   id: string | null
   quantity: number | null
   restockOrRefund: $Enums.RestockOrRefund | null
+  restockToStock: boolean | null
+  damaged: boolean | null
+  salesAdjustmentAmount: runtime.Decimal | null
+  costAdjustmentAmount: runtime.Decimal | null
+  allocationVersion: number | null
   returnRequestId: string | null
   orderItemId: string | null
   createdAt: Date | null
@@ -48,6 +59,11 @@ export type ReturnItemMaxAggregateOutputType = {
   id: string | null
   quantity: number | null
   restockOrRefund: $Enums.RestockOrRefund | null
+  restockToStock: boolean | null
+  damaged: boolean | null
+  salesAdjustmentAmount: runtime.Decimal | null
+  costAdjustmentAmount: runtime.Decimal | null
+  allocationVersion: number | null
   returnRequestId: string | null
   orderItemId: string | null
   createdAt: Date | null
@@ -58,6 +74,11 @@ export type ReturnItemCountAggregateOutputType = {
   id: number
   quantity: number
   restockOrRefund: number
+  restockToStock: number
+  damaged: number
+  salesAdjustmentAmount: number
+  costAdjustmentAmount: number
+  allocationVersion: number
   returnRequestId: number
   orderItemId: number
   createdAt: number
@@ -68,16 +89,27 @@ export type ReturnItemCountAggregateOutputType = {
 
 export type ReturnItemAvgAggregateInputType = {
   quantity?: true
+  salesAdjustmentAmount?: true
+  costAdjustmentAmount?: true
+  allocationVersion?: true
 }
 
 export type ReturnItemSumAggregateInputType = {
   quantity?: true
+  salesAdjustmentAmount?: true
+  costAdjustmentAmount?: true
+  allocationVersion?: true
 }
 
 export type ReturnItemMinAggregateInputType = {
   id?: true
   quantity?: true
   restockOrRefund?: true
+  restockToStock?: true
+  damaged?: true
+  salesAdjustmentAmount?: true
+  costAdjustmentAmount?: true
+  allocationVersion?: true
   returnRequestId?: true
   orderItemId?: true
   createdAt?: true
@@ -88,6 +120,11 @@ export type ReturnItemMaxAggregateInputType = {
   id?: true
   quantity?: true
   restockOrRefund?: true
+  restockToStock?: true
+  damaged?: true
+  salesAdjustmentAmount?: true
+  costAdjustmentAmount?: true
+  allocationVersion?: true
   returnRequestId?: true
   orderItemId?: true
   createdAt?: true
@@ -98,6 +135,11 @@ export type ReturnItemCountAggregateInputType = {
   id?: true
   quantity?: true
   restockOrRefund?: true
+  restockToStock?: true
+  damaged?: true
+  salesAdjustmentAmount?: true
+  costAdjustmentAmount?: true
+  allocationVersion?: true
   returnRequestId?: true
   orderItemId?: true
   createdAt?: true
@@ -195,6 +237,11 @@ export type ReturnItemGroupByOutputType = {
   id: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock: boolean
+  damaged: boolean
+  salesAdjustmentAmount: runtime.Decimal
+  costAdjustmentAmount: runtime.Decimal
+  allocationVersion: number
   returnRequestId: string
   orderItemId: string
   createdAt: Date
@@ -228,6 +275,11 @@ export type ReturnItemWhereInput = {
   id?: Prisma.StringFilter<"ReturnItem"> | string
   quantity?: Prisma.IntFilter<"ReturnItem"> | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFilter<"ReturnItem"> | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  damaged?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFilter<"ReturnItem"> | number
   returnRequestId?: Prisma.StringFilter<"ReturnItem"> | string
   orderItemId?: Prisma.StringFilter<"ReturnItem"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnItem"> | Date | string
@@ -240,6 +292,11 @@ export type ReturnItemOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   restockOrRefund?: Prisma.SortOrder
+  restockToStock?: Prisma.SortOrder
+  damaged?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
   returnRequestId?: Prisma.SortOrder
   orderItemId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -255,6 +312,11 @@ export type ReturnItemWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ReturnItemWhereInput | Prisma.ReturnItemWhereInput[]
   quantity?: Prisma.IntFilter<"ReturnItem"> | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFilter<"ReturnItem"> | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  damaged?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFilter<"ReturnItem"> | number
   returnRequestId?: Prisma.StringFilter<"ReturnItem"> | string
   orderItemId?: Prisma.StringFilter<"ReturnItem"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnItem"> | Date | string
@@ -267,6 +329,11 @@ export type ReturnItemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   restockOrRefund?: Prisma.SortOrder
+  restockToStock?: Prisma.SortOrder
+  damaged?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
   returnRequestId?: Prisma.SortOrder
   orderItemId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -285,6 +352,11 @@ export type ReturnItemScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"ReturnItem"> | string
   quantity?: Prisma.IntWithAggregatesFilter<"ReturnItem"> | number
   restockOrRefund?: Prisma.EnumRestockOrRefundWithAggregatesFilter<"ReturnItem"> | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolWithAggregatesFilter<"ReturnItem"> | boolean
+  damaged?: Prisma.BoolWithAggregatesFilter<"ReturnItem"> | boolean
+  salesAdjustmentAmount?: Prisma.DecimalWithAggregatesFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalWithAggregatesFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntWithAggregatesFilter<"ReturnItem"> | number
   returnRequestId?: Prisma.StringWithAggregatesFilter<"ReturnItem"> | string
   orderItemId?: Prisma.StringWithAggregatesFilter<"ReturnItem"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ReturnItem"> | Date | string
@@ -295,6 +367,11 @@ export type ReturnItemCreateInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   returnRequest: Prisma.ReturnRequestCreateNestedOneWithoutItemsInput
@@ -305,6 +382,11 @@ export type ReturnItemUncheckedCreateInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   returnRequestId: string
   orderItemId: string
   createdAt?: Date | string
@@ -315,6 +397,11 @@ export type ReturnItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   returnRequest?: Prisma.ReturnRequestUpdateOneRequiredWithoutItemsNestedInput
@@ -325,6 +412,11 @@ export type ReturnItemUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   returnRequestId?: Prisma.StringFieldUpdateOperationsInput | string
   orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -335,6 +427,11 @@ export type ReturnItemCreateManyInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   returnRequestId: string
   orderItemId: string
   createdAt?: Date | string
@@ -345,6 +442,11 @@ export type ReturnItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -353,6 +455,11 @@ export type ReturnItemUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   returnRequestId?: Prisma.StringFieldUpdateOperationsInput | string
   orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -373,6 +480,11 @@ export type ReturnItemCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   restockOrRefund?: Prisma.SortOrder
+  restockToStock?: Prisma.SortOrder
+  damaged?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
   returnRequestId?: Prisma.SortOrder
   orderItemId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -381,12 +493,20 @@ export type ReturnItemCountOrderByAggregateInput = {
 
 export type ReturnItemAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
 }
 
 export type ReturnItemMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   restockOrRefund?: Prisma.SortOrder
+  restockToStock?: Prisma.SortOrder
+  damaged?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
   returnRequestId?: Prisma.SortOrder
   orderItemId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -397,6 +517,11 @@ export type ReturnItemMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   restockOrRefund?: Prisma.SortOrder
+  restockToStock?: Prisma.SortOrder
+  damaged?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
   returnRequestId?: Prisma.SortOrder
   orderItemId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -405,6 +530,9 @@ export type ReturnItemMinOrderByAggregateInput = {
 
 export type ReturnItemSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
+  salesAdjustmentAmount?: Prisma.SortOrder
+  costAdjustmentAmount?: Prisma.SortOrder
+  allocationVersion?: Prisma.SortOrder
 }
 
 export type ReturnItemCreateNestedManyWithoutOrderItemInput = {
@@ -499,6 +627,11 @@ export type ReturnItemCreateWithoutOrderItemInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   returnRequest: Prisma.ReturnRequestCreateNestedOneWithoutItemsInput
@@ -508,6 +641,11 @@ export type ReturnItemUncheckedCreateWithoutOrderItemInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   returnRequestId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -546,6 +684,11 @@ export type ReturnItemScalarWhereInput = {
   id?: Prisma.StringFilter<"ReturnItem"> | string
   quantity?: Prisma.IntFilter<"ReturnItem"> | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFilter<"ReturnItem"> | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  damaged?: Prisma.BoolFilter<"ReturnItem"> | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFilter<"ReturnItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFilter<"ReturnItem"> | number
   returnRequestId?: Prisma.StringFilter<"ReturnItem"> | string
   orderItemId?: Prisma.StringFilter<"ReturnItem"> | string
   createdAt?: Prisma.DateTimeFilter<"ReturnItem"> | Date | string
@@ -556,6 +699,11 @@ export type ReturnItemCreateWithoutReturnRequestInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   orderItem: Prisma.OrderItemCreateNestedOneWithoutReturnItemsInput
@@ -565,6 +713,11 @@ export type ReturnItemUncheckedCreateWithoutReturnRequestInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   orderItemId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -600,6 +753,11 @@ export type ReturnItemCreateManyOrderItemInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   returnRequestId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -609,6 +767,11 @@ export type ReturnItemUpdateWithoutOrderItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   returnRequest?: Prisma.ReturnRequestUpdateOneRequiredWithoutItemsNestedInput
@@ -618,6 +781,11 @@ export type ReturnItemUncheckedUpdateWithoutOrderItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   returnRequestId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -627,6 +795,11 @@ export type ReturnItemUncheckedUpdateManyWithoutOrderItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   returnRequestId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -636,6 +809,11 @@ export type ReturnItemCreateManyReturnRequestInput = {
   id?: string
   quantity: number
   restockOrRefund: $Enums.RestockOrRefund
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: number
   orderItemId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -645,6 +823,11 @@ export type ReturnItemUpdateWithoutReturnRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItem?: Prisma.OrderItemUpdateOneRequiredWithoutReturnItemsNestedInput
@@ -654,6 +837,11 @@ export type ReturnItemUncheckedUpdateWithoutReturnRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -663,6 +851,11 @@ export type ReturnItemUncheckedUpdateManyWithoutReturnRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
   restockOrRefund?: Prisma.EnumRestockOrRefundFieldUpdateOperationsInput | $Enums.RestockOrRefund
+  restockToStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  damaged?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salesAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  costAdjustmentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocationVersion?: Prisma.IntFieldUpdateOperationsInput | number
   orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -674,6 +867,11 @@ export type ReturnItemSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   quantity?: boolean
   restockOrRefund?: boolean
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: boolean
+  costAdjustmentAmount?: boolean
+  allocationVersion?: boolean
   returnRequestId?: boolean
   orderItemId?: boolean
   createdAt?: boolean
@@ -686,6 +884,11 @@ export type ReturnItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   quantity?: boolean
   restockOrRefund?: boolean
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: boolean
+  costAdjustmentAmount?: boolean
+  allocationVersion?: boolean
   returnRequestId?: boolean
   orderItemId?: boolean
   createdAt?: boolean
@@ -698,6 +901,11 @@ export type ReturnItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   quantity?: boolean
   restockOrRefund?: boolean
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: boolean
+  costAdjustmentAmount?: boolean
+  allocationVersion?: boolean
   returnRequestId?: boolean
   orderItemId?: boolean
   createdAt?: boolean
@@ -710,13 +918,18 @@ export type ReturnItemSelectScalar = {
   id?: boolean
   quantity?: boolean
   restockOrRefund?: boolean
+  restockToStock?: boolean
+  damaged?: boolean
+  salesAdjustmentAmount?: boolean
+  costAdjustmentAmount?: boolean
+  allocationVersion?: boolean
   returnRequestId?: boolean
   orderItemId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ReturnItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantity" | "restockOrRefund" | "returnRequestId" | "orderItemId" | "createdAt" | "updatedAt", ExtArgs["result"]["returnItem"]>
+export type ReturnItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantity" | "restockOrRefund" | "restockToStock" | "damaged" | "salesAdjustmentAmount" | "costAdjustmentAmount" | "allocationVersion" | "returnRequestId" | "orderItemId" | "createdAt" | "updatedAt", ExtArgs["result"]["returnItem"]>
 export type ReturnItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   returnRequest?: boolean | Prisma.ReturnRequestDefaultArgs<ExtArgs>
   orderItem?: boolean | Prisma.OrderItemDefaultArgs<ExtArgs>
@@ -740,6 +953,11 @@ export type $ReturnItemPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: string
     quantity: number
     restockOrRefund: $Enums.RestockOrRefund
+    restockToStock: boolean
+    damaged: boolean
+    salesAdjustmentAmount: runtime.Decimal
+    costAdjustmentAmount: runtime.Decimal
+    allocationVersion: number
     returnRequestId: string
     orderItemId: string
     createdAt: Date
@@ -1172,6 +1390,11 @@ export interface ReturnItemFieldRefs {
   readonly id: Prisma.FieldRef<"ReturnItem", 'String'>
   readonly quantity: Prisma.FieldRef<"ReturnItem", 'Int'>
   readonly restockOrRefund: Prisma.FieldRef<"ReturnItem", 'RestockOrRefund'>
+  readonly restockToStock: Prisma.FieldRef<"ReturnItem", 'Boolean'>
+  readonly damaged: Prisma.FieldRef<"ReturnItem", 'Boolean'>
+  readonly salesAdjustmentAmount: Prisma.FieldRef<"ReturnItem", 'Decimal'>
+  readonly costAdjustmentAmount: Prisma.FieldRef<"ReturnItem", 'Decimal'>
+  readonly allocationVersion: Prisma.FieldRef<"ReturnItem", 'Int'>
   readonly returnRequestId: Prisma.FieldRef<"ReturnItem", 'String'>
   readonly orderItemId: Prisma.FieldRef<"ReturnItem", 'String'>
   readonly createdAt: Prisma.FieldRef<"ReturnItem", 'DateTime'>

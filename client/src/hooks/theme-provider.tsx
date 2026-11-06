@@ -28,6 +28,7 @@ export function ThemeProvider({
       defaultTheme="light"
       enableSystem={false}
       storageKey="dashboard-theme"
+      enableColorScheme={false}
       disableTransitionOnChange
       {...props}
     >

@@ -11,6 +11,7 @@ import {
 import type { SliderFormValues } from "@/features/dashboard/admin/sliders/schemas";
 import type { DialogMode, SliderListItem } from "@/features/dashboard/admin/sliders/types";
 import { toIso, toSliderErrorMessage } from "@/features/dashboard/admin/sliders/utils";
+import { revalidateStorefrontTags } from "@/lib/api/revalidate";
 
 export function useSliderFormMutation({
   mode,
@@ -48,6 +49,7 @@ export function useSliderFormMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sliders"] });
+      void revalidateStorefrontTags(["home", "sliders"]);
       toast.success(mode === "create" ? "Slider created" : "Slider updated");
       onSuccess();
     },
@@ -73,6 +75,7 @@ export function useSliderDeleteMutation({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sliders"] });
+      void revalidateStorefrontTags(["home", "sliders"]);
       toast.success("Slider deleted");
       onSuccess();
     },

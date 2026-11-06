@@ -14,8 +14,7 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 const Toaster = ({ ...props }: ToasterProps) => {
   const pathname = usePathname()
   const { theme = "light" } = useTheme()
-  const isDashboard =
-    pathname.startsWith("/admin") || pathname.startsWith("/vendor")
+  const isDashboard = pathname.startsWith("/admin")
 
   return (
     <Sonner

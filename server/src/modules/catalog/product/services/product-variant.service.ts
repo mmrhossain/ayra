@@ -1,5 +1,6 @@
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
+import { invalidateCatalogCacheForVariants } from "../../../../lib/cache.ts";
 import { prisma, transaction, type TransactionClient } from "../../../../lib/prisma.ts";
 import type {
   CreateVariantInput,
@@ -7,19 +8,17 @@ import type {
   UpdateVariantPayload,
 } from "../types/product.types.ts";
 import { validateVariantPayload } from "../utils/product-validation.ts";
-import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public-id.ts";
+import { assertTypedSku, buildSuggestedSku, isBlankSku, type SkuAttributeInput } from "../utils/sku-generator.ts";
 import {
-  attachVariantMedia,
-  createVariantImages,
-  detachProductMedia,
-  imagePublicIds,
-  replaceImages,
-  toVariantImageRows,
-} from "./product-image.service.ts";
+  attributeValueLookup,
+  insertWithGeneratedSkuRetry,
+  prefetchTakenSkus,
+  resolveVariantSku,
+} from "../utils/unique-identity.ts";
 import {
   createVariantInventories,
   createVariantInventory,
-  requireWarehouse,
+  requireActiveWarehouses,
 } from "./product-inventory.service.ts";
 
 export const uniqueFieldConflictMessage = (err: unknown, fallback: string): string => {
@@ -125,19 +124,33 @@ export const replaceVariantAttributes = async (
 export const assertAttributeValuesBelongToAttributes = async (
   tx: TransactionClient,
   groups: Array<{ attributeId: string; attributeValueIds: string[] }>,
-): Promise<Map<string, { value: string; attributeId: string }>> => {
+): Promise<Map<string, { value: string; attributeId: string; attributeName: string }>> => {
   const ids = [...new Set(groups.flatMap((group) => group.attributeValueIds))];
   if (!ids.length) return new Map();
 
   const values = await tx.attributeValue.findMany({
     where: { id: { in: ids } },
-    select: { id: true, value: true, attributeId: true },
+    select: {
+      id: true,
+      value: true,
+      attributeId: true,
+      attribute: { select: { name: true } },
+    },
   });
   if (values.length !== ids.length) {
     throw new AppError("One or more attribute values not found", 400);
   }
 
-  const byId = new Map(values.map((value) => [value.id, value]));
+  const byId = new Map(
+    values.map((value) => [
+      value.id,
+      {
+        value: value.value,
+        attributeId: value.attributeId,
+        attributeName: value.attribute.name,
+      },
+    ]),
+  );
   for (const group of groups) {
     for (const valueId of group.attributeValueIds) {
       const value = byId.get(valueId);
@@ -149,66 +162,84 @@ export const assertAttributeValuesBelongToAttributes = async (
   return byId;
 };
 
-const assertSkuAvailable = async (sku: string, excludeId?: string): Promise<void> => {
-  const existingSku = await prisma.productVariant.findFirst({
-    where: {
-      sku,
-      deletedAt: null,
-      ...(excludeId ? { id: { not: excludeId } } : {}),
-    },
-  });
-  if (existingSku) throw new AppError("Variant SKU already exists", 409);
-};
-
 const assertBarcodeAvailable = async (
+  db: TransactionClient,
   barcode: string,
   excludeId?: string,
 ): Promise<void> => {
-  const existingBarcode = await prisma.productVariant.findFirst({
+  const existingBarcode = await db.productVariant.findFirst({
     where: {
       barcode,
       deletedAt: null,
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
+    select: { id: true },
   });
   if (existingBarcode) throw new AppError("Variant barcode already exists", 409);
 };
 
+const productSkuContext = async (
+  tx: TransactionClient,
+  productId: string,
+): Promise<{ categoryName: string; brandName?: string | null | undefined }> => {
+  const product = await tx.product.findUnique({
+    where: { id: productId },
+    select: {
+      category: { select: { name: true } },
+      brand: { select: { name: true } },
+    },
+  });
+  if (!product) throw new AppError("Product not found", 404);
+  return {
+    categoryName: product.category.name,
+    brandName: product.brand?.name ?? null,
+  };
+};
+
 export const createVariant = async (productId: string, input: CreateVariantInput) => {
   validateVariantPayload(input);
-  const product = await prisma.product.findUnique({ where: { id: productId } });
+  if (!isBlankSku(input.sku)) assertTypedSku(input.sku as string);
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, slug: true },
+  });
   if (!product) throw new AppError("Product not found", 404);
 
-  await assertSkuAvailable(input.sku);
-  if (input.barcode) {
-    await assertBarcodeAvailable(input.barcode);
-  }
-
-  const { attributeValueIds, images, ...variantData } = input;
+  const { attributeValueIds, ...variantData } = input;
 
   try {
-    return await transaction(async (tx) => {
-      const variant = await tx.productVariant.create({
-        data: {
-          sku: variantData.sku,
-          price: variantData.price,
-          isDefault: variantData.isDefault,
-          productId,
-          ...(variantData.barcode !== undefined && { barcode: variantData.barcode }),
-          ...(variantData.compareAtPrice !== undefined && {
-            compareAtPrice: variantData.compareAtPrice,
-          }),
-          ...(variantData.costPrice !== undefined && { costPrice: variantData.costPrice }),
-          ...(variantData.weight !== undefined && { weight: variantData.weight }),
-        },
+    const created = await transaction(async (tx) => {
+      const warehouses = await requireActiveWarehouses(tx);
+      const names = await productSkuContext(tx, productId);
+      const resolved = await resolveVariantSku(tx, {
+        sku: variantData.sku,
+        categoryName: names.categoryName,
+        brandName: names.brandName,
+        attributeValueIds,
       });
+      if (variantData.barcode) {
+        await assertBarcodeAvailable(tx, variantData.barcode);
+      }
+
+      const variant = await insertWithGeneratedSkuRetry(tx, resolved, (sku) =>
+        tx.productVariant.create({
+          data: {
+            sku,
+            price: variantData.price,
+            isDefault: variantData.isDefault,
+            productId,
+            ...(variantData.barcode !== undefined && { barcode: variantData.barcode }),
+            ...(variantData.compareAtPrice !== undefined && {
+              compareAtPrice: variantData.compareAtPrice,
+            }),
+            ...(variantData.costPrice !== undefined && { costPrice: variantData.costPrice }),
+            ...(variantData.weight !== undefined && { weight: variantData.weight }),
+          },
+        }),
+      );
 
       if (attributeValueIds?.length) {
         await setVariantAttributes(tx, variant.id, attributeValueIds);
-      }
-
-      if (images?.length) {
-        await createVariantImages(tx, productId, variant.id, images);
       }
 
       if (variantData.isDefault) {
@@ -217,14 +248,15 @@ export const createVariant = async (productId: string, input: CreateVariantInput
         await ensureDefaultVariant(tx, productId);
       }
 
-      const warehouse = await requireWarehouse(tx);
-      await createVariantInventory(tx, warehouse.id, variant.id);
+      await createVariantInventory(tx, variant.id, warehouses);
 
       return tx.productVariant.findUniqueOrThrow({
         where: { id: variant.id },
-        include: { images: true, attributes: { include: { attributeValue: true } } },
+        include: { attributes: { include: { attributeValue: true } } },
       });
     });
+    await invalidateCatalogCacheForVariants([created.id]);
+    return created;
   } catch (err) {
     rethrowUniqueConflict(err, "Variant SKU already exists");
   }
@@ -232,26 +264,39 @@ export const createVariant = async (productId: string, input: CreateVariantInput
 
 export const updateVariant = async (id: string, input: UpdateVariantInput) => {
   validateVariantPayload(input);
+  if (input.sku !== undefined && !isBlankSku(input.sku)) {
+    assertTypedSku(input.sku);
+  }
   const existing = await prisma.productVariant.findUnique({ where: { id } });
   if (!existing) throw new AppError("Variant not found", 404);
 
-  if (input.sku && input.sku !== existing.sku) {
-    await assertSkuAvailable(input.sku, id);
-  }
-  if (input.barcode && input.barcode !== existing.barcode) {
-    await assertBarcodeAvailable(input.barcode, id);
-  }
-
-  const { attributeValueIds, images, ...variantData } = input;
+  const { attributeValueIds, ...variantData } = input;
 
   let variant;
-  let stalePublicIds: string[] = [];
   try {
     const result = await transaction(async (tx) => {
+      let nextSku: string | undefined;
+      if (variantData.sku !== undefined) {
+        const names = await productSkuContext(tx, existing.productId);
+        const resolved = await resolveVariantSku(tx, {
+          sku: variantData.sku,
+          categoryName: names.categoryName,
+          brandName: names.brandName,
+          attributeValueIds: attributeValueIds,
+          excludeId: id,
+        });
+        nextSku = resolved.sku;
+      }
+      // Barcode uniqueness is checked on the transaction client so the read and
+      // the write share one snapshot. SKU uniqueness is already enforced by
+      // resolveVariantSku above. (Neither alone prevents concurrent duplicates.)
+      if (variantData.barcode && variantData.barcode !== existing.barcode) {
+        await assertBarcodeAvailable(tx, variantData.barcode, id);
+      }
       const updatedVariant = await tx.productVariant.update({
         where: { id },
         data: {
-          ...(variantData.sku !== undefined && { sku: variantData.sku }),
+          ...(nextSku !== undefined && { sku: nextSku }),
           ...(variantData.price !== undefined && { price: variantData.price }),
           ...(variantData.isDefault !== undefined && { isDefault: variantData.isDefault }),
           ...(variantData.barcode !== undefined && { barcode: variantData.barcode }),
@@ -273,40 +318,19 @@ export const updateVariant = async (id: string, input: UpdateVariantInput) => {
         await replaceVariantAttributes(tx, id, attributeValueIds);
       }
 
-      let staleIds: string[] = [];
-      if (images) {
-        staleIds = await replaceImages(
-          tx,
-          { variantId: id },
-          toVariantImageRows(images, existing.productId, id),
-        );
-      }
-
-      return { variant: updatedVariant, stalePublicIds: staleIds };
+      return { variant: updatedVariant };
     });
     variant = result.variant;
-    stalePublicIds = result.stalePublicIds;
   } catch (err) {
     rethrowUniqueConflict(err, "Variant SKU already exists");
   }
 
-  if (stalePublicIds.length) {
-    await detachProductMedia(stalePublicIds);
-  }
-  if (images) {
-    await attachVariantMedia(
-      images.map((img) => resolveImagePublicId(img.publicId, img.imageUrl)),
-      id,
-    );
-  }
+  await invalidateCatalogCacheForVariants([id]);
   return variant;
 };
 
 export const deleteVariant = async (id: string) => {
-  const existing = await prisma.productVariant.findUnique({
-    where: { id },
-    include: { images: { select: { publicId: true, imageUrl: true } } },
-  });
+  const existing = await prisma.productVariant.findUnique({ where: { id } });
   if (!existing) throw new AppError("Variant not found", 404);
 
   const deleted = await transaction(async (tx) => {
@@ -320,21 +344,111 @@ export const deleteVariant = async (id: string) => {
     await ensureDefaultVariant(tx, existing.productId);
     return result;
   });
-  await detachProductMedia(imagePublicIds(existing.images));
+  await invalidateCatalogCacheForVariants([id]);
   return deleted;
+};
+
+const variantScalarData = (variantData: Omit<UpdateVariantPayload, "id" | "attributeValueIds">) => ({
+  ...(variantData.sku !== undefined && { sku: variantData.sku }),
+  ...(variantData.price !== undefined && { price: variantData.price }),
+  ...(variantData.isDefault !== undefined && { isDefault: variantData.isDefault }),
+  ...(variantData.barcode !== undefined && { barcode: variantData.barcode }),
+  ...(variantData.compareAtPrice !== undefined && {
+    compareAtPrice: variantData.compareAtPrice,
+  }),
+  ...(variantData.costPrice !== undefined && { costPrice: variantData.costPrice }),
+  ...(variantData.weight !== undefined && { weight: variantData.weight }),
+});
+
+const replaceVariantAttributesBatch = async (
+  tx: TransactionClient,
+  items: Array<{ variantId: string; attributeValueIds: string[] }>,
+): Promise<void> => {
+  if (!items.length) return;
+  await tx.variantAttribute.deleteMany({
+    where: { variantId: { in: items.map((item) => item.variantId) } },
+  });
+  const attributeRows = items.flatMap((item) =>
+    item.attributeValueIds.map((attributeValueId) => ({
+      variantId: item.variantId,
+      attributeValueId,
+    })),
+  );
+  if (!attributeRows.length) return;
+  const uniqueIds = [...new Set(attributeRows.map((row) => row.attributeValueId))];
+  const values = await tx.attributeValue.findMany({
+    where: { id: { in: uniqueIds } },
+  });
+  if (values.length !== uniqueIds.length) {
+    throw new AppError("One or more attribute values not found", 400);
+  }
+  await tx.variantAttribute.createMany({ data: attributeRows });
+};
+
+export type ExistingVariantForUpsert = {
+  id: string;
+  sku: string;
+  price: unknown;
+  barcode: string | null;
+  compareAtPrice: unknown;
+  costPrice: unknown;
+  weight: unknown;
+  isDefault: boolean;
+};
+
+const sameScalar = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (a === null || a === undefined || b === null || b === undefined) {
+    return (a ?? null) === (b ?? null);
+  }
+  if (typeof a === "boolean" || typeof b === "boolean") {
+    return Boolean(a) === Boolean(b);
+  }
+  const na = Number(a);
+  const nb = Number(b);
+  if (!Number.isNaN(na) && !Number.isNaN(nb)) return na === nb;
+  return String(a) === String(b);
+};
+
+const variantDataChanged = (
+  existing: ExistingVariantForUpsert,
+  data: Record<string, unknown>,
+): boolean => {
+  const entries = Object.entries(data);
+  if (!entries.length) return false;
+  return entries.some(
+    ([field, value]) =>
+      !sameScalar((existing as unknown as Record<string, unknown>)[field], value),
+  );
 };
 
 export const upsertProductVariants = async (
   tx: TransactionClient,
   productId: string,
   variants: UpdateVariantPayload[],
-  existingVariants: Array<{ id: string }>,
-): Promise<{ preferredDefaultId?: string; staleIds: string[] }> => {
-  const warehouse = await requireWarehouse(tx);
-  const existingVariantIds = new Set(existingVariants.map((v) => v.id));
-  const incomingVariantIds = new Set(
-    variants.map((v) => v.id).filter((vId): vId is string => Boolean(vId)),
+  existingVariants: ExistingVariantForUpsert[],
+  names: { categoryName: string; brandName?: string | null | undefined },
+): Promise<{ preferredDefaultId?: string }> => {
+  const incomingIds = variants
+    .map((variant) => variant.id)
+    .filter((id): id is string => Boolean(id));
+  const duplicateIds = incomingIds.filter(
+    (id, index) => incomingIds.indexOf(id) !== index,
   );
+  if (duplicateIds.length > 0) {
+    throw new AppError("Duplicate variant ids in payload", 400);
+  }
+
+  const existingById = new Map(existingVariants.map((v) => [v.id, v]));
+  // Every supplied id must belong to a live variant of this product. This
+  // rejects unknown, foreign-product, and soft-deleted ids before any
+  // replacement write, instead of silently treating them as new variants.
+  const unknownIds = incomingIds.filter((id) => !existingById.has(id));
+  if (unknownIds.length > 0) {
+    throw new AppError("Unknown variant id for this product", 400);
+  }
+
+  const incomingVariantIds = new Set(incomingIds);
 
   const variantsToDelete = existingVariants.filter(
     (v) => !incomingVariantIds.has(v.id),
@@ -349,85 +463,171 @@ export const upsertProductVariants = async (
     });
   }
 
-  let preferredDefaultId: string | undefined;
-  const staleIds: string[] = [];
-  const newVariantIds: string[] = [];
-
-  for (const variantInput of variants) {
-    const {
-      id: variantId,
-      attributeValueIds,
-      images: variantImages,
-      ...variantData
-    } = variantInput;
-
-    let targetVariantId = variantId;
-
-    if (variantId && existingVariantIds.has(variantId)) {
-      await tx.productVariant.update({
-        where: { id: variantId },
-        data: {
-          ...(variantData.sku !== undefined && { sku: variantData.sku }),
-          ...(variantData.price !== undefined && { price: variantData.price }),
-          ...(variantData.isDefault !== undefined && {
-            isDefault: variantData.isDefault,
-          }),
-          ...(variantData.barcode !== undefined && {
-            barcode: variantData.barcode,
-          }),
-          ...(variantData.compareAtPrice !== undefined && {
-            compareAtPrice: variantData.compareAtPrice,
-          }),
-          ...(variantData.costPrice !== undefined && {
-            costPrice: variantData.costPrice,
-          }),
-          ...(variantData.weight !== undefined && {
-            weight: variantData.weight,
-          }),
-        },
-      });
+  const toUpdate: UpdateVariantPayload[] = [];
+  const toCreate: UpdateVariantPayload[] = [];
+  for (const variant of variants) {
+    if (variant.id && existingById.has(variant.id)) {
+      toUpdate.push(variant);
     } else {
-      const newVariant = await tx.productVariant.create({
-        data: {
-          sku: variantData.sku as string,
-          price: variantData.price as number,
-          isDefault: variantData.isDefault ?? false,
-          productId,
-          barcode: variantData.barcode ?? null,
-          compareAtPrice: variantData.compareAtPrice ?? null,
-          costPrice: variantData.costPrice ?? null,
-          weight: variantData.weight ?? null,
-        },
-      });
-      targetVariantId = newVariant.id;
-      newVariantIds.push(newVariant.id);
-    }
-
-    if (attributeValueIds && targetVariantId) {
-      await replaceVariantAttributes(tx, targetVariantId, attributeValueIds);
-    }
-
-    if (variantImages && targetVariantId) {
-      const nextStale = await replaceImages(
-        tx,
-        { variantId: targetVariantId },
-        toVariantImageRows(variantImages, productId, targetVariantId),
-      );
-      staleIds.push(...nextStale);
-    }
-
-    if (variantData.isDefault && targetVariantId) {
-      preferredDefaultId = targetVariantId;
-      await unsetOtherDefaultVariants(tx, productId, targetVariantId);
+      toCreate.push(variant);
     }
   }
 
-  if (newVariantIds.length) {
-    await createVariantInventories(tx, warehouse.id, newVariantIds);
+  // B1: resolve attribute values for the whole batch in one query instead of
+  // one `skuAttributesForValues` round-trip per generated variant.
+  const attributeValueIds = [
+    ...new Set(variants.flatMap((variant) => variant.attributeValueIds ?? [])),
+  ];
+  const attributeLookup = await attributeValueLookup(tx, attributeValueIds);
+
+  const attributesFor = (variant: UpdateVariantPayload): SkuAttributeInput[] => {
+    const ids = variant.attributeValueIds ?? [];
+    const attributes = ids.map((id) => attributeLookup.get(id));
+    if (new Set(ids).size !== ids.length || attributes.some((value) => !value)) {
+      throw new AppError("One or more attribute values not found", 400);
+    }
+    return attributes as SkuAttributeInput[];
+  };
+
+  // Prefetch every live SKU a newly-created variant could collide with, so each
+  // generated SKU is allocated from this set without its own query.
+  const createCandidates = [
+    ...new Set(
+      toCreate.map((variant) =>
+        variant.sku !== undefined && !isBlankSku(variant.sku)
+          ? (variant.sku as string)
+          : buildSuggestedSku({
+              brandName: names.brandName,
+              categoryName: names.categoryName,
+              attributes: attributesFor(variant),
+            }),
+      ),
+    ),
+  ];
+  const takenSkus = await prefetchTakenSkus(tx, createCandidates);
+
+  const reservedSkus: string[] = [];
+  const resolvedUpdates: Array<{ id: string; input: UpdateVariantPayload }> = [];
+
+  for (const variantInput of toUpdate) {
+    const existing = existingById.get(variantInput.id as string);
+    const shouldResolveSku = variantInput.sku !== undefined;
+    const generatedAttributes =
+      shouldResolveSku && isBlankSku(variantInput.sku)
+        ? attributesFor(variantInput)
+        : undefined;
+    const sku = shouldResolveSku
+      ? (
+          await resolveVariantSku(tx, {
+            sku: variantInput.sku,
+            categoryName: names.categoryName,
+            brandName: names.brandName,
+            attributes: generatedAttributes,
+            attributeValueIds: variantInput.attributeValueIds,
+            excludeId: variantInput.id,
+            reservedSkus,
+          })
+        ).sku
+      : existing?.sku;
+    if (sku) reservedSkus.push(sku);
+
+    const { id: variantId, attributeValueIds: _attrs, ...variantData } = variantInput;
+    const data = variantScalarData({
+      ...variantData,
+      ...(sku !== undefined && { sku }),
+    });
+    // B3: skip the write when the payload leaves this variant unchanged.
+    if (existing && variantDataChanged(existing, data)) {
+      await tx.productVariant.update({
+        where: { id: variantId as string },
+        data,
+      });
+    }
+    resolvedUpdates.push({
+      id: variantId as string,
+      input: { ...variantInput, sku },
+    });
+  }
+
+  // B2: allocate every new SKU first, then insert all new variants in a single
+  // `createMany` (plus one lookup for their ids), instead of one query per row.
+  const preparedCreates: Array<{ input: UpdateVariantPayload; sku: string }> = [];
+  for (const variant of toCreate) {
+    const resolved = await resolveVariantSku(tx, {
+      sku: variant.sku,
+      categoryName: names.categoryName,
+      brandName: names.brandName,
+      attributes: attributesFor(variant),
+      attributeValueIds: variant.attributeValueIds,
+      reservedSkus,
+      takenSkus,
+    });
+    reservedSkus.push(resolved.sku);
+    preparedCreates.push({ input: variant, sku: resolved.sku });
+  }
+
+  const created: Array<{ id: string; sku: string }> = [];
+  if (preparedCreates.length) {
+    await tx.productVariant.createMany({
+      data: preparedCreates.map(({ input, sku }) => ({
+        sku,
+        price: input.price as number,
+        isDefault: input.isDefault ?? false,
+        productId,
+        barcode: input.barcode ?? null,
+        compareAtPrice: input.compareAtPrice ?? null,
+        costPrice: input.costPrice ?? null,
+        weight: input.weight ?? null,
+      })),
+    });
+    const createdRows = await tx.productVariant.findMany({
+      where: {
+        productId,
+        deletedAt: null,
+        sku: { in: preparedCreates.map((item) => item.sku) },
+      },
+      select: { id: true, sku: true },
+    });
+    const idBySku = new Map(createdRows.map((row) => [row.sku, row.id]));
+    for (const { sku } of preparedCreates) {
+      const id = idBySku.get(sku);
+      if (!id) throw new AppError("Failed to persist product variant", 500);
+      created.push({ id, sku });
+    }
+  }
+  const createdBySku = new Map(created.map((variant) => [variant.sku, variant]));
+
+  const resolved: Array<{ id: string; input: UpdateVariantPayload }> = [
+    ...resolvedUpdates,
+    ...preparedCreates.map(({ input, sku }) => {
+      const createdVariant = createdBySku.get(sku);
+      if (!createdVariant) {
+        throw new AppError("Failed to persist product variant", 500);
+      }
+      return { id: createdVariant.id, input: { ...input, sku } };
+    }),
+  ];
+
+  await replaceVariantAttributesBatch(
+    tx,
+    resolved.flatMap(({ id, input }) =>
+      input.attributeValueIds
+        ? [{ variantId: id, attributeValueIds: input.attributeValueIds }]
+        : [],
+    ),
+  );
+
+  const preferredDefaultId = [...resolved]
+    .reverse()
+    .find((item) => item.input.isDefault)?.id;
+
+  if (created.length) {
+    await createVariantInventories(
+      tx,
+      created.map((variant) => variant.id),
+    );
   }
 
   await ensureDefaultVariant(tx, productId, preferredDefaultId);
-  return preferredDefaultId
-    ? { preferredDefaultId, staleIds }
-    : { staleIds };
+  return preferredDefaultId ? { preferredDefaultId } : {};
 };

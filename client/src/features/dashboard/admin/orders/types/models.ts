@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export const ORDER_STATUSES = [
   "PENDING",
@@ -68,17 +64,43 @@ export type OrderListItem = {
   shippingAmount?: number | string;
   shippingMethodName?: string | null;
   shippingMethodCode?: string | null;
+  shippingZoneId?: string | null;
+  shippingZoneName?: string | null;
+  shippingZoneCode?: string | null;
+  shippingRateId?: string | null;
+  shippingRatePrice?: number | string | null;
   grandTotal: number | string;
   createdAt: string;
-  items: OrderItem[];
+  itemCount?: number;
   customerProfile?: OrderCustomer | null;
 };
 
+export type AdminOrderShipment = {
+  id: string;
+  shipmentNumber: string;
+  courierProvider: string;
+  status: string;
+  trackingNumber?: string | null;
+  shippingCost?: number | string;
+  createdAt: string;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+  items: Array<{ quantity: number }>;
+  trackingEvents: Array<{
+    status: string;
+    location?: string | null;
+    description?: string | null;
+    eventTime: string;
+  }>;
+};
+
 export type OrderDetail = OrderListItem & {
+  items: OrderItem[];
   notes?: string | null;
   addresses?: OrderAddress[];
   billingAddress?: OrderAddress | null;
   shippingAddress?: OrderAddress | null;
+  shipments?: AdminOrderShipment[];
   statusHistory?: Array<{
     id: string;
     status: OrderStatus;
@@ -112,6 +134,7 @@ export type OrderListParams = {
   status?: OrderStatus;
   from?: string;
   to?: string;
+  search?: string;
 };
 
 export type UpdateOrderStatusBody = {
@@ -141,6 +164,14 @@ export type AdminReturnRequest = {
     orderItemId: string;
     quantity: number;
     restockOrRefund: "RESTOCK" | "REFUND";
+    orderItem?: {
+      id: string;
+      productName: string;
+      sku: string;
+      variantName?: string | null;
+      unitPrice?: number | string;
+      subtotal?: number | string;
+    } | null;
   }>;
 };
 

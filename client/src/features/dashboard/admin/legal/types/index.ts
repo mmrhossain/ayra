@@ -1,4 +1,4 @@
-import type { LegalDocumentItem, LegalListResult } from "./models";
+import type { LegalDocumentItem, LegalListResult, LegalType } from "./models";
 
 export {
   LEGAL_STATUSES,
@@ -34,4 +34,5 @@ export type LegalPublishDialogProps = {
 
 export type LegalTableProps = {
   initialData: LegalListResult;
+  type: LegalType | "";
 };

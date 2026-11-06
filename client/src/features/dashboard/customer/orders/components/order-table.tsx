@@ -16,73 +16,73 @@ export function OrderTable({ initialData }: OrderTableProps) {
   const orders = items;
 
   return (
-    <div className="bg-white">
-      <div className="flex items-center justify-between mb-6 md:mb-8 gap-3">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+    <div className="bg-card">
+      <div className="mb-6 flex items-center justify-between gap-3 md:mb-8">
+        <div className="min-w-0">
+          <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
             My Orders
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Track and manage your recent purchases
           </p>
         </div>
-        <div className="p-3 bg-slate-50 rounded-2xl text-primary">
+        <div className="shrink-0 rounded-xl bg-muted p-3 text-primary">
           <ShoppingBag size={24} />
         </div>
       </div>
 
-      <div className="hidden md:block overflow-hidden border border-slate-100 rounded-2xl">
-        <table className="w-full text-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+        <table className="w-full min-w-[36rem] text-sm">
           <thead>
-            <tr className="bg-slate-50/50 border-b border-slate-100">
-              <th className="text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">
+            <tr className="bg-muted border-b border-border">
+              <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
                 Order #
               </th>
-              <th className="text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">
+              <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
                 Date
               </th>
-              <th className="text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">
+              <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
                 Total
               </th>
-              <th className="text-left px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">
+              <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
                 Status
               </th>
-              <th className="text-right px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">
+              <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">
                 Action
               </th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-border">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td className="px-6 py-5">
-                      <div className="h-4 bg-slate-100 rounded w-24" />
+                      <div className="h-4 bg-muted rounded w-24" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="h-4 bg-slate-100 rounded w-20" />
+                      <div className="h-4 bg-muted rounded w-20" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="h-4 bg-slate-100 rounded w-16" />
+                      <div className="h-4 bg-muted rounded w-16" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="h-7 bg-slate-100 rounded-full w-20" />
+                      <div className="h-7 bg-muted rounded-full w-20" />
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <div className="h-8 bg-slate-100 rounded-lg w-16 ml-auto" />
+                      <div className="h-8 bg-muted rounded-lg w-16 ml-auto" />
                     </td>
                   </tr>
                 ))
               : orders?.map((order) => (
                   <tr
                     key={order.id}
-                    className="hover:bg-slate-50/50 transition-colors group"
+                    className="hover:bg-muted transition-colors group"
                   >
-                    <td className="px-6 py-5 font-bold text-slate-700">
+                    <td className="px-6 py-5 font-bold text-foreground">
                       {order.orderNumber}
                     </td>
-                    <td className="px-6 py-5 text-slate-500">
+                    <td className="px-6 py-5 text-muted-foreground">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleDateString(
                             "en-GB",
@@ -90,13 +90,13 @@ export function OrderTable({ initialData }: OrderTableProps) {
                           )
                         : "—"}
                     </td>
-                    <td className="px-6 py-5 font-semibold text-slate-900">
+                    <td className="px-6 py-5 font-semibold tabular-nums text-foreground">
                       Tk {order.grandTotal}
                     </td>
                     <td className="px-6 py-5">
                       <span
                         className={clsx(
-                          "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider",
+                          "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider",
                           statusColor(order.status),
                         )}
                       >
@@ -106,7 +106,7 @@ export function OrderTable({ initialData }: OrderTableProps) {
                     <td className="px-6 py-5 text-right">
                       <Link
                         href={`/customer/orders/view-order/${order.id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border text-muted-foreground rounded-lg text-xs font-bold hover:bg-primary hover:text-white hover:border-primary transition-all duration-300"
                       >
                         <Eye size={14} />
                         Details
@@ -118,40 +118,40 @@ export function OrderTable({ initialData }: OrderTableProps) {
         </table>
       </div>
 
-      <div className="md:hidden space-y-4">
+      <div className="space-y-4 md:hidden">
         {loading
           ? Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="border border-slate-100 rounded-2xl p-4 sm:p-5 space-y-4 animate-pulse"
+                className="animate-pulse space-y-4 rounded-xl border border-border p-4 sm:p-5"
               >
                 <div className="flex justify-between items-center">
-                  <div className="h-5 bg-slate-100 rounded w-24" />
-                  <div className="h-6 bg-slate-100 rounded-full w-16" />
+                  <div className="h-5 bg-muted rounded w-24" />
+                  <div className="h-6 bg-muted rounded-full w-16" />
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-slate-100 rounded w-3/4" />
-                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
                 </div>
               </div>
             ))
           : orders?.map((order) => (
               <div
                 key={order.id}
-                className="border border-slate-100 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm"
+                className="space-y-4 rounded-xl border border-border p-4 shadow-sm sm:p-5"
               >
                 <div className="flex justify-between items-start gap-3">
                   <div className="space-y-1 min-w-0">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Order ID
                     </span>
-                    <h4 className="font-bold text-slate-900 truncate">
+                    <h4 className="font-bold text-foreground truncate">
                       {order.orderNumber}
                     </h4>
                   </div>
                   <span
                     className={clsx(
-                      "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap",
+                      "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap",
                       statusColor(order.status),
                     )}
                   >
@@ -159,8 +159,8 @@ export function OrderTable({ initialData }: OrderTableProps) {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-3 border-y border-slate-50 text-sm gap-3">
-                  <div className="flex items-center gap-2 text-slate-500 min-w-0">
+                <div className="flex items-center justify-between py-3 border-y border-border text-sm gap-3">
+                  <div className="flex items-center gap-2 text-muted-foreground min-w-0">
                     <Calendar size={14} />
                     <span className="truncate">
                       {order.createdAt
@@ -168,14 +168,14 @@ export function OrderTable({ initialData }: OrderTableProps) {
                         : "—"}
                     </span>
                   </div>
-                  <div className="font-bold text-slate-900 whitespace-nowrap">
+                  <div className="font-bold text-foreground whitespace-nowrap">
                     Tk {order.grandTotal}
                   </div>
                 </div>
 
                 <Link
                   href={`/customer/orders/view-order/${order.id}`}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-slate-50 text-slate-900 text-sm font-bold rounded-xl hover:bg-slate-900 hover:text-white transition-all"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-muted text-foreground text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all"
                 >
                   <Eye size={16} />
                   View Order Details
@@ -185,17 +185,17 @@ export function OrderTable({ initialData }: OrderTableProps) {
       </div>
 
       {!loading && orders?.length === 0 && (
-        <div className="text-center py-16 md:py-20 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-            <Package className="text-slate-300" size={32} />
+        <div className="mt-6 rounded-xl border-2 border-dashed border-border bg-muted py-16 text-center md:py-20">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-card shadow-sm">
+            <Package className="text-muted-foreground/60" size={32} aria-hidden />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">No orders found</h3>
-          <p className="text-slate-500 text-sm max-w-[240px] mx-auto mt-2">
+          <h3 className="text-lg font-bold text-foreground">No orders found</h3>
+          <p className="mx-auto mt-2 max-w-[240px] text-sm text-muted-foreground">
             Looks like you haven&apos;t placed any orders yet.
           </p>
           <Link
             href="/shop"
-            className="inline-block mt-6 px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-all"
+            className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-primary px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90"
           >
             Start Shopping
           </Link>

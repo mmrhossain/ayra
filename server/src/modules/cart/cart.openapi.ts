@@ -10,9 +10,7 @@ import {
   addItemSchema,
   applyCouponSchema,
   checkoutSchema,
-  guestCartSchema,
   mergeGuestCartSchema,
-  saveGuestCartSchema,
   updateItemSchema,
 } from "./cart.validator.ts";
 
@@ -88,7 +86,7 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/cart/guest/merge",
   tags: [TAG],
-  summary: "Merge guest cart into authenticated cart",
+  summary: "Merge local guest cart items into authenticated cart",
   security: bearerAuth,
   request: { body: jsonBody(mergeGuestCartSchema) },
   responses: {
@@ -135,28 +133,4 @@ registry.registerPath({
   },
 });
 
-registry.registerPath({
-  method: "get",
-  path: "/api/v1/cart/guest",
-  tags: [TAG],
-  summary: "Get guest cart by sessionId",
-  request: {
-    query: z.object({ sessionId: z.string().min(1).max(255) }),
-  },
-  responses: {
-    200: successResponse("Guest cart fetched"),
-    ...errorResponses(400),
-  },
-});
 
-registry.registerPath({
-  method: "put",
-  path: "/api/v1/cart/guest",
-  tags: [TAG],
-  summary: "Save guest cart",
-  request: { body: jsonBody(saveGuestCartSchema) },
-  responses: {
-    200: successResponse("Guest cart saved"),
-    ...errorResponses(400),
-  },
-});

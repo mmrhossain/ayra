@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { addressFieldsSchema } from "../../../common/validators/address.ts";
 
-const moneySchema = z.coerce.number().nonnegative();
+const moneySchema = z.coerce
+  .number()
+  .nonnegative()
+  .max(1_000_000)
+  .multipleOf(0.01);
 
 export const createShippingZoneSchema = z.object({
   name: z.string().min(1).max(200),
@@ -13,6 +17,7 @@ export const createShippingZoneSchema = z.object({
   isActive: z.boolean().default(true),
   isFallback: z.boolean().default(false),
   matchDistricts: z.array(z.string().min(1)).default([]),
+  matchDistrictCodes: z.array(z.string().min(1).max(32)).optional(),
 });
 
 export const updateShippingZoneSchema = createShippingZoneSchema.partial();
@@ -49,10 +54,12 @@ export const shippingQuoteSchema = z.object({
   shippingMethodCode: z.string().min(1),
   shippingAddress: addressFieldsSchema.optional(),
   district: z.string().min(1).optional(),
+  districtCode: z.string().min(1).max(32).optional(),
   subtotal: z.coerce.number().nonnegative().optional(),
 });
 
 export const shippingOptionsQuerySchema = z.object({
   district: z.string().min(1).optional(),
+  districtCode: z.string().min(1).max(32).optional(),
   subtotal: z.coerce.number().nonnegative().optional(),
 });

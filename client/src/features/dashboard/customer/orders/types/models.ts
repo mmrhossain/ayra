@@ -1,8 +1,4 @@
-export type Envelope<T> = {
-  success: true;
-  message: string;
-  data: T;
-};
+export type { Envelope } from "@/lib/api/http";
 
 export type CheckoutAddress = {
   fullName: string;
@@ -12,6 +8,9 @@ export type CheckoutAddress = {
   division: string;
   district: string;
   thana?: string;
+  divisionCode?: string | null;
+  districtCode?: string | null;
+  upazilaCode?: string | null;
   postalCode?: string;
   addressLine1: string;
   addressLine2?: string;
@@ -46,11 +45,58 @@ export type CustomerReturnRequest = {
   }>;
 };
 
+export type CustomerRefund = {
+  id: string;
+  amount: number | string;
+  status: string;
+  reason?: string | null;
+  refundedAt?: string | null;
+  createdAt: string;
+};
+
+export type CustomerPayment = {
+  id: string;
+  method: string;
+  status: string;
+  amount: number | string;
+  currency?: string;
+  createdAt: string;
+  refunds: CustomerRefund[];
+};
+
 export type CustomerOrderStatusHistory = {
   id: string;
   status: string;
   remarks?: string | null;
   createdAt: string;
+};
+
+export type CustomerOrderEvent = {
+  eventType: string;
+  createdAt: string;
+};
+
+export type CustomerShipmentEvent = {
+  status: string;
+  location?: string | null;
+  description?: string | null;
+  eventTime: string;
+};
+
+export type CustomerShipment = {
+  id: string;
+  shipmentNumber: string;
+  courierProvider: string;
+  status: string;
+  trackingNumber?: string | null;
+  pickupRequestedAt?: string | null;
+  pickedUpAt?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+  returnedAt?: string | null;
+  createdAt: string;
+  items: Array<{ orderItemId: string; quantity: number }>;
+  trackingEvents: CustomerShipmentEvent[];
 };
 
 export type CustomerOrder = {
@@ -65,14 +111,27 @@ export type CustomerOrder = {
   shippingAmount?: number | string;
   shippingMethodName?: string | null;
   shippingMethodCode?: string | null;
+  shippingZoneName?: string | null;
+  shippingZoneCode?: string | null;
+  shippingRatePrice?: number | string | null;
   grandTotal: number | string;
   createdAt: string;
+  deliveredAt?: string | null;
+  returnDeadline?: string | null;
+  canRequestReturn?: boolean;
   items: CustomerOrderItem[];
   addresses?: OrderAddressRecord[];
   billingAddress?: CheckoutAddress | null;
   shippingAddress?: CheckoutAddress | null;
   returnRequests?: CustomerReturnRequest[];
+  payments?: CustomerPayment[];
+  shipments?: CustomerShipment[];
   statusHistory?: CustomerOrderStatusHistory[];
+  events?: CustomerOrderEvent[];
+};
+
+export type CustomerOrderListItem = Omit<CustomerOrder, "items"> & {
+  itemCount: number;
 };
 
 export type OrderPagination = {
@@ -83,7 +142,7 @@ export type OrderPagination = {
 };
 
 export type CustomerOrderListResult = {
-  items: CustomerOrder[];
+  items: CustomerOrderListItem[];
   pagination: OrderPagination;
 };
 

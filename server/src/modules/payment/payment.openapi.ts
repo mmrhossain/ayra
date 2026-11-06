@@ -9,7 +9,9 @@ import {
 import {
   initiatePaymentSchema,
   listPaymentsQuerySchema,
+  listRefundsQuerySchema,
   refundSchema,
+  refundStatusSchema,
   sslcommerzFailCancelSchema,
   sslcommerzIpnSchema,
   sslcommerzSuccessSchema,
@@ -37,11 +39,24 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/payments/sslcommerz/success",
   tags: [TAG],
-  summary: "SSLCommerz success callback (signature-based, no bearer auth)",
+  summary: "SSLCommerz success callback (POST body or GET query; redirects to storefront)",
   security: [],
   request: { body: jsonBody(sslcommerzSuccessSchema) },
   responses: {
-    200: successResponse("Payment verified"),
+    302: { description: "Redirect to storefront payment success or failed page" },
+    ...errorResponses(400),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/payments/sslcommerz/success",
+  tags: [TAG],
+  summary: "SSLCommerz success callback via GET query (browser redirect)",
+  security: [],
+  request: { query: sslcommerzSuccessSchema },
+  responses: {
+    302: { description: "Redirect to storefront payment success or failed page" },
     ...errorResponses(400),
   },
 });
@@ -50,11 +65,24 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/payments/sslcommerz/failed",
   tags: [TAG],
-  summary: "SSLCommerz failed callback (signature-based, no bearer auth)",
+  summary: "SSLCommerz failed callback (POST body or GET query; redirects to storefront)",
   security: [],
   request: { body: jsonBody(sslcommerzFailCancelSchema) },
   responses: {
-    200: successResponse("Payment failed"),
+    302: { description: "Redirect to storefront payment failed page" },
+    ...errorResponses(400),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/payments/sslcommerz/failed",
+  tags: [TAG],
+  summary: "SSLCommerz failed callback via GET query (browser redirect)",
+  security: [],
+  request: { query: sslcommerzFailCancelSchema },
+  responses: {
+    302: { description: "Redirect to storefront payment failed page" },
     ...errorResponses(400),
   },
 });
@@ -63,11 +91,24 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/payments/sslcommerz/cancelled",
   tags: [TAG],
-  summary: "SSLCommerz cancelled callback (signature-based, no bearer auth)",
+  summary: "SSLCommerz cancelled callback (POST body or GET query; redirects to storefront)",
   security: [],
   request: { body: jsonBody(sslcommerzFailCancelSchema) },
   responses: {
-    200: successResponse("Payment cancelled"),
+    302: { description: "Redirect to storefront payment cancelled page" },
+    ...errorResponses(400),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/payments/sslcommerz/cancelled",
+  tags: [TAG],
+  summary: "SSLCommerz cancelled callback via GET query (browser redirect)",
+  security: [],
+  request: { query: sslcommerzFailCancelSchema },
+  responses: {
+    302: { description: "Redirect to storefront payment cancelled page" },
     ...errorResponses(400),
   },
 });
@@ -95,6 +136,35 @@ registry.registerPath({
   responses: {
     200: successResponse("Payments fetched"),
     ...errorResponses(400, 401, 403),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/admin/refunds",
+  tags: [TAG],
+  summary: "List refunds (admin)",
+  security: bearerAuth,
+  request: { query: listRefundsQuerySchema },
+  responses: {
+    200: successResponse("Refunds fetched"),
+    ...errorResponses(400, 401, 403),
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/v1/admin/refunds/{refundId}",
+  tags: [TAG],
+  summary: "Update refund status (admin)",
+  security: bearerAuth,
+  request: {
+    params: z.object({ refundId: z.string().min(1) }),
+    body: jsonBody(refundStatusSchema),
+  },
+  responses: {
+    200: successResponse("Refund updated"),
+    ...errorResponses(400, 401, 403, 404, 409),
   },
 });
 

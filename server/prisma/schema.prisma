@@ -20,6 +20,10 @@ model User {
   image                  String?
   imagePublicId          String?
   role                   String?                     @default("customer")
+  adminPermissions       String[]                    @default([])
+  adminActions           String[]                    @default([])
+  isSuperAdmin           Boolean                     @default(false)
+  staffStatus            StaffStatus                 @default(ACTIVE)
   banned                 Boolean?                    @default(false)
   banReason              String?
   banExpires             DateTime?
@@ -29,14 +33,54 @@ model User {
   notificationPreference UserNotificationPreference?
   customerProfile        CustomerProfile?
   pushDevices            PushDevice[]
-  vendorProfile          VendorProfile?
+  staffInvitationsSent   StaffInvitation[]           @relation("StaffInvitationInviter")
+  staffInvitationsAccepted StaffInvitation[]         @relation("StaffInvitationAcceptor")
   createdAt              DateTime                    @default(now())
   updatedAt              DateTime                    @updatedAt
   deletedAt              DateTime?
 
   @@unique([email])
   @@index([role])
+  @@index([role, isSuperAdmin, staffStatus])
   @@map("user")
+}
+
+enum StaffStatus {
+  ACTIVE
+  SUSPENDED
+  OFFBOARDED
+}
+
+enum StaffInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+model StaffInvitation {
+  id            String                 @id @default(uuid())
+  email         String
+  name          String
+  permissions   String[]               @default([])
+  isSuperAdmin  Boolean                @default(false)
+  tokenHash     String                 @unique
+  status        StaffInvitationStatus  @default(PENDING)
+  expiresAt     DateTime
+  invitedById   String
+  invitedBy     User                   @relation("StaffInvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
+  acceptedById  String?
+  acceptedBy    User?                  @relation("StaffInvitationAcceptor", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt    DateTime?
+  revokedAt     DateTime?
+  revokedById   String?
+  lastSentAt    DateTime               @default(now())
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@index([email, status])
+  @@index([status, expiresAt])
+  @@map("staff_invitation")
 }
 
 model Session {
@@ -59,7 +103,9 @@ model Session {
 
 model Account {
   id                    String    @id
-  issuer                String
+  // Better Auth 1.7.0-1.7.2 wrote this column; 1.7.3+ recognizes accounts by
+  // providerId + accountId instead. Kept optional so existing rows remain valid.
+  issuer                String?
   accountId             String
   providerId            String
   userId                String
@@ -74,7 +120,6 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  @@unique([issuer, accountId], map: "account_issuer_accountId_uidx")
   @@index([userId])
   @@map("account")
 }
@@ -103,36 +148,16 @@ model Jwks {
   @@map("jwks")
 }
 
-model VendorProfile {
-  id           String  @id @default(uuid())
-  shopName     String?
-  shopSlug     String  @unique
-  description  String?
-  logo         String?
-  logoPublicId String?
-  phone        String?
-  isApproved   Boolean @default(false)
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  @@index([shopSlug])
-  @@index([isApproved])
-  @@map("vendor_profile")
-}
-
 model Category {
-  id            String  @id @default(uuid())
-  name          String
-  slug          String
-  description   String?
-  image         String?
-  imagePublicId String?
-  isActive      Boolean @default(true)
+  id                  String  @id @default(uuid())
+  name                String
+  slug                String
+  description         String?
+  image               String?
+  imagePublicId       String?
+  mobileImage         String?
+  mobileImagePublicId String?
+  isActive            Boolean @default(true)
 
   children         Category[]       @relation("CategoryHierarchy")
   products         Product[]
@@ -172,9 +197,8 @@ model Brand {
 model Product {
   id              String        @id @default(uuid())
   name            String
-  slug            String        @unique
+  slug            String
   description     String?
-  sku             String?
   status          ProductStatus @default(DRAFT)
   isFeatured      Boolean       @default(false)
   salesCount30d   Int           @default(0)
@@ -201,6 +225,7 @@ model Product {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  @@index([slug])
   @@index([status, deletedAt, createdAt])
   @@index([categoryId, status, deletedAt, createdAt])
   @@index([brandId, status, deletedAt, createdAt])
@@ -212,11 +237,11 @@ model Product {
 
 model ProductVariant {
   id             String   @id @default(uuid())
-  sku            String   @unique
+  sku            String
   barcode        String?
   price          Decimal  @db.Decimal(12, 2)
   compareAtPrice Decimal? @db.Decimal(12, 2)
-  costPrice      Decimal? @db.Decimal(12, 2)
+  costPrice      Decimal? @db.Decimal(18, 2)
   weight         Decimal? @db.Decimal(10, 2)
   isDefault      Boolean  @default(false)
 
@@ -226,7 +251,6 @@ model ProductVariant {
   wishlistItems         WishlistItem[]
   stockReservations     StockReservation[]
   transferItems         InventoryTransferItem[]
-  images                ProductImage[]
   cartItems             CartItem[]
   inventoryTransactions InventoryTransaction[]
   inventoryAdjustments  InventoryAdjustment[]
@@ -286,7 +310,6 @@ model VariantAttribute {
   attributeValue   AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
 
   @@id([variantId, attributeValueId])
-  @@index([variantId])
   @@index([attributeValueId])
   @@map("variant_attribute")
 }
@@ -302,14 +325,10 @@ model ProductImage {
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  variantId String?
-  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([productId])
-  @@index([variantId])
   @@map("product_image")
 }
 
@@ -332,7 +351,6 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([productId, customerProfileId])
-  @@index([productId])
   @@index([customerProfileId])
   @@index([isApproved])
   @@map("review")
@@ -352,9 +370,6 @@ model CustomerProfile {
   couponUsages  CouponUsage[]
   wishlist      Wishlist?
   reviews       Review[]
-  facebookId    String?
-  googleId      String?
-  appleId       String?
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -363,7 +378,6 @@ model CustomerProfile {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([customerCode])
   @@map("customer_profile")
 }
 
@@ -379,6 +393,9 @@ model Address {
   thana             String?
   area              String?
   postalCode        String?
+  divisionCode      String?
+  districtCode      String?
+  upazilaCode       String?
   addressLine1      String
   addressLine2      String?
   isDefaultShipping Boolean @default(false)
@@ -394,6 +411,7 @@ model Address {
   @@index([country])
   @@index([division])
   @@index([district])
+  @@index([districtCode])
   @@map("address")
 }
 
@@ -445,7 +463,6 @@ model Cart {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@index([customerProfileId])
   @@index([status])
   @@index([customerProfileId, status])
   @@map("cart")
@@ -474,7 +491,6 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, variantId])
-  @@index([cartId])
   @@index([productId])
   @@index([variantId])
   @@map("cart_item")
@@ -508,17 +524,6 @@ model CartActivity {
   @@map("cart_activity")
 }
 
-model GuestCart {
-  id        String   @id @default(uuid())
-  sessionId String   @unique
-  cartData  Json
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("guest_cart")
-}
-
 model Order {
   id                 String            @id @default(uuid())
   orderNumber        String            @unique
@@ -529,9 +534,18 @@ model Order {
   subtotal           Decimal           @db.Decimal(18, 2)
   discountAmount     Decimal           @default(0) @db.Decimal(18, 2)
   taxAmount          Decimal           @default(0) @db.Decimal(18, 2)
+  // Pricing configuration captured at checkout so historical line tax and
+  // reporting never depend on the current platform setting.
+  pricesIncludeTax   Boolean           @default(true)
+  taxRatePercent     Decimal           @default(0) @db.Decimal(5, 2)
   shippingAmount     Decimal           @default(0) @db.Decimal(18, 2)
   shippingMethodName String?
   shippingMethodCode String?
+  shippingZoneId     String?
+  shippingZoneName   String?
+  shippingZoneCode   String?
+  shippingRateId     String?
+  shippingRatePrice  Decimal?          @db.Decimal(18, 2)
   grandTotal         Decimal           @db.Decimal(18, 2)
   notes              String?
 
@@ -547,30 +561,38 @@ model Order {
   customerProfileId String
   customerProfile   CustomerProfile @relation(fields: [customerProfileId], references: [id])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime  @default(now())
+  deliveredAt DateTime?
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
-  @@index([customerProfileId])
-  @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
   @@index([customerProfileId, createdAt])
   @@index([status, createdAt])
+  @@index([currency, deliveredAt])
   @@map("order")
 }
 
 model OrderItem {
-  id             String   @id @default(uuid())
-  productName    String
-  sku            String
-  variantName    String?
-  quantity       Int
-  unitPrice      Decimal  @db.Decimal(18, 2)
-  costPrice      Decimal? @db.Decimal(12, 2)
-  discountAmount Decimal  @default(0) @db.Decimal(18, 2)
-  taxAmount      Decimal  @default(0) @db.Decimal(18, 2)
-  subtotal       Decimal  @db.Decimal(18, 2)
+  id                String    @id @default(uuid())
+  productName       String
+  sku               String
+  variantName       String?
+  quantity          Int
+  unitPrice         Decimal   @db.Decimal(18, 2)
+  costPrice         Decimal?  @db.Decimal(18, 2)
+  // Manual cost snapshot captured at order placement. This is NOT FIFO or
+  // weighted-average costing; it is the current variant cost when the sale was
+  // placed (or null when unknown).
+  costSource        String?
+  costCapturedAt    DateTime?
+  discountAmount    Decimal   @default(0) @db.Decimal(18, 2)
+  taxAmount         Decimal   @default(0) @db.Decimal(18, 2)
+  // 1 = per-line discount/tax was allocated by the current server. 0 = legacy
+  // row that only has order-level amounts and needs a reporting fallback.
+  allocationVersion Int       @default(0)
+  subtotal          Decimal   @db.Decimal(18, 2)
 
   shipmentItems ShipmentItem[]
   returnItems   ReturnItem[]
@@ -591,15 +613,19 @@ model OrderItem {
 }
 
 model ReturnRequest {
-  id          String              @id @default(uuid())
-  status      ReturnRequestStatus @default(PENDING)
-  reason      String?
-  requestedAt DateTime            @default(now())
-  reviewedAt  DateTime?
-  reviewedBy  String?
-  adminNote   String?
+  id                   String              @id @default(uuid())
+  status               ReturnRequestStatus @default(PENDING)
+  reason               String?
+  requestedAt          DateTime            @default(now())
+  reviewedAt           DateTime?
+  reviewedBy           String?
+  adminNote            String?
+  // Shipping reversal included in the refund created for a full return.
+  // Cash reporting counts it only once the linked refund is COMPLETED.
+  shippingRefundAmount Decimal             @default(0) @db.Decimal(18, 2)
 
-  items ReturnItem[]
+  items  ReturnItem[]
+  refund Refund?
 
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -609,13 +635,25 @@ model ReturnRequest {
 
   @@index([orderId])
   @@index([status])
+  @@index([status, reviewedAt])
   @@map("return_request")
 }
 
 model ReturnItem {
-  id              String          @id @default(uuid())
-  quantity        Int
-  restockOrRefund RestockOrRefund
+  id                    String          @id @default(uuid())
+  quantity              Int
+  restockOrRefund       RestockOrRefund
+  // Physical disposition, distinct from the refund decision. A RESTOCK item
+  // that is damaged is NOT put back into resalable inventory.
+  restockToStock        Boolean         @default(false)
+  damaged               Boolean         @default(false)
+  // Immutable snapshot of the sales and cost reversal recorded at approval.
+  // Sales adjustment is tax-exclusive net merchandise; cost adjustment is the
+  // original OrderItem.costPrice x returned quantity, only for resalable stock.
+  salesAdjustmentAmount Decimal         @default(0) @db.Decimal(18, 2)
+  costAdjustmentAmount  Decimal         @default(0) @db.Decimal(18, 2)
+  // 1 = amounts were snapshotted at approval. 0 = legacy approval.
+  allocationVersion     Int             @default(0)
 
   returnRequestId String
   returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
@@ -642,6 +680,9 @@ model OrderAddress {
   district     String
   thana        String?
   postalCode   String?
+  divisionCode String?
+  districtCode String?
+  upazilaCode  String?
   addressLine1 String
   addressLine2 String?
 
@@ -649,7 +690,7 @@ model OrderAddress {
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, type])
-  @@index([orderId])
+  @@index([districtCode])
   @@map("order_address")
 }
 
@@ -712,6 +753,7 @@ model Payment {
   @@index([orderId])
   @@index([status])
   @@index([method])
+  @@index([status, paidAt])
   @@map("payment")
 }
 
@@ -741,15 +783,25 @@ model Refund {
   providerReference        String?
   refundedAt               DateTime?
   requiresManualProcessing Boolean      @default(false)
+  requestedBy              String?
+  approvedBy               String?
+  completedBy              String?
 
   paymentId String
   payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  // A refund created by a return approval is linked so it cannot be duplicated
+  // and so completed shipping reversals can be identified without re-deriving
+  // them from mutable order data.
+  returnRequestId String?        @unique
+  returnRequest   ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([paymentId])
   @@index([status])
+  @@index([status, refundedAt])
   @@map("refund")
 }
 
@@ -757,7 +809,7 @@ model PaymentWebhookLog {
   id              String    @id @default(uuid())
   provider        String
   eventType       String
-  externalEventId String?
+  externalEventId String
   payload         Json
   processed       Boolean   @default(false)
   processedAt     DateTime?
@@ -766,7 +818,6 @@ model PaymentWebhookLog {
   updatedAt DateTime @updatedAt
 
   @@unique([provider, externalEventId])
-  @@index([provider])
   @@index([processed])
   @@map("payment_webhook_log")
 }
@@ -784,6 +835,30 @@ model PaymentEvent {
 
   @@index([paymentId])
   @@map("payment_event")
+}
+
+model PlatformSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  isSecret  Boolean  @default(false)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_setting")
+}
+
+model PlatformSettingAudit {
+  id         String   @id @default(uuid())
+  settingKey String
+  changedBy  String?
+  oldValue   Json?
+  newValue   Json?
+  changedAt  DateTime @default(now())
+
+  @@index([settingKey, changedAt])
+  @@map("platform_setting_audit")
 }
 
 model Warehouse {
@@ -809,7 +884,6 @@ model Warehouse {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([code])
   @@index([name])
   @@map("warehouse")
 }
@@ -820,6 +894,12 @@ model Inventory {
   quantityReserved  Int       @default(0)
   quantityAvailable Int       @default(0)
   lastTransactionAt DateTime?
+
+  // Who/when the stock level was last changed by an explicit admin action
+  // (stock set, adjustment approval, transfer). Kept separate from updatedAt,
+  // which also moves on order-driven reservations.
+  lastUpdatedBy  String?
+  stockUpdatedAt DateTime?
 
   transactions InventoryTransaction[]
 
@@ -833,7 +913,6 @@ model Inventory {
   updatedAt DateTime @updatedAt
 
   @@unique([warehouseId, variantId])
-  @@index([warehouseId])
   @@index([variantId])
   @@map("inventory")
 }
@@ -854,7 +933,6 @@ model StockReservation {
   updatedAt DateTime @updatedAt
 
   @@unique([orderId, variantId, warehouseId])
-  @@index([orderId])
   @@index([variantId])
   @@index([warehouseId])
   @@index([expiresAt])
@@ -993,6 +1071,7 @@ model Shipment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([warehouseId])
   @@index([orderId])
   @@index([status])
   @@index([trackingNumber])
@@ -1051,13 +1130,14 @@ model CourierWebhookLog {
   id              String          @id @default(uuid())
   provider        CourierProvider
   eventType       String
-  externalEventId String?
+  externalEventId String
   payload         Json
   processed       Boolean         @default(false)
   processedAt     DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
+  @@unique([provider, externalEventId])
   @@index([processed])
   @@map("courier_webhook_log")
 }
@@ -1072,6 +1152,9 @@ model ShipmentAddress {
   city         String
   area         String?
   postalCode   String?
+  divisionCode String?
+  districtCode String?
+  upazilaCode  String?
   addressLine1 String
   addressLine2 String?
 
@@ -1097,13 +1180,14 @@ model ShipmentEvent {
 }
 
 model ShippingZone {
-  id             String         @id @default(uuid())
-  name           String
-  code           String         @unique
-  isActive       Boolean        @default(true)
-  isFallback     Boolean        @default(false)
-  matchDistricts String[]       @default([])
-  rates          ShippingRate[]
+  id                 String         @id @default(uuid())
+  name               String
+  code               String         @unique
+  isActive           Boolean        @default(true)
+  isFallback         Boolean        @default(false)
+  matchDistricts     String[]       @default([])
+  matchDistrictCodes String[]       @default([])
+  rates              ShippingRate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1142,7 +1226,6 @@ model ShippingRate {
   updatedAt DateTime @updatedAt
 
   @@unique([shippingZoneId, shippingMethodId])
-  @@index([shippingZoneId])
   @@index([shippingMethodId])
   @@index([isActive])
   @@map("shipping_rate")
@@ -1175,8 +1258,6 @@ model Coupon {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([code])
-  @@index([status])
   @@index([status, deletedAt, createdAt])
   @@map("coupon")
 }
@@ -1197,7 +1278,6 @@ model CouponUsage {
   usedAt DateTime @default(now())
 
   @@unique([couponId, orderId])
-  @@index([couponId])
   @@index([customerProfileId])
   @@index([couponId, customerProfileId])
   @@map("coupon_usage")
@@ -1242,7 +1322,6 @@ model NotificationTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([code])
   @@map("notification_template")
 }
 
@@ -1389,7 +1468,6 @@ model CMSPage {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  @@index([slug])
   @@map("cms_page")
 }
 
@@ -1466,22 +1544,21 @@ model BlogCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([slug])
   @@map("blog_category")
 }
 
 model Blog {
-  id              String        @id @default(uuid())
-  title           String
-  slug            String        @unique
-  excerpt         String?
-  content         String        @db.Text
+  id                    String        @id @default(uuid())
+  title                 String
+  slug                  String        @unique
+  excerpt               String?
+  content               String        @db.Text
   featuredImage         String?
   featuredImagePublicId String?
   status                ContentStatus @default(DRAFT)
-  metaTitle       String?
-  metaDescription String?
-  metaKeywords    String?
+  metaTitle             String?
+  metaDescription       String?
+  metaKeywords          String?
 
   categoryId String?
   category   BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -1491,7 +1568,6 @@ model Blog {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  @@index([slug])
   @@index([status, publishedAt])
   @@index([categoryId])
   @@map("blog")
@@ -1517,7 +1593,6 @@ model ProductCollection {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([slug])
   @@index([placement, isActive, sortOrder])
   @@map("product_collection")
 }
@@ -1575,6 +1650,7 @@ model MediaAsset {
   entityType  String?
   entityId    String?
   bytes       Int?
+  contentHash String?
   detachedAt  DateTime?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -1582,19 +1658,15 @@ model MediaAsset {
   @@index([status, createdAt])
   @@index([status, detachedAt])
   @@index([ownerUserId])
+  @@index([ownerUserId, type, contentHash, status])
   @@index([entityType, entityId])
+  @@index([type, status, createdAt])
   @@map("media_asset")
 }
 
 // ==========================================
 // ENUMS
 // ==========================================
-
-enum UserRole {
-  CUSTOMER
-  ADMIN
-  VENDOR
-}
 
 enum Gender {
   MALE
@@ -1706,6 +1778,25 @@ enum ShipmentStatus {
   FAILED
   RETURNED
   CANCELLED
+}
+
+model IdempotencyKey {
+  id           String   @id @default(uuid())
+  key          String
+  scope        String
+  userId       String
+  // Hash of method + path + body so a key reused with a different payload is rejected.
+  requestHash  String
+  status       String   @default("IN_PROGRESS")
+  statusCode   Int?
+  responseBody Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  expiresAt    DateTime
+
+  @@unique([userId, scope, key])
+  @@index([expiresAt])
+  @@map("idempotency_key")
 }
 
 enum CourierProvider {
@@ -1859,4 +1950,32 @@ enum ProductStatus {
   DRAFT
   ACTIVE
   ARCHIVED
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actorEmail String?
+  actorRole  String?
+  action     String?
+  source     String   @default("APP")
+  method     String
+  path       String
+  statusCode Int
+  outcome    String   @default("SUCCESS")
+  entityType String?
+  entityId   String?
+  ip         String?
+  userAgent  String?
+  requestId  String?
+  durationMs Int?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([entityType, createdAt])
+  @@index([action, createdAt])
+  @@index([requestId])
+  @@map("admin_audit_log")
 }

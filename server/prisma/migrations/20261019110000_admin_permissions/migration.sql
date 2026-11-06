@@ -1,0 +1,2 @@
+ALTER TABLE "user"
+    ADD COLUMN IF NOT EXISTS "adminPermissions" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

@@ -58,7 +58,7 @@ const ReviewTab = ({
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6 md:mb-8">
-        <h2 className="text-base font-bold text-secondary sm:text-lg md:text-xl">
+        <h2 className="text-base font-bold text-foreground sm:text-lg md:text-xl">
           All Reviews
           <span className="ml-1.5 text-sm font-normal text-sky-color sm:text-base">({count})</span>
         </h2>
@@ -69,7 +69,7 @@ const ReviewTab = ({
               <button
                 type="button"
                 aria-label="Sort reviews"
-                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-primary text-secondary transition-colors hover:bg-border-color sm:hidden"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-primary text-foreground transition-colors hover:bg-border-color sm:hidden"
               >
                 <SlidersHorizontal size={16} />
               </button>
@@ -91,7 +91,7 @@ const ReviewTab = ({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="hidden h-10 min-w-[108px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-bg-primary px-4 text-sm font-medium text-secondary transition-colors hover:bg-border-color sm:inline-flex sm:h-11"
+                className="hidden h-10 min-w-[108px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-bg-primary px-4 text-sm font-medium text-foreground transition-colors hover:bg-border-color sm:inline-flex sm:h-11"
               >
                 {sortLabel(sort)}
                 <ChevronDown size={14} />
@@ -113,7 +113,7 @@ const ReviewTab = ({
           <button
             type="button"
             onClick={() => setWriteOpen(true)}
-            className="h-10 cursor-pointer rounded-full bg-secondary px-4 text-sm font-medium text-white transition-colors hover:bg-primary sm:h-11 sm:px-5"
+            className="h-10 cursor-pointer rounded-full bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-primary sm:h-11 sm:px-5"
           >
             Write a Review
           </button>
@@ -139,7 +139,7 @@ const ReviewTab = ({
                 style={{ maxWidth: 108 }}
                 itemStyles={starStyles}
               />
-              <h3 className="mt-3 flex items-center gap-1.5 text-base font-bold text-secondary sm:text-lg">
+              <h3 className="mt-3 flex items-center gap-1.5 text-base font-bold text-foreground sm:text-lg">
                 {reviewDisplayName(review)}
                 {review.verifiedPurchase ? (
                   <BadgeCheck
@@ -150,7 +150,7 @@ const ReviewTab = ({
                 ) : null}
               </h3>
               {review.comment ? (
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-sky-color sm:text-[15px]">
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-sky-color sm:text-base">
                   &ldquo;{review.comment}&rdquo;
                 </p>
               ) : null}
@@ -168,7 +168,7 @@ const ReviewTab = ({
             type="button"
             disabled={loadingMore}
             onClick={() => void loadReviews(page + 1, true)}
-            className="h-11 min-w-[200px] cursor-pointer rounded-full border border-border-color bg-white px-8 text-sm font-medium text-secondary transition-colors hover:bg-bg-primary disabled:opacity-60 sm:h-12"
+            className="h-11 min-w-[200px] cursor-pointer rounded-full border border-border-color bg-white px-8 text-sm font-medium text-foreground transition-colors hover:bg-bg-primary disabled:opacity-60 sm:h-12"
           >
             {loadingMore ? "Loading..." : "Load More Reviews"}
           </button>
@@ -181,7 +181,7 @@ const ReviewTab = ({
           className="max-w-[calc(100%-2rem)] rounded-sm sm:max-w-lg"
         >
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-secondary">Write a Review</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-foreground">Write a Review</DialogTitle>
           </DialogHeader>
 
           {!isLoggedIn ? (
@@ -212,7 +212,7 @@ const ReviewTab = ({
                           itemStyles={starStyles}
                         />
                       </FormControl>
-                      <FormMessage className="text-xs text-danger" />
+                      <FormMessage className="text-danger" />
                     </FormItem>
                   )}
                 />
@@ -230,7 +230,7 @@ const ReviewTab = ({
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-xs text-danger" />
+                      <FormMessage className="text-danger" />
                     </FormItem>
                   )}
                 />
@@ -238,7 +238,7 @@ const ReviewTab = ({
                 <button
                   type="submit"
                   disabled={form.formState.isSubmitting}
-                  className="h-11 w-full cursor-pointer rounded-full bg-secondary text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-70"
+                  className="h-11 w-full cursor-pointer rounded-full bg-ink text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-70"
                 >
                   {form.formState.isSubmitting ? "Submitting..." : "Submit"}
                 </button>

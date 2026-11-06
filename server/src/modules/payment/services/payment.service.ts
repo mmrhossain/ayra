@@ -2,16 +2,32 @@ import { randomUUID } from "node:crypto";
 import { prisma, transaction } from "../../../lib/prisma.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { paginate } from "../../../common/utils/paginate.ts";
-import type { PaymentMethod } from "../../../generated/prisma/enums.ts";
+import type {
+  PaymentMethod,
+  RefundStatus,
+} from "../../../generated/prisma/enums.ts";
 import type { Prisma } from "../../../generated/prisma/client.ts";
 import { getPaymentProvider } from "../providers/index.ts";
-import { getCallbackUrls } from "../providers/sslcommerz.provider.ts";
+import { getSslcommerzCallbackUrls } from "./sslcommerz-config.service.ts";
+import { getSettingValue } from "../../settings/settings.service.ts";
+import {
+  assertRefundTransition,
+  exceedsRefundableAmount,
+  isRefundablePaymentStatus,
+  resolvePaymentRefundStatus,
+} from "../utils/refund-state.ts";
 import { commitOrderStock } from "../../catalog/inventory/services/inventory.service.ts";
-import { enqueuePaymentConfirmation } from "../../notification/services/notification.service.ts";
+import {
+  enqueuePaymentConfirmation,
+  notifyOrderStatusChange,
+} from "../../notification/services/notification.service.ts";
+import { escapeHtml } from "../../../template/email.ts";
 import type {
   GatewayOrder,
   ListPaymentsQuery,
+  ListRefundsQuery,
   RefundInput,
+  RefundStatusUpdateInput,
 } from "../types.ts";
 
 const toProviderOrder = (order: {
@@ -117,6 +133,13 @@ export const initiatePayment = async (
     throw new AppError("Order is already paid", 409);
   }
 
+  const enabledMethods = await getSettingValue<PaymentMethod[]>(
+    "payment.enabledMethods",
+  );
+  if (!enabledMethods.includes(method)) {
+    throw new AppError("This payment method is currently unavailable", 400);
+  }
+
   const reusable = await prisma.payment.findFirst({
     where: activePaymentWhere(order.id, method),
     orderBy: { createdAt: "desc" },
@@ -131,7 +154,7 @@ export const initiatePayment = async (
 
   const provider = getPaymentProvider(method);
   const providerOrder = toProviderOrder(order);
-  const callbacks = getCallbackUrls();
+  const callbacks = await getSslcommerzCallbackUrls();
 
   if (method === "SSLCOMMERZ") {
     const suffix = randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
@@ -149,7 +172,7 @@ export const initiatePayment = async (
         status: string;
         paymentStatus: string;
       }>
-    >`SELECT id, status, "paymentStatus" FROM "Order" WHERE id = ${order.id} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, status, "paymentStatus" FROM "order" WHERE id = ${order.id} AND "deletedAt" IS NULL FOR UPDATE`;
     const lockedOrder = lockedRows[0];
     if (!lockedOrder) throw new AppError("Order not found", 404);
     if (lockedOrder.status === "CANCELLED" || lockedOrder.status === "REFUNDED") {
@@ -238,7 +261,7 @@ export const collectCodPayment = async (paymentId: string, actorId: string) => {
         status: string;
         orderId: string;
       }>
-    >`SELECT id, method, status, "orderId" FROM "Payment" WHERE id = ${paymentId} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, method, status, "orderId" FROM "payment" WHERE id = ${paymentId} AND "deletedAt" IS NULL FOR UPDATE`;
     const payment = lockedPayments[0];
 
     if (!payment) throw new AppError("Payment not found", 404);
@@ -254,7 +277,7 @@ export const collectCodPayment = async (paymentId: string, actorId: string) => {
         status: string;
         paymentStatus: string;
       }>
-    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "Order" WHERE id = ${payment.orderId} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, "orderNumber", status, "paymentStatus" FROM "order" WHERE id = ${payment.orderId} AND "deletedAt" IS NULL FOR UPDATE`;
     const order = lockedOrders[0];
 
     if (!order) throw new AppError("Order not found", 404);
@@ -309,7 +332,7 @@ export const collectCodPayment = async (paymentId: string, actorId: string) => {
   });
   if (profile) {
     await enqueuePaymentConfirmation(profile.userId, {
-      customerName: profile.user.name,
+      customerName: escapeHtml(profile.user.name),
       orderNumber: updated.order.orderNumber,
       amount: Number(updated.amount).toFixed(2),
       currency: updated.currency,
@@ -330,33 +353,32 @@ export const createRefund = async (
       Array<{
         id: string;
         status: string;
+        method: string;
         amount: { toNumber?: () => number } | number | string;
       }>
-    >`SELECT id, status, amount FROM "Payment" WHERE id = ${paymentId} AND "deletedAt" IS NULL FOR UPDATE`;
+    >`SELECT id, status, method, amount FROM "payment" WHERE id = ${paymentId} AND "deletedAt" IS NULL FOR UPDATE`;
     const payment = lockedPayments[0];
 
     if (!payment) throw new AppError("Payment not found", 404);
 
-    if (
-      payment.status === "PENDING" ||
-      payment.status === "INITIATED" ||
-      payment.status === "FAILED" ||
-      payment.status === "CANCELLED"
-    ) {
+    if (!isRefundablePaymentStatus(payment.status)) {
       throw new AppError("Payment is not in a refundable state", 400);
     }
 
     const refundAgg = await tx.refund.aggregate({
-      where: { paymentId: payment.id },
+      where: { paymentId: payment.id, status: { not: "REJECTED" } },
       _sum: { amount: true },
     });
     const refundedTotal = Number(refundAgg._sum.amount ?? 0);
 
-    if (refundedTotal + input.amount > Number(payment.amount)) {
-      throw new AppError(
-        "Refund amount exceeds the payment amount",
-        400
-      );
+    if (
+      exceedsRefundableAmount(
+        Number(payment.amount),
+        refundedTotal,
+        input.amount,
+      )
+    ) {
+      throw new AppError("Refund amount exceeds the payment amount", 400);
     }
 
     const refund = await tx.refund.create({
@@ -365,6 +387,8 @@ export const createRefund = async (
         amount: input.amount,
         reason: input.reason ?? null,
         status: "PENDING",
+        requiresManualProcessing: payment.method === "SSLCOMMERZ",
+        requestedBy: actorId,
       },
     });
 
@@ -382,6 +406,112 @@ export const createRefund = async (
 
     return refund;
   });
+};
+
+export const updateRefundStatus = async (
+  refundId: string,
+  input: RefundStatusUpdateInput,
+  actorId: string,
+) => {
+  const result = await transaction(async (tx) => {
+    const lockedRefunds = await tx.$queryRaw<
+      Array<{
+        id: string;
+        paymentId: string;
+        status: string;
+        amount: unknown;
+        requestedBy: string | null;
+      }>
+    >`SELECT id, "paymentId", status, amount, "requestedBy" FROM "refund" WHERE id = ${refundId} FOR UPDATE`;
+    const refund = lockedRefunds[0];
+    if (!refund) throw new AppError("Refund not found", 404);
+
+    assertRefundTransition(
+      refund.status as RefundStatus,
+      input.status,
+    );
+
+    // Refunds use a maker-checker flow: whoever requests a refund must not be
+    // the one who approves or rejects it. Completion is a separate step and
+    // may be performed by the approver.
+    const isApprovalStep =
+      input.status === "APPROVED" || input.status === "REJECTED";
+    if (isApprovalStep && refund.requestedBy === actorId) {
+      throw new AppError(
+        "A refund cannot be approved or rejected by the person who requested it",
+        409,
+        "REFUND_MAKER_CHECKER",
+      );
+    }
+
+    const updated = await tx.refund.update({
+      where: { id: refund.id },
+      data: {
+        status: input.status,
+        ...(isApprovalStep ? { approvedBy: actorId } : {}),
+        ...(input.status === "COMPLETED"
+          ? {
+              refundedAt: new Date(),
+              requiresManualProcessing: false,
+              completedBy: actorId,
+            }
+          : {}),
+        ...(input.providerReference
+          ? { providerReference: input.providerReference }
+          : {}),
+      },
+    });
+
+    const lockedPayments = await tx.$queryRaw<
+      Array<{ id: string; amount: unknown; orderId: string }>
+    >`SELECT id, amount, "orderId" FROM "payment" WHERE id = ${refund.paymentId} FOR UPDATE`;
+    const payment = lockedPayments[0];
+    if (!payment) throw new AppError("Payment not found", 404);
+
+    if (input.status === "COMPLETED") {
+      const completedAgg = await tx.refund.aggregate({
+        where: { paymentId: payment.id, status: "COMPLETED" },
+        _sum: { amount: true },
+      });
+      const completedTotal = Number(completedAgg._sum.amount ?? 0);
+      const nextPaymentStatus =
+        resolvePaymentRefundStatus(Number(payment.amount), completedTotal) ??
+        "PARTIALLY_REFUNDED";
+
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: { status: nextPaymentStatus },
+      });
+
+      if (nextPaymentStatus === "REFUNDED") {
+        await tx.order.update({
+          where: { id: payment.orderId },
+          data: { paymentStatus: "REFUNDED" },
+        });
+      }
+
+      await tx.paymentEvent.create({
+        data: {
+          paymentId: payment.id,
+          eventType: "REFUND_COMPLETED",
+          metadata: {
+            refundId: refund.id,
+            amount: Number(refund.amount),
+            completedBy: actorId,
+            providerReference: input.providerReference ?? null,
+          },
+        },
+      });
+    }
+
+    return { refund: updated, orderId: payment.orderId };
+  });
+
+  if (input.status === "COMPLETED") {
+    await notifyOrderStatusChange(result.orderId, "REFUNDED");
+  }
+
+  return result.refund;
 };
 
 const adminPaymentListSelect = {
@@ -491,4 +621,108 @@ export const getPayment = async (paymentId: string) => {
   if (!payment) throw new AppError("Payment not found", 404);
 
   return payment;
+};
+
+const adminRefundListSelect = {
+  id: true,
+  amount: true,
+  reason: true,
+  status: true,
+  providerReference: true,
+  refundedAt: true,
+  requiresManualProcessing: true,
+  createdAt: true,
+  updatedAt: true,
+  payment: {
+    select: {
+      id: true,
+      method: true,
+      status: true,
+      amount: true,
+      currency: true,
+      providerReference: true,
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          paymentStatus: true,
+          customerProfile: {
+            select: {
+              id: true,
+              customerCode: true,
+              user: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
+export const listRefunds = async (query: ListRefundsQuery) => {
+  const where: Prisma.RefundWhereInput = {
+    payment: {
+      deletedAt: null,
+      ...(query.method ? { method: query.method } : {}),
+    },
+  };
+
+  if (query.status) where.status = query.status;
+  if (query.search) {
+    const search = query.search;
+    where.OR = [
+      { id: search },
+      {
+        payment: {
+          order: {
+            orderNumber: { contains: search, mode: "insensitive" },
+          },
+        },
+      },
+      {
+        payment: {
+          order: {
+            customerProfile: {
+              user: { email: { contains: search, mode: "insensitive" } },
+            },
+          },
+        },
+      },
+      {
+        payment: {
+          order: {
+            customerProfile: {
+              user: { name: { contains: search, mode: "insensitive" } },
+            },
+          },
+        },
+      },
+    ];
+  }
+  if (query.requiresManualProcessing !== undefined) {
+    where.requiresManualProcessing = query.requiresManualProcessing;
+  }
+  if (query.from || query.to) {
+    where.createdAt = {
+      ...(query.from && { gte: new Date(query.from) }),
+      ...(query.to && { lte: new Date(query.to) }),
+    };
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.refund.findMany({
+      where,
+      select: adminRefundListSelect,
+      orderBy: { createdAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    }),
+    prisma.refund.count({ where }),
+  ]);
+
+  return {
+    items,
+    pagination: paginate(query.page, query.limit, total),
+  };
 };

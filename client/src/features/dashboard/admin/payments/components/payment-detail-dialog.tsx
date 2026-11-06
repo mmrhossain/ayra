@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { money } from "@/features/dashboard/admin/orders/api/orders";
 import { CollectCodDialog } from "@/features/dashboard/admin/payments/components/collect-cod-dialog";
 import { RefundDialog } from "@/features/dashboard/admin/payments/components/refund-dialog";
-import { usePaymentDetailQuery } from "@/features/dashboard/admin/payments/hooks/use-payment-mutations";
+import { usePaymentDetailQuery, useUpdateRefundStatusMutation } from "@/features/dashboard/admin/payments/hooks/use-payment-mutations";
 import type { PaymentDetailDialogProps } from "@/features/dashboard/admin/payments/types";
 import {
   isCodCollectable,
@@ -40,10 +40,20 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
   const [refundOpen, setRefundOpen] = useState(false);
 
   const query = usePaymentDetailQuery({ open, payment });
+  const refundStatus = useUpdateRefundStatusMutation();
 
   const detail = query.data;
   const collectable = detail ? isCodCollectable(detail) : false;
-  const refundable = detail ? isRefundable(detail) : false;
+  const refundedAmount = (detail?.refunds ?? [])
+    .filter((refund) => refund.status !== "REJECTED")
+    .reduce((sum, refund) => sum + Number(refund.amount), 0);
+  const remainingRefundable = detail
+    ? Math.max(0, Number(detail.amount) - refundedAmount)
+    : 0;
+  const refundable =
+    detail !== undefined &&
+    isRefundable(detail) &&
+    remainingRefundable > 0;
 
   return (
     <>
@@ -140,9 +150,75 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
                     <div className="space-y-2">
                       {detail.refunds!.map((refund) => (
                         <div key={refund.id} className="rounded-lg border px-3 py-2 text-sm">
-                          <p className="font-medium tabular-nums">
-                            {money(refund.amount)} · {refund.status}
-                          </p>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="font-medium tabular-nums">
+                              {money(refund.amount)} · {refund.status}
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {refund.status === "PENDING" || refund.status === "APPROVED" ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={refundStatus.isPending}
+                                  onClick={() =>
+                                    refundStatus.mutate({
+                                      refundId: refund.id,
+                                      status: "REJECTED",
+                                    })
+                                  }
+                                >
+                                  Reject
+                                </Button>
+                              ) : null}
+                              {refund.status === "PENDING" ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={refundStatus.isPending}
+                                  onClick={() =>
+                                    refundStatus.mutate({
+                                      refundId: refund.id,
+                                      status: "APPROVED",
+                                    })
+                                  }
+                                >
+                                  Approve
+                                </Button>
+                              ) : null}
+                              {refund.status === "APPROVED" ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={refundStatus.isPending}
+                                  onClick={() =>
+                                    refundStatus.mutate({
+                                      refundId: refund.id,
+                                      status: "PROCESSING",
+                                    })
+                                  }
+                                >
+                                  Processing
+                                </Button>
+                              ) : null}
+                              {refund.status === "APPROVED" || refund.status === "PROCESSING" ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={refundStatus.isPending}
+                                  onClick={() =>
+                                    refundStatus.mutate({
+                                      refundId: refund.id,
+                                      status: "COMPLETED",
+                                    })
+                                  }
+                                >
+                                  Mark completed
+                                </Button>
+                              ) : null}
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {refund.reason || "No reason"} ·{" "}
                             {new Date(refund.createdAt).toLocaleString()}
@@ -207,7 +283,12 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
         onOpenChange={setCollectOpen}
         payment={detail ?? payment}
       />
-      <RefundDialog open={refundOpen} onOpenChange={setRefundOpen} payment={detail ?? payment} />
+      <RefundDialog
+        open={refundOpen}
+        onOpenChange={setRefundOpen}
+        payment={detail ?? payment}
+        remainingAmount={remainingRefundable}
+      />
     </>
   );
 }

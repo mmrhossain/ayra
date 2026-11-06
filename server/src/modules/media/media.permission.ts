@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../common/errors/AppError.ts";
-import { prisma } from "../../lib/prisma.ts";
 import { UPLOAD_TYPE_ROLES } from "./media.constants.ts";
+import {
+  ADMIN_IMAGE_TYPE_PERMISSIONS,
+  hasAdminPermission,
+} from "../../common/utils/admin-permissions.ts";
 import type { AuthRole, ImageType } from "./media.types.ts";
 import {
   listMediaQuerySchema,
@@ -27,13 +30,23 @@ const assertUploadRole = async (req: Request, type: ImageType) => {
     throw new AppError("Forbidden: insufficient permissions", 403);
   }
 
-  if (type === "vendor_avatar" && role === "VENDOR") {
-    const profile = await prisma.vendorProfile.findUnique({
-      where: { userId },
-      select: { isApproved: true },
-    });
-    if (!profile?.isApproved) {
-      throw new AppError("Forbidden: vendor is not approved", 403);
+  if (role === "ADMIN") {
+    const required = ADMIN_IMAGE_TYPE_PERMISSIONS[type];
+    if (
+      required &&
+      !hasAdminPermission(
+        {
+          role,
+          adminPermissions: req.auth?.user.adminPermissions as unknown,
+          adminActions: req.auth?.user.adminActions as unknown,
+          isSuperAdmin: req.auth?.user.isSuperAdmin === true,
+          staffStatus: (req.auth?.user.staffStatus as string | null | undefined) ?? null,
+          banned: req.auth?.user.banned === true,
+        },
+        required,
+      )
+    ) {
+      throw new AppError("Forbidden: insufficient admin permissions", 403);
     }
   }
 };

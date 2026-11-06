@@ -8,20 +8,28 @@ import type {
   VariantOptionGroupInput,
   VariantOverrideInput,
 } from "../types/product.types.ts";
+
+type PersistVariantInput = Omit<CreateVariantInput, "sku"> & {
+  sku: string;
+  skuGenerated?: boolean;
+  skuCandidate?: string;
+};
 import {
   overrideMatchesCombination,
   validateCreateProductPayload,
   validateNoDuplicateCombinations,
 } from "../utils/product-validation.ts";
-import { ensureUniqueSku, generateSku, makeSkuSegment } from "../utils/sku-generator.ts";
+import { buildSuggestedSku, isBlankSku, type SkuAttributeInput } from "../utils/sku-generator.ts";
+import {
+  attributeValueLookup,
+  insertWithGeneratedSkuRetry,
+  prefetchTakenSkus,
+  resolveVariantSku,
+} from "../utils/unique-identity.ts";
 import {
   generateVariantCombinations,
 } from "../utils/variant-generator.ts";
-import { toVariantImageRows } from "./product-image.service.ts";
-import {
-  createVariantInventories,
-  requireWarehouse,
-} from "./product-inventory.service.ts";
+import { createVariantInventories } from "./product-inventory.service.ts";
 import {
   assertAttributeValuesBelongToAttributes,
   ensureDefaultVariant,
@@ -49,16 +57,14 @@ const applyOverride = (
   else if (spec.costPrice !== undefined) next.costPrice = spec.costPrice;
   if (match.weight !== undefined) next.weight = match.weight;
   else if (spec.weight !== undefined) next.weight = spec.weight;
-  if (match.images !== undefined) next.images = match.images;
-  else if (spec.images !== undefined) next.images = spec.images;
   return next;
 };
 
 export const buildGeneratedVariantSpecs = async (
   tx: TransactionClient,
   input: {
-    productName: string;
-    productSku?: string | null;
+    categoryName: string;
+    brandName?: string | null | undefined;
     variantOptions: VariantOptionGroupInput[];
     variantDefaults: VariantDefaultsInput;
     variantOverrides?: VariantOverrideInput[];
@@ -72,15 +78,12 @@ export const buildGeneratedVariantSpecs = async (
     input.variantOptions,
   );
 
-  const taken = new Set<string>();
-  const productSku = input.productSku || makeSkuSegment(input.productName) || "PRODUCT";
-
-  return combinations.map((combo, index) => {
+  const staged = combinations.map((combo, index) => {
     const labels = combo.attributeValueIds.map(
       (id) => valueMap.get(id)?.value ?? id,
     );
     const spec: GeneratedVariantSpec = {
-      sku: generateSku(productSku, labels),
+      sku: "",
       price: input.variantDefaults.price,
       isDefault: index === 0,
       attributeValueIds: combo.attributeValueIds,
@@ -96,52 +99,115 @@ export const buildGeneratedVariantSpecs = async (
       spec.weight = input.variantDefaults.weight;
     }
     const overridden = applyOverride(spec, input.variantOverrides ?? []);
-    return {
-      ...overridden,
-      sku: ensureUniqueSku(overridden.sku, taken),
-    };
+    const attributes = combo.attributeValueIds.flatMap((id) => {
+      const value = valueMap.get(id);
+      if (!value) return [];
+      return [
+        {
+          attributeId: value.attributeId,
+          attributeName: value.attributeName,
+          value: value.value,
+        },
+      ];
+    });
+    const explicit = isBlankSku(overridden.sku)
+      ? null
+      : (overridden.sku as string);
+    const candidate = explicit
+      ? null
+      : buildSuggestedSku({
+          brandName: input.brandName,
+          categoryName: input.categoryName,
+          attributes,
+        });
+    return { overridden, attributes, explicit, candidate };
   });
+
+  // One query for the whole batch instead of one per variant.
+  const takenSkus = await prefetchTakenSkus(tx, [
+    ...staged.map((item) => item.explicit),
+    ...staged.map((item) => item.candidate),
+  ]);
+
+  const reservedSkus: string[] = [];
+  const specs: GeneratedVariantSpec[] = [];
+  for (const item of staged) {
+    const resolved = await resolveVariantSku(tx, {
+      sku: item.explicit,
+      categoryName: input.categoryName,
+      brandName: input.brandName,
+      attributes: item.attributes,
+      reservedSkus,
+      takenSkus,
+    });
+    reservedSkus.push(resolved.sku);
+    specs.push({
+      ...item.overridden,
+      sku: resolved.sku,
+      skuGenerated: resolved.generated,
+      skuCandidate: resolved.candidate,
+    });
+  }
+  return specs;
 };
 
 export const toCreateVariantInputs = (
   specs: GeneratedVariantSpec[],
-): CreateVariantInput[] =>
+): PersistVariantInput[] =>
   specs.map((spec) => {
-    const input: CreateVariantInput = {
+    const input: PersistVariantInput = {
       sku: spec.sku,
       price: spec.price,
       isDefault: spec.isDefault,
       attributeValueIds: spec.attributeValueIds,
     };
+    if (spec.skuGenerated !== undefined) input.skuGenerated = spec.skuGenerated;
+    if (spec.skuCandidate !== undefined) input.skuCandidate = spec.skuCandidate;
     if (spec.barcode !== undefined) input.barcode = spec.barcode;
     if (spec.compareAtPrice !== undefined) input.compareAtPrice = spec.compareAtPrice;
     if (spec.costPrice !== undefined) input.costPrice = spec.costPrice;
     if (spec.weight !== undefined) input.weight = spec.weight;
-    if (spec.images !== undefined) input.images = spec.images;
     return input;
   });
 
-const defaultSimpleVariant = (
-  productName: string,
-  productSku?: string | null,
-  defaults?: VariantDefaultsInput,
-): CreateVariantInput => {
-  const sku = generateSku(productSku || productName, ["DEFAULT"]);
-  const input: CreateVariantInput = {
-    sku,
-    price: defaults?.price ?? 0.01,
+const defaultSimpleVariant = async (
+  tx: TransactionClient,
+  input: {
+    categoryName: string;
+    brandName?: string | null | undefined;
+    defaults?: VariantDefaultsInput;
+    reservedSkus?: string[];
+  },
+): Promise<PersistVariantInput> => {
+  const resolved = await resolveVariantSku(tx, {
+    categoryName: input.categoryName,
+    brandName: input.brandName,
+    reservedSkus: input.reservedSkus,
+  });
+  const variant: PersistVariantInput = {
+    sku: resolved.sku,
+    price: input.defaults?.price ?? 0.01,
     isDefault: true,
+    skuGenerated: resolved.generated,
+    skuCandidate: resolved.candidate,
   };
-  if (defaults?.compareAtPrice !== undefined) input.compareAtPrice = defaults.compareAtPrice;
-  if (defaults?.costPrice !== undefined) input.costPrice = defaults.costPrice;
-  if (defaults?.weight !== undefined) input.weight = defaults.weight;
-  return input;
+  if (input.defaults?.compareAtPrice !== undefined) {
+    variant.compareAtPrice = input.defaults.compareAtPrice;
+  }
+  if (input.defaults?.costPrice !== undefined) {
+    variant.costPrice = input.defaults.costPrice;
+  }
+  if (input.defaults?.weight !== undefined) {
+    variant.weight = input.defaults.weight;
+  }
+  return variant;
 };
 
 export const resolveCreateVariants = async (
   tx: TransactionClient,
   input: CreateProductPayload,
-): Promise<CreateVariantInput[]> => {
+  names: { categoryName: string; brandName?: string | null | undefined },
+): Promise<PersistVariantInput[]> => {
   validateCreateProductPayload(input);
 
   if (input.variantOptions?.length) {
@@ -149,8 +215,8 @@ export const resolveCreateVariants = async (
       throw new AppError("variantDefaults is required when variantOptions are provided", 400);
     }
     const specs = await buildGeneratedVariantSpecs(tx, {
-      productName: input.name,
-      productSku: input.sku ?? null,
+      categoryName: names.categoryName,
+      brandName: names.brandName,
       variantOptions: input.variantOptions,
       variantDefaults: input.variantDefaults,
       ...(input.variantOverrides !== undefined && {
@@ -161,21 +227,84 @@ export const resolveCreateVariants = async (
   }
 
   if (input.variants?.length) {
-    const taken = new Set<string>();
-    return input.variants.map((variant, index) => {
-      const sku =
-        variant.sku?.trim() ||
-        generateSku(input.sku || input.name, variant.attributeValueIds ?? []);
-      return {
-        ...variant,
-        sku: ensureUniqueSku(sku, taken),
-        isDefault: variant.isDefault ?? index === 0,
-      };
+    // Resolve attributes for every generated-SKU variant in one query so the
+    // prefetch below can cover the whole batch.
+    const generatedAttrIds = [
+      ...new Set(
+        input.variants
+          .filter((variant) => isBlankSku(variant.sku))
+          .flatMap((variant) => variant.attributeValueIds ?? []),
+      ),
+    ];
+    const attributeLookup = await attributeValueLookup(tx, generatedAttrIds);
+
+    const staged = input.variants.map((variant, index) => {
+      const explicit = isBlankSku(variant.sku)
+        ? null
+        : (variant.sku as string);
+      if (explicit) {
+        return {
+          variant,
+          index,
+          explicit,
+          attributes: [] as SkuAttributeInput[],
+          candidate: null as string | null,
+        };
+      }
+      const ids = variant.attributeValueIds ?? [];
+      const attributes = ids.map((id) => attributeLookup.get(id));
+      if (
+        new Set(ids).size !== ids.length ||
+        attributes.some((value) => !value)
+      ) {
+        throw new AppError("One or more attribute values not found", 400);
+      }
+      const resolvedAttributes = attributes as SkuAttributeInput[];
+      const candidate = buildSuggestedSku({
+        brandName: names.brandName,
+        categoryName: names.categoryName,
+        attributes: resolvedAttributes,
+      });
+      return { variant, index, explicit, attributes: resolvedAttributes, candidate };
     });
+
+    const takenSkus = await prefetchTakenSkus(tx, [
+      ...staged.map((item) => item.explicit),
+      ...staged.map((item) => item.candidate),
+    ]);
+
+    const reservedSkus: string[] = [];
+    const prepared: PersistVariantInput[] = [];
+    for (const item of staged) {
+      const resolved = await resolveVariantSku(tx, {
+        sku: item.explicit,
+        categoryName: names.categoryName,
+        brandName: names.brandName,
+        attributeValueIds: item.variant.attributeValueIds,
+        attributes: item.attributes,
+        reservedSkus,
+        takenSkus,
+      });
+      reservedSkus.push(resolved.sku);
+      prepared.push({
+        ...item.variant,
+        sku: resolved.sku,
+        isDefault: item.variant.isDefault ?? item.index === 0,
+        skuGenerated: resolved.generated,
+        skuCandidate: resolved.candidate,
+      });
+    }
+    return prepared;
   }
 
   if (input.variantDefaults) {
-    return [defaultSimpleVariant(input.name, input.sku, input.variantDefaults)];
+    return [
+      await defaultSimpleVariant(tx, {
+        categoryName: names.categoryName,
+        brandName: names.brandName,
+        defaults: input.variantDefaults,
+      }),
+    ];
   }
 
   return [];
@@ -184,12 +313,16 @@ export const resolveCreateVariants = async (
 export const persistGeneratedVariants = async (
   tx: TransactionClient,
   productId: string,
-  variants: CreateVariantInput[],
+  variants: PersistVariantInput[],
+  warehouses?: Array<{ id: string }>,
 ): Promise<void> => {
   if (!variants.length) return;
 
-  const warehouse = await requireWarehouse(tx);
-  const created = await tx.productVariant.createManyAndReturn({
+  // Insert every variant with a single statement. SKUs were already
+  // de-duplicated against the database before the transaction, so conflicts are
+  // rare; `skipDuplicates` keeps the transaction usable and lets us retry only
+  // the rows that actually collided.
+  await tx.productVariant.createMany({
     data: variants.map((variant) => ({
       sku: variant.sku,
       price: variant.price,
@@ -200,7 +333,42 @@ export const persistGeneratedVariants = async (
       costPrice: variant.costPrice ?? null,
       weight: variant.weight ?? null,
     })),
+    skipDuplicates: true,
   });
+  const created: Array<{ id: string; sku: string }> = await tx.productVariant.findMany({
+    where: { productId, deletedAt: null },
+    select: { id: true, sku: true },
+  });
+  const createdSkus = new Set(created.map((variant) => variant.sku));
+
+  for (const variant of variants) {
+    if (createdSkus.has(variant.sku)) continue;
+    const row = await insertWithGeneratedSkuRetry(
+      tx,
+      {
+        sku: variant.sku,
+        generated: Boolean(variant.skuGenerated),
+        candidate: variant.skuCandidate ?? variant.sku,
+      },
+      (sku) =>
+        tx.productVariant.create({
+          data: {
+            sku,
+            price: variant.price,
+            isDefault: variant.isDefault ?? false,
+            productId,
+            barcode: variant.barcode ?? null,
+            compareAtPrice: variant.compareAtPrice ?? null,
+            costPrice: variant.costPrice ?? null,
+            weight: variant.weight ?? null,
+          },
+        }),
+    );
+    variant.sku = row.sku;
+    created.push(row);
+    createdSkus.add(row.sku);
+  }
+
   const createdBySku = new Map(created.map((variant) => [variant.sku, variant]));
 
   const attributeRows = variants.flatMap((variant) => {
@@ -222,19 +390,10 @@ export const persistGeneratedVariants = async (
     await tx.variantAttribute.createMany({ data: attributeRows });
   }
 
-  const imageRows = variants.flatMap((variant) => {
-    const createdVariant = createdBySku.get(variant.sku);
-    if (!createdVariant || !variant.images?.length) return [];
-    return toVariantImageRows(variant.images, productId, createdVariant.id);
-  });
-  if (imageRows.length) {
-    await tx.productImage.createMany({ data: imageRows });
-  }
-
   await createVariantInventories(
     tx,
-    warehouse.id,
     created.map((variant) => variant.id),
+    warehouses,
   );
 
   const preferredDefault =
@@ -248,11 +407,10 @@ export const persistGeneratedVariants = async (
 export const createSimpleDefaultVariant = async (
   tx: TransactionClient,
   productId: string,
-  productName: string,
-  productSku?: string | null,
+  names: { categoryName: string; brandName?: string | null | undefined },
 ): Promise<void> => {
   await persistGeneratedVariants(tx, productId, [
-    defaultSimpleVariant(productName, productSku),
+    await defaultSimpleVariant(tx, names),
   ]);
 };
 

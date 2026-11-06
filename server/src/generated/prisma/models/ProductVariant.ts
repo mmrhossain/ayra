@@ -290,7 +290,6 @@ export type ProductVariantWhereInput = {
   wishlistItems?: Prisma.WishlistItemListRelationFilter
   stockReservations?: Prisma.StockReservationListRelationFilter
   transferItems?: Prisma.InventoryTransferItemListRelationFilter
-  images?: Prisma.ProductImageListRelationFilter
   cartItems?: Prisma.CartItemListRelationFilter
   inventoryTransactions?: Prisma.InventoryTransactionListRelationFilter
   inventoryAdjustments?: Prisma.InventoryAdjustmentListRelationFilter
@@ -317,7 +316,6 @@ export type ProductVariantOrderByWithRelationInput = {
   wishlistItems?: Prisma.WishlistItemOrderByRelationAggregateInput
   stockReservations?: Prisma.StockReservationOrderByRelationAggregateInput
   transferItems?: Prisma.InventoryTransferItemOrderByRelationAggregateInput
-  images?: Prisma.ProductImageOrderByRelationAggregateInput
   cartItems?: Prisma.CartItemOrderByRelationAggregateInput
   inventoryTransactions?: Prisma.InventoryTransactionOrderByRelationAggregateInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentOrderByRelationAggregateInput
@@ -327,10 +325,10 @@ export type ProductVariantOrderByWithRelationInput = {
 
 export type ProductVariantWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  sku?: string
   AND?: Prisma.ProductVariantWhereInput | Prisma.ProductVariantWhereInput[]
   OR?: Prisma.ProductVariantWhereInput[]
   NOT?: Prisma.ProductVariantWhereInput | Prisma.ProductVariantWhereInput[]
+  sku?: Prisma.StringFilter<"ProductVariant"> | string
   barcode?: Prisma.StringNullableFilter<"ProductVariant"> | string | null
   price?: Prisma.DecimalFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   compareAtPrice?: Prisma.DecimalNullableFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -347,13 +345,12 @@ export type ProductVariantWhereUniqueInput = Prisma.AtLeast<{
   wishlistItems?: Prisma.WishlistItemListRelationFilter
   stockReservations?: Prisma.StockReservationListRelationFilter
   transferItems?: Prisma.InventoryTransferItemListRelationFilter
-  images?: Prisma.ProductImageListRelationFilter
   cartItems?: Prisma.CartItemListRelationFilter
   inventoryTransactions?: Prisma.InventoryTransactionListRelationFilter
   inventoryAdjustments?: Prisma.InventoryAdjustmentListRelationFilter
   inventoryEvents?: Prisma.InventoryEventListRelationFilter
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-}, "id" | "sku">
+}, "id">
 
 export type ProductVariantOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -411,7 +408,6 @@ export type ProductVariantCreateInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -438,7 +434,6 @@ export type ProductVariantUncheckedCreateInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -463,7 +458,6 @@ export type ProductVariantUpdateInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -490,7 +484,6 @@ export type ProductVariantUncheckedUpdateInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -692,22 +685,6 @@ export type ProductVariantUpdateOneRequiredWithoutAttributesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductVariantUpdateToOneWithWhereWithoutAttributesInput, Prisma.ProductVariantUpdateWithoutAttributesInput>, Prisma.ProductVariantUncheckedUpdateWithoutAttributesInput>
 }
 
-export type ProductVariantCreateNestedOneWithoutImagesInput = {
-  create?: Prisma.XOR<Prisma.ProductVariantCreateWithoutImagesInput, Prisma.ProductVariantUncheckedCreateWithoutImagesInput>
-  connectOrCreate?: Prisma.ProductVariantCreateOrConnectWithoutImagesInput
-  connect?: Prisma.ProductVariantWhereUniqueInput
-}
-
-export type ProductVariantUpdateOneWithoutImagesNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductVariantCreateWithoutImagesInput, Prisma.ProductVariantUncheckedCreateWithoutImagesInput>
-  connectOrCreate?: Prisma.ProductVariantCreateOrConnectWithoutImagesInput
-  upsert?: Prisma.ProductVariantUpsertWithoutImagesInput
-  disconnect?: Prisma.ProductVariantWhereInput | boolean
-  delete?: Prisma.ProductVariantWhereInput | boolean
-  connect?: Prisma.ProductVariantWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductVariantUpdateToOneWithWhereWithoutImagesInput, Prisma.ProductVariantUpdateWithoutImagesInput>, Prisma.ProductVariantUncheckedUpdateWithoutImagesInput>
-}
-
 export type ProductVariantCreateNestedOneWithoutWishlistItemsInput = {
   create?: Prisma.XOR<Prisma.ProductVariantCreateWithoutWishlistItemsInput, Prisma.ProductVariantUncheckedCreateWithoutWishlistItemsInput>
   connectOrCreate?: Prisma.ProductVariantCreateOrConnectWithoutWishlistItemsInput
@@ -854,7 +831,6 @@ export type ProductVariantCreateWithoutProductInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -879,7 +855,6 @@ export type ProductVariantUncheckedCreateWithoutProductInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -947,7 +922,6 @@ export type ProductVariantCreateWithoutAttributesInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -973,7 +947,6 @@ export type ProductVariantUncheckedCreateWithoutAttributesInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -1013,7 +986,6 @@ export type ProductVariantUpdateWithoutAttributesInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -1034,123 +1006,6 @@ export type ProductVariantUncheckedUpdateWithoutAttributesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  inventories?: Prisma.InventoryUncheckedUpdateManyWithoutVariantNestedInput
-  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
-  wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
-  stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
-  transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
-  cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
-  inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
-  inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
-  inventoryEvents?: Prisma.InventoryEventUncheckedUpdateManyWithoutVariantNestedInput
-}
-
-export type ProductVariantCreateWithoutImagesInput = {
-  id?: string
-  sku: string
-  barcode?: string | null
-  price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  compareAtPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  isDefault?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  attributes?: Prisma.VariantAttributeCreateNestedManyWithoutVariantInput
-  inventories?: Prisma.InventoryCreateNestedManyWithoutVariantInput
-  orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
-  wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
-  stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
-  transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
-  inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
-  inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
-  inventoryEvents?: Prisma.InventoryEventCreateNestedManyWithoutVariantInput
-  product: Prisma.ProductCreateNestedOneWithoutVariantsInput
-}
-
-export type ProductVariantUncheckedCreateWithoutImagesInput = {
-  id?: string
-  sku: string
-  barcode?: string | null
-  price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  compareAtPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  isDefault?: boolean
-  productId: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  attributes?: Prisma.VariantAttributeUncheckedCreateNestedManyWithoutVariantInput
-  inventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutVariantInput
-  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
-  wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
-  stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
-  transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
-  inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
-  inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
-  inventoryEvents?: Prisma.InventoryEventUncheckedCreateNestedManyWithoutVariantInput
-}
-
-export type ProductVariantCreateOrConnectWithoutImagesInput = {
-  where: Prisma.ProductVariantWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProductVariantCreateWithoutImagesInput, Prisma.ProductVariantUncheckedCreateWithoutImagesInput>
-}
-
-export type ProductVariantUpsertWithoutImagesInput = {
-  update: Prisma.XOR<Prisma.ProductVariantUpdateWithoutImagesInput, Prisma.ProductVariantUncheckedUpdateWithoutImagesInput>
-  create: Prisma.XOR<Prisma.ProductVariantCreateWithoutImagesInput, Prisma.ProductVariantUncheckedCreateWithoutImagesInput>
-  where?: Prisma.ProductVariantWhereInput
-}
-
-export type ProductVariantUpdateToOneWithWhereWithoutImagesInput = {
-  where?: Prisma.ProductVariantWhereInput
-  data: Prisma.XOR<Prisma.ProductVariantUpdateWithoutImagesInput, Prisma.ProductVariantUncheckedUpdateWithoutImagesInput>
-}
-
-export type ProductVariantUpdateWithoutImagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.StringFieldUpdateOperationsInput | string
-  barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  compareAtPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  attributes?: Prisma.VariantAttributeUpdateManyWithoutVariantNestedInput
-  inventories?: Prisma.InventoryUpdateManyWithoutVariantNestedInput
-  orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
-  wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
-  stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
-  transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
-  inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
-  inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
-  inventoryEvents?: Prisma.InventoryEventUpdateManyWithoutVariantNestedInput
-  product?: Prisma.ProductUpdateOneRequiredWithoutVariantsNestedInput
-}
-
-export type ProductVariantUncheckedUpdateWithoutImagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.StringFieldUpdateOperationsInput | string
-  barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  compareAtPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  attributes?: Prisma.VariantAttributeUncheckedUpdateManyWithoutVariantNestedInput
   inventories?: Prisma.InventoryUncheckedUpdateManyWithoutVariantNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -1179,7 +1034,6 @@ export type ProductVariantCreateWithoutWishlistItemsInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -1205,7 +1059,6 @@ export type ProductVariantUncheckedCreateWithoutWishlistItemsInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -1245,7 +1098,6 @@ export type ProductVariantUpdateWithoutWishlistItemsInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -1271,7 +1123,6 @@ export type ProductVariantUncheckedUpdateWithoutWishlistItemsInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -1296,7 +1147,6 @@ export type ProductVariantCreateWithoutCartItemsInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventCreateNestedManyWithoutVariantInput
@@ -1322,7 +1172,6 @@ export type ProductVariantUncheckedCreateWithoutCartItemsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventUncheckedCreateNestedManyWithoutVariantInput
@@ -1362,7 +1211,6 @@ export type ProductVariantUpdateWithoutCartItemsInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUpdateManyWithoutVariantNestedInput
@@ -1388,7 +1236,6 @@ export type ProductVariantUncheckedUpdateWithoutCartItemsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUncheckedUpdateManyWithoutVariantNestedInput
@@ -1411,7 +1258,6 @@ export type ProductVariantCreateWithoutOrderItemsInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -1437,7 +1283,6 @@ export type ProductVariantUncheckedCreateWithoutOrderItemsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -1477,7 +1322,6 @@ export type ProductVariantUpdateWithoutOrderItemsInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -1503,7 +1347,6 @@ export type ProductVariantUncheckedUpdateWithoutOrderItemsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -1527,7 +1370,6 @@ export type ProductVariantCreateWithoutInventoriesInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -1553,7 +1395,6 @@ export type ProductVariantUncheckedCreateWithoutInventoriesInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -1593,7 +1434,6 @@ export type ProductVariantUpdateWithoutInventoriesInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -1619,7 +1459,6 @@ export type ProductVariantUncheckedUpdateWithoutInventoriesInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -1643,7 +1482,6 @@ export type ProductVariantCreateWithoutStockReservationsInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -1669,7 +1507,6 @@ export type ProductVariantUncheckedCreateWithoutStockReservationsInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -1709,7 +1546,6 @@ export type ProductVariantUpdateWithoutStockReservationsInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -1735,7 +1571,6 @@ export type ProductVariantUncheckedUpdateWithoutStockReservationsInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -1760,7 +1595,6 @@ export type ProductVariantCreateWithoutInventoryTransactionsInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventCreateNestedManyWithoutVariantInput
@@ -1786,7 +1620,6 @@ export type ProductVariantUncheckedCreateWithoutInventoryTransactionsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventUncheckedCreateNestedManyWithoutVariantInput
@@ -1826,7 +1659,6 @@ export type ProductVariantUpdateWithoutInventoryTransactionsInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUpdateManyWithoutVariantNestedInput
@@ -1852,7 +1684,6 @@ export type ProductVariantUncheckedUpdateWithoutInventoryTransactionsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUncheckedUpdateManyWithoutVariantNestedInput
@@ -1876,7 +1707,6 @@ export type ProductVariantCreateWithoutInventoryAdjustmentsInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventCreateNestedManyWithoutVariantInput
@@ -1902,7 +1732,6 @@ export type ProductVariantUncheckedCreateWithoutInventoryAdjustmentsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryEvents?: Prisma.InventoryEventUncheckedCreateNestedManyWithoutVariantInput
@@ -1942,7 +1771,6 @@ export type ProductVariantUpdateWithoutInventoryAdjustmentsInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUpdateManyWithoutVariantNestedInput
@@ -1968,7 +1796,6 @@ export type ProductVariantUncheckedUpdateWithoutInventoryAdjustmentsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryEvents?: Prisma.InventoryEventUncheckedUpdateManyWithoutVariantNestedInput
@@ -1991,7 +1818,6 @@ export type ProductVariantCreateWithoutTransferItemsInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -2017,7 +1843,6 @@ export type ProductVariantUncheckedCreateWithoutTransferItemsInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -2057,7 +1882,6 @@ export type ProductVariantUpdateWithoutTransferItemsInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -2083,7 +1907,6 @@ export type ProductVariantUncheckedUpdateWithoutTransferItemsInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -2108,7 +1931,6 @@ export type ProductVariantCreateWithoutInventoryEventsInput = {
   wishlistItems?: Prisma.WishlistItemCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentCreateNestedManyWithoutVariantInput
@@ -2134,7 +1956,6 @@ export type ProductVariantUncheckedCreateWithoutInventoryEventsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutVariantInput
   stockReservations?: Prisma.StockReservationUncheckedCreateNestedManyWithoutVariantInput
   transferItems?: Prisma.InventoryTransferItemUncheckedCreateNestedManyWithoutVariantInput
-  images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutVariantInput
   cartItems?: Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutVariantInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedCreateNestedManyWithoutVariantInput
@@ -2174,7 +1995,6 @@ export type ProductVariantUpdateWithoutInventoryEventsInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -2200,7 +2020,6 @@ export type ProductVariantUncheckedUpdateWithoutInventoryEventsInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -2238,7 +2057,6 @@ export type ProductVariantUpdateWithoutProductInput = {
   wishlistItems?: Prisma.WishlistItemUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUpdateManyWithoutVariantNestedInput
@@ -2263,7 +2081,6 @@ export type ProductVariantUncheckedUpdateWithoutProductInput = {
   wishlistItems?: Prisma.WishlistItemUncheckedUpdateManyWithoutVariantNestedInput
   stockReservations?: Prisma.StockReservationUncheckedUpdateManyWithoutVariantNestedInput
   transferItems?: Prisma.InventoryTransferItemUncheckedUpdateManyWithoutVariantNestedInput
-  images?: Prisma.ProductImageUncheckedUpdateManyWithoutVariantNestedInput
   cartItems?: Prisma.CartItemUncheckedUpdateManyWithoutVariantNestedInput
   inventoryTransactions?: Prisma.InventoryTransactionUncheckedUpdateManyWithoutVariantNestedInput
   inventoryAdjustments?: Prisma.InventoryAdjustmentUncheckedUpdateManyWithoutVariantNestedInput
@@ -2296,7 +2113,6 @@ export type ProductVariantCountOutputType = {
   wishlistItems: number
   stockReservations: number
   transferItems: number
-  images: number
   cartItems: number
   inventoryTransactions: number
   inventoryAdjustments: number
@@ -2310,7 +2126,6 @@ export type ProductVariantCountOutputTypeSelect<ExtArgs extends runtime.Types.Ex
   wishlistItems?: boolean | ProductVariantCountOutputTypeCountWishlistItemsArgs
   stockReservations?: boolean | ProductVariantCountOutputTypeCountStockReservationsArgs
   transferItems?: boolean | ProductVariantCountOutputTypeCountTransferItemsArgs
-  images?: boolean | ProductVariantCountOutputTypeCountImagesArgs
   cartItems?: boolean | ProductVariantCountOutputTypeCountCartItemsArgs
   inventoryTransactions?: boolean | ProductVariantCountOutputTypeCountInventoryTransactionsArgs
   inventoryAdjustments?: boolean | ProductVariantCountOutputTypeCountInventoryAdjustmentsArgs
@@ -2372,13 +2187,6 @@ export type ProductVariantCountOutputTypeCountTransferItemsArgs<ExtArgs extends 
 /**
  * ProductVariantCountOutputType without action
  */
-export type ProductVariantCountOutputTypeCountImagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProductImageWhereInput
-}
-
-/**
- * ProductVariantCountOutputType without action
- */
 export type ProductVariantCountOutputTypeCountCartItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CartItemWhereInput
 }
@@ -2424,7 +2232,6 @@ export type ProductVariantSelect<ExtArgs extends runtime.Types.Extensions.Intern
   wishlistItems?: boolean | Prisma.ProductVariant$wishlistItemsArgs<ExtArgs>
   stockReservations?: boolean | Prisma.ProductVariant$stockReservationsArgs<ExtArgs>
   transferItems?: boolean | Prisma.ProductVariant$transferItemsArgs<ExtArgs>
-  images?: boolean | Prisma.ProductVariant$imagesArgs<ExtArgs>
   cartItems?: boolean | Prisma.ProductVariant$cartItemsArgs<ExtArgs>
   inventoryTransactions?: boolean | Prisma.ProductVariant$inventoryTransactionsArgs<ExtArgs>
   inventoryAdjustments?: boolean | Prisma.ProductVariant$inventoryAdjustmentsArgs<ExtArgs>
@@ -2488,7 +2295,6 @@ export type ProductVariantInclude<ExtArgs extends runtime.Types.Extensions.Inter
   wishlistItems?: boolean | Prisma.ProductVariant$wishlistItemsArgs<ExtArgs>
   stockReservations?: boolean | Prisma.ProductVariant$stockReservationsArgs<ExtArgs>
   transferItems?: boolean | Prisma.ProductVariant$transferItemsArgs<ExtArgs>
-  images?: boolean | Prisma.ProductVariant$imagesArgs<ExtArgs>
   cartItems?: boolean | Prisma.ProductVariant$cartItemsArgs<ExtArgs>
   inventoryTransactions?: boolean | Prisma.ProductVariant$inventoryTransactionsArgs<ExtArgs>
   inventoryAdjustments?: boolean | Prisma.ProductVariant$inventoryAdjustmentsArgs<ExtArgs>
@@ -2512,7 +2318,6 @@ export type $ProductVariantPayload<ExtArgs extends runtime.Types.Extensions.Inte
     wishlistItems: Prisma.$WishlistItemPayload<ExtArgs>[]
     stockReservations: Prisma.$StockReservationPayload<ExtArgs>[]
     transferItems: Prisma.$InventoryTransferItemPayload<ExtArgs>[]
-    images: Prisma.$ProductImagePayload<ExtArgs>[]
     cartItems: Prisma.$CartItemPayload<ExtArgs>[]
     inventoryTransactions: Prisma.$InventoryTransactionPayload<ExtArgs>[]
     inventoryAdjustments: Prisma.$InventoryAdjustmentPayload<ExtArgs>[]
@@ -2932,7 +2737,6 @@ export interface Prisma__ProductVariantClient<T, Null = never, ExtArgs extends r
   wishlistItems<T extends Prisma.ProductVariant$wishlistItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$wishlistItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WishlistItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stockReservations<T extends Prisma.ProductVariant$stockReservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$stockReservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StockReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   transferItems<T extends Prisma.ProductVariant$transferItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$transferItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryTransferItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  images<T extends Prisma.ProductVariant$imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cartItems<T extends Prisma.ProductVariant$cartItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$cartItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CartItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventoryTransactions<T extends Prisma.ProductVariant$inventoryTransactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$inventoryTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventoryAdjustments<T extends Prisma.ProductVariant$inventoryAdjustmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductVariant$inventoryAdjustmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryAdjustmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3521,30 +3325,6 @@ export type ProductVariant$transferItemsArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.InventoryTransferItemScalarFieldEnum | Prisma.InventoryTransferItemScalarFieldEnum[]
-}
-
-/**
- * ProductVariant.images
- */
-export type ProductVariant$imagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ProductImage
-   */
-  select?: Prisma.ProductImageSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ProductImage
-   */
-  omit?: Prisma.ProductImageOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProductImageInclude<ExtArgs> | null
-  where?: Prisma.ProductImageWhereInput
-  orderBy?: Prisma.ProductImageOrderByWithRelationInput | Prisma.ProductImageOrderByWithRelationInput[]
-  cursor?: Prisma.ProductImageWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ProductImageScalarFieldEnum | Prisma.ProductImageScalarFieldEnum[]
 }
 
 /**

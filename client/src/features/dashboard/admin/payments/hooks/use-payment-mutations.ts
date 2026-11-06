@@ -7,7 +7,9 @@ import {
   collectCodPayment,
   fetchPaymentById,
   refundPayment,
+  updateRefundStatus,
 } from "@/features/dashboard/admin/payments/api/payments";
+import type { RefundStatusUpdate } from "@/features/dashboard/admin/payments/api/payments";
 import type { RefundFormValues } from "@/features/dashboard/admin/payments/schemas";
 import type { PaymentRecord } from "@/features/dashboard/admin/payments/types";
 import { toPaymentErrorMessage } from "@/features/dashboard/admin/payments/utils";
@@ -75,6 +77,26 @@ export function useRefundMutation({
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       toast.success("Refund created");
       onSuccess();
+    },
+    onError: (err) => {
+      toast.error(toPaymentErrorMessage(err));
+    },
+  });
+}
+
+export function useUpdateRefundStatusMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { refundId: string } & RefundStatusUpdate) => {
+      const { refundId, ...body } = input;
+      return updateRefundStatus(refundId, body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["refunds"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Refund updated");
     },
     onError: (err) => {
       toast.error(toPaymentErrorMessage(err));

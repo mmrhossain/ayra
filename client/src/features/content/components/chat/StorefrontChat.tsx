@@ -74,7 +74,7 @@ export default function StorefrontChat() {
 
   return (
     <div
-      className={`fixed right-4 z-[9999] md:right-6 bottom-[calc(9.5rem+env(safe-area-inset-bottom,0px))] md:bottom-24 transition-all duration-500 ${
+      className={`fixed right-4 z-[9999] md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_5rem)] lg:bottom-24 transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
       }`}
     >
@@ -116,7 +116,7 @@ export default function StorefrontChat() {
                       : "bg-white text-slate-800 shadow-sm"
                   }`}
                 >
-                  <p>{message.text}</p>
+                  <p className="whitespace-pre-wrap">{message.text}</p>
                   {message.loginCta ? (
                     <Link
                       href={loginHref}

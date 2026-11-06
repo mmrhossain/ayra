@@ -3,12 +3,16 @@ import type {
   CustomerProfile,
   CustomerProfileUpdate,
   Envelope,
+  NotificationPreferences,
+  NotificationPreferencesUpdate,
 } from "@/features/dashboard/customer/account/types";
 
 export type {
   CustomerProfile,
   CustomerProfileUpdate,
   CustomerGender,
+  NotificationPreferences,
+  NotificationPreferencesUpdate,
 } from "@/features/dashboard/customer/account/types";
 
 export { toProfileError } from "@/features/dashboard/customer/account/utils";
@@ -34,3 +38,21 @@ export async function saveCustomerProfile(
 }
 
 export const updateCustomerProfile = saveCustomerProfile;
+
+export async function fetchNotificationPreferences(): Promise<NotificationPreferences> {
+  const res = await dashboardApi.get<Envelope<NotificationPreferences>>(
+    "/customer/notification-preferences",
+    noStore,
+  );
+  return res.data;
+}
+
+export async function saveNotificationPreferences(
+  body: NotificationPreferencesUpdate,
+): Promise<NotificationPreferences> {
+  const res = await dashboardApi.patch<Envelope<NotificationPreferences>>(
+    "/customer/notification-preferences",
+    { body },
+  );
+  return res.data;
+}

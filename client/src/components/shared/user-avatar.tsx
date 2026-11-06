@@ -39,7 +39,7 @@ export function UserAvatar({
   return (
     <div
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 select-none aspect-square h-10 w-10",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 select-none aspect-square h-9 w-9",
         className
       )}
     >
@@ -48,6 +48,7 @@ export function UserAvatar({
           src={src as string}
           alt={name || "User avatar"}
           fill
+          loading="eager"
           sizes="(max-width: 768px) 40px, 80px"
           onError={() => setImageError(true)}
           className="object-cover"

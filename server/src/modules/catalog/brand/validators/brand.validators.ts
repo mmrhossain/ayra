@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuerySchema } from "../../../../common/validators/pagination.ts";
 import { slugSchema } from "../../../../common/validators/slug.ts";
 import {
   nullableCloudinaryImageUrlSchema,
@@ -8,6 +9,14 @@ import {
 } from "../../../media/media.validators.ts";
 
 export { slugSchema };
+
+export const listAdminBrandsQuerySchema = paginationQuerySchema.extend({
+  search: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
+});
 
 export const createBrandSchema = z.object({
   name: z.string().min(1),

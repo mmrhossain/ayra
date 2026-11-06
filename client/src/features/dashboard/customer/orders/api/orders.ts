@@ -2,9 +2,11 @@ import { dashboardApi } from "@/lib/api/dashboard";
 import type {
   CreateReturnRequestBody,
   CustomerOrder,
+  CustomerOrderListItem,
   CustomerOrderListResult,
   CustomerReturnRequest,
   Envelope,
+  OrderPagination,
 } from "@/features/dashboard/customer/orders/types";
 
 export type {
@@ -29,10 +31,17 @@ export {
 
 const noStore = { cache: "no-store" as const };
 
+type CustomerOrderListResponse = {
+  items: Array<
+    Omit<CustomerOrderListItem, "itemCount"> & { _count?: { items: number } }
+  >;
+  pagination: OrderPagination;
+};
+
 export async function fetchMyOrders(
   params: { page?: number; limit?: number } = {},
 ): Promise<CustomerOrderListResult> {
-  const res = await dashboardApi.get<Envelope<CustomerOrderListResult>>(
+  const res = await dashboardApi.get<Envelope<CustomerOrderListResponse>>(
     "/orders",
     {
       ...noStore,
@@ -42,7 +51,13 @@ export async function fetchMyOrders(
       },
     },
   );
-  return res.data;
+  return {
+    items: res.data.items.map(({ _count, ...order }) => ({
+      ...order,
+      itemCount: _count?.items ?? 0,
+    })),
+    pagination: res.data.pagination,
+  };
 }
 
 export async function fetchMyOrder(id: string): Promise<CustomerOrder> {

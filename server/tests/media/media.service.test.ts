@@ -8,6 +8,7 @@ const mediaAsset = {
   deleteMany: vi.fn(),
   updateMany: vi.fn(),
   findMany: vi.fn(),
+  findFirst: vi.fn(),
   findUnique: vi.fn(),
   count: vi.fn(),
 };
@@ -31,11 +32,14 @@ vi.mock("../../src/common/utils/image-magic.ts", () => ({
   assertAllowedImageStream: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../../src/config/env.ts", () => ({
+  env: { MEDIA_DB_WRITE_TIMEOUT_MS: 30 },
+}));
+
 const {
   uploadSingleImage,
   uploadMultipleImages,
   deleteImage,
-  buildImageUrl,
   buildImageUrls,
   purgeExpiredMediaAssets,
   listMediaLibrary,
@@ -65,11 +69,14 @@ describe("media.service", () => {
     mediaAsset.deleteMany.mockReset();
     mediaAsset.updateMany.mockReset();
     mediaAsset.findMany.mockReset();
+    mediaAsset.findFirst.mockReset();
     mediaAsset.findUnique.mockReset();
     mediaAsset.count.mockReset();
     mediaAsset.upsert.mockResolvedValue({});
     mediaAsset.deleteMany.mockResolvedValue({ count: 0 });
     mediaAsset.updateMany.mockResolvedValue({ count: 0 });
+    mediaAsset.findMany.mockResolvedValue([]);
+    mediaAsset.findFirst.mockResolvedValue(null);
     url.mockImplementation(
       (publicId: string, options?: { transformation?: Array<{ width?: number }> }) => {
         const width = options?.transformation?.[0]?.width ?? 0;
@@ -79,7 +86,10 @@ describe("media.service", () => {
   });
 
   it("uploads a single image without eager transforms and records a pending asset", async () => {
-    uploadImageFileToCloudinary.mockResolvedValue(uploadResult("awxvgitg1do5vu2a2xtw"));
+    uploadImageFileToCloudinary.mockImplementation(
+      (_path: string, opts: { public_id?: string }) =>
+        Promise.resolve(uploadResult(opts.public_id ?? "generated"))
+    );
 
     const result = await uploadSingleImage(file, "product", "user-1");
 
@@ -87,22 +97,17 @@ describe("media.service", () => {
       file.path,
       expect.objectContaining({
         asset_folder: "ayra/products",
-        unique_filename: true,
         use_filename: false,
-        transformation: [
-          expect.objectContaining({
-            fetch_format: "auto",
-            quality: "auto",
-            flags: "strip_profile",
-          }),
-        ],
+        public_id: expect.stringMatching(/^[a-z0-9]{20}$/),
       })
     );
-    expect(result.publicId).toBe("awxvgitg1do5vu2a2xtw");
+    const publicId = result.publicId;
+    expect(publicId).toMatch(/^[a-z0-9]{20}$/);
     expect(result.variants).toHaveLength(1);
+    // The pending row uses the same id passed to Cloudinary, written in parallel.
     expect(mediaAsset.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { publicId: "awxvgitg1do5vu2a2xtw" },
+        where: { publicId },
         create: expect.objectContaining({
           status: "PENDING",
           ownerUserId: "user-1",
@@ -110,6 +115,31 @@ describe("media.service", () => {
         }),
       })
     );
+  });
+
+  it("fails fast with 503 when the DB write does not respond", async () => {
+    uploadImageFileToCloudinary.mockImplementation(
+      (_path: string, opts: { public_id?: string }) =>
+        Promise.resolve(uploadResult(opts.public_id ?? "generated"))
+    );
+    mediaAsset.upsert.mockImplementation(() => new Promise(() => {}));
+
+    await expect(
+      uploadSingleImage(file, "product", "user-1")
+    ).rejects.toMatchObject({ statusCode: 503 });
+
+    // The asset exists in Cloudinary but could not be tracked, so it is removed.
+    expect(deleteCloudinaryAsset).toHaveBeenCalledTimes(1);
+  });
+
+  it("drops the pending row when the Cloudinary upload fails", async () => {
+    uploadImageFileToCloudinary.mockRejectedValue(new Error("boom"));
+
+    await expect(
+      uploadSingleImage(file, "product", "user-1")
+    ).rejects.toMatchObject({ statusCode: 502 });
+
+    expect(mediaAsset.deleteMany).toHaveBeenCalled();
   });
 
   it("uploads multiple product images", async () => {
@@ -167,6 +197,8 @@ describe("media.service", () => {
     );
     expect(result.publicId).toBe("sliderid");
     expect(result.variants).toHaveLength(2);
+    expect(result.imageUrl).toBe(result.variants[0]);
+    expect(result.mobileImageUrl).toBe(result.variants[1]);
   });
 
   it("builds category hero desktop, hero mobile, and card on-the-fly variants", async () => {
@@ -176,6 +208,8 @@ describe("media.service", () => {
 
     expect(result.publicId).toBe("categoryid");
     expect(result.variants).toHaveLength(2);
+    expect(result.imageUrl).toBe(result.variants[0]);
+    expect(result.mobileImageUrl).toBe(result.variants[1]);
     const urls = buildImageUrls("categoryid", "category");
     expect(urls).toHaveLength(2);
   });
@@ -190,7 +224,7 @@ describe("media.service", () => {
       where: { publicId: "awxvgitg1do5vu2a2xtw" },
     });
 
-    const built = buildImageUrl("awxvgitg1do5vu2a2xtw", "product");
+    const built = buildImageUrls("awxvgitg1do5vu2a2xtw", "product")[0];
     expect(url).toHaveBeenCalled();
     expect(built).toContain("derived.webp");
   });
@@ -252,7 +286,10 @@ describe("media.service", () => {
       expect.objectContaining({
         where: {
           type: "product",
-          status: { in: ["PENDING", "ATTACHED"] },
+          OR: [
+            { status: "ATTACHED" },
+            { status: "PENDING", createdAt: { gte: expect.any(Date) } },
+          ],
         },
       })
     );
@@ -261,26 +298,108 @@ describe("media.service", () => {
     expect(result.pagination.total).toBe(1);
   });
 
-  it("does not steal MediaAsset ownership when reusing an attached file", async () => {
+  it("attaches a pending asset and records the entity", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      { publicId: "sharedid", status: "PENDING", entityType: null, entityId: null },
+    ]);
+
     await attachMediaAssets(["sharedid"], "product", "product-2");
 
-    const ownerCall = mediaAsset.updateMany.mock.calls[0]?.[0] as {
-      where: { OR: unknown };
-      data: { entityId: string };
-    };
-    expect(ownerCall.data.entityId).toBe("product-2");
-    expect(ownerCall.where.OR).toEqual(
-      expect.arrayContaining([
-        { status: "PENDING" },
-        { entityType: null },
-        { entityId: null },
-      ])
+    expect(mediaAsset.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { publicId: { in: ["sharedid"] }, status: { not: "SOFT_DELETED" } },
+        data: expect.objectContaining({
+          status: "ATTACHED",
+          entityType: "product",
+          entityId: "product-2",
+        }),
+      })
     );
+  });
+
+  it("reuses an asset already attached to the same entity", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      {
+        publicId: "sharedid",
+        status: "ATTACHED",
+        entityType: "product",
+        entityId: "product-2",
+      },
+    ]);
+
+    await expect(
+      attachMediaAssets(["sharedid"], "product", "product-2")
+    ).resolves.toBeUndefined();
+    expect(mediaAsset.updateMany).toHaveBeenCalled();
+  });
+
+  it("rejects attaching an asset claimed by a different entity", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      {
+        publicId: "sharedid",
+        status: "ATTACHED",
+        entityType: "product",
+        entityId: "product-1",
+      },
+    ]);
+
+    await expect(
+      attachMediaAssets(["sharedid"], "product", "product-2")
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(mediaAsset.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing or unowned asset instead of silently no-oping", async () => {
+    mediaAsset.findMany.mockResolvedValue([]);
+
+    await expect(
+      attachMediaAssets(["ghost"], "product", "product-2")
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(mediaAsset.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("scopes attach to the acting owner so a user cannot claim another user's asset", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      { publicId: "someone-elses-id", status: "PENDING", entityType: null, entityId: null },
+    ]);
+
+    await attachMediaAssets(["someone-elses-id"], "user", "user-1", "user-1");
+
+    expect(mediaAsset.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { publicId: { in: ["someone-elses-id"] }, ownerUserId: "user-1" },
+      })
+    );
+    const [args] = mediaAsset.updateMany.mock.calls[0] as [
+      { where: { ownerUserId?: string } },
+    ];
+    expect(args.where.ownerUserId).toBe("user-1");
+  });
+
+  it("does not scope attach by owner for trusted admin-managed entities", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      { publicId: "brandid", status: "PENDING", entityType: null, entityId: null },
+    ]);
+
+    await attachMediaAssets(["brandid"], "brand", "brand-1");
+
+    const [args] = mediaAsset.updateMany.mock.calls[0] as [
+      { where: { ownerUserId?: string } },
+    ];
+    expect(args.where.ownerUserId).toBeUndefined();
   });
 
   it("does not remove a Cloudinary file from the library on unassign", async () => {
     await detachMediaAssets(["sharedid"]);
-    expect(mediaAsset.updateMany).not.toHaveBeenCalled();
+    expect(mediaAsset.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: "PENDING",
+          entityType: null,
+          entityId: null,
+        }),
+      }),
+    );
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
   });
 });

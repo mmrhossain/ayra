@@ -1,3 +1,4 @@
+import { invalidateCatalogCacheForAttributeValues } from "../../../../lib/cache.ts";
 import { prisma } from "../../../../lib/prisma.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import type {
@@ -114,13 +115,16 @@ export const createAttributeValue = async (
 
   if (existing) throw new AppError("Attribute value already exists", 409);
 
-  return prisma.attributeValue.create({
+  const created = await prisma.attributeValue.create({
     data: {
       attributeId,
       value: input.value,
       ...(input.color !== undefined && { color: input.color }),
     },
   });
+
+  await invalidateCatalogCacheForAttributeValues([created.id]);
+  return created;
 };
 
 export const createAttributeValues = async (
@@ -154,6 +158,8 @@ export const createAttributeValues = async (
   const rows = candidates.filter((row) => !taken.has(row.value));
   if (!rows.length) return [];
 
+  // Brand-new values are not attached to any variant yet, so no product cache
+  // can be stale from this insert.
   return prisma.attributeValue.createManyAndReturn({
     data: rows.map((row) => ({
       attributeId,
@@ -182,13 +188,17 @@ export const updateAttributeValue = async (
     if (valueTaken) throw new AppError("Attribute value already exists", 409);
   }
 
-  return prisma.attributeValue.update({
+  const updated = await prisma.attributeValue.update({
     where: { id },
     data: {
       ...(input.value !== undefined && { value: input.value }),
       ...(input.color !== undefined && { color: input.color }),
     },
   });
+
+  // Label and swatch are embedded in the cached product detail payload.
+  await invalidateCatalogCacheForAttributeValues([updated.id]);
+  return updated;
 };
 
 export const deleteAttributeValue = async (id: string) => {

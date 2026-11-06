@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireAuth } from "../../common/middleware/auth.middleware.ts";
+import { requireAuth, requireCustomer } from "../../common/middleware/auth.middleware.ts";
+import { checkoutLimiter } from "../../common/middleware/rate-limit.middleware.ts";
 
 import {
   getCartHandler,
@@ -7,30 +8,24 @@ import {
   updateItemHandler,
   removeItemHandler,
   clearCartHandler,
-  getGuestCartHandler,
-  saveGuestCartHandler,
   mergeGuestCartHandler,
   applyCouponHandler,
   removeCouponHandler,
 } from "./cart.controller.ts";
-import {checkoutHandler} from "../order/controllers/order.controller.ts"
-
+import { checkoutHandler } from "../order/controllers/order.controller.ts";
 
 const router = Router();
 
-// Authenticated user cart
-router.get("/cart", requireAuth, getCartHandler);
-router.post("/cart/items", requireAuth, addItemHandler);
-router.put("/cart/items/:variantId", requireAuth, updateItemHandler);
-router.delete("/cart/items/:variantId", requireAuth, removeItemHandler);
-router.delete("/cart", requireAuth, clearCartHandler);
-router.post("/cart/guest/merge", requireAuth, mergeGuestCartHandler);
-router.post("/cart/coupon", requireAuth, applyCouponHandler);
-router.delete("/cart/coupon", requireAuth, removeCouponHandler);
-router.post("/cart/checkout", requireAuth, checkoutHandler);
+const customerOnly = [requireAuth, requireCustomer];
 
-// Guest cart (no auth, sessionId-scoped)
-router.get("/cart/guest", getGuestCartHandler);
-router.put("/cart/guest", saveGuestCartHandler);
+router.get("/cart", ...customerOnly, getCartHandler);
+router.post("/cart/items", ...customerOnly, addItemHandler);
+router.put("/cart/items/:variantId", ...customerOnly, updateItemHandler);
+router.delete("/cart/items/:variantId", ...customerOnly, removeItemHandler);
+router.delete("/cart", ...customerOnly, clearCartHandler);
+router.post("/cart/guest/merge", ...customerOnly, mergeGuestCartHandler);
+router.post("/cart/coupon", ...customerOnly, applyCouponHandler);
+router.delete("/cart/coupon", ...customerOnly, removeCouponHandler);
+router.post("/cart/checkout", ...customerOnly, checkoutLimiter, checkoutHandler);
 
 export default router;

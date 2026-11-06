@@ -19,6 +19,10 @@ describe("Inventory RESTOCK adjustment", () => {
       role: "ADMIN",
       suffix: `invadj-${Date.now()}`,
     });
+    const approver = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `invadj-approver-${Date.now()}`,
+    });
     const catalog = await createTestProduct(tracker, { stock: 5 });
 
     const created = await api()
@@ -44,12 +48,12 @@ describe("Inventory RESTOCK adjustment", () => {
 
     const approved = await api()
       .post(`/api/v1/admin/inventory/adjustments/${created.body.data.id}/approve`)
-      .set("Cookie", admin.cookie)
+      .set("Cookie", approver.cookie)
       .send({ approved: true });
 
     expect(approved.status).toBe(200);
     expect(approved.body.data.status).toBe("APPROVED");
-    expect(approved.body.data.approvedBy).toBe(admin.id);
+    expect(approved.body.data.approvedBy).toBe(approver.id);
     expect(approved.body.data.createdBy).toBe(admin.id);
 
     const inventory = await prisma.inventory.findUniqueOrThrow({
@@ -63,6 +67,10 @@ describe("Inventory RESTOCK adjustment", () => {
     const admin = await createTestUser(tracker, {
       role: "ADMIN",
       suffix: `invstale-${Date.now()}`,
+    });
+    const approver = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `invstale-approver-${Date.now()}`,
     });
     const catalog = await createTestProduct(tracker, { stock: 5 });
 
@@ -85,7 +93,7 @@ describe("Inventory RESTOCK adjustment", () => {
 
     const approved = await api()
       .post(`/api/v1/admin/inventory/adjustments/${created.body.data.id}/approve`)
-      .set("Cookie", admin.cookie)
+      .set("Cookie", approver.cookie)
       .send({ approved: true });
 
     expect(approved.status).toBe(409);
@@ -110,6 +118,10 @@ describe("Inventory RESTOCK adjustment", () => {
       role: "ADMIN",
       suffix: `invneg-${Date.now()}`,
     });
+    const approver = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `invneg-approver-${Date.now()}`,
+    });
     const catalog = await createTestProduct(tracker, { stock: 5 });
 
     const created = await api()
@@ -125,7 +137,7 @@ describe("Inventory RESTOCK adjustment", () => {
 
     const approved = await api()
       .post(`/api/v1/admin/inventory/adjustments/${created.body.data.id}/approve`)
-      .set("Cookie", admin.cookie)
+      .set("Cookie", approver.cookie)
       .send({ approved: true });
 
     expect(approved.status).toBe(400);
@@ -185,5 +197,37 @@ describe("Inventory RESTOCK adjustment", () => {
     expect(res.status).toBe(200);
     expect(typeof res.body.data.lowStockThreshold).toBe("number");
     expect(res.body.data.lowStockThreshold).toBeGreaterThanOrEqual(0);
+  });
+
+  it("blocks the creator from approving their own adjustment", async () => {
+    const admin = await createTestUser(tracker, {
+      role: "ADMIN",
+      suffix: `invself-${Date.now()}`,
+    });
+    const catalog = await createTestProduct(tracker, { stock: 5 });
+
+    const created = await api()
+      .post("/api/v1/admin/inventory/adjustments")
+      .set("Cookie", admin.cookie)
+      .send({
+        warehouseId: catalog.warehouse.id,
+        variantId: catalog.variant.id,
+        difference: 10,
+        reason: "RESTOCK",
+      });
+    expect(created.status).toBe(201);
+
+    const selfApprove = await api()
+      .post(`/api/v1/admin/inventory/adjustments/${created.body.data.id}/approve`)
+      .set("Cookie", admin.cookie)
+      .send({ approved: true });
+
+    expect(selfApprove.status).toBe(409);
+    expect(selfApprove.body.code).toBe("INVENTORY_MAKER_CHECKER");
+
+    const row = await prisma.inventoryAdjustment.findUniqueOrThrow({
+      where: { id: created.body.data.id },
+    });
+    expect(row.status).toBe("PENDING");
   });
 });

@@ -1,12 +1,16 @@
+import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import { ProductTable } from "@/features/dashboard/admin/products/components/product-table";
 import {
   fetchProductList,
   toErrorMessage,
 } from "@/features/dashboard/admin/products/api/products";
+import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
+import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
+  await requireAdminPageAccess("/admin/products");
   let initial;
   let error: string | null = null;
 
@@ -22,22 +26,15 @@ export default async function AdminProductsPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-        <p className="text-sm text-muted-foreground">
-          Create products, then set stock in Inventory.
-        </p>
-      </div>
+      <PageHeader
+        title="Products"
+        description="Create products, then set stock in Inventory."
+      />
       {error || !initial ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="text-lg font-semibold">Could not load products</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {error ?? "Unknown error"}
-          </p>
-        </div>
+        <PageError
+          title="Could not load products"
+          message={error ?? "Unknown error"}
+        />
       ) : (
         <ProductTable initialData={initial} />
       )}

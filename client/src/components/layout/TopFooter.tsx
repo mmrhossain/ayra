@@ -13,14 +13,14 @@ const TopFooter = () => {
         {/* 1. Brand Section */}
         <div className="sm:col-span-2 lg:col-span-3 space-y-6">
           <div>
-            <h2 className="text-lg font-black uppercase tracking-[0.2em] text-slate-900 mb-3">
+            <h2 className="mb-3 text-base font-semibold tracking-tight text-slate-900">
               About Us
             </h2>
             <div className="h-1 w-10 bg-[#8B2312]" />
           </div>
 
           <div className="space-y-4">
-            <span className="block text-primary font-bold text-xl">শেকড়ে ঐতিহ্যের রং</span>
+            <span lang="bn" className="block text-xl leading-relaxed font-semibold text-primary">শেকড়ে ঐতিহ্যের রং</span>
             <p className="text-slate-500 text-sm leading-relaxed max-w-sm lg:max-w-xs">
               Celebrating the timeless artistry of handcrafted textiles where every thread tells a
               story of heritage and soul.
@@ -28,7 +28,7 @@ const TopFooter = () => {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <h4 className="text-xs font-medium tracking-wide uppercase text-slate-400">
               Follow Our Journey
             </h4>
             <div className="flex flex-wrap gap-3">
@@ -54,7 +54,7 @@ const TopFooter = () => {
 
         {/* 2. Info Section */}
         <div className="lg:col-span-2 lg:ml-auto">
-          <h2 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 mb-6 lg:mb-8">
+          <h2 className="mb-6 text-sm font-semibold tracking-wide uppercase text-slate-900 lg:mb-8">
             Quick Links
           </h2>
           <ul className="grid grid-cols-2 sm:grid-cols-1 gap-y-4 gap-x-2">
@@ -74,7 +74,7 @@ const TopFooter = () => {
 
         {/* 3. Social Gallery Section */}
         <div className="lg:col-span-3 lg:ml-auto flex flex-col items-start sm:items-start lg:items-start">
-          <h2 className="text-xs font-black uppercase tracking-[0.25em] text-slate-900 mb-6 lg:mb-8">
+          <h2 className="mb-6 text-sm font-semibold tracking-wide uppercase text-slate-900 lg:mb-8">
             Instagram Shop
           </h2>
           <div className="group relative overflow-hidden rounded-2xl border-4 border-slate-50 shadow-sm w-fit">
@@ -95,7 +95,7 @@ const TopFooter = () => {
               />
             </a>
           </div>
-          <p className="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
             Scan to follow @ayra
           </p>
         </div>

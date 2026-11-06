@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { env } from "../../../config/env.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
+import { getSslcommerzRuntimeConfig } from "../services/sslcommerz-config.service.ts";
 import type {
   GatewayOrder,
   GatewaySession,
@@ -37,31 +37,7 @@ interface SslcommerzValidationResponse {
   [key: string]: unknown;
 }
 
-const isSandbox = () => env.SSLCOMMERZ_SANDBOX === "true";
-
-const getCredentials = () => {
-  const storeId = env.SSLCOMMERZ_STORE_ID;
-  const storePassword = env.SSLCOMMERZ_STORE_PASSWORD;
-
-  if (!storeId || !storePassword) {
-    throw new AppError("SSLCommerz is not configured on the server", 503);
-  }
-
-  return { storeId, storePassword };
-};
-
-const getApiBaseUrl = () => env.BETTER_AUTH_URL.replace(/\/+$/, "");
-
-export const getCallbackUrls = (): GatewayUrls => {
-  const base = getApiBaseUrl();
-
-  return {
-    successUrl: `${base}/api/v1/payments/sslcommerz/success`,
-    failUrl: `${base}/api/v1/payments/sslcommerz/failed`,
-    cancelUrl: `${base}/api/v1/payments/sslcommerz/cancelled`,
-    ipnUrl: `${base}/api/v1/payments/sslcommerz/ipn`,
-  };
-};
+const FETCH_TIMEOUT_MS = 10_000;
 
 export const sslcommerzProvider: PaymentProvider = {
   method: "SSLCOMMERZ",
@@ -70,11 +46,10 @@ export const sslcommerzProvider: PaymentProvider = {
     order: GatewayOrder,
     callbacks: GatewayUrls
   ): Promise<GatewaySession> {
-    const { storeId, storePassword } = getCredentials();
+    const { storeId, storePassword, mode } = await getSslcommerzRuntimeConfig();
 
-    const endpoint = isSandbox()
-      ? SESSION_ENDPOINTS.sandbox
-      : SESSION_ENDPOINTS.live;
+    const endpoint =
+      mode === "sandbox" ? SESSION_ENDPOINTS.sandbox : SESSION_ENDPOINTS.live;
 
     const payload = new URLSearchParams();
     payload.set("store_id", storeId);
@@ -116,6 +91,7 @@ export const sslcommerzProvider: PaymentProvider = {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: payload.toString(),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
 
       if (!res.ok) {
@@ -146,11 +122,10 @@ export const sslcommerzProvider: PaymentProvider = {
   async verifyTransaction(
     valId: string
   ): Promise<GatewayVerification> {
-    const { storeId, storePassword } = getCredentials();
+    const { storeId, storePassword, mode } = await getSslcommerzRuntimeConfig();
 
-    const endpoint = isSandbox()
-      ? VALIDATION_ENDPOINTS.sandbox
-      : VALIDATION_ENDPOINTS.live;
+    const endpoint =
+      mode === "sandbox" ? VALIDATION_ENDPOINTS.sandbox : VALIDATION_ENDPOINTS.live;
 
     const params = new URLSearchParams({
       val_id: valId,
@@ -162,7 +137,9 @@ export const sslcommerzProvider: PaymentProvider = {
     let response: SslcommerzValidationResponse;
 
     try {
-      const res = await fetch(`${endpoint}?${params.toString()}`);
+      const res = await fetch(`${endpoint}?${params.toString()}`, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
 
       if (!res.ok) {
         throw new AppError("Failed to verify SSLCommerz transaction", 502);
@@ -186,12 +163,19 @@ export const sslcommerzProvider: PaymentProvider = {
     };
   },
 
-  verifyWebhookSignature(payload: Record<string, string>): boolean {
+  async verifyWebhookSignature(
+    payload: Record<string, string>,
+  ): Promise<boolean> {
     const verifySign = payload["verify_sign"];
     const verifyKey = payload["verify_key"];
-    const storePassword = env.SSLCOMMERZ_STORE_PASSWORD;
+    if (!verifySign || !verifyKey) return false;
 
-    if (!verifySign || !verifyKey || !storePassword) return false;
+    let storePassword: string;
+    try {
+      storePassword = (await getSslcommerzRuntimeConfig()).storePassword;
+    } catch {
+      return false;
+    }
 
     const fields: Record<string, string> = {};
     for (const key of verifyKey.split(",")) {

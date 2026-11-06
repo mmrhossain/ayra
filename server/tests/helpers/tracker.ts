@@ -17,7 +17,6 @@ export class CleanupTracker {
   paymentIds: string[] = [];
   webhookLogIds: string[] = [];
   cartIds: string[] = [];
-  guestCartSessionIds: string[] = [];
   reviewIds: string[] = [];
   faqCategoryIds: string[] = [];
   faqItemIds: string[] = [];
@@ -39,7 +38,6 @@ export class CleanupTracker {
     const warehouses = [...this.warehouseIds];
     const inventories = [...this.inventoryIds];
       const carts = [...this.cartIds];
-      const guestCartSessionIds = [...this.guestCartSessionIds];
       const webhookLogs = [...this.webhookLogIds];
       const reviews = [...this.reviewIds];
       const faqCategories = [...this.faqCategoryIds];
@@ -185,12 +183,6 @@ export class CleanupTracker {
         });
       }
 
-      if (guestCartSessionIds.length) {
-        await prisma.guestCart.deleteMany({
-          where: { sessionId: { in: guestCartSessionIds } },
-        });
-      }
-
       if (carts.length) {
         await prisma.cartCoupon.deleteMany({ where: { cartId: { in: carts } } });
         await prisma.cartActivity.deleteMany({
@@ -211,9 +203,6 @@ export class CleanupTracker {
 
       if (variants.length) {
         await prisma.variantAttribute.deleteMany({
-          where: { variantId: { in: variants } },
-        });
-        await prisma.productImage.deleteMany({
           where: { variantId: { in: variants } },
         });
         await prisma.inventoryEvent.deleteMany({
@@ -259,9 +248,6 @@ export class CleanupTracker {
             where: { variantId: { in: leftoverVariantIds } },
           });
           await prisma.inventory.deleteMany({
-            where: { variantId: { in: leftoverVariantIds } },
-          });
-          await prisma.productImage.deleteMany({
             where: { variantId: { in: leftoverVariantIds } },
           });
           await prisma.productVariant.deleteMany({
@@ -379,11 +365,50 @@ export class CleanupTracker {
             where: { id: { in: profileIds } },
           });
         }
+        // Audit rows are append-only in production, but test fixtures must be
+        // removable. Suspend the guard for cleanup and always restore it.
+        await prisma.$executeRawUnsafe(
+          'ALTER TABLE "admin_audit_log" DISABLE TRIGGER "admin_audit_log_no_update_delete"'
+        );
+        try {
+          await prisma.adminAuditLog.deleteMany({
+            where: { actorId: { in: users } },
+          });
+        } finally {
+          await prisma.$executeRawUnsafe(
+            'ALTER TABLE "admin_audit_log" ENABLE TRIGGER "admin_audit_log_no_update_delete"'
+          );
+        }
         await prisma.notification.deleteMany({ where: { userId: { in: users } } });
-        await prisma.vendorProfile.deleteMany({ where: { userId: { in: users } } });
+        await prisma.idempotencyKey.deleteMany({
+          where: { userId: { in: users } },
+        });
         await prisma.session.deleteMany({ where: { userId: { in: users } } });
         await prisma.account.deleteMany({ where: { userId: { in: users } } });
-        await prisma.user.deleteMany({ where: { id: { in: users } } });
+        // Invitations hold a RESTRICT foreign key to the inviter, so they must
+        // be removed before the fixture users.
+        await prisma.staffInvitation.deleteMany({
+          where: {
+            OR: [
+              { invitedById: { in: users } },
+              { acceptedById: { in: users } },
+            ],
+          },
+        });
+        // Test fixtures are frequently the only active super admin in the
+        // database, so the production last-owner trigger would refuse to delete
+        // them. Cleanup is test-only infrastructure, so suspend the invariant
+        // for the duration of the delete and always restore it.
+        await prisma.$executeRawUnsafe(
+          'ALTER TABLE "user" DISABLE TRIGGER "user_last_super_admin_guard"'
+        );
+        try {
+          await prisma.user.deleteMany({ where: { id: { in: users } } });
+        } finally {
+          await prisma.$executeRawUnsafe(
+            'ALTER TABLE "user" ENABLE TRIGGER "user_last_super_admin_guard"'
+          );
+        }
       }
     } finally {
       this.userIds = [];
@@ -398,7 +423,6 @@ export class CleanupTracker {
       this.paymentIds = [];
       this.webhookLogIds = [];
       this.cartIds = [];
-      this.guestCartSessionIds = [];
       this.reviewIds = [];
       this.faqCategoryIds = [];
       this.faqItemIds = [];

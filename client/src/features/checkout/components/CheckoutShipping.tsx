@@ -25,13 +25,20 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
   const {
     formState,
     handleChange,
-    fetchPostList,
+    fetchUpazilaList,
     districtList,
-    postList,
+    upazilaList,
   } = locationStore();
+
+  const districtCode =
+    formState.districtCode ||
+    districtList?.find((district) => district.name === formState.district)
+      ?.code ||
+    "";
 
   const { optionsQuery, shippingOptions } = useCheckoutShipping(
     formState.district,
+    districtCode,
   );
 
   useEffect(() => {
@@ -61,18 +68,16 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
   ]);
 
   const handleThanaChange = (value: string) => {
-    const selected = postList?.find((p) => p._id === value);
+    const selected = upazilaList?.find((upazila) => upazila.code === value);
     handleChange("thana", selected?.name || "");
+    handleChange("upazilaCode", value);
   };
 
-  const districtId =
-    districtList?.find((d) => d.name === formState.district)?._id;
-
   useEffect(() => {
-    if (districtId && !postList?.length) {
-      void fetchPostList(districtId);
+    if (districtCode && !upazilaList?.length) {
+      void fetchUpazilaList(districtCode);
     }
-  }, [districtId, fetchPostList, postList?.length]);
+  }, [districtCode, fetchUpazilaList, upazilaList?.length]);
 
   const handleContinue = () => {
     if (!formState.shippingMethodCode) {
@@ -91,7 +96,7 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
       }}
     >
       <CheckoutSection title="Shipping to">
-        <div className="border border-[#eee] bg-white px-4 py-3 text-sm leading-relaxed text-secondary">
+        <div className="border border-border bg-white px-4 py-3 text-sm leading-relaxed text-foreground">
           <p className="font-medium">{formState.name}</p>
           <p className="mt-1 text-neutral-500">
             {[formState.address, formState.thana, formState.district, formState.division, formState.postal_code]
@@ -109,13 +114,18 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
         <CheckoutSelect
           label="Area / Thana"
           placeholder="Select thana"
-          value={postList?.find((p) => p.name === formState.thana)?._id || ""}
+          value={
+            formState.upazilaCode ||
+            upazilaList?.find((upazila) => upazila.name === formState.thana)
+              ?.code ||
+            ""
+          }
           onValueChange={handleThanaChange}
           disabled={!formState.district}
         >
-          {(postList ?? []).map((post) => (
-            <SelectItem key={post._id} value={post._id}>
-              {post.name}
+          {(upazilaList ?? []).map((upazila) => (
+            <SelectItem key={upazila.code} value={upazila.code}>
+              {upazila.name}
             </SelectItem>
           ))}
         </CheckoutSelect>
@@ -153,7 +163,7 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
               <label
                 key={option.methodCode}
                 htmlFor={`shipping-method-${option.methodCode}`}
-                className="flex min-h-11 min-w-0 cursor-pointer items-start gap-3 border border-[#e5e5e5] bg-white p-4 has-[[data-state=checked]]:border-secondary"
+                className="flex min-h-11 min-w-0 cursor-pointer items-start gap-3 border border-border bg-white p-4 has-[[data-state=checked]]:border-ink"
               >
                 <RadioGroupItem
                   value={option.methodCode}
@@ -162,10 +172,10 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
                 />
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-secondary">
+                    <p className="text-sm font-medium text-foreground">
                       {option.methodName}
                     </p>
-                    <span className="shrink-0 text-sm text-secondary">
+                    <span className="shrink-0 text-sm text-foreground">
                       {option.isFreeShipping
                         ? "Free"
                         : formatPrice(option.shippingAmount)}

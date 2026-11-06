@@ -8,53 +8,53 @@ export const DEFAULT_SHIPPING_RATES = {
 } as const;
 
 export const ensureDefaultShippingCatalog = async () => {
-  const existingInside = await prisma.shippingZone.findUnique({
+  const insideDhaka = await prisma.shippingZone.upsert({
     where: { code: "INSIDE_DHAKA" },
+    create: {
+      name: "Inside Dhaka",
+      code: "INSIDE_DHAKA",
+      isActive: true,
+      isFallback: false,
+      matchDistricts: ["Dhaka"],
+    },
+    update: {
+      name: "Inside Dhaka",
+      isActive: true,
+      isFallback: false,
+      matchDistricts: ["Dhaka"],
+      matchDistrictCodes: [],
+    },
   });
-  const insideDhaka =
-    existingInside ??
-    (await prisma.shippingZone.create({
-      data: {
-        name: "Inside Dhaka",
-        code: "INSIDE_DHAKA",
-        isActive: true,
-        isFallback: false,
-        matchDistricts: ["Dhaka"],
-      },
-    }));
 
-  const existingOutside = await prisma.shippingZone.findUnique({
+  const outsideDhaka = await prisma.shippingZone.upsert({
     where: { code: "OUTSIDE_DHAKA" },
+    create: {
+      name: "Outside Dhaka",
+      code: "OUTSIDE_DHAKA",
+      isActive: true,
+      isFallback: true,
+      matchDistricts: [],
+    },
+    update: {
+      name: "Outside Dhaka",
+      isActive: true,
+      isFallback: true,
+      matchDistricts: [],
+      matchDistrictCodes: [],
+    },
   });
-  const outsideDhaka =
-    existingOutside ??
-    (await prisma.shippingZone.create({
-      data: {
-        name: "Outside Dhaka",
-        code: "OUTSIDE_DHAKA",
-        isActive: true,
-        isFallback: true,
-        matchDistricts: [],
-      },
-    }));
 
-  const existingStandard = await prisma.shippingMethod.findUnique({
+  const standard = await prisma.shippingMethod.upsert({
     where: { code: "STANDARD" },
+    create: { name: "Standard Delivery", code: "STANDARD", isActive: true },
+    update: { name: "Standard Delivery", isActive: true },
   });
-  const standard =
-    existingStandard ??
-    (await prisma.shippingMethod.create({
-      data: { name: "Standard Delivery", code: "STANDARD", isActive: true },
-    }));
 
-  const existingExpress = await prisma.shippingMethod.findUnique({
+  const express = await prisma.shippingMethod.upsert({
     where: { code: "EXPRESS" },
+    create: { name: "Express Delivery", code: "EXPRESS", isActive: true },
+    update: { name: "Express Delivery", isActive: true },
   });
-  const express =
-    existingExpress ??
-    (await prisma.shippingMethod.create({
-      data: { name: "Express Delivery", code: "EXPRESS", isActive: true },
-    }));
 
   const rates = [
     { zoneId: insideDhaka.id, methodId: standard.id, price: DEFAULT_SHIPPING_RATES.INSIDE_STANDARD },

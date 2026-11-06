@@ -3,7 +3,7 @@ import {
   fetchMyOrders,
 } from "@/features/dashboard/customer/orders/api/orders";
 import { placeOrder } from "@/features/checkout/api";
-import { Order, OrderState } from "@/types/order";
+import { PlaceOrderInput, OrderState } from "@/features/checkout/types";
 import { create } from "zustand";
 
 export const useOrderStore = create<OrderState>((set, get) => ({
@@ -16,7 +16,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   orders: null,
   currentOrder: null,
 
-  createOrder: async (data: Order) => {
+  createOrder: async (data: PlaceOrderInput, idempotencyKey: string) => {
     try {
       get().setLoading(true);
 
@@ -28,17 +28,27 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         division: data.division,
         district: data.district,
         ...(data.thana ? { thana: data.thana } : {}),
+        ...(data.divisionCode ? { divisionCode: data.divisionCode } : {}),
+        ...(data.districtCode ? { districtCode: data.districtCode } : {}),
+        ...(data.upazilaCode ? { upazilaCode: data.upazilaCode } : {}),
         ...(data.postal_code ? { postalCode: data.postal_code } : {}),
         addressLine1: data.address,
       };
 
-      const res = await placeOrder({
-        paymentMethod: data.paymentMethod,
-        billingAddress: address,
-        shippingAddress: address,
-        shippingMethodCode: data.shippingMethodCode,
-        ...(data.couponCode ? { couponCode: data.couponCode } : {}),
-      });
+      const res = await placeOrder(
+        {
+          paymentMethod: data.paymentMethod,
+          billingAddress: address,
+          shippingAddress: address,
+          shippingMethodCode: data.shippingMethodCode,
+          ...(data.couponCode ? { couponCode: data.couponCode } : {}),
+          ...(data.expectedSubtotal !== undefined
+            ? { expectedSubtotal: data.expectedSubtotal }
+            : {}),
+          ...(data.acceptPriceChange ? { acceptPriceChange: true } : {}),
+        },
+        idempotencyKey,
+      );
 
       return { message: res.message, data: res.data };
     } catch (err) {

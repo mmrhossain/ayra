@@ -1,6 +1,7 @@
 import { FiPhone, FiMail, FiMapPin } from "react-icons/fi";
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import { AiFillTikTok } from "react-icons/ai";
+import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/config/site";
 import Link from "next/link";
 
 const ContactInfo: React.FC = () => {
@@ -26,7 +27,7 @@ const ContactInfo: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-xs uppercase font-black tracking-widest text-white/60 mb-1">Email Us</p>
-                            <Link href="mailto:info@raangalay.com" className="text-base md:text-lg font-bold hover:underline break-all">info@raangalay.com</Link>
+                            <Link href={`mailto:${SUPPORT_EMAIL}`} className="text-base md:text-lg font-bold hover:underline break-all">{SUPPORT_EMAIL}</Link>
                         </div>
                     </div>
 
@@ -47,14 +48,12 @@ const ContactInfo: React.FC = () => {
             <div>
                 <p className="text-xs uppercase font-black tracking-[0.12em] md:tracking-widest text-white/60 mb-4">Social Presence</p>
                 <div className="flex gap-4">
-                    {[
-                        { icon: <FaFacebookF />, href: "https://facebook.com/raangalay" },
-                        { icon: <AiFillTikTok />, href: "https://tiktok.com/@raangalay" },
-                        { icon: <FaInstagram />, href: "https://instagram.com/raangalay" },
-                        { icon: <FaYoutube />, href: "https://youtube.com/@raangalay" }
-                    ].map((social, i) => (
-                        <a key={i} href={social.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white hover:text-primary transition-all duration-300" aria-label="Social link">
-                            {social.icon}
+                    {SOCIAL_LINKS.map((social) => (
+                        <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white hover:text-primary transition-all duration-300" aria-label={social.label}>
+                            {social.label === "Facebook" && <FaFacebookF />}
+                            {social.label === "TikTok" && <AiFillTikTok />}
+                            {social.label === "Instagram" && <FaInstagram />}
+                            {social.label === "YouTube" && <FaYoutube />}
                         </a>
                     ))}
                 </div>

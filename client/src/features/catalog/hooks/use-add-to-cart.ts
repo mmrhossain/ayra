@@ -5,7 +5,10 @@ import { addCartItem, toCartErrorMessage } from "@/features/cart/api";
 import type { ProductDetail, ProductVariant } from "@/features/catalog/types";
 import { num } from "@/features/catalog/utils/variants";
 import { errorToast, successToast } from "@/helpers";
+import { authClient } from "@/lib/api/auth/auth-client";
+import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE, staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
+import { useRouter } from "next/navigation";
 
 type AddToCartInput = {
   product: ProductDetail;
@@ -17,6 +20,8 @@ type AddToCartInput = {
 
 export function useAddToCart() {
   const [cartBusy, setCartBusy] = useState(false);
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
 
   const handleAddToCart = async ({
     product,
@@ -35,6 +40,12 @@ export function useAddToCart() {
     }
     if (num(selected.availableStock) < 1) {
       errorToast("Out of stock");
+      return;
+    }
+    const dest = staffShoppingRedirect(session?.user?.role);
+    if (dest || isStaffRole(session?.user?.role)) {
+      errorToast(STAFF_CANNOT_SHOP_MESSAGE);
+      if (dest) router.push(dest);
       return;
     }
     try {

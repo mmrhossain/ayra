@@ -1,10 +1,11 @@
 import { prisma, transaction, type TransactionClient } from "../../lib/prisma.ts";
 import { AppError } from "../../common/errors/AppError.ts";
-import { applyCouponAtomic } from "../coupon/coupon.service.ts";
-import { redisGet, redisSet, redisDel } from "../../lib/redis.ts";
+import { applyCouponAtomic, calculateCouponDiscountForRecord } from "../coupon/coupon.service.ts";
+import { getSettingValue } from "../settings/settings.service.ts";
+import { computeCheckoutTotals } from "../order/utils/order-helpers.ts";
 import { getDefaultWarehouse } from "../catalog/inventory/services/inventory.service.ts";
 import { Prisma } from "../../generated/prisma/client.ts";
-import type { CartLineCreate, CartLineUpdate, GuestCartData } from "./types.ts";
+import type { CartLineCreate, CartLineUpdate, GuestCartItem } from "./types.ts";
 
 const availableAtDefaultWarehouse = async (
   tx: TransactionClient,
@@ -12,11 +13,11 @@ const availableAtDefaultWarehouse = async (
 ) => {
   const rows = await tx.$queryRaw<Array<{ quantityAvailable: number }>>`
     SELECT i."quantityAvailable"
-    FROM "Inventory" i
+    FROM "inventory" i
     WHERE i."variantId" = ${variantId}
       AND i."warehouseId" = (
         SELECT id
-        FROM "Warehouse"
+        FROM "warehouse"
         WHERE "isActive" = true AND "deletedAt" IS NULL
         ORDER BY "createdAt" ASC
         LIMIT 1
@@ -26,13 +27,22 @@ const availableAtDefaultWarehouse = async (
   return rows[0]?.quantityAvailable ?? 0;
 };
 
-// Product prices already include VAT/tax (business decision). taxAmount is
-// intentionally always 0 so a later change does not double-tax checkout.
-const TAX_RATE = 0;
+const cartImagesArgs = {
+  select: { imageUrl: true, isPrimary: true },
+  orderBy: [{ isPrimary: "desc" as const }, { sortOrder: "asc" as const }],
+};
 
-// Guest cart configuration
-const GUEST_CART_PREFIX = "guest:cart:";
-const GUEST_CART_TTL = 60 * 60 * 24 * 7; // 7 days expiration
+const variantCartInclude = {
+  product: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      status: true,
+      images: cartImagesArgs,
+    },
+  },
+} as const;
 
 export const cartInclude = {
   items: {
@@ -43,7 +53,15 @@ export const cartInclude = {
           sku: true,
           price: true,
           compareAtPrice: true,
-          product: { select: { id: true, name: true, slug: true, status: true } },
+          product: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              status: true,
+              images: cartImagesArgs,
+            },
+          },
         },
       },
     },
@@ -52,11 +70,68 @@ export const cartInclude = {
   activities: { orderBy: { createdAt: "desc" as const }, take: 5 },
 } as const;
 
+type CartImageRow = { imageUrl: string; isPrimary: boolean };
+
+const isUsableImageUrl = (url: string | null | undefined): url is string =>
+  Boolean(
+    url &&
+      (url.startsWith("http://") ||
+        url.startsWith("https://") ||
+        url.startsWith("/"))
+  );
+
+const firstImageUrl = (images?: CartImageRow[] | null): string | null => {
+  if (!images?.length) return null;
+  const url = images.find((img) => img.isPrimary)?.imageUrl || images[0]?.imageUrl;
+  return isUsableImageUrl(url) ? url : null;
+};
+
+const resolveCartItemImage = (item: {
+  productImage?: string | null;
+  variant?: {
+    product?: { images?: CartImageRow[] } | null;
+  } | null;
+}): string | null => {
+  if (isUsableImageUrl(item.productImage)) return item.productImage;
+  return firstImageUrl(item.variant?.product?.images);
+};
+
+const hydrateCartImages = <
+  T extends {
+    items: Array<{
+      productImage: string | null;
+      variant?: {
+        product?: { images?: CartImageRow[] } | null;
+      } | null;
+    }>;
+  } | null,
+>(
+  cart: T
+): T => {
+  if (!cart) return cart;
+  return {
+    ...cart,
+    items: cart.items.map((item) => ({
+      ...item,
+      productImage: resolveCartItemImage(item),
+    })),
+  };
+};
+
+const loadCart = async (db: TransactionClient | typeof prisma, cartId: string) => {
+  const cart = await db.cart.findUnique({
+    where: { id: cartId },
+    include: cartInclude,
+  });
+  return hydrateCartImages(cart);
+};
+
 export const getActiveCart = async (customerProfileId: string) => {
-  return prisma.cart.findFirst({
+  const cart = await prisma.cart.findFirst({
     where: { customerProfileId, status: "ACTIVE" },
     include: cartInclude,
   });
+  return hydrateCartImages(cart);
 };
 
 const lockActiveCart = async (
@@ -64,9 +139,9 @@ const lockActiveCart = async (
   customerProfileId: string,
 ) => {
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT id FROM "Cart"
+    SELECT id FROM "cart"
     WHERE id IN (
-      SELECT id FROM "Cart"
+      SELECT id FROM "cart"
       WHERE "customerProfileId" = ${customerProfileId} AND status = 'ACTIVE'
       ORDER BY "createdAt" ASC
       LIMIT 1
@@ -99,10 +174,12 @@ export const getOrCreateActiveCart = async (customerProfileId: string) => {
   if (existing) return existing;
 
   try {
-    return await prisma.cart.create({
-      data: { customerProfileId, status: "ACTIVE" },
-      include: cartInclude,
-    });
+    return hydrateCartImages(
+      await prisma.cart.create({
+        data: { customerProfileId, status: "ACTIVE" },
+        include: cartInclude,
+      })
+    );
   } catch (err) {
     const raced = await getActiveCart(customerProfileId);
     if (raced) return raced;
@@ -114,14 +191,55 @@ export const recalcCartTotals = async (
     tx: Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">,
     cartId: string
 ) => {
-  const items = await tx.cartItem.findMany({ where: { cartId } });
+  const items = await tx.cartItem.findMany({
+    where: { cartId },
+    include: {
+      variant: { select: { product: { select: { categoryId: true } } } },
+    },
+  });
   const coupon = await tx.cartCoupon.findUnique({ where: { cartId } });
 
   const subtotal = items.reduce((sum, i) => sum + Number(i.subtotal), 0);
-  const discountAmount = coupon ? Number(coupon.discountAmount) : 0;
-  const taxAmount = Math.round(subtotal * TAX_RATE * 100) / 100;
+  let discountAmount = 0;
+  if (coupon) {
+    const couponRow = await tx.coupon.findFirst({
+      where: { code: coupon.couponCode, deletedAt: null },
+    });
+    if (couponRow) {
+      discountAmount = await calculateCouponDiscountForRecord(tx, couponRow, {
+        subtotal,
+        productIds: items.map((item) => item.productId),
+        productCategoryIds: items.map(
+          (item) => item.variant.product.categoryId,
+        ),
+        lines: items.map((item) => ({
+          productId: item.productId,
+          categoryId: item.variant.product.categoryId,
+          subtotal: Number(item.subtotal),
+        })),
+      });
+      if (discountAmount !== Number(coupon.discountAmount)) {
+        await tx.cartCoupon.update({
+          where: { cartId },
+          data: { discountAmount },
+        });
+      }
+    } else {
+      await tx.cartCoupon.delete({ where: { cartId } });
+    }
+  }
+  const [pricesIncludeTax, taxRatePercent] = await Promise.all([
+    getSettingValue<boolean>("checkout.pricesIncludeTax"),
+    getSettingValue<number>("checkout.taxRatePercent"),
+  ]);
+  const { taxAmount, grandTotal } = computeCheckoutTotals(
+    subtotal,
+    discountAmount,
+    null,
+    0,
+    { pricesIncludeTax, taxRatePercent },
+  );
   const shippingAmount = 0;
-  const grandTotal = subtotal - discountAmount + taxAmount + shippingAmount;
 
   return tx.cart.update({
     where: { id: cartId },
@@ -153,7 +271,7 @@ export const addItem = async (
   return transaction(async (tx) => {
     const variant = await tx.productVariant.findFirst({
       where: { id: variantId, deletedAt: null, product: { deletedAt: null } },
-      include: { product: { select: { id: true, name: true, slug: true, status: true } } },
+      include: variantCartInclude,
     });
 
     if (!variant) throw new AppError("Variant not found", 404);
@@ -190,6 +308,7 @@ export const addItem = async (
           productId: variant.productId,
           variantId,
           quantity,
+          productImage: firstImageUrl(variant.product.images),
           productName: variant.product.name,
           productSlug: variant.product.slug,
           sku: variant.sku,
@@ -209,10 +328,7 @@ export const addItem = async (
 
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
@@ -248,10 +364,7 @@ export const updateItemQuantity = async (
 
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
@@ -277,10 +390,7 @@ export const removeItem = async (customerProfileId: string, variantId: string) =
 
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
@@ -293,10 +403,7 @@ export const clearCart = async (customerProfileId: string) => {
     await tx.cartCoupon.deleteMany({ where: { cartId: cart.id } });
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
@@ -344,10 +451,7 @@ export const applyCoupon = async (customerProfileId: string, code: string) => {
 
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
@@ -359,100 +463,30 @@ export const removeCoupon = async (customerProfileId: string) => {
     await tx.cartCoupon.deleteMany({ where: { cartId: cart.id } });
     await recalcCartTotals(tx, cart.id);
 
-    return tx.cart.findUnique({
-      where: { id: cart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, cart.id);
   });
 };
 
 // ==========================================
-// Guest Cart Operations (Powered by Redis)
-// ==========================================
-
-const emptyGuestCart = {
-  items: [] as GuestCartData["items"],
-  subtotal: 0,
-  discountAmount: 0,
-  taxAmount: 0,
-  shippingAmount: 0,
-  grandTotal: 0,
-};
-
-const guestCartKey = (sessionId: string) => `${GUEST_CART_PREFIX}${sessionId}`;
-
-const parseGuestCartData = (raw: unknown): GuestCartData | null => {
-  if (!raw || typeof raw !== "object") return null;
-  const data = raw as GuestCartData;
-  if (!Array.isArray(data.items)) return null;
-  return data;
-};
-
-const loadGuestCartData = async (sessionId: string): Promise<GuestCartData | null> => {
-  const cached = await redisGet(guestCartKey(sessionId));
-  if (cached) {
-    try {
-      const parsed = parseGuestCartData(JSON.parse(cached));
-      if (parsed) return parsed;
-    } catch {
-      // fall through to DB
-    }
-  }
-
-  try {
-    const row = await prisma.guestCart.findUnique({ where: { sessionId } });
-    if (!row || row.expiresAt <= new Date()) return null;
-    const parsed = parseGuestCartData(row.cartData);
-    if (parsed) {
-      await redisSet(guestCartKey(sessionId), JSON.stringify(parsed), GUEST_CART_TTL);
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-export const getGuestCart = async (sessionId: string) => {
-  const cartData = await loadGuestCartData(sessionId);
-  if (!cartData) return emptyGuestCart;
-  return cartData;
-};
-
-export const saveGuestCart = async (sessionId: string, cartData: GuestCartData) => {
-  const expiresAt = new Date(Date.now() + GUEST_CART_TTL * 1000);
-  await redisSet(guestCartKey(sessionId), JSON.stringify(cartData), GUEST_CART_TTL);
-  try {
-    await prisma.guestCart.upsert({
-      where: { sessionId },
-      create: { sessionId, cartData, expiresAt },
-      update: { cartData, expiresAt },
-    });
-  } catch {
-    // Redis is the live guest cart; DB persist is best-effort.
-  }
-  return cartData;
-};
-
-export const mergeGuestCart = async (customerProfileId: string, sessionId: string) => {
-  const guestCart = await loadGuestCartData(sessionId);
-  if (!guestCart?.items?.length) {
+export const mergeGuestCart = async (
+  customerProfileId: string,
+  items: GuestCartItem[],
+) => {
+  if (!items.length) {
     return getCart(customerProfileId);
   }
 
   const merged = await transaction(async (tx) => {
     const userCart = await getOrCreateLockedCart(tx, customerProfileId);
 
-    const guestItems = Array.isArray(guestCart.items) ? guestCart.items : [];
+    const guestItems = items;
     const variantIds = [
       ...new Set(guestItems.map((item) => item.variantId).filter((id) => id.length > 0)),
     ];
 
     if (variantIds.length === 0) {
       await recalcCartTotals(tx, userCart.id);
-      return tx.cart.findUnique({
-        where: { id: userCart.id },
-        include: cartInclude,
-      });
+      return loadCart(tx, userCart.id);
     }
 
     const warehouse = await getDefaultWarehouse(tx);
@@ -462,7 +496,7 @@ export const mergeGuestCart = async (customerProfileId: string, sessionId: strin
         deletedAt: null,
         product: { deletedAt: null, status: "ACTIVE" },
       },
-      include: { product: { select: { id: true, name: true, slug: true, status: true } } },
+      include: variantCartInclude,
     });
     const inventories = warehouse
       ? await tx.inventory.findMany({
@@ -521,6 +555,7 @@ export const mergeGuestCart = async (customerProfileId: string, sessionId: strin
           quantity: finalQty,
           productName: variant.product.name,
           productSlug: variant.product.slug,
+          productImage: firstImageUrl(variant.product.images),
           sku: variant.sku,
           unitPrice: Number(variant.price),
           subtotal: Number(variant.price) * finalQty,
@@ -533,7 +568,7 @@ export const mergeGuestCart = async (customerProfileId: string, sessionId: strin
       const quantities = itemUpdates.map((item) => item.quantity);
       const subtotals = itemUpdates.map((item) => item.subtotal);
       await tx.$executeRaw`
-        UPDATE "CartItem" AS c
+        UPDATE "cart_item" AS c
         SET
           quantity = v.qty,
           subtotal = v.subtotal
@@ -552,18 +587,8 @@ export const mergeGuestCart = async (customerProfileId: string, sessionId: strin
 
     await recalcCartTotals(tx, userCart.id);
 
-    return tx.cart.findUnique({
-      where: { id: userCart.id },
-      include: cartInclude,
-    });
+    return loadCart(tx, userCart.id);
   });
-
-  await redisDel(guestCartKey(sessionId));
-  try {
-    await prisma.guestCart.deleteMany({ where: { sessionId } });
-  } catch {
-    // Redis already cleared; DB cleanup is best-effort.
-  }
 
   return merged;
 };

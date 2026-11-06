@@ -1,5 +1,5 @@
 import "./lib/openapi/registry.ts";
-import express, { type Application, type NextFunction, type Request, type Response } from "express";
+import express, { type Application, type Request } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
@@ -22,6 +22,7 @@ import catalogRoutes from "./modules/catalog/index.ts";
 import cartRoutes from "./modules/cart/cart.routes.ts";
 import orderRoutes from "./modules/order/index.ts";
 import paymentRoutes from "./modules/payment/index.ts";
+import settingsRoutes from "./modules/settings/index.ts";
 import couponRoutes from "./modules/coupon/coupon.routes.ts";
 import wishlistRoutes from "./modules/wishlist/index.ts";
 import reviewRoutes from "./modules/review/index.ts";
@@ -36,16 +37,18 @@ import authRoutes from "./modules/auth/auth.routes.ts";
 import mediaRoutes from "./modules/media/index.ts";
 import warehouseRoutes from "./modules/warehouse/index.ts";
 import shippingRoutes from "./modules/shipping/index.ts";
+import auditRoutes from "./modules/audit/index.ts";
+import staffRoutes from "./modules/staff/index.ts";
+import shipmentRoutes from "./modules/shipments/index.ts";
+import courierRoutes from "./modules/courier/index.ts";
+import geographyRoutes from "./modules/geography/index.ts";
+import notificationRoutes from "./modules/notification/index.ts";
+import { adminAuditMiddleware } from "./modules/audit/admin-audit.middleware.ts";
 import {auth} from "./lib/auth.ts";
 import { generateOpenApiDocument } from "./lib/openapi/document.ts";
 
 const app: Application = express();
 const betterAuthHandler = toNodeHandler(auth);
-
-const isAppOwnedAuthPath = (req: Request) => {
-  const path = (req.originalUrl ?? req.path).split("?")[0] ?? "";
-  return path.replace(/\/+$/, "").endsWith("/auth/vendor/apply");
-};
 
 app.set("trust proxy", env.TRUST_PROXY_HOPS);
 
@@ -53,7 +56,7 @@ app.use(requestIdMiddleware);
 
 app.use(
     cors({
-        origin: [env.FRONTEND_URL],
+        origin: [env.FRONTEND_URL, "http://localhost:3000"],
         credentials: true,
     })
 );
@@ -110,26 +113,14 @@ app.get("/ready", async (_req, res) => {
   }
 });
 
-const skipAppOwnedAuthRoutes = (req: Request, res: Response, next: NextFunction) => {
-  if (isAppOwnedAuthPath(req)) {
-    authLimiter(req, res, next);
-    return;
-  }
-
-  authLimiter(req, res, (err) => {
-    if (err) {
-      next(err);
-      return;
-    }
-    betterAuthHandler(req, res);
-  });
-};
-
-app.all("/api/v1/auth/*splat", skipAppOwnedAuthRoutes);
+app.all("/api/v1/auth/*splat", authLimiter, betterAuthHandler);
 
 app.use(
   express.json({
     limit: env.MAX_JSON_SIZE,
+    verify: (req, _res, buffer) => {
+      (req as Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+    },
   })
 );
 
@@ -151,16 +142,18 @@ if (env.enableApiDocs) {
     "/api-docs",
     swaggerUi.serve,
     swaggerUi.setup(openApiDocument, {
-      customSiteTitle: "Raangalay API Docs",
+      customSiteTitle: `${env.BETTER_AUTH_APP_NAME} API Docs`,
     })
   );
 }
 
+app.use("/api/v1/admin", adminAuditMiddleware);
 app.use("/api/v1", catalogRoutes);
 app.use("/api/v1", homeRoutes);
 app.use("/api/v1", cartRoutes);
 app.use("/api/v1", orderRoutes);
 app.use("/api/v1", paymentRoutes);
+app.use("/api/v1", settingsRoutes);
 app.use("/api/v1", couponRoutes);
 app.use("/api/v1", wishlistRoutes);
 app.use("/api/v1", reviewRoutes);
@@ -174,6 +167,12 @@ app.use("/api/v1", authRoutes);
 app.use("/api/v1", mediaRoutes);
 app.use("/api/v1", warehouseRoutes);
 app.use("/api/v1", shippingRoutes);
+app.use("/api/v1", auditRoutes);
+app.use("/api/v1", staffRoutes);
+app.use("/api/v1", shipmentRoutes);
+app.use("/api/v1", courierRoutes);
+app.use("/api/v1", geographyRoutes);
+app.use("/api/v1", notificationRoutes);
 
 app.use(notFoundHandler);
 

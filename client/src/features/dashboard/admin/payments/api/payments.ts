@@ -5,6 +5,8 @@ import type {
   PaymentListParams,
   PaymentListResult,
   RefundInput,
+  RefundListParams,
+  RefundListResult,
   RefundRecord,
 } from "@/features/dashboard/admin/payments/types";
 
@@ -19,6 +21,11 @@ export type {
   PaymentTransaction,
   PaymentEvent,
   RefundRecord,
+  RefundQueuePayment,
+  RefundQueueItem,
+  RefundStatus,
+  RefundListParams,
+  RefundListResult,
   PaymentDetail,
   PaymentPagination,
   PaymentListResult,
@@ -29,6 +36,7 @@ export type {
 export {
   PAYMENT_STATUSES,
   PAYMENT_METHODS,
+  REFUND_STATUSES,
 } from "@/features/dashboard/admin/payments/types";
 
 export {
@@ -60,6 +68,31 @@ export async function fetchPaymentList(
   return res.data;
 }
 
+export async function fetchRefundList(
+  params: RefundListParams = {},
+): Promise<RefundListResult> {
+  const res = await dashboardApi.get<Envelope<RefundListResult>>(
+    "/admin/refunds",
+    {
+      ...noStore,
+      params: {
+        page: params.page ?? 1,
+        limit: params.limit ?? 20,
+        status: params.status,
+        method: params.method,
+        search: params.search,
+        requiresManualProcessing:
+          params.requiresManualProcessing === undefined
+            ? undefined
+            : String(params.requiresManualProcessing),
+        from: params.from,
+        to: params.to,
+      },
+    },
+  );
+  return res.data;
+}
+
 export async function fetchPaymentById(id: string): Promise<PaymentDetail> {
   const res = await dashboardApi.get<Envelope<PaymentDetail>>(
     `/admin/payments/${id}`,
@@ -72,6 +105,22 @@ export async function collectCodPayment(paymentId: string): Promise<unknown> {
   const res = await dashboardApi.post<Envelope<unknown>>(
     `/admin/payments/cod/${paymentId}/collect`,
     noStore,
+  );
+  return res.data;
+}
+
+export type RefundStatusUpdate = {
+  status: "APPROVED" | "REJECTED" | "PROCESSING" | "COMPLETED";
+  providerReference?: string;
+};
+
+export async function updateRefundStatus(
+  refundId: string,
+  body: RefundStatusUpdate,
+): Promise<RefundRecord> {
+  const res = await dashboardApi.patch<Envelope<RefundRecord>>(
+    `/admin/refunds/${refundId}`,
+    { body },
   );
   return res.data;
 }

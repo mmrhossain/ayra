@@ -21,6 +21,7 @@ export async function fetchPublicBlogs(params?: {
   category?: string;
 }): Promise<PublicBlogListResult> {
   const res = await api.get<Envelope<PublicBlogListResult>>("/blogs", {
+    next: { revalidate: 120, tags: ["blogs"] },
     params: {
       page: params?.page ?? 1,
       limit: params?.limit ?? 20,
@@ -33,6 +34,8 @@ export async function fetchPublicBlogs(params?: {
 export async function fetchPublicBlogBySlug(
   slug: string,
 ): Promise<PublicBlogPost> {
-  const res = await api.get<Envelope<PublicBlogPost>>(`/blogs/${slug}`);
+  const res = await api.get<Envelope<PublicBlogPost>>(`/blogs/${slug}`, {
+    next: { revalidate: 120, tags: ["blogs", `blog:${slug}`] },
+  });
   return res.data;
 }

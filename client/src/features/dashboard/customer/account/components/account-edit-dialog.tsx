@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
+import {
+  ImageUpload,
+  type ImageUploadHandle,
+} from "@/features/dashboard/admin/shared/components/image-upload";
 import {
   accountFormSchema,
   type AccountFormValues,
@@ -62,6 +66,25 @@ export function AccountEditDialog({
     onSuccess: () => onOpenChange(false),
   });
 
+  const imageUploadRef = useRef<ImageUploadHandle>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSaving = isSubmitting || mutation.isPending;
+  const submitForm = form.handleSubmit((values) => mutation.mutateAsync(values));
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSaving) return;
+    setIsSubmitting(true);
+    try {
+      await imageUploadRef.current?.flush();
+      await submitForm(event);
+    } catch {
+      // Errors are surfaced by the mutation/form layers.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -74,7 +97,7 @@ export function AccountEditDialog({
           <form
             id={ACCOUNT_FORM_ID}
             className="grid gap-4"
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={handleSubmit}
           >
             <FormField
               control={form.control}
@@ -84,6 +107,8 @@ export function AccountEditDialog({
                   <FormLabel>Profile photo</FormLabel>
                   <FormControl>
                     <ImageUpload
+                      ref={imageUploadRef}
+                      deferUpload
                       mode="single"
                       folder="profiles"
                       value={field.value ?? ""}
@@ -142,17 +167,24 @@ export function AccountEditDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
+            disabled={isSaving}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             form={ACCOUNT_FORM_ID}
-            disabled={mutation.isPending}
-            className="bg-slate-900 text-white hover:bg-primary"
+            disabled={isSaving}
+            className="bg-primary text-white hover:bg-primary/90"
           >
-            {mutation.isPending ? "Saving..." : "Save profile"}
+            {isSaving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save profile"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

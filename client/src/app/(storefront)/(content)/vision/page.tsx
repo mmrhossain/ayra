@@ -18,7 +18,7 @@ const VisionPage = () => {
             className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 pb-8 md:pb-12"
           >
             <div className="max-w-2xl">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight sm:tracking-tighter leading-[0.9] uppercase">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black leading-none tracking-tight uppercase sm:tracking-tighter">
                 Our <br />
                 <span className="text-primary italic font-serif">Vision.</span>
               </h1>
@@ -45,7 +45,7 @@ const VisionPage = () => {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: shouldReduceMotion ? 0 : 0.35 }}
-              className="text-2xl sm:text-3xl md:text-5xl font-medium leading-[1.24] tracking-tight"
+              className="text-2xl leading-tight font-medium tracking-tight sm:text-3xl md:text-5xl"
             >
               To redefine the global lifestyle by taking local craftsmanship beyond national borders,
               proving that <span className="bg-teal-50 px-2 py-1 italic font-serif text-teal-700">culture is not a relic</span>,
@@ -103,7 +103,7 @@ const VisionPage = () => {
               <div className="flex flex-col items-center">
                 <div className="w-12 h-[1px] bg-primary mb-4" />
                 <span className="uppercase tracking-widest font-black text-sm">Kamrunnahar Munni</span>
-                <span className="text-primary text-[10px] uppercase tracking-widest mt-1">Founder, Raangalay</span>
+                <span className="text-primary text-xs uppercase tracking-widest mt-1">Founder, Raangalay</span>
               </div>
             </motion.div>
           </div>
@@ -139,7 +139,7 @@ const VisionPage = () => {
 
       <section className="py-14 md:py-20 px-4 sm:px-6 text-center border-t border-slate-100">
         <motion.div whileHover={shouldReduceMotion ? { scale: 1 } : { scale: 1.02 }} className="inline-block">
-          <button className="bg-slate-900 text-white px-8 md:px-16 h-12 md:h-16 rounded-full font-black uppercase tracking-[0.15em] md:tracking-[0.3em] text-[10px] md:text-xs hover:bg-primary transition-all shadow-2xl">
+          <button className="bg-slate-900 text-white px-8 md:px-16 h-12 md:h-16 rounded-full font-black uppercase tracking-[0.15em] md:tracking-[0.3em] text-xs md:text-xs hover:bg-primary transition-all shadow-2xl">
             Support the Vision
           </button>
         </motion.div>

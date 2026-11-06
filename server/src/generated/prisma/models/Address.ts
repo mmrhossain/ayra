@@ -36,6 +36,9 @@ export type AddressMinAggregateOutputType = {
   thana: string | null
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   isDefaultShipping: boolean | null
@@ -57,6 +60,9 @@ export type AddressMaxAggregateOutputType = {
   thana: string | null
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string | null
   addressLine2: string | null
   isDefaultShipping: boolean | null
@@ -78,6 +84,9 @@ export type AddressCountAggregateOutputType = {
   thana: number
   area: number
   postalCode: number
+  divisionCode: number
+  districtCode: number
+  upazilaCode: number
   addressLine1: number
   addressLine2: number
   isDefaultShipping: number
@@ -101,6 +110,9 @@ export type AddressMinAggregateInputType = {
   thana?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   isDefaultShipping?: true
@@ -122,6 +134,9 @@ export type AddressMaxAggregateInputType = {
   thana?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   isDefaultShipping?: true
@@ -143,6 +158,9 @@ export type AddressCountAggregateInputType = {
   thana?: true
   area?: true
   postalCode?: true
+  divisionCode?: true
+  districtCode?: true
+  upazilaCode?: true
   addressLine1?: true
   addressLine2?: true
   isDefaultShipping?: true
@@ -237,6 +255,9 @@ export type AddressGroupByOutputType = {
   thana: string | null
   area: string | null
   postalCode: string | null
+  divisionCode: string | null
+  districtCode: string | null
+  upazilaCode: string | null
   addressLine1: string
   addressLine2: string | null
   isDefaultShipping: boolean
@@ -279,6 +300,9 @@ export type AddressWhereInput = {
   thana?: Prisma.StringNullableFilter<"Address"> | string | null
   area?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"Address"> | string | null
   addressLine1?: Prisma.StringFilter<"Address"> | string
   addressLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   isDefaultShipping?: Prisma.BoolFilter<"Address"> | boolean
@@ -301,6 +325,9 @@ export type AddressOrderByWithRelationInput = {
   thana?: Prisma.SortOrderInput | Prisma.SortOrder
   area?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefaultShipping?: Prisma.SortOrder
@@ -326,6 +353,9 @@ export type AddressWhereUniqueInput = Prisma.AtLeast<{
   thana?: Prisma.StringNullableFilter<"Address"> | string | null
   area?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"Address"> | string | null
   addressLine1?: Prisma.StringFilter<"Address"> | string
   addressLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   isDefaultShipping?: Prisma.BoolFilter<"Address"> | boolean
@@ -348,6 +378,9 @@ export type AddressOrderByWithAggregationInput = {
   thana?: Prisma.SortOrderInput | Prisma.SortOrder
   area?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  divisionCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  districtCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrderInput | Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefaultShipping?: Prisma.SortOrder
@@ -375,6 +408,9 @@ export type AddressScalarWhereWithAggregatesInput = {
   thana?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   area?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
+  divisionCode?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
+  districtCode?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
+  upazilaCode?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   addressLine1?: Prisma.StringWithAggregatesFilter<"Address"> | string
   addressLine2?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   isDefaultShipping?: Prisma.BoolWithAggregatesFilter<"Address"> | boolean
@@ -396,6 +432,9 @@ export type AddressCreateInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -417,6 +456,9 @@ export type AddressUncheckedCreateInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -438,6 +480,9 @@ export type AddressUpdateInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -459,6 +504,9 @@ export type AddressUncheckedUpdateInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -480,6 +528,9 @@ export type AddressCreateManyInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -501,6 +552,9 @@ export type AddressUpdateManyMutationInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -521,6 +575,9 @@ export type AddressUncheckedUpdateManyInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -552,6 +609,9 @@ export type AddressCountOrderByAggregateInput = {
   thana?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   isDefaultShipping?: Prisma.SortOrder
@@ -573,6 +633,9 @@ export type AddressMaxOrderByAggregateInput = {
   thana?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   isDefaultShipping?: Prisma.SortOrder
@@ -594,6 +657,9 @@ export type AddressMinOrderByAggregateInput = {
   thana?: Prisma.SortOrder
   area?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
+  divisionCode?: Prisma.SortOrder
+  districtCode?: Prisma.SortOrder
+  upazilaCode?: Prisma.SortOrder
   addressLine1?: Prisma.SortOrder
   addressLine2?: Prisma.SortOrder
   isDefaultShipping?: Prisma.SortOrder
@@ -657,6 +723,9 @@ export type AddressCreateWithoutCustomerProfileInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -677,6 +746,9 @@ export type AddressUncheckedCreateWithoutCustomerProfileInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -726,6 +798,9 @@ export type AddressScalarWhereInput = {
   thana?: Prisma.StringNullableFilter<"Address"> | string | null
   area?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  divisionCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  districtCode?: Prisma.StringNullableFilter<"Address"> | string | null
+  upazilaCode?: Prisma.StringNullableFilter<"Address"> | string | null
   addressLine1?: Prisma.StringFilter<"Address"> | string
   addressLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   isDefaultShipping?: Prisma.BoolFilter<"Address"> | boolean
@@ -747,6 +822,9 @@ export type AddressCreateManyCustomerProfileInput = {
   thana?: string | null
   area?: string | null
   postalCode?: string | null
+  divisionCode?: string | null
+  districtCode?: string | null
+  upazilaCode?: string | null
   addressLine1: string
   addressLine2?: string | null
   isDefaultShipping?: boolean
@@ -767,6 +845,9 @@ export type AddressUpdateWithoutCustomerProfileInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -787,6 +868,9 @@ export type AddressUncheckedUpdateWithoutCustomerProfileInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -807,6 +891,9 @@ export type AddressUncheckedUpdateManyWithoutCustomerProfileInput = {
   thana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  divisionCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  districtCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  upazilaCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressLine1?: Prisma.StringFieldUpdateOperationsInput | string
   addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefaultShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -829,6 +916,9 @@ export type AddressSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   thana?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   isDefaultShipping?: boolean
@@ -851,6 +941,9 @@ export type AddressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   thana?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   isDefaultShipping?: boolean
@@ -873,6 +966,9 @@ export type AddressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   thana?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   isDefaultShipping?: boolean
@@ -895,6 +991,9 @@ export type AddressSelectScalar = {
   thana?: boolean
   area?: boolean
   postalCode?: boolean
+  divisionCode?: boolean
+  districtCode?: boolean
+  upazilaCode?: boolean
   addressLine1?: boolean
   addressLine2?: boolean
   isDefaultShipping?: boolean
@@ -904,7 +1003,7 @@ export type AddressSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "label" | "fullName" | "phone" | "email" | "country" | "division" | "district" | "thana" | "area" | "postalCode" | "addressLine1" | "addressLine2" | "isDefaultShipping" | "isDefaultBilling" | "customerProfileId" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
+export type AddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "label" | "fullName" | "phone" | "email" | "country" | "division" | "district" | "thana" | "area" | "postalCode" | "divisionCode" | "districtCode" | "upazilaCode" | "addressLine1" | "addressLine2" | "isDefaultShipping" | "isDefaultBilling" | "customerProfileId" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
 export type AddressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customerProfile?: boolean | Prisma.CustomerProfileDefaultArgs<ExtArgs>
 }
@@ -932,6 +1031,9 @@ export type $AddressPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     thana: string | null
     area: string | null
     postalCode: string | null
+    divisionCode: string | null
+    districtCode: string | null
+    upazilaCode: string | null
     addressLine1: string
     addressLine2: string | null
     isDefaultShipping: boolean
@@ -1374,6 +1476,9 @@ export interface AddressFieldRefs {
   readonly thana: Prisma.FieldRef<"Address", 'String'>
   readonly area: Prisma.FieldRef<"Address", 'String'>
   readonly postalCode: Prisma.FieldRef<"Address", 'String'>
+  readonly divisionCode: Prisma.FieldRef<"Address", 'String'>
+  readonly districtCode: Prisma.FieldRef<"Address", 'String'>
+  readonly upazilaCode: Prisma.FieldRef<"Address", 'String'>
   readonly addressLine1: Prisma.FieldRef<"Address", 'String'>
   readonly addressLine2: Prisma.FieldRef<"Address", 'String'>
   readonly isDefaultShipping: Prisma.FieldRef<"Address", 'Boolean'>

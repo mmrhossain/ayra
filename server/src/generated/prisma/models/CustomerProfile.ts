@@ -46,9 +46,6 @@ export type CustomerProfileMinAggregateOutputType = {
   loyaltyPoints: number | null
   totalOrders: number | null
   totalSpent: runtime.Decimal | null
-  facebookId: string | null
-  googleId: string | null
-  appleId: string | null
   userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -63,9 +60,6 @@ export type CustomerProfileMaxAggregateOutputType = {
   loyaltyPoints: number | null
   totalOrders: number | null
   totalSpent: runtime.Decimal | null
-  facebookId: string | null
-  googleId: string | null
-  appleId: string | null
   userId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -80,9 +74,6 @@ export type CustomerProfileCountAggregateOutputType = {
   loyaltyPoints: number
   totalOrders: number
   totalSpent: number
-  facebookId: number
-  googleId: number
-  appleId: number
   userId: number
   createdAt: number
   updatedAt: number
@@ -111,9 +102,6 @@ export type CustomerProfileMinAggregateInputType = {
   loyaltyPoints?: true
   totalOrders?: true
   totalSpent?: true
-  facebookId?: true
-  googleId?: true
-  appleId?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -128,9 +116,6 @@ export type CustomerProfileMaxAggregateInputType = {
   loyaltyPoints?: true
   totalOrders?: true
   totalSpent?: true
-  facebookId?: true
-  googleId?: true
-  appleId?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -145,9 +130,6 @@ export type CustomerProfileCountAggregateInputType = {
   loyaltyPoints?: true
   totalOrders?: true
   totalSpent?: true
-  facebookId?: true
-  googleId?: true
-  appleId?: true
   userId?: true
   createdAt?: true
   updatedAt?: true
@@ -249,9 +231,6 @@ export type CustomerProfileGroupByOutputType = {
   loyaltyPoints: number
   totalOrders: number
   totalSpent: runtime.Decimal
-  facebookId: string | null
-  googleId: string | null
-  appleId: string | null
   userId: string
   createdAt: Date
   updatedAt: Date
@@ -289,9 +268,6 @@ export type CustomerProfileWhereInput = {
   loyaltyPoints?: Prisma.IntFilter<"CustomerProfile"> | number
   totalOrders?: Prisma.IntFilter<"CustomerProfile"> | number
   totalSpent?: Prisma.DecimalFilter<"CustomerProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
-  googleId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
-  appleId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
   userId?: Prisma.StringFilter<"CustomerProfile"> | string
   createdAt?: Prisma.DateTimeFilter<"CustomerProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerProfile"> | Date | string
@@ -313,9 +289,6 @@ export type CustomerProfileOrderByWithRelationInput = {
   loyaltyPoints?: Prisma.SortOrder
   totalOrders?: Prisma.SortOrder
   totalSpent?: Prisma.SortOrder
-  facebookId?: Prisma.SortOrderInput | Prisma.SortOrder
-  googleId?: Prisma.SortOrderInput | Prisma.SortOrder
-  appleId?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -341,9 +314,6 @@ export type CustomerProfileWhereUniqueInput = Prisma.AtLeast<{
   loyaltyPoints?: Prisma.IntFilter<"CustomerProfile"> | number
   totalOrders?: Prisma.IntFilter<"CustomerProfile"> | number
   totalSpent?: Prisma.DecimalFilter<"CustomerProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
-  googleId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
-  appleId?: Prisma.StringNullableFilter<"CustomerProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CustomerProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerProfile"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"CustomerProfile"> | Date | string | null
@@ -364,9 +334,6 @@ export type CustomerProfileOrderByWithAggregationInput = {
   loyaltyPoints?: Prisma.SortOrder
   totalOrders?: Prisma.SortOrder
   totalSpent?: Prisma.SortOrder
-  facebookId?: Prisma.SortOrderInput | Prisma.SortOrder
-  googleId?: Prisma.SortOrderInput | Prisma.SortOrder
-  appleId?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -389,9 +356,6 @@ export type CustomerProfileScalarWhereWithAggregatesInput = {
   loyaltyPoints?: Prisma.IntWithAggregatesFilter<"CustomerProfile"> | number
   totalOrders?: Prisma.IntWithAggregatesFilter<"CustomerProfile"> | number
   totalSpent?: Prisma.DecimalWithAggregatesFilter<"CustomerProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.StringNullableWithAggregatesFilter<"CustomerProfile"> | string | null
-  googleId?: Prisma.StringNullableWithAggregatesFilter<"CustomerProfile"> | string | null
-  appleId?: Prisma.StringNullableWithAggregatesFilter<"CustomerProfile"> | string | null
   userId?: Prisma.StringWithAggregatesFilter<"CustomerProfile"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerProfile"> | Date | string
@@ -406,9 +370,6 @@ export type CustomerProfileCreateInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -429,9 +390,6 @@ export type CustomerProfileUncheckedCreateInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -452,9 +410,6 @@ export type CustomerProfileUpdateInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -475,9 +430,6 @@ export type CustomerProfileUncheckedUpdateInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -498,9 +450,6 @@ export type CustomerProfileCreateManyInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -515,9 +464,6 @@ export type CustomerProfileUpdateManyMutationInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -531,9 +477,6 @@ export type CustomerProfileUncheckedUpdateManyInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -558,9 +501,6 @@ export type CustomerProfileCountOrderByAggregateInput = {
   loyaltyPoints?: Prisma.SortOrder
   totalOrders?: Prisma.SortOrder
   totalSpent?: Prisma.SortOrder
-  facebookId?: Prisma.SortOrder
-  googleId?: Prisma.SortOrder
-  appleId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -581,9 +521,6 @@ export type CustomerProfileMaxOrderByAggregateInput = {
   loyaltyPoints?: Prisma.SortOrder
   totalOrders?: Prisma.SortOrder
   totalSpent?: Prisma.SortOrder
-  facebookId?: Prisma.SortOrder
-  googleId?: Prisma.SortOrder
-  appleId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -598,9 +535,6 @@ export type CustomerProfileMinOrderByAggregateInput = {
   loyaltyPoints?: Prisma.SortOrder
   totalOrders?: Prisma.SortOrder
   totalSpent?: Prisma.SortOrder
-  facebookId?: Prisma.SortOrder
-  googleId?: Prisma.SortOrder
-  appleId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -741,9 +675,6 @@ export type CustomerProfileCreateWithoutUserInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -763,9 +694,6 @@ export type CustomerProfileUncheckedCreateWithoutUserInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -801,9 +729,6 @@ export type CustomerProfileUpdateWithoutUserInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -823,9 +748,6 @@ export type CustomerProfileUncheckedUpdateWithoutUserInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -845,9 +767,6 @@ export type CustomerProfileCreateWithoutReviewsInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -867,9 +786,6 @@ export type CustomerProfileUncheckedCreateWithoutReviewsInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -905,9 +821,6 @@ export type CustomerProfileUpdateWithoutReviewsInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -927,9 +840,6 @@ export type CustomerProfileUncheckedUpdateWithoutReviewsInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -949,9 +859,6 @@ export type CustomerProfileCreateWithoutAddressesInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -971,9 +878,6 @@ export type CustomerProfileUncheckedCreateWithoutAddressesInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1009,9 +913,6 @@ export type CustomerProfileUpdateWithoutAddressesInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1031,9 +932,6 @@ export type CustomerProfileUncheckedUpdateWithoutAddressesInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1053,9 +951,6 @@ export type CustomerProfileCreateWithoutWishlistInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1075,9 +970,6 @@ export type CustomerProfileUncheckedCreateWithoutWishlistInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1113,9 +1005,6 @@ export type CustomerProfileUpdateWithoutWishlistInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1135,9 +1024,6 @@ export type CustomerProfileUncheckedUpdateWithoutWishlistInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1157,9 +1043,6 @@ export type CustomerProfileCreateWithoutCartsInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1179,9 +1062,6 @@ export type CustomerProfileUncheckedCreateWithoutCartsInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1217,9 +1097,6 @@ export type CustomerProfileUpdateWithoutCartsInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1239,9 +1116,6 @@ export type CustomerProfileUncheckedUpdateWithoutCartsInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1261,9 +1135,6 @@ export type CustomerProfileCreateWithoutOrdersInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1283,9 +1154,6 @@ export type CustomerProfileUncheckedCreateWithoutOrdersInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1321,9 +1189,6 @@ export type CustomerProfileUpdateWithoutOrdersInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1343,9 +1208,6 @@ export type CustomerProfileUncheckedUpdateWithoutOrdersInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1365,9 +1227,6 @@ export type CustomerProfileCreateWithoutCouponUsagesInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1387,9 +1246,6 @@ export type CustomerProfileUncheckedCreateWithoutCouponUsagesInput = {
   loyaltyPoints?: number
   totalOrders?: number
   totalSpent?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: string | null
-  googleId?: string | null
-  appleId?: string | null
   userId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1425,9 +1281,6 @@ export type CustomerProfileUpdateWithoutCouponUsagesInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1447,9 +1300,6 @@ export type CustomerProfileUncheckedUpdateWithoutCouponUsagesInput = {
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   totalOrders?: Prisma.IntFieldUpdateOperationsInput | number
   totalSpent?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  facebookId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  appleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1536,9 +1386,6 @@ export type CustomerProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
   loyaltyPoints?: boolean
   totalOrders?: boolean
   totalSpent?: boolean
-  facebookId?: boolean
-  googleId?: boolean
-  appleId?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1561,9 +1408,6 @@ export type CustomerProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   loyaltyPoints?: boolean
   totalOrders?: boolean
   totalSpent?: boolean
-  facebookId?: boolean
-  googleId?: boolean
-  appleId?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1579,9 +1423,6 @@ export type CustomerProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   loyaltyPoints?: boolean
   totalOrders?: boolean
   totalSpent?: boolean
-  facebookId?: boolean
-  googleId?: boolean
-  appleId?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1597,16 +1438,13 @@ export type CustomerProfileSelectScalar = {
   loyaltyPoints?: boolean
   totalOrders?: boolean
   totalSpent?: boolean
-  facebookId?: boolean
-  googleId?: boolean
-  appleId?: boolean
   userId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type CustomerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerCode" | "dateOfBirth" | "gender" | "loyaltyPoints" | "totalOrders" | "totalSpent" | "facebookId" | "googleId" | "appleId" | "userId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["customerProfile"]>
+export type CustomerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerCode" | "dateOfBirth" | "gender" | "loyaltyPoints" | "totalOrders" | "totalSpent" | "userId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["customerProfile"]>
 export type CustomerProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   addresses?: boolean | Prisma.CustomerProfile$addressesArgs<ExtArgs>
   carts?: boolean | Prisma.CustomerProfile$cartsArgs<ExtArgs>
@@ -1643,9 +1481,6 @@ export type $CustomerProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
     loyaltyPoints: number
     totalOrders: number
     totalSpent: runtime.Decimal
-    facebookId: string | null
-    googleId: string | null
-    appleId: string | null
     userId: string
     createdAt: Date
     updatedAt: Date
@@ -2087,9 +1922,6 @@ export interface CustomerProfileFieldRefs {
   readonly loyaltyPoints: Prisma.FieldRef<"CustomerProfile", 'Int'>
   readonly totalOrders: Prisma.FieldRef<"CustomerProfile", 'Int'>
   readonly totalSpent: Prisma.FieldRef<"CustomerProfile", 'Decimal'>
-  readonly facebookId: Prisma.FieldRef<"CustomerProfile", 'String'>
-  readonly googleId: Prisma.FieldRef<"CustomerProfile", 'String'>
-  readonly appleId: Prisma.FieldRef<"CustomerProfile", 'String'>
   readonly userId: Prisma.FieldRef<"CustomerProfile", 'String'>
   readonly createdAt: Prisma.FieldRef<"CustomerProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CustomerProfile", 'DateTime'>

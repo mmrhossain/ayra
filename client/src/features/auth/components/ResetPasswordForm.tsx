@@ -124,7 +124,7 @@ const ResetPasswordForm: React.FC = () => {
                     </button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />
@@ -158,7 +158,7 @@ const ResetPasswordForm: React.FC = () => {
                     </button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-xs text-danger" />
+                <FormMessage className="text-danger" />
               </FormItem>
             )}
           />

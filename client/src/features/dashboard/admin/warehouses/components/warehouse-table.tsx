@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -24,6 +26,8 @@ import type {
 import { toWarehouseErrorMessage } from "@/features/dashboard/admin/warehouses/utils";
 
 export function WarehouseTable({ initialData }: WarehouseTableProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(initialData.pagination.page);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -32,6 +36,23 @@ export function WarehouseTable({ initialData }: WarehouseTableProps) {
   const [editing, setEditing] = useState<WarehouseListItem | undefined>();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState<WarehouseListItem | null>(null);
+  const createRequested = searchParams.get("create") === "1";
+  const [handledCreateRequest, setHandledCreateRequest] = useState(false);
+
+  if (createRequested && !handledCreateRequest) {
+    setHandledCreateRequest(true);
+    setFormMode("create");
+    setEditing(undefined);
+    setFormOpen(true);
+  } else if (!createRequested && handledCreateRequest) {
+    setHandledCreateRequest(false);
+  }
+
+  useEffect(() => {
+    if (createRequested) {
+      router.replace("/admin/warehouses", { scroll: false });
+    }
+  }, [createRequested, router]);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -127,15 +148,9 @@ export function WarehouseTable({ initialData }: WarehouseTableProps) {
                       {warehouse.phone || warehouse.email || "—"}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${
-                          warehouse.isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground"
-                        }`}
-                      >
+                      <StatusBadge variant={warehouse.isActive ? "success" : "neutral"}>
                         {warehouse.isActive ? "Active" : "Inactive"}
-                      </span>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
