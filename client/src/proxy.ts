@@ -1,10 +1,9 @@
-import { SESSION_COOKIE } from "@/config";
 import { NextRequest, NextResponse } from "next/server";
+import { SESSION_COOKIE } from "./config/public";
 
 function hasSessionCookie(request: NextRequest): boolean {
   const session =
-    request.cookies.get(SESSION_COOKIE) ??
-    request.cookies.get(`__Secure-${SESSION_COOKIE}`);
+    request.cookies.get(SESSION_COOKIE) ?? request.cookies.get(`__Secure-${SESSION_COOKIE}`);
 
   return Boolean(session?.value);
 }
@@ -14,9 +13,7 @@ export function proxy(request: NextRequest) {
   const isLoggedIn = hasSessionCookie(request);
 
   const isAuthPage =
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/account-suspended";
+    pathname === "/login" || pathname === "/register" || pathname === "/account-suspended";
 
   // Auth pages resolve their own destination server-side by role, so a
   // signed-in admin goes straight to /admin instead of bouncing through the
@@ -33,11 +30,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/login",
-    "/register",
-    "/admin/:path*",
-    "/customer/:path*",
-    "/checkout",
-  ],
+  matcher: ["/login", "/register", "/admin/:path*", "/customer/:path*", "/checkout"],
 };

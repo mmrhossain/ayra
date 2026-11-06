@@ -1,15 +1,8 @@
-import { BETTER_AUTH_BASE_PATH, BETTER_AUTH_URL } from "@/config";
+import { BETTER_AUTH_BASE_PATH } from "@/config/public";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-/**
- * Better Auth client for the unified backend.
- *
- * Browser traffic always goes through same-origin `/backend-proxy`
- * unless NEXT_PUBLIC_BETTER_AUTH_URL is an explicit remote origin.
- */
 export const authClient = createAuthClient({
-  ...(BETTER_AUTH_URL ? { baseURL: BETTER_AUTH_URL } : {}),
   basePath: BETTER_AUTH_BASE_PATH,
   plugins: [
     inferAdditionalFields({
@@ -26,5 +19,3 @@ export const authClient = createAuthClient({
     }),
   ],
 });
-
-export { SESSION_COOKIE } from "@/config";

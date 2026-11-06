@@ -1,6 +1,5 @@
 "use client";
 
-import { CALLBACK_URL } from "@/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
 import React from "react";
@@ -10,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { SITE_URL } from "@/config/site";
 import AuthCard, {
   AuthSpinner,
   authInputClass,
@@ -37,7 +37,7 @@ const ForgotPasswordForm: React.FC = () => {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
     try {
-      const appUrl = typeof window !== "undefined" ? window.location.origin : CALLBACK_URL;
+      const appUrl = typeof window !== "undefined" ? window.location.origin : SITE_URL;
 
       const { error } = await authClient.requestPasswordReset({
         email: data.email,

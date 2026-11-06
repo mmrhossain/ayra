@@ -1,45 +1,43 @@
-#!/usr/bin/env node
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import openapiTS, { astToString } from "openapi-typescript";
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-const localSpec =
-  process.env.BACKEND_OPENAPI_JSON ||
-  resolve(rootDir, "openapi-dashboard.json");
-const origin =
-  process.env.BACKEND_ORIGIN ||
-  process.env.NEXT_PUBLIC_DASHBOARD_API_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL;
+const localSpec = process.env.BACKEND_OPENAPI_JSON || resolve(rootDir, "openapi-dashboard.json");
+const origin = process.env.BACKEND_ORIGIN?.trim().replace(/\/+$/, "");
 
 let specUrl;
 let spec;
 
 if (existsSync(localSpec)) {
-  specUrl = `file://${localSpec}`;
+  specUrl = pathToFileURL(resolve(localSpec)).href;
   console.log(`Reading OpenAPI spec from ${specUrl} ...`);
   spec = JSON.parse(readFileSync(localSpec, "utf8"));
 } else if (origin && !origin.startsWith("/")) {
-  specUrl = `${origin.replace(/\/$/, "")}/api-docs.json`;
+  specUrl = `${origin}/api-docs.json`;
   console.log(`Fetching OpenAPI spec from ${specUrl} ...`);
-  const res = await fetch(specUrl);
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+  const response = await fetch(specUrl);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${specUrl}: HTTP ${response.status} ${response.statusText}`);
   }
-  spec = await res.json();
+
+  spec = await response.json();
 } else {
   console.error(
-    "Error: no local spec (openapi-dashboard.json) and no reachable origin."
+    "OpenAPI spec not found. Set BACKEND_OPENAPI_JSON to a local file or set BACKEND_ORIGIN."
   );
   process.exit(1);
 }
 
 const outputPath = resolve(rootDir, "src/lib/api/dashboard/types.ts");
+
 console.log("Generating dashboard API types ...");
 const types = await openapiTS(spec, {
   exportType: true,
-  commentHeader: `/* eslint-disable */\n/* auto-generated from ${specUrl} */\n`,
+  commentHeader: `/* eslint-disable */\n/* Auto-generated from ${specUrl} */\n`,
 });
 
 mkdirSync(dirname(outputPath), { recursive: true });

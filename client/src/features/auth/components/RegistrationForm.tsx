@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { CALLBACK_URL } from "@/config";
+import { SITE_URL } from "@/config/site";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Mail, UserRound } from "lucide-react";
 import React, { useState } from "react";
@@ -56,7 +56,7 @@ const RegistrationForm: React.FC = () => {
         email: data.identifier,
         password: data.password,
         name: data.fullName,
-        callbackURL: `${typeof window !== "undefined" ? window.location.origin : CALLBACK_URL}/login`,
+        callbackURL: `${typeof window !== "undefined" ? window.location.origin : SITE_URL}/login`,
       });
 
       if (error) {
@@ -65,7 +65,7 @@ const RegistrationForm: React.FC = () => {
       }
       successToast("Please check your email to verify your account.");
       router.push(redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login");
-      // router.refresh();
+      router.refresh();
     } catch {
       setFormError("সার্ভারে যোগাযোগ করা যায়নি। আবার চেষ্টা করুন।");
     } finally {

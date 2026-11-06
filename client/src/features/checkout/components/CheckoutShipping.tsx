@@ -2,7 +2,6 @@
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SelectItem } from "@/components/ui/select";
-import { DEFAULT_SHIPPING_METHOD_CODE } from "@/constants/shipping";
 import {
   CheckoutCta,
   CheckoutSection,
@@ -16,30 +15,21 @@ import { errorToast } from "@/helpers";
 import { formatPrice } from "@/lib/format";
 import { locationStore } from "@/stores/location.store";
 import { useEffect } from "react";
+const DEFAULT_SHIPPING_METHOD_CODE = "STANDARD";
 
 type CheckoutShippingProps = {
   onContinue: (next: CheckoutStep) => void;
 };
 
 const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
-  const {
-    formState,
-    handleChange,
-    fetchUpazilaList,
-    districtList,
-    upazilaList,
-  } = locationStore();
+  const { formState, handleChange, fetchUpazilaList, districtList, upazilaList } = locationStore();
 
   const districtCode =
     formState.districtCode ||
-    districtList?.find((district) => district.name === formState.district)
-      ?.code ||
+    districtList?.find((district) => district.name === formState.district)?.code ||
     "";
 
-  const { optionsQuery, shippingOptions } = useCheckoutShipping(
-    formState.district,
-    districtCode,
-  );
+  const { optionsQuery, shippingOptions } = useCheckoutShipping(formState.district, districtCode);
 
   useEffect(() => {
     if (!formState.district) {
@@ -51,21 +41,15 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
       return;
     }
     const stillValid = shippingOptions.some(
-      (option) => option.methodCode === formState.shippingMethodCode,
+      (option) => option.methodCode === formState.shippingMethodCode
     );
     if (!stillValid) {
       const preferred =
-        shippingOptions.find(
-          (option) => option.methodCode === DEFAULT_SHIPPING_METHOD_CODE,
-        ) ?? shippingOptions[0];
+        shippingOptions.find((option) => option.methodCode === DEFAULT_SHIPPING_METHOD_CODE) ??
+        shippingOptions[0];
       handleChange("shippingMethodCode", preferred.methodCode);
     }
-  }, [
-    formState.district,
-    formState.shippingMethodCode,
-    handleChange,
-    shippingOptions,
-  ]);
+  }, [formState.district, formState.shippingMethodCode, handleChange, shippingOptions]);
 
   const handleThanaChange = (value: string) => {
     const selected = upazilaList?.find((upazila) => upazila.code === value);
@@ -99,7 +83,13 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
         <div className="border border-border bg-white px-4 py-3 text-sm leading-relaxed text-foreground">
           <p className="font-medium">{formState.name}</p>
           <p className="mt-1 text-neutral-500">
-            {[formState.address, formState.thana, formState.district, formState.division, formState.postal_code]
+            {[
+              formState.address,
+              formState.thana,
+              formState.district,
+              formState.division,
+              formState.postal_code,
+            ]
               .filter(Boolean)
               .join(", ")}
           </p>
@@ -116,8 +106,7 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
           placeholder="Select thana"
           value={
             formState.upazilaCode ||
-            upazilaList?.find((upazila) => upazila.name === formState.thana)
-              ?.code ||
+            upazilaList?.find((upazila) => upazila.name === formState.thana)?.code ||
             ""
           }
           onValueChange={handleThanaChange}
@@ -140,9 +129,7 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
             : "Select a city on the previous step to see delivery methods."}
         </p>
         {!formState.district ? (
-          <p className="text-sm text-neutral-400">
-            Select a city first to load shipping options.
-          </p>
+          <p className="text-sm text-neutral-400">Select a city first to load shipping options.</p>
         ) : optionsQuery.isLoading ? (
           <p className="text-sm text-neutral-400">Loading shipping options...</p>
         ) : optionsQuery.isError ? (
@@ -172,13 +159,9 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
                 />
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-foreground">
-                      {option.methodName}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{option.methodName}</p>
                     <span className="shrink-0 text-sm text-foreground">
-                      {option.isFreeShipping
-                        ? "Free"
-                        : formatPrice(option.shippingAmount)}
+                      {option.isFreeShipping ? "Free" : formatPrice(option.shippingAmount)}
                     </span>
                   </div>
                   <p className="text-xs leading-relaxed text-neutral-400">

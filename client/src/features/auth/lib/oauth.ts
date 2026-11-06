@@ -1,4 +1,4 @@
-import { CALLBACK_URL } from "@/config";
+import { SITE_URL } from "@/config/site";
 
 export function safeRedirectPath(raw: string | null | undefined): string {
   if (!raw) return "/";
@@ -13,7 +13,6 @@ export function safeRedirectPath(raw: string | null | undefined): string {
   if (
     !decoded.startsWith("/") ||
     decoded.startsWith("//") ||
-    decoded.startsWith("/\\") ||
     decoded.includes("://") ||
     decoded.includes("\\") ||
     /[\u0000-\u001F\u007F]/.test(decoded)
@@ -26,7 +25,7 @@ export function safeRedirectPath(raw: string | null | undefined): string {
 
 function clientOrigin(): string {
   if (typeof window !== "undefined") return window.location.origin;
-  return CALLBACK_URL;
+  return SITE_URL;
 }
 
 export function oauthCallbackUrl(redirect: string): string {
@@ -37,6 +36,7 @@ export function oauthCallbackUrl(redirect: string): string {
 export function oauthErrorCallbackUrl(redirect: string): string {
   const path = safeRedirectPath(redirect);
   const origin = clientOrigin();
+
   if (path === "/") return `${origin}/login`;
   return `${origin}/login?redirect=${encodeURIComponent(path)}`;
 }

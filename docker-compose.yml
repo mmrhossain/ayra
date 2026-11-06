@@ -36,7 +36,8 @@ services:
       DIRECT_URL: postgresql://ayra:ayra-local-only@postgres:5432/ayra?schema=public
       REDIS_URL: redis://redis:6379
       FRONTEND_URL: http://localhost:3000
-      BETTER_AUTH_URL: http://localhost:5000
+      BETTER_AUTH_URL: http://localhost:3000
+      PAYMENT_CALLBACK_BASE_URL: ${PAYMENT_CALLBACK_BASE_URL:-http://localhost:5000}
       BETTER_AUTH_APP_NAME: ${BETTER_AUTH_APP_NAME:-Ayra}
       RESEND_FROM: ${RESEND_FROM:-no-reply@example.com}
     depends_on:
@@ -54,9 +55,8 @@ services:
         BACKEND_ORIGIN: http://server:5000
         NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Ayra}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_LOGO: ${NEXT_PUBLIC_LOGO:-}
         NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-support@example.com}
-        NEXT_PUBLIC_BETTER_AUTH_URL: ${NEXT_PUBLIC_BETTER_AUTH_URL:-}
-        NEXT_PUBLIC_CALLBACK_URL: ${NEXT_PUBLIC_CALLBACK_URL:-http://localhost:3000}
     environment:
       BACKEND_ORIGIN: http://server:5000
       PORT: 3000
