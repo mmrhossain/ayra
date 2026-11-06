@@ -1,51 +1,51 @@
+import express, { type Application, type Request, type RequestHandler } from "express";
 import "./lib/openapi/registry.ts";
-import express, { type Application, type Request } from "express";
-import cors from "cors";
-import helmet from "helmet";
+
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import helmetImport, { type HelmetOptions } from "helmet";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 
+import { authLimiter, domainLimiter, limiter } from "./common/middleware/rate-limit.middleware.ts";
+import { requestIdMiddleware } from "./common/middleware/request-id.middleware.ts";
 import { env } from "./config/env.ts";
 import { prisma } from "./lib/prisma.ts";
 import { redis } from "./lib/redis.ts";
-import { requestIdMiddleware } from "./common/middleware/request-id.middleware.ts";
-import { authLimiter, domainLimiter, limiter } from "./common/middleware/rate-limit.middleware.ts";
 
-import { notFoundHandler } from "./common/middleware/not-found.middleware.ts";
-import { globalErrorHandler } from "./common/middleware/global-error.middleware.ts";
 import { toNodeHandler } from "better-auth/node";
+import { globalErrorHandler } from "./common/middleware/global-error.middleware.ts";
+import { notFoundHandler } from "./common/middleware/not-found.middleware.ts";
 
-
-import catalogRoutes from "./modules/catalog/index.ts";
-import cartRoutes from "./modules/cart/cart.routes.ts";
-import orderRoutes from "./modules/order/index.ts";
-import paymentRoutes from "./modules/payment/index.ts";
-import settingsRoutes from "./modules/settings/index.ts";
-import couponRoutes from "./modules/coupon/coupon.routes.ts";
-import wishlistRoutes from "./modules/wishlist/index.ts";
-import reviewRoutes from "./modules/review/index.ts";
-import sliderRoutes from "./modules/slider/index.ts";
-import homeRoutes from "./modules/home/index.ts";
-import aiRoutes from "./modules/ai/index.ts";
-import contentRoutes from "./modules/content/index.ts";
-import analyticsRoutes from "./modules/analytics/index.ts";
+import { auth } from "./lib/auth.ts";
+import { generateOpenApiDocument } from "./lib/openapi/document.ts";
 import addressRoutes from "./modules/address/index.ts";
-import profileRoutes from "./modules/profile/index.ts";
-import authRoutes from "./modules/auth/auth.routes.ts";
-import mediaRoutes from "./modules/media/index.ts";
-import warehouseRoutes from "./modules/warehouse/index.ts";
-import shippingRoutes from "./modules/shipping/index.ts";
+import aiRoutes from "./modules/ai/index.ts";
+import analyticsRoutes from "./modules/analytics/index.ts";
+import { adminAuditMiddleware } from "./modules/audit/admin-audit.middleware.ts";
 import auditRoutes from "./modules/audit/index.ts";
-import staffRoutes from "./modules/staff/index.ts";
-import shipmentRoutes from "./modules/shipments/index.ts";
+import authRoutes from "./modules/auth/auth.routes.ts";
+import cartRoutes from "./modules/cart/cart.routes.ts";
+import catalogRoutes from "./modules/catalog/index.ts";
+import contentRoutes from "./modules/content/index.ts";
+import couponRoutes from "./modules/coupon/coupon.routes.ts";
 import courierRoutes from "./modules/courier/index.ts";
 import geographyRoutes from "./modules/geography/index.ts";
+import homeRoutes from "./modules/home/index.ts";
+import mediaRoutes from "./modules/media/index.ts";
 import notificationRoutes from "./modules/notification/index.ts";
-import { adminAuditMiddleware } from "./modules/audit/admin-audit.middleware.ts";
-import {auth} from "./lib/auth.ts";
-import { generateOpenApiDocument } from "./lib/openapi/document.ts";
+import orderRoutes from "./modules/order/index.ts";
+import paymentRoutes from "./modules/payment/index.ts";
+import profileRoutes from "./modules/profile/index.ts";
+import reviewRoutes from "./modules/review/index.ts";
+import settingsRoutes from "./modules/settings/index.ts";
+import shipmentRoutes from "./modules/shipments/index.ts";
+import shippingRoutes from "./modules/shipping/index.ts";
+import sliderRoutes from "./modules/slider/index.ts";
+import staffRoutes from "./modules/staff/index.ts";
+import warehouseRoutes from "./modules/warehouse/index.ts";
+import wishlistRoutes from "./modules/wishlist/index.ts";
 
 const app: Application = express();
 const betterAuthHandler = toNodeHandler(auth);
@@ -55,11 +55,17 @@ app.set("trust proxy", env.TRUST_PROXY_HOPS);
 app.use(requestIdMiddleware);
 
 app.use(
-    cors({
-        origin: [env.FRONTEND_URL, "http://localhost:3000"],
-        credentials: true,
-    })
+  cors({
+    origin: [env.FRONTEND_URL, "http://localhost:3000"],
+    credentials: true,
+  })
 );
+
+if (typeof helmetImport !== "function") {
+  throw new TypeError("Expected Helmet's default export to be a function");
+}
+
+const helmet = helmetImport as (options?: HelmetOptions) => RequestHandler;
 
 app.use(
   helmet({
