@@ -19,9 +19,6 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "engines": {
-    "node": ">=22"
-  },
   "type": "module",
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

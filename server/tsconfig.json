@@ -7,7 +7,7 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "Esnext",
+    "module": "NodeNext",
     "target": "Es2023",
     "types": [],
     // For nodejs:
@@ -43,15 +43,11 @@
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true,
 
-
-    "moduleResolution": "bundler",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "ignoreDeprecations": "6.0"
-
-    
   },
-  
+
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
-  
 }
