@@ -10,7 +10,7 @@ export const productCardImage =
 export const productCardBody = "flex flex-grow flex-col space-y-1.5 pt-3 sm:space-y-2 sm:pt-4";
 
 export const productCardTitle =
-  "line-clamp-2 min-w-0 text-sm font-medium leading-snug text-slate-800 transition-colors group-hover:text-primary md:text-base";
+  "line-clamp-2 min-w-0 text-xsm font-medium leading-snug text-slate-800 transition-colors group-hover:text-primary md:text-base";
 
 export const productCardPrice = "text-base font-semibold tabular-nums text-slate-900 md:text-lg";
 

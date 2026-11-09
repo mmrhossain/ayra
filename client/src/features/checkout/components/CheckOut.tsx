@@ -8,24 +8,21 @@ import EmptyState from "@/features/checkout/components/EmptyState";
 import OrderReview from "@/features/checkout/components/OrderReview";
 import { StepBreadcrumb, type CheckoutStep } from "@/features/checkout/components/StepBreadcrumb";
 import type { CheckoutPayload } from "@/features/checkout/types";
-import CartListSkeleton from "@/features/cart/skeleton/CartListSkeleton";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import CheckOutForm from "./CheckOutFrom";
 
 const CheckOut = () => {
-  const [cartStatus, setCartStatus] = useState<
-    "loading" | "success" | "empty" | "error"
-  >("loading");
+  const [cartStatus, setCartStatus] = useState<"loading" | "success" | "empty" | "error">(
+    "loading"
+  );
   const [cartError, setCartError] = useState<string | null>(null);
   const [step, setStep] = useState<CheckoutStep>("information");
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPayload["paymentMethod"]>("COD");
   const requestId = useRef(0);
 
   const loadCart = useCallback(async () => {
-    // Yield before updating state so the initial effect run does not trigger a
-    // synchronous cascading render.
     await Promise.resolve();
     const id = ++requestId.current;
     setCartStatus("loading");
@@ -40,9 +37,7 @@ const CheckOut = () => {
       console.error(err);
       setCartStatus("error");
       setCartError(
-        err instanceof Error && err.message
-          ? err.message
-          : "We couldn't load your cart.",
+        err instanceof Error && err.message ? err.message : "We couldn't load your cart."
       );
     }
   }, []);
@@ -60,10 +55,6 @@ const CheckOut = () => {
     else if (step === "payment") setStep("shipping");
   }, [step]);
 
-  if (cartStatus === "loading") {
-    return <CartListSkeleton />;
-  }
-
   if (cartStatus === "empty") {
     return <EmptyState />;
   }
@@ -71,9 +62,7 @@ const CheckOut = () => {
   if (cartStatus === "error") {
     return (
       <div className="container flex min-h-[60vh] max-w-lg flex-col items-center justify-center py-16 text-center">
-        <h1 className="text-2xl font-bold text-foreground">
-          We couldn&apos;t load your cart
-        </h1>
+        <h1 className="text-2xl font-bold text-foreground">We couldn&apos;t load your cart</h1>
         <p role="alert" className="mt-2 text-sm text-muted-foreground">
           {cartError ?? "Please try again in a moment."}
         </p>
@@ -95,7 +84,7 @@ const CheckOut = () => {
               <CheckoutBack onClick={handleBack} />
             )}
 
-            <h1 className="text-2xl font-semibold uppercase leading-tight tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+            <h1 className="text-2xl font-semibold uppercase leading-tight tracking-tight text-foreground sm:text-2xl">
               Checkout
             </h1>
             <StepBreadcrumb current={step} onSelect={setStep} />

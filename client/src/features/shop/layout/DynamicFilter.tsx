@@ -36,19 +36,16 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentSort = useMemo(
-    () => searchParams.get("sort") || "newest",
-    [searchParams],
-  );
+  const currentSort = useMemo(() => searchParams.get("sort") || "newest", [searchParams]);
 
   const selectedAttributes = useMemo(
     () => parseAttributesParam(searchParams.get("attrs")),
-    [searchParams],
+    [searchParams]
   );
 
   const selectedCategories = useMemo(
     () => parseCategoriesParam(searchParams.get("categories")),
-    [searchParams],
+    [searchParams]
   );
 
   const priceBuckets = useMemo(() => facets?.price.buckets ?? [], [facets]);
@@ -59,10 +56,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
     const min = Number(searchParams.get("minPrice"));
     const max = Number(rawMax);
     if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
-    return (
-      priceBuckets.find((bucket) => bucket.from === min && bucket.to === max) ??
-      null
-    );
+    return priceBuckets.find((bucket) => bucket.from === min && bucket.to === max) ?? null;
   }, [searchParams, priceBuckets]);
 
   const updateQueryParams = useCallback(
@@ -80,7 +74,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
       params.set("page", "1");
       router.push(`${pathname}?${params.toString()}`);
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParams]
   );
 
   const handleToggleCategory = (slug: string) => {
@@ -125,8 +119,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
 
   const activeCount =
     selectedCategories.length +
-    Object.values(selectedAttributes).filter((values) => values.length > 0)
-      .length +
+    Object.values(selectedAttributes).filter((values) => values.length > 0).length +
     (selectedBucket ? 1 : 0);
 
   return (
@@ -137,13 +130,13 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             type="button"
             onClick={() => setIsOpen(true)}
             aria-expanded={isOpen}
-            className="group flex shrink-0 items-center gap-2 rounded-full bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-6"
+            className="group flex shrink-0 items-center gap-2 rounded-md bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-5"
           >
             <SlidersHorizontal
               size={14}
               className="transition-transform duration-500 group-hover:rotate-180"
             />
-            <span className="text-xs font-semibold tracking-wide uppercase">
+            <span className="text-xs font-semibold tracking-wide uppercase hidden md:block">
               Filters
             </span>
             {activeCount > 0 && (
@@ -155,9 +148,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
 
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <div className="hidden items-center gap-2 text-zinc-400 md:flex">
-              <span className="text-xs font-bold uppercase tracking-widest">
-                Sort By:
-              </span>
+              <span className="text-xs font-bold uppercase tracking-widest">Sort By:</span>
             </div>
             <div className="group relative cursor-pointer">
               <div className="flex items-center gap-1 border-b-2 border-zinc-900 pb-0.5">

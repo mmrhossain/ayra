@@ -123,7 +123,7 @@ const ReviewTab = ({
       {loading ? (
         <p className="text-sm text-sky-color">Loading reviews...</p>
       ) : sortedReviews.length === 0 ? (
-        <p className="text-sm text-sky-color">
+        <p className="text-sm text-foreground">
           No reviews yet. Be the first to review this product.
         </p>
       ) : (
@@ -131,7 +131,7 @@ const ReviewTab = ({
           {sortedReviews.map((review) => (
             <article
               key={review.id}
-              className="flex flex-col rounded-2xl border border-border-color p-4 sm:rounded-[20px] sm:p-5 md:p-6"
+              className="flex flex-col rounded-md border border-border-color p-4 sm:p-5 md:p-6"
             >
               <Rating
                 value={review.rating}
@@ -150,11 +150,11 @@ const ReviewTab = ({
                 ) : null}
               </h3>
               {review.comment ? (
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-sky-color sm:text-base">
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-foreground sm:text-base">
                   &ldquo;{review.comment}&rdquo;
                 </p>
               ) : null}
-              <p className="mt-4 text-xs font-medium text-sky-color sm:text-sm">
+              <p className="mt-4 text-xs font-medium text-foreground sm:text-sm">
                 Posted on {formatLongDate(review.createdAt)}
               </p>
             </article>
@@ -185,17 +185,17 @@ const ReviewTab = ({
           </DialogHeader>
 
           {!isLoggedIn ? (
-            <p className="text-sm text-sky-color">
+            <p className="text-sm text-foreground">
               <Link href="/login" className="font-semibold text-primary hover:underline">
                 Login to write a review
               </Link>
             </p>
           ) : formNotice === "pending" ? (
-            <p className="text-sm text-sky-color">
+            <p className="text-sm text-foreground">
               Review submitted, pending approval. It will appear after admin approval.
             </p>
           ) : formNotice === "duplicate" ? (
-            <p className="text-sm text-sky-color">You&apos;ve already reviewed this product.</p>
+            <p className="text-sm text-foreground">You&apos;ve already reviewed this product.</p>
           ) : (
             <Form {...form}>
               <form className="space-y-5" onSubmit={onSubmit}>

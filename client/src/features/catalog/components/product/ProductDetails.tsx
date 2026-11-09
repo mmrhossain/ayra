@@ -170,7 +170,10 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               <div>
                 <dt className="text-xs uppercase tracking-wide text-sky-color">Availability</dt>
                 <dd
-                  className={cn("mt-0.5 font-medium", stock > 0 ? "text-foreground" : "text-danger")}
+                  className={cn(
+                    "mt-0.5 font-medium",
+                    stock > 0 ? "text-foreground" : "text-danger"
+                  )}
                 >
                   {stock > 0 ? "In stock" : "Out of stock"}
                 </dd>
@@ -221,8 +224,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                               <span
                                 className="inline-block size-4 shrink-0 rounded-full border border-black/10"
                                 style={{
-                                  backgroundColor:
-                                    item.color ?? parseColor(item.value),
+                                  backgroundColor: item.color ?? parseColor(item.value),
                                 }}
                               />
                             ) : null}

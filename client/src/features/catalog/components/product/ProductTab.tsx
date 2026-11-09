@@ -18,8 +18,7 @@ type TabId = (typeof TABS)[number]["id"];
 
 const ProductTabs = ({ product }: { product: ProductDetail }) => {
   const [activeTab, setActiveTab] = useState<TabId>("description");
-  const defaultVariant =
-    product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
+  const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
   const price = Number(defaultVariant?.price ?? 0);
 
   const specRows = [
@@ -44,7 +43,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
                 "relative flex-1 cursor-pointer px-1 pb-3 text-center text-xs font-medium transition-colors sm:pb-4 sm:text-sm md:text-base lg:text-lg",
                 isActive
                   ? "text-foreground after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-ink"
-                  : "text-sky-color hover:text-foreground",
+                  : "text-sky-color hover:text-foreground"
               )}
             >
               {tab.label}
@@ -63,7 +62,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
               <RichTextContent
                 html={product.description}
                 fallback="Product description will appear here."
-                className="max-w-4xl text-sm leading-relaxed text-sky-color sm:text-base"
+                className="max-w-4xl text-sm leading-relaxed text-foreground sm:text-base"
               />
             </div>
           </div>
@@ -81,14 +80,11 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
                     key={row.label}
                     className={cn(
                       "grid grid-cols-1 gap-1 px-4 py-3 sm:grid-cols-2 sm:px-6 sm:py-4",
-                      index !== specRows.length - 1 &&
-                        "border-b border-border-color",
+                      index !== specRows.length - 1 && "border-b border-border-color"
                     )}
                   >
-                    <span className="text-sm font-semibold text-foreground">
-                      {row.label}
-                    </span>
-                    <span className="text-sm text-sky-color">{row.value}</span>
+                    <span className="text-sm font-semibold text-foreground">{row.label}</span>
+                    <span className="text-sm text-foreground">{row.value}</span>
                   </div>
                 ))}
               </div>

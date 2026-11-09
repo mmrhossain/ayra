@@ -13,14 +13,16 @@ const TopFooter = () => {
         {/* 1. Brand Section */}
         <div className="sm:col-span-2 lg:col-span-3 space-y-6">
           <div>
-            <h2 className="mb-3 text-base font-semibold tracking-tight text-slate-900">
+            <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
               About Us
             </h2>
-            <div className="h-1 w-10 bg-[#8B2312]" />
+            <div className="h-1 w-10 bg-primary" />
           </div>
 
           <div className="space-y-4">
-            <span lang="bn" className="block text-xl leading-relaxed font-semibold text-primary">শেকড়ে ঐতিহ্যের রং</span>
+            <span lang="bn" className="block text-xl leading-relaxed font-semibold text-primary">
+              শেকড়ে ঐতিহ্যের রং
+            </span>
             <p className="text-slate-500 text-sm leading-relaxed max-w-sm lg:max-w-xs">
               Celebrating the timeless artistry of handcrafted textiles where every thread tells a
               story of heritage and soul.

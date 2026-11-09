@@ -2,23 +2,17 @@
 
 import { Input } from "@/components/ui/input";
 import { toCartErrorMessage } from "@/features/cart/api";
+import { errorToast, formatPrice, successToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { useCartStore } from "@/stores/useCartStore";
-import { errorToast, formatPrice, successToast } from "@/helpers";
 import { ArrowRight, Tag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const Subtotal = () => {
-  const {
-    totalAmount,
-    discountAmount,
-    payableAmount,
-    couponCode,
-    applyCoupon,
-    removeCoupon,
-  } = useCartStore();
+  const { totalAmount, discountAmount, payableAmount, couponCode, applyCoupon, removeCoupon } =
+    useCartStore();
   const { data } = authClient.useSession();
   const isLogin = Boolean(data?.user);
   const router = useRouter();
@@ -28,8 +22,7 @@ const Subtotal = () => {
 
   const subtotal = Number(totalAmount);
   const discount = Number(discountAmount);
-  const discountPct =
-    subtotal > 0 && discount > 0 ? Math.round((discount / subtotal) * 100) : 0;
+  const discountPct = subtotal > 0 && discount > 0 ? Math.round((discount / subtotal) * 100) : 0;
 
   const handleApply = async () => {
     const trimmed = code.trim();
@@ -72,10 +65,8 @@ const Subtotal = () => {
   };
 
   return (
-    <aside className="h-fit rounded-[20px] border border-border-color p-4 sm:p-5 md:p-6">
-      <h2 className="mb-4 text-lg font-semibold text-foreground">
-        Order Summary
-      </h2>
+    <aside className="h-fit rounded-md border border-border-color p-4 sm:p-5 md:p-6">
+      <h2 className="mb-4 text-lg font-semibold text-foreground">Order Summary</h2>
 
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between text-sm sm:text-base">
@@ -90,9 +81,7 @@ const Subtotal = () => {
             <span className="text-sky-color">
               Discount{discountPct ? ` (-${discountPct}%)` : ""}
             </span>
-            <span className="font-semibold tabular-nums text-danger">
-              -{formatPrice(discount)}
-            </span>
+            <span className="font-semibold tabular-nums text-danger">-{formatPrice(discount)}</span>
           </div>
         ) : null}
 
@@ -111,9 +100,7 @@ const Subtotal = () => {
       <div className="mt-4 sm:mt-5">
         {couponCode ? (
           <div className="flex items-center justify-between gap-3 rounded-full bg-bg-primary px-4 py-2.5">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {couponCode}
-            </p>
+            <p className="truncate text-sm font-semibold text-foreground">{couponCode}</p>
             <button
               type="button"
               onClick={handleRemove}
@@ -143,14 +130,14 @@ const Subtotal = () => {
                 placeholder="Add promo code"
                 aria-label="Promo code"
                 autoCapitalize="characters"
-                className="h-11 rounded-full border-0 bg-bg-primary pl-10 pr-4 shadow-none focus-visible:ring-0 sm:h-12"
+                className="h-11 rounded-md border-0 bg-bg-primary pl-10 pr-4 shadow-none focus-visible:ring-0 sm:h-12"
               />
             </div>
             <button
               type="button"
               onClick={handleApply}
               disabled={couponBusy}
-              className="h-11 shrink-0 cursor-pointer rounded-full bg-ink px-5 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50 sm:h-12 sm:px-7"
+              className="h-11 shrink-0 cursor-pointer rounded-md bg-ink px-5 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50 sm:h-12 sm:px-7"
             >
               {couponBusy ? "Applying..." : "Apply"}
             </button>
@@ -171,7 +158,7 @@ const Subtotal = () => {
             router.push("/login?redirect=/checkout");
           }
         }}
-        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-sm font-medium text-white transition-colors hover:bg-primary sm:mt-5 sm:h-[54px] sm:text-base"
+        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink text-sm font-medium text-white transition-colors hover:bg-primary sm:mt-5 sm:h-[54px] sm:text-base"
       >
         Go to Checkout
         <ArrowRight size={18} />

@@ -5,7 +5,6 @@ import {
   productCardBadge,
   productCardBody,
   productCardCompare,
-  productCardCta,
   productCardIconBtn,
   productCardImage,
   productCardMedia,
@@ -19,7 +18,6 @@ import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 
 import StoreImage from "@/components/shared/store-image";
 import { cn } from "@/lib/utils";
-import { Rating } from "@smastrom/react-rating";
 import { Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -47,8 +45,8 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
 
   return (
     <div className={productCardShell}>
-      <div className={productCardMedia}>
-        <Link href={href} className="relative block h-full w-full">
+      <Link href={href} className="relative block h-full w-full">
+        <div className={productCardMedia}>
           <StoreImage
             src={imageSrc(product)}
             alt={product?.name ?? "Product image"}
@@ -56,53 +54,45 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className={productCardImage}
           />
-        </Link>
-        <div className="absolute top-2 right-2 z-[5] flex flex-col items-end gap-1.5 sm:top-3 sm:right-3 sm:gap-2">
-          {hasDiscount && (
-            <span className={productCardBadge({ tone: "sale" })}>{discountPct}% Off</span>
-          )}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              void toggleWishlist();
-            }}
-            disabled={wishBusy || !defaultVariantId}
-            className={cn(
-              productCardIconBtn({ tone: inWish ? "active" : "default" }),
-              "disabled:opacity-50"
+          <div className="absolute top-2 right-2 z-[5] flex flex-col items-end gap-1.5 sm:top-3 sm:right-3 sm:gap-2">
+            {hasDiscount && (
+              <span className={productCardBadge({ tone: "sale" })}>{discountPct}% Off</span>
             )}
-            aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
-            aria-pressed={inWish}
-          >
-            <Heart size={16} fill={inWish ? "currentColor" : "none"} />
-          </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void toggleWishlist();
+              }}
+              disabled={wishBusy || !defaultVariantId}
+              className={cn(
+                productCardIconBtn({ tone: inWish ? "active" : "default" }),
+                "disabled:opacity-50"
+              )}
+              aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
+              aria-pressed={inWish}
+            >
+              <Heart size={16} fill={inWish ? "currentColor" : "none"} />
+            </button>
+          </div>
         </div>
-      </div>
-      <div className={productCardBody}>
-        <h2 className={productCardTitle}>
-          <Link href={href}>{product?.name}</Link>
-        </h2>
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {hasDiscount ? (
-            <>
-              <span className={productCardPrice}>{formatPrice(price)}</span>
-              <span className={productCardCompare}>{formatPrice(compareAt)}</span>
-            </>
-          ) : (
-            <span className={productCardPricePlain}>
-              {price != null ? formatPrice(price) : "—"}
-            </span>
-          )}
+        <div className={productCardBody}>
+          <h2 className={productCardTitle}>{product?.name}</h2>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {hasDiscount ? (
+              <>
+                <span className={productCardPrice}>{formatPrice(price)}</span>
+                <span className={productCardCompare}>{formatPrice(compareAt)}</span>
+              </>
+            ) : (
+              <span className={productCardPricePlain}>
+                {price != null ? formatPrice(price) : "—"}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="pb-2">
-          <Rating value={Number(product?.averageRating) || 0} readOnly style={{ maxWidth: 64 }} />
-        </div>
-        <Link href={href} className={productCardCta()}>
-          View
-        </Link>
-      </div>
+      </Link>
     </div>
   );
 }

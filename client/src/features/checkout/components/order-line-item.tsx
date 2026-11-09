@@ -5,12 +5,7 @@ import { formatPrice } from "@/helpers";
 import Link from "next/link";
 
 function imageSrc(src?: string | null): string {
-  if (
-    src &&
-    (src.startsWith("http://") ||
-      src.startsWith("https://") ||
-      src.startsWith("/"))
-  ) {
+  if (src && (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/"))) {
     return src;
   }
   return "/images/placeholder/product_placeholder.jpg";
@@ -40,6 +35,7 @@ export default function OrderLineItem({
           src={imageSrc(image)}
           alt={name}
           fill
+          loading="eager"
           sizes="(max-width: 640px) 68px, 88px"
           className="object-contain"
         />
@@ -47,9 +43,7 @@ export default function OrderLineItem({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
-            {name}
-          </h3>
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">{name}</h3>
           <Link
             href={changeHref}
             className="shrink-0 text-xs text-neutral-400 underline underline-offset-2 transition-colors hover:text-foreground"
@@ -57,9 +51,7 @@ export default function OrderLineItem({
             Change
           </Link>
         </div>
-        {variantLabel ? (
-          <p className="mt-0.5 text-xs text-neutral-400">{variantLabel}</p>
-        ) : null}
+        {variantLabel ? <p className="mt-0.5 text-xs text-neutral-400">{variantLabel}</p> : null}
         <div className="mt-auto flex items-end justify-between pt-2">
           <span className="text-xs text-neutral-400">({quantity})</span>
           <span className="text-sm tabular-nums text-foreground">{formatPrice(price)}</span>

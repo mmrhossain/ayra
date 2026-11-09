@@ -13,7 +13,6 @@
   --color-border-dark: #44381d;
   --color-bg-primary: #f4f1ea;
   --breakpoint-xs: 30rem;
-
 }
 
 @theme inline {
@@ -44,7 +43,7 @@
   --color-ring: var(--ring);
   --color-border-color: var(--border);
   --color-light-color2: var(--muted-foreground);
-  --color-sky-color: var(--brand-gold-muted);
+  --color-sky-color: var(--muted-foreground);
   --color-danger: var(--destructive);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -158,7 +157,6 @@
   }
 }
 
-
 @utility container {
   width: 100%;
   margin-inline: auto;
@@ -203,13 +201,8 @@
        typography, then fall back to any installed Bengali face so Bangla
        copy renders instead of tofu. No webfont dependency is added. */
     font-family:
-      var(--font-jost),
-      "Noto Sans Bengali",
-      "Hind Siliguri",
-      "SolaimanLipi",
-      ui-sans-serif,
-      system-ui,
-      sans-serif;
+      var(--font-jost), "Noto Sans Bengali", "Hind Siliguri", "SolaimanLipi", ui-sans-serif,
+      system-ui, sans-serif;
   }
 }
 
@@ -285,6 +278,9 @@ html body[data-scroll-locked][style] {
   margin-right: 0px !important;
   padding-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+html {
+  scrollbar-gutter: stable;
 }
 
 .scrollbar-hide {
@@ -415,5 +411,139 @@ html body[data-scroll-locked][style] {
   /* Last, so it also wins over the label-less `display: block` above. */
   .responsive-table tbody td:empty {
     display: none;
+  }
+}
+
+.payment-success-animation {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  margin-inline: auto;
+  pointer-events: none;
+  color: var(--primary, #16a34a);
+}
+
+.payment-success-badge {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgb(22 163 74 / 10%);
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+  animation: payment-badge-pop 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.payment-success-icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+.payment-success-circle {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: payment-draw-stroke 450ms ease-out 150ms forwards;
+}
+
+.payment-success-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: payment-draw-stroke 350ms ease-out 500ms forwards;
+}
+
+.payment-success-ring {
+  position: absolute;
+  inset: 16px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  animation: payment-ring-expand 1s ease-out 250ms both;
+}
+
+.payment-success-ring-delayed {
+  animation-delay: 450ms;
+}
+
+.payment-success-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: payment-particle-burst 900ms ease-out both;
+}
+
+@keyframes payment-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes payment-draw-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes payment-ring-expand {
+  from {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes payment-particle-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y)))
+      rotate(var(--particle-rotation)) scale(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payment-success-badge {
+    animation: none;
+  }
+
+  .payment-success-circle,
+  .payment-success-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .payment-success-ring,
+  .payment-success-particle {
+    display: none;
+    animation: none;
   }
 }

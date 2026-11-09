@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-  FacetAttribute,
-  FacetCategory,
-  PriceBucket,
-} from "@/features/catalog/types";
+import type { FacetAttribute, FacetCategory, PriceBucket } from "@/features/catalog/types";
 import { formatPrice } from "@/lib/format";
 import { RotateCcw } from "lucide-react";
 
@@ -60,8 +56,7 @@ const FilterPanel = ({
           <div className="space-y-2">
             {priceBuckets.map((bucket) => {
               const checked =
-                selectedBucket?.from === bucket.from &&
-                selectedBucket?.to === bucket.to;
+                selectedBucket?.from === bucket.from && selectedBucket?.to === bucket.to;
               return (
                 <label
                   key={`${bucket.from}-${bucket.to}`}
@@ -110,9 +105,7 @@ const FilterPanel = ({
             key={attribute.attributeId}
             className="space-y-3 rounded-xl border border-gray-200 p-4"
           >
-            <h4 className="text-sm font-semibold text-slate-900">
-              {attribute.name}
-            </h4>
+            <h4 className="text-sm font-semibold text-slate-900">{attribute.name}</h4>
             <div className="space-y-2">
               {attribute.options.map((option) => (
                 <label
@@ -122,9 +115,7 @@ const FilterPanel = ({
                   <input
                     type="checkbox"
                     checked={activeValues.includes(option.valueId)}
-                    onChange={() =>
-                      toggleValue(attribute.attributeId, option.valueId)
-                    }
+                    onChange={() => toggleValue(attribute.attributeId, option.valueId)}
                     className="rounded border-gray-300 text-primary focus:ring-primary/20"
                   />
                   {option.color ? (

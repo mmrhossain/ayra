@@ -13,30 +13,55 @@ import React, { useState } from "react";
 
 export type { GalleryImage };
 
+const LENS_SIZE = 144;
+const MAGNIFICATION = 2.5;
+
+type MagnifierState = {
+  index: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 function resolveSrc(image: GalleryImage): string {
   const url = image.imageUrl?.trim() || "";
+
   if (url && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/"))) {
     return url;
   }
+
   return "https://placehold.jp/800x800.png";
 }
 
 const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [magnifier, setMagnifier] = useState<MagnifierState | null>(null);
+
   const list = images.length > 0 ? images : [{ imageUrl: "https://placehold.jp/800x800.png" }];
 
   const onThumbClick = (index: number) => {
     if (!api) return;
+
+    setMagnifier(null);
     api.scrollTo(index);
     setSelectedIndex(index);
   };
 
   React.useEffect(() => {
     if (!api) return;
-    api.on("select", () => {
+
+    const onSelect = () => {
       setSelectedIndex(api.selectedScrollSnap());
-    });
+      setMagnifier(null);
+    };
+
+    api.on("select", onSelect);
+
+    return () => {
+      api.off("select", onSelect);
+    };
   }, [api]);
 
   return (
@@ -68,13 +93,33 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
           ))}
         </div>
 
-        {/* মেইন কারূসল ইমেজ (স্ট্যান্ডার্ড স্কয়ার রেশিও এবং কন্ট্রোলড ম্যাক্স হাইট) */}
+        {/* মেইন কারূসল ইমেজ */}
         <div className="relative min-w-0 flex-1">
           <Carousel setApi={setApi} className="w-full" opts={{ align: "start", loop: true }}>
             <CarouselContent>
               {list.map((image, index) => (
                 <CarouselItem key={image.id ?? index}>
-                  <div className="relative aspect-square max-h-[480px] w-full overflow-hidden rounded-lg bg-gray-50 dark:bg-zinc-900 shadow-sm mx-auto">
+                  <div
+                    onPointerMove={(event) => {
+                      if (event.pointerType === "touch" || event.buttons !== 0) {
+                        return;
+                      }
+
+                      const rect = event.currentTarget.getBoundingClientRect();
+
+                      setMagnifier({
+                        index,
+                        x: event.clientX - rect.left,
+                        y: event.clientY - rect.top,
+                        width: rect.width,
+                        height: rect.height,
+                      });
+                    }}
+                    onPointerLeave={() => setMagnifier(null)}
+                    onPointerDown={() => setMagnifier(null)}
+                    onPointerCancel={() => setMagnifier(null)}
+                    className="relative aspect-square max-h-[480px] w-full overflow-hidden rounded-lg bg-gray-50 dark:bg-zinc-900 shadow-sm mx-auto"
+                  >
                     <StoreImage
                       src={resolveSrc(image)}
                       alt={image.altText || `Product image ${index + 1}`}
@@ -83,6 +128,37 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
                       className="object-contain"
                       priority={index === 0}
                     />
+
+                    {magnifier?.index === index && (
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute z-10 overflow-hidden rounded-full border-2 border-white bg-gray-50 shadow-xl ring-1 ring-black/20 dark:bg-zinc-900"
+                        style={{
+                          width: LENS_SIZE,
+                          height: LENS_SIZE,
+                          left: magnifier.x - LENS_SIZE / 2,
+                          top: magnifier.y - LENS_SIZE / 2,
+                        }}
+                      >
+                        <div
+                          className="absolute"
+                          style={{
+                            width: magnifier.width * MAGNIFICATION,
+                            height: magnifier.height * MAGNIFICATION,
+                            left: LENS_SIZE / 2 - magnifier.x * MAGNIFICATION,
+                            top: LENS_SIZE / 2 - magnifier.y * MAGNIFICATION,
+                          }}
+                        >
+                          <StoreImage
+                            src={resolveSrc(image)}
+                            alt=""
+                            fill
+                            sizes="1600px"
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CarouselItem>
               ))}

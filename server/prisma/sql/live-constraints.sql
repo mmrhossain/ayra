@@ -1,7 +1,8 @@
 CREATE UNIQUE INDEX IF NOT EXISTS product_slug_live_uidx
   ON public.product (slug) WHERE "deletedAt" IS NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS category_slug_live_uidx
-  ON public.category (slug) WHERE "deletedAt" IS NULL;
+DROP INDEX IF EXISTS category_slug_live_uidx;
+CREATE UNIQUE INDEX IF NOT EXISTS category_slug_parent_live_uidx
+  ON public.category (COALESCE("parentId", ''), slug) WHERE "deletedAt" IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS brand_slug_live_uidx
   ON public.brand (slug) WHERE "deletedAt" IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS product_variant_sku_live_uidx
