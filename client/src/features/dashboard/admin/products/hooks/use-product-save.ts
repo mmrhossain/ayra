@@ -145,8 +145,11 @@ function matchCreatedVariants(
 function variantBody(row: VariantRow): CreateVariantBody {
   const sku = row.sku.trim();
   const cost = row.costPrice.trim();
+  // Auto-suggested SKUs are brand+category+attributes only, so two products
+  // can share a candidate. Omit them so the server allocates a unique suffix.
+  // A typed SKU is sent as-is and still 409s on a real collision.
   return {
-    ...(sku ? { sku } : {}),
+    ...(sku && row.skuEdited ? { sku } : {}),
     price: Number(row.price),
     // Blank means unknown. For an existing variant null explicitly clears a
     // previously known buying cost; for a new variant the field is omitted.

@@ -37,7 +37,11 @@ export function useSliderFormMutation({
         redirectUrl: values.redirectUrl?.trim() || undefined,
         startDate: toIso(values.startDate),
         endDate: toIso(values.endDate),
-        priority: Number(values.priority),
+        ...(values.priority?.trim()
+          ? { priority: Number(values.priority) }
+          : mode === "create"
+            ? {}
+            : { priority: 0 }),
         isActive: values.isActive,
       };
       if (mode === "create") {

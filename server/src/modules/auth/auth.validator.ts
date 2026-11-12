@@ -17,6 +17,6 @@ export const adminListUsersQuerySchema = paginationQuerySchema.extend({
   filterOperator: z
     .enum(["eq", "ne", "lt", "lte", "gt", "gte", "contains"])
     .optional(),
-  role: z.enum(["CUSTOMER", "ADMIN"]).optional(),
+  role: z.enum(["CUSTOMER", "ADMIN"]).optional().default("CUSTOMER"),
   status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).optional(),
 });

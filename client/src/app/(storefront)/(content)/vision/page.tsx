@@ -97,7 +97,7 @@ const VisionPage = () => {
               className="space-y-8 md:space-y-10"
             >
               <h3 className="text-primary font-black tracking-[0.2em] sm:tracking-[0.4em] uppercase text-xs">The Philosophy</h3>
-              <p className="text-2xl sm:text-3xl md:text-6xl font-light leading-tight italic font-serif">
+              <p className="text-2xl sm:text-3xl md:text-6xl font-normal leading-tight italic font-serif">
                 &ldquo;We don&apos;t just draw; we use the needle as a pen and the thread as ink to write the story of our people.&rdquo;
               </p>
               <div className="flex flex-col items-center">

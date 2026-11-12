@@ -4,10 +4,10 @@ import ProductDetails from "@/features/catalog/components/product/ProductDetails
 import ProductNotFound from "@/features/catalog/components/product/ProductNotFound";
 import ProductTab from "@/features/catalog/components/product/ProductTab";
 import RelatedProduct from "@/features/catalog/components/product/RelatedProduct";
+import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import { SITE_NAME, SITE_URL } from "@/config/site";
 import { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -71,7 +71,17 @@ export default async function Page({ params }: Props) {
     <div>
       <ProductDetails product={product} />
       <ProductTab product={product} />
-      <RelatedProduct categorySlug={product.category?.slug} currentProductId={product.id} />
+      <Suspense
+        fallback={
+          <div className="container">
+            <div className="mt-6 p-4 sm:p-5 md:mt-8">
+              <ProductsSkeleton />
+            </div>
+          </div>
+        }
+      >
+        <RelatedProduct categorySlug={product.category?.slug} currentProductId={product.id} />
+      </Suspense>
       <Features />
     </div>
   );

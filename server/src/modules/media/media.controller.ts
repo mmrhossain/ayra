@@ -2,6 +2,7 @@ import { unlink } from "node:fs/promises";
 import type { Request, Response } from "express";
 import { AppError } from "../../common/errors/AppError.ts";
 import { asyncHandler } from "../../common/utils/asyncHandler.ts";
+import { isStaffRole } from "../../common/utils/roles.ts";
 import { successResponse } from "../../common/utils/response.ts";
 import { MAX_PRODUCT_IMAGES } from "./media.constants.ts";
 import {
@@ -44,7 +45,15 @@ const unlinkFiles = async (files: Express.Multer.File[]) => {
 export const listMediaHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const query = listMediaQuerySchema.parse(req.query);
-    const result = await listMediaLibrary(query);
+    const userId = req.auth?.user.id;
+    if (!userId) {
+      throw new AppError("Unauthorized: authentication required", 401);
+    }
+    const result = await listMediaLibrary(
+      isStaffRole(req.auth?.user.role)
+        ? query
+        : { ...query, ownerUserId: userId },
+    );
     successResponse(res, result, "Media library fetched");
   }
 );

@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LETTERS = ["A", "Y", "R", "A"] as const;
@@ -9,15 +8,11 @@ const HOLD_MS = 420;
 const EXIT_MS = 280;
 
 export function AppSplash() {
-  const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  const [open, setOpen] = useState(pathname !== "/oauth/complete");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
 
     const total = reduceMotion
       ? 320
@@ -26,7 +21,6 @@ export function AppSplash() {
     const timer = window.setTimeout(() => setOpen(false), total);
     return () => {
       window.clearTimeout(timer);
-      document.body.style.overflow = previous;
     };
   }, [open, reduceMotion]);
 

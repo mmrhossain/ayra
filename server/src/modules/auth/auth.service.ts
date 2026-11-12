@@ -147,9 +147,17 @@ export const banUser = async (userId: string, input: BanUserInput) => {
 export const unbanUser = async (userId: string) => {
   const existing = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null },
-    select: { id: true },
+    select: { id: true, role: true },
   });
   if (!existing) throw new AppError("User not found", 404);
+
+  if (normalizeRole(existing.role) === "ADMIN") {
+    throw new AppError(
+      "Use staff reactivation to restore a staff account",
+      409,
+      "STAFF_ACCOUNT",
+    );
+  }
 
   const user = await prisma.user.update({
     where: { id: existing.id },

@@ -1,5 +1,3 @@
-"use client";
-
 import BottomFooter from "@/components/layout/BottomFooter";
 import TopFooter from "@/components/layout/TopFooter";
 

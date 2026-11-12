@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin, jwt } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 import { adminAc, defaultAc } from "better-auth/plugins/admin/access";
 import { logger } from "../common/looger/logger.ts";
 import { extractCloudinaryPublicId } from "../common/utils/cloudinary-public-id.ts";
@@ -104,7 +104,11 @@ export const auth = betterAuth({
   }),
   ...(betterAuthSecondaryStorage ? { secondaryStorage: betterAuthSecondaryStorage } : {}),
   trustedOrigins: [
-    ...new Set([env.FRONTEND_URL, "http://localhost:3000", ...env.EXTRA_TRUSTED_ORIGINS]),
+    ...new Set([
+      env.FRONTEND_URL,
+      ...(env.isProduction ? [] : ["http://localhost:3000"]),
+      ...env.EXTRA_TRUSTED_ORIGINS,
+    ]),
   ],
   disabledPaths: DISABLED_ADMIN_PATHS,
 
@@ -151,7 +155,7 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: null,
-        input: true, // allow user to change their profile image
+        input: false,
       },
       deletedAt: {
         type: "date",
@@ -380,7 +384,6 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    jwt(),
     admin({
       defaultRole: "CUSTOMER",
       adminRoles: ["ADMIN"],

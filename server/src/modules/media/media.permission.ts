@@ -5,6 +5,7 @@ import {
   ADMIN_IMAGE_TYPE_PERMISSIONS,
   hasAdminPermission,
 } from "../../common/utils/admin-permissions.ts";
+import { isStaffRole, normalizeRole } from "../../common/utils/roles.ts";
 import type { AuthRole, ImageType } from "./media.types.ts";
 import {
   listMediaQuerySchema,
@@ -22,15 +23,15 @@ const resolveType = (req: Request, mode: "single" | "multiple"): ImageType => {
 };
 
 const assertUploadRole = async (req: Request, type: ImageType) => {
-  const role = req.auth?.user.role as AuthRole | undefined;
+  const role = normalizeRole(req.auth?.user.role);
   const userId = req.auth?.user.id;
   const allowed = UPLOAD_TYPE_ROLES[type];
 
-  if (!role || !userId || !allowed.includes(role)) {
+  if (!role || !userId || !allowed.includes(role as AuthRole)) {
     throw new AppError("Forbidden: insufficient permissions", 403);
   }
 
-  if (role === "ADMIN") {
+  if (isStaffRole(role)) {
     const required = ADMIN_IMAGE_TYPE_PERMISSIONS[type];
     if (
       required &&

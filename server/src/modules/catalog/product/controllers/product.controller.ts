@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../../../common/utils/asyncHandler.ts";
 import { requireParam } from "../../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../../common/utils/response.ts";
+import { isStaffRole } from "../../../../common/utils/roles.ts";
 import {
   createProductSchema,
   updateProductSchema,
@@ -26,8 +27,7 @@ import { bulkUpdateProducts } from "../services/product-bulk.service.ts";
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const query = listProductsQuerySchema.parse(req.query);
-  const role = req.auth?.user.role;
-  const isStaff = role === "ADMIN";
+  const isStaff = isStaffRole(req.auth?.user.role);
 
   successResponse(
     res,
@@ -43,8 +43,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 export const getProductFacetsHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const query = listProductsQuerySchema.parse(req.query);
-    const role = req.auth?.user.role;
-    const isStaff = role === "ADMIN";
+    const isStaff = isStaffRole(req.auth?.user.role);
 
     successResponse(
       res,

@@ -1,7 +1,7 @@
+import { SITE_NAME } from "@/config/site";
 import CategoriesGrid from "@/features/catalog/components/category/CategoriesGrid";
 import HomeProductSection from "@/features/catalog/components/product/HomeProductSection";
 import SliderCarousel from "@/features/slider/components/SliderCarousel";
-import { SITE_NAME } from "@/config/site";
 import type { HomePayload } from "../types";
 
 export default function HomePage({ data }: { data: HomePayload }) {

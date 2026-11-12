@@ -1,5 +1,6 @@
 import "server-only";
 
+import { SESSION_COOKIE } from "@/config/public";
 import { BACKEND_API_ORIGIN } from "@/config/server";
 import { safeRedirectPath } from "@/features/auth/lib/oauth";
 import {
@@ -33,16 +34,15 @@ export type UserSession = {
 export const getUserSession = cache(async (): Promise<UserSession> => {
   try {
     const cookieStore = await cookies();
-    const cookieHeader = cookieStore
-      .getAll()
-      .map(({ name, value }) => `${name}=${value}`)
-      .join("; ");
+    const session =
+      cookieStore.get(SESSION_COOKIE) ??
+      cookieStore.get(`__Secure-${SESSION_COOKIE}`);
 
-    if (!cookieHeader) return null;
+    if (!session?.value) return null;
 
     const response = await fetch(`${BACKEND_API_ORIGIN}/auth/get-session`, {
       headers: {
-        cookie: cookieHeader,
+        cookie: `${session.name}=${session.value}`,
       },
       cache: "no-store",
     });
@@ -60,6 +60,15 @@ export const getUserSession = cache(async (): Promise<UserSession> => {
   }
 });
 
+const STAFF_DISABLED_STATUSES = new Set(["SUSPENDED", "OFFBOARDED"]);
+
+function isStaffDisabled(session: UserSession): boolean {
+  const role = normalizeRole(session?.user?.role);
+  if (role !== "ADMIN") return false;
+  const status = (session?.user?.staffStatus ?? "ACTIVE").toUpperCase();
+  return STAFF_DISABLED_STATUSES.has(status);
+}
+
 export async function requireRole(
   ...roles: AuthRole[]
 ): Promise<NonNullable<UserSession>> {
@@ -70,7 +79,7 @@ export async function requireRole(
     redirect("/login");
   }
 
-  if (session?.user?.banned) {
+  if (session?.user?.banned || isStaffDisabled(session)) {
     redirect("/account-suspended");
   }
 
@@ -162,7 +171,7 @@ export async function requireCustomer(): Promise<NonNullable<UserSession>> {
     redirect("/login");
   }
 
-  if (session?.user?.banned) {
+  if (session?.user?.banned || isStaffDisabled(session)) {
     redirect("/account-suspended");
   }
 

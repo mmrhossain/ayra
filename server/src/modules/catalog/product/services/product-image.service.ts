@@ -28,7 +28,9 @@ export const toProductImageRows = (
 
 export const imagePublicIds = (images: ImageRef[]): string[] =>
   images
-    .map((image) => resolveImagePublicId(image.publicId, image.imageUrl))
+    .map((image) =>
+      resolveImagePublicId(image.publicId, image.imageUrl ?? image.url),
+    )
     .filter((id): id is string => Boolean(id));
 
 export const replaceImages = async (

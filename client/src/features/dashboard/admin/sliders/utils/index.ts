@@ -27,7 +27,10 @@ export function defaultValues(initialData?: SliderListItem): SliderFormValues {
     redirectUrl: initialData?.redirectUrl ?? "",
     startDate: toDatetimeLocal(initialData?.startDate),
     endDate: toDatetimeLocal(initialData?.endDate),
-    priority: initialData?.priority == null ? "" : String(initialData.priority),
+    priority:
+      initialData?.priority == null || initialData.priority === 0
+        ? ""
+        : String(initialData.priority),
     isActive: initialData?.isActive ?? true,
   };
 }

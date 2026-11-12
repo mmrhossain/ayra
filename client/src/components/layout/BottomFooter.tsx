@@ -16,7 +16,6 @@ const BottomFooter = () => {
                 src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791299182/payment_lz9mxo.png"
                 alt="Accepted payment methods"
                 className="w-full h-auto object-contain"
-                priority
               />
             </div>
           </div>

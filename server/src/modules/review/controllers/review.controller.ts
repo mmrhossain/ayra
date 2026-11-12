@@ -4,6 +4,7 @@ import { requireParam } from "../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../common/utils/response.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { getOrCreateCustomerProfile } from "../../../common/utils/customerProfile.ts";
+import { isStaffRole } from "../../../common/utils/roles.ts";
 import {
   adminListReviewsQuerySchema,
   createReviewSchema,
@@ -80,7 +81,7 @@ export const deleteReviewHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const reviewId = requireParam(req.params.id, "id");
-    const isAdmin = req.auth.user.role === "ADMIN";
+    const isAdmin = isStaffRole(req.auth.user.role);
 
     let ownerId = "";
 

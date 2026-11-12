@@ -25,18 +25,8 @@ import {
   readGuestCart,
   writeGuestCart,
 } from "@/features/cart/guest-storage";
-import { authClient } from "@/lib/api/auth/auth-client";
 
 export type { CartItemSnapshot, CartLine, CartSnapshot } from "@/features/cart/types";
-
-async function hasAuthSession(): Promise<boolean> {
-  try {
-    const { data } = await authClient.getSession();
-    return Boolean(data?.user);
-  } catch {
-    return false;
-  }
-}
 
 function num(value: unknown): number {
   const n = Number(value);
@@ -94,12 +84,10 @@ export async function fetchGuestCartSnapshot(): Promise<CartSnapshot> {
 }
 
 export async function fetchCartSnapshot(): Promise<CartSnapshot> {
-  if (await hasAuthSession()) {
-    try {
-      return await fetchAuthCartSnapshot();
-    } catch (err) {
-      if (!isCartUnauthorized(err)) throw err;
-    }
+  try {
+    return await fetchAuthCartSnapshot();
+  } catch (err) {
+    if (!isCartUnauthorized(err)) throw err;
   }
   return fetchGuestCartSnapshot();
 }
@@ -109,12 +97,10 @@ export async function addCartItem(
   quantity: number,
   snapshot: CartItemSnapshot = {},
 ): Promise<{ message: string }> {
-  if (await hasAuthSession()) {
-    try {
-      return await addAuthCartItem(variantId, quantity);
-    } catch (err) {
-      if (!isCartUnauthorized(err)) throw err;
-    }
+  try {
+    return await addAuthCartItem(variantId, quantity);
+  } catch (err) {
+    if (!isCartUnauthorized(err)) throw err;
   }
 
   const items = readGuestCart();
@@ -150,12 +136,10 @@ export async function updateCartItem(
   variantId: string,
   quantity: number,
 ): Promise<{ message: string }> {
-  if (await hasAuthSession()) {
-    try {
-      return await updateAuthCartItem(variantId, quantity);
-    } catch (err) {
-      if (!isCartUnauthorized(err)) throw err;
-    }
+  try {
+    return await updateAuthCartItem(variantId, quantity);
+  } catch (err) {
+    if (!isCartUnauthorized(err)) throw err;
   }
 
   const items = readGuestCart();
@@ -169,12 +153,10 @@ export async function updateCartItem(
 export async function removeCartItem(
   variantId: string,
 ): Promise<{ message: string }> {
-  if (await hasAuthSession()) {
-    try {
-      return await removeAuthCartItem(variantId);
-    } catch (err) {
-      if (!isCartUnauthorized(err)) throw err;
-    }
+  try {
+    return await removeAuthCartItem(variantId);
+  } catch (err) {
+    if (!isCartUnauthorized(err)) throw err;
   }
 
   writeGuestCart(readGuestCart().filter((item) => item.variantId !== variantId));

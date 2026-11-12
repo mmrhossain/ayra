@@ -26,6 +26,14 @@ describe("cloudinary public id", () => {
     ).toBe("hero");
   });
 
+  it("extracts the publicId from a transformed delivery URL with analytics", () => {
+    expect(
+      extractCloudinaryPublicId(
+        "https://res.cloudinary.com/demo/image/upload/c_fill,dpr_auto,f_auto,g_auto,h_1200,q_auto:good,w_1200/ldqslqlohxtmpcazn7mq?_a=BAMAROiu0"
+      )
+    ).toBe("ldqslqlohxtmpcazn7mq");
+  });
+
   it("prefers an explicit publicId over URL parsing and stores the unique id", () => {
     expect(
       resolveImagePublicId(

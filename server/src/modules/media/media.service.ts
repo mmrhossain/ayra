@@ -274,6 +274,7 @@ const toLibraryItem = (asset: {
 export const listMediaLibrary = async (query: ListMediaQuery) => {
   const where = {
     type: query.type,
+    ...(query.ownerUserId ? { ownerUserId: query.ownerUserId } : {}),
     OR: [
       { status: "ATTACHED" as const },
       {
@@ -451,6 +452,7 @@ export const buildImageUrls = (publicId: string, type: ImageType): string[] => {
   return preset.variants.map((transformation) =>
     cloudinary.url(deliveryId, {
       secure: true,
+      urlAnalytics: false,
       transformation: [
         {
           width: transformation.width,
@@ -466,6 +468,79 @@ export const buildImageUrls = (publicId: string, type: ImageType): string[] => {
   );
 };
 
+const findLiveMediaReferences = async (
+  publicIds: string[],
+): Promise<Map<string, { entityType: MediaOwner; entityId: string }>> => {
+  const referenced = new Map<string, { entityType: MediaOwner; entityId: string }>();
+  if (publicIds.length === 0) return referenced;
+
+  const [productImages, categories, brands, sliders, blogs, users] = await Promise.all([
+    prisma.productImage.findMany({
+      where: { publicId: { in: publicIds } },
+      select: { publicId: true, productId: true },
+    }),
+    prisma.category.findMany({
+      where: {
+        OR: [
+          { imagePublicId: { in: publicIds } },
+          { mobileImagePublicId: { in: publicIds } },
+        ],
+      },
+      select: { id: true, imagePublicId: true, mobileImagePublicId: true },
+    }),
+    prisma.brand.findMany({
+      where: { logoPublicId: { in: publicIds } },
+      select: { id: true, logoPublicId: true },
+    }),
+    prisma.slider.findMany({
+      where: {
+        OR: [
+          { imagePublicId: { in: publicIds } },
+          { mobileImagePublicId: { in: publicIds } },
+        ],
+      },
+      select: { id: true, imagePublicId: true, mobileImagePublicId: true },
+    }),
+    prisma.blog.findMany({
+      where: { featuredImagePublicId: { in: publicIds } },
+      select: { id: true, featuredImagePublicId: true },
+    }),
+    prisma.user.findMany({
+      where: { imagePublicId: { in: publicIds } },
+      select: { id: true, imagePublicId: true },
+    }),
+  ]);
+
+  for (const row of productImages) {
+    if (row.publicId) referenced.set(row.publicId, { entityType: "product", entityId: row.productId });
+  }
+  for (const row of categories) {
+    if (row.imagePublicId) referenced.set(row.imagePublicId, { entityType: "category", entityId: row.id });
+    if (row.mobileImagePublicId) {
+      referenced.set(row.mobileImagePublicId, { entityType: "category", entityId: row.id });
+    }
+  }
+  for (const row of brands) {
+    if (row.logoPublicId) referenced.set(row.logoPublicId, { entityType: "brand", entityId: row.id });
+  }
+  for (const row of sliders) {
+    if (row.imagePublicId) referenced.set(row.imagePublicId, { entityType: "slider", entityId: row.id });
+    if (row.mobileImagePublicId) {
+      referenced.set(row.mobileImagePublicId, { entityType: "slider", entityId: row.id });
+    }
+  }
+  for (const row of blogs) {
+    if (row.featuredImagePublicId) {
+      referenced.set(row.featuredImagePublicId, { entityType: "blog", entityId: row.id });
+    }
+  }
+  for (const row of users) {
+    if (row.imagePublicId) referenced.set(row.imagePublicId, { entityType: "user", entityId: row.id });
+  }
+
+  return referenced;
+};
+
 export const purgeExpiredMediaAssets = async (): Promise<number> => {
   const now = Date.now();
   const pendingCutoff = new Date(now - MEDIA_PENDING_TTL_MS);
@@ -478,15 +553,35 @@ export const purgeExpiredMediaAssets = async (): Promise<number> => {
         { status: "SOFT_DELETED", detachedAt: { lt: softDeleteCutoff } },
       ],
     },
-    select: { publicId: true },
+    select: { publicId: true, status: true },
     take: 100,
   });
 
   if (expired.length === 0) return 0;
 
+  const referenced = await findLiveMediaReferences(
+    expired.map((asset) => asset.publicId),
+  );
+
   let purged = 0;
   for (const asset of expired) {
     try {
+      const live = referenced.get(asset.publicId);
+      if (live) {
+        if (asset.status === "PENDING") {
+          await prisma.mediaAsset.updateMany({
+            where: { publicId: asset.publicId, status: "PENDING" },
+            data: {
+              status: "ATTACHED",
+              entityType: live.entityType,
+              entityId: live.entityId,
+              detachedAt: null,
+            },
+          });
+        }
+        continue;
+      }
+
       // On failure the row is kept so the next cycle retries it.
       const destroyed = await destroyUploadedAsset(asset.publicId);
       if (destroyed) purged += 1;

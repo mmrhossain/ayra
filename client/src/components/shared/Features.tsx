@@ -1,5 +1,3 @@
-"use client";
-
 import { features } from "@/constants/features";
 
 const Features = () => {

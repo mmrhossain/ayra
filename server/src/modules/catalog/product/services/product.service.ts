@@ -89,19 +89,6 @@ export const listProducts = async (query: ListProductsQuery) => {
         compareAtPrice: true,
         isDefault: true,
         inventories: { select: { quantityAvailable: true } },
-        attributes: {
-          select: {
-            attributeValue: {
-              select: {
-                id: true,
-                value: true,
-                color: true,
-                attributeId: true,
-                attribute: { select: { id: true, name: true } },
-              },
-            },
-          },
-        },
       },
       orderBy: { isDefault: "desc" as const },
     },

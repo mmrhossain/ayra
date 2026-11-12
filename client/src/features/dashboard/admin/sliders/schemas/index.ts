@@ -10,7 +10,7 @@ export const sliderFormSchema = z
     redirectUrl: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
-    priority: z.string().trim().min(1, "Priority is required"),
+    priority: z.string().optional(),
     isActive: z.boolean(),
   })
   .superRefine((values, ctx) => {
@@ -24,7 +24,9 @@ export const sliderFormSchema = z
         message: "Enter a valid URL",
       });
     }
-    const priority = Number(values.priority);
+    const raw = values.priority?.trim() ?? "";
+    if (!raw) return;
+    const priority = Number(raw);
     if (!Number.isInteger(priority) || priority < 0) {
       ctx.addIssue({
         code: "custom",

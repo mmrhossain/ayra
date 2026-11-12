@@ -11,6 +11,9 @@ const SearchDrawer = ({ onClose }: { onClose: () => void }) => {
     return (
         <div
             className="fixed inset-0 z-[10000] flex h-dvh items-start justify-center overflow-y-auto bg-black/40 xl:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search products"
             onClick={onClose}
         >
             <motion.div
@@ -22,8 +25,10 @@ const SearchDrawer = ({ onClose }: { onClose: () => void }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
+                    type="button"
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors"
+                    aria-label="Close search"
+                    className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
                 >
                     <X size={24} />
                 </button>

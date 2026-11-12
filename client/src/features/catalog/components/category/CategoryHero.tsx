@@ -32,7 +32,7 @@ export default function CategoryHero({ parent_category }: CategoryHeroProps) {
 
       {/* Text Overlay */}
       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/10 px-4 text-center sm:px-6">
-        <p className="text-3xl font-extralight uppercase leading-none tracking-tight text-white drop-shadow-md sm:text-5xl md:text-6xl lg:text-7xl">
+        <p className="text-3xl font-normal uppercase leading-none tracking-tight text-white drop-shadow-md sm:text-5xl md:text-6xl lg:text-7xl">
           {name}
         </p>
       </div>

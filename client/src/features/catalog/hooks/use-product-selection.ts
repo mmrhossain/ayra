@@ -1,6 +1,5 @@
 "use client";
 
-import { normalizeVariantAttributes } from "@/features/catalog/api";
 import type { ProductDetail, ProductVariant } from "@/features/catalog/types";
 import { attributeGroupsFrom, num, variantValueIds } from "@/features/catalog/utils/variants";
 import { useState } from "react";
@@ -12,14 +11,7 @@ export function useProductSelection(product: ProductDetail) {
   const attributeGroups = attributeGroupsFrom(variants);
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedValues, setSelectedValues] = useState<Record<string, string>>(() => {
-    if (!defaultVariant) return {};
-    const initial: Record<string, string> = {};
-    for (const attr of normalizeVariantAttributes(defaultVariant)) {
-      initial[attr.attributeId] = attr.id;
-    }
-    return initial;
-  });
+  const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
 
   const isComplete = attributeGroups.every((group) => Boolean(selectedValues[group.attributeId]));
 

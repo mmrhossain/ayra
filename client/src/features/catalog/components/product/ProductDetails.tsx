@@ -20,7 +20,7 @@ import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Heart, Share2 } from "lucide-react";
-import React, { useMemo, useRef } from "react";
+import React, { useRef } from "react";
 
 function excerptFromHtml(html: string | null | undefined, max = 220): string {
   const text = (html ?? "")
@@ -58,10 +58,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
   const hasAttributes = attributeGroups.length > 0;
   const sku = selected?.sku || product.sku || "";
   const brandName = product.brand?.name;
-  const descriptionExcerpt = useMemo(
-    () => excerptFromHtml(product.description),
-    [product.description]
-  );
+  const descriptionExcerpt = excerptFromHtml(product.description);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -132,46 +129,52 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               {product.name}
             </h1>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
+            <div className="mt-3 flex min-h-8 flex-wrap items-center gap-2 sm:mt-4 sm:min-h-9 sm:gap-3">
               {active && price > 0 ? (
                 <>
-                  <span className="text-lg font-normal tracking-tight text-foreground">
+                  <span className="text-lg font-normal tabular-nums tracking-tight text-foreground">
                     {formatPrice(price)}
                   </span>
-                  {hasDiscount ? (
-                    <>
-                      <span className="text-lg font-medium text-light-color2 line-through sm:text-xl md:text-2xl">
-                        {formatPrice(compareAt)}
-                      </span>
-                      <span className="rounded-full bg-danger/10 px-2.5 py-0.5 text-xs font-semibold text-danger sm:px-3 sm:text-sm">
-                        -{discountPct}%
-                      </span>
-                    </>
-                  ) : null}
+                  <span
+                    className={cn(
+                      "text-lg font-medium tabular-nums text-light-color2 line-through sm:text-xl md:text-2xl",
+                      !hasDiscount && "invisible"
+                    )}
+                    aria-hidden={!hasDiscount}
+                  >
+                    {formatPrice(hasDiscount ? compareAt : price)}
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded-full bg-danger/10 px-2.5 py-0.5 text-xs font-semibold text-danger sm:px-3 sm:text-sm",
+                      !hasDiscount && "invisible"
+                    )}
+                    aria-hidden={!hasDiscount}
+                  >
+                    -{hasDiscount ? discountPct : 0}%
+                  </span>
                 </>
               ) : (
-                <span className="text-2xl font-bold text-foreground">—</span>
+                <span className="text-lg font-normal tabular-nums text-foreground">—</span>
               )}
             </div>
 
-            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:mt-5">
-              {sku ? (
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-sky-color">SKU</dt>
-                  <dd className="mt-0.5 font-medium text-foreground">{sku}</dd>
-                </div>
-              ) : null}
+            <dl className="mt-4 grid min-h-[3.25rem] grid-cols-2 gap-x-4 gap-y-2 text-sm sm:mt-5">
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-sky-color">SKU</dt>
+                <dd className="mt-0.5 min-h-5 font-medium text-foreground">{sku || "—"}</dd>
+              </div>
               {brandName ? (
                 <div>
                   <dt className="text-xs uppercase tracking-wide text-sky-color">Brand</dt>
-                  <dd className="mt-0.5 font-medium text-foreground">{brandName}</dd>
+                  <dd className="mt-0.5 min-h-5 font-medium text-foreground">{brandName}</dd>
                 </div>
               ) : null}
               <div>
                 <dt className="text-xs uppercase tracking-wide text-sky-color">Availability</dt>
                 <dd
                   className={cn(
-                    "mt-0.5 font-medium",
+                    "mt-0.5 min-h-5 font-medium",
                     stock > 0 ? "text-foreground" : "text-danger"
                   )}
                 >
@@ -187,14 +190,14 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
             ) : null}
 
             <div className="mt-5 grid grid-cols-1 gap-3 border-t border-border-color pt-4 sm:mt-6 sm:grid-cols-2 sm:gap-4 sm:pt-5 lg:flex lg:items-end lg:gap-4">
-              <div className="w-[160px] shrink-0">
-                <span className="mb-2 block text-sm font-semibold text-foreground">Quantity</span>
+              <div className="min-w-0 w-full sm:w-[160px] sm:shrink-0">
+                <span className="mb-2 block h-5 text-sm font-semibold text-foreground">Quantity</span>
                 <QuantityStepper
                   value={quantity}
                   onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
                   onIncrease={() => setQuantity((q) => Math.min(Math.max(stock || 1, 1), q + 1))}
                   decreaseDisabled={quantity <= 1}
-                  className="h-12 w-full rounded-none border border-border-color bg-background sm:h-[52px] md:h-[52px] lg:min-w-0"
+                  className="h-12 w-full min-h-12 rounded-none border border-border-color bg-background sm:h-[52px] sm:min-h-[52px] md:h-[52px] lg:min-w-0"
                 />
               </div>
 
@@ -202,24 +205,24 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 <div key={group.attributeId} className="min-w-0 lg:flex-1">
                   <label
                     htmlFor={`product-attribute-${group.attributeId}`}
-                    className="mb-2 block text-sm font-semibold text-foreground"
+                    className="mb-2 block h-5 text-sm font-semibold text-foreground"
                   >
                     {group.name}
                   </label>
                   <Select
-                    value={selectedValues[group.attributeId] ?? ""}
+                    value={selectedValues[group.attributeId] || undefined}
                     onValueChange={(value) => setAttributeValue(group.attributeId, value)}
                   >
                     <SelectTrigger
                       id={`product-attribute-${group.attributeId}`}
-                      className="h-12 w-full rounded-none border-border-color bg-background text-base text-foreground shadow-none sm:h-[52px]"
+                      className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
                     >
-                      <SelectValue placeholder="Choose an Option..." />
+                      <SelectValue placeholder="Choose an option" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="w-[var(--radix-select-trigger-width)]">
                       {group.values.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          <span className="flex items-center gap-2">
+                        <SelectItem key={item.id} value={item.id} className="min-h-11">
+                          <span className="flex min-h-5 items-center gap-2">
                             {groupKind(group.name) === "color" ? (
                               <span
                                 className="inline-block size-4 shrink-0 rounded-full border border-black/10"
@@ -228,7 +231,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                                 }}
                               />
                             ) : null}
-                            <span>{item.value}</span>
+                            <span className="truncate">{item.value}</span>
                           </span>
                         </SelectItem>
                       ))}
@@ -247,7 +250,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 onClick={() => void handleAddToCart()}
                 disabled={buttonDisabled}
                 className={cn(
-                  "h-12 min-w-0 flex-1 cursor-pointer border border-ink px-4 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-all active:scale-[0.99] sm:h-[52px] sm:text-base",
+                  "h-12 min-h-12 min-w-0 flex-1 cursor-pointer border border-ink px-4 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-all active:scale-[0.99] sm:h-[52px] sm:min-h-[52px] sm:text-base",
                   cartBusy
                     ? "cursor-not-allowed border-light-color2 bg-light-color2"
                     : buttonDisabled
@@ -258,25 +261,25 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 {buttonLabel}
               </button>
 
-              <button
-                type="button"
-                onClick={() => void toggleWishlist()}
-                disabled={!selectedId || wishBusy || !selected}
-                aria-pressed={inWish}
-                aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
-                title={inWish ? "Remove from wishlist" : "Add to wishlist"}
-                className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center border border-ink text-foreground transition-colors hover:bg-bg-primary disabled:cursor-not-allowed disabled:opacity-40 sm:h-[52px] sm:w-[52px]"
-              >
+               <button
+                 type="button"
+                 onClick={() => void toggleWishlist()}
+                 disabled={!selectedId || wishBusy || !selected}
+                 aria-pressed={inWish}
+                 aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
+                 title={inWish ? "Remove from wishlist" : "Add to wishlist"}
+                 className="flex h-12 min-h-12 w-12 shrink-0 cursor-pointer items-center justify-center border border-ink text-foreground transition-colors hover:bg-bg-primary disabled:cursor-not-allowed disabled:opacity-40 sm:h-[52px] sm:min-h-[52px] sm:w-[52px]"
+               >
                 <Heart size={20} className={cn(inWish && "fill-current")} />
               </button>
 
-              <button
-                type="button"
-                onClick={() => void handleShare()}
-                aria-label="Share product"
-                title="Share product"
-                className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center border border-ink text-foreground transition-colors hover:bg-bg-primary sm:h-[52px] sm:w-[52px]"
-              >
+               <button
+                 type="button"
+                 onClick={() => void handleShare()}
+                 aria-label="Share product"
+                 title="Share product"
+                 className="flex h-12 min-h-12 w-12 shrink-0 cursor-pointer items-center justify-center border border-ink text-foreground transition-colors hover:bg-bg-primary sm:h-[52px] sm:min-h-[52px] sm:w-[52px]"
+               >
                 <Share2 size={20} />
               </button>
             </div>

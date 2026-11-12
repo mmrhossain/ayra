@@ -32,8 +32,8 @@ const MobileNavbar = () => {
     <div className="border-b border-gray-100 bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-xs lg:hidden">
       <div className="container flex min-w-0 items-center justify-between gap-3 py-2.5">
         {/* Logo */}
-        <div className="flex h-8 w-[100px] shrink-0 items-center overflow-hidden">
-          <Link href="/" className="relative block h-8 w-full">
+        <div className="flex h-11 w-[100px] shrink-0 items-center overflow-hidden">
+          <Link href="/" className="relative block h-8 w-full" aria-label="Ayra Home">
             <Image
               src={SITE_LOGO}
               alt="Ayra"
@@ -49,17 +49,17 @@ const MobileNavbar = () => {
         <button
           type="button"
           onClick={() => setSearchDrawerOpen(true)}
-          className="flex h-9 flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 text-slate-400 transition-colors hover:border-slate-300 active:bg-slate-100"
+          className="flex h-11 min-h-11 flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 text-slate-400 transition-colors hover:border-slate-300 active:bg-slate-100"
           aria-label="Search products"
         >
           <Search size={16} className="text-slate-400 shrink-0" strokeWidth={2} />
-          <span className="text-xs font-medium text-slate-400 truncate">Search...</span>
+          <span className="truncate text-xs font-medium text-slate-400">Search...</span>
         </button>
 
         {/* Cart Action */}
         <Link
           href={cartHref}
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100/80 text-slate-700 transition-all active:scale-95"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100/80 text-slate-700 transition-all active:scale-95"
           aria-label="Cart"
         >
           <ShoppingBag size={19} strokeWidth={2} />

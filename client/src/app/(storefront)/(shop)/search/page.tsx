@@ -3,8 +3,6 @@ import ProductCard from "@/features/catalog/components/product/ProductCard";
 import ProductNotFound from "@/features/catalog/components/product/ProductNotFound";
 import ShopPagination from "@/features/catalog/components/shop/Pagination";
 
-export const dynamic = "force-dynamic";
-
 type SearchParams = {
   result?: string;
   page?: string;

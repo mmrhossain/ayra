@@ -203,24 +203,33 @@ const RegistrationForm: React.FC = () => {
             control={form.control}
             name="remember"
             render={({ field }) => (
-              <FormItem className="flex items-start space-x-2 space-y-0 pt-2">
+              <FormItem className="flex min-w-0 flex-row items-start gap-1 space-y-0 pt-1 sm:gap-2 sm:pt-2">
                 <FormControl>
-                  <Checkbox
-                    id="terms"
-                    className="mt-1 rounded border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <span className="flex size-11 shrink-0 items-center justify-center sm:size-5 sm:mt-0.5">
+                    <Checkbox
+                      id="terms"
+                      className="size-5 rounded border-gray-300 touch-manipulation data-[state=checked]:bg-primary data-[state=checked]:border-primary sm:size-4"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </span>
                 </FormControl>
-                <Label
-                  htmlFor="terms"
-                  className="text-slate-600 text-sm leading-relaxed cursor-pointer select-none"
-                >
-                  I have read and agree to the{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    terms & conditions
-                  </Link>
-                </Label>
+                <div className="min-w-0 flex-1 pt-2.5 sm:pt-0">
+                  <Label
+                    htmlFor="terms"
+                    className="block min-w-0 text-slate-600 text-sm font-normal leading-5 cursor-pointer select-none whitespace-normal break-words [display:block]"
+                  >
+                    I have read and agree to the{" "}
+                    <Link
+                      href="/terms"
+                      className="inline text-primary underline-offset-2 hover:underline"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      terms & conditions
+                    </Link>
+                  </Label>
+                  <FormMessage className="text-danger" />
+                </div>
               </FormItem>
             )}
           />

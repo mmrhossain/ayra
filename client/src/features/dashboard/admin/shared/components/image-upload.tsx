@@ -163,7 +163,7 @@ function toAsset(item: UploadedImage, variantIndex?: number): UploadedAsset {
 async function runWithConcurrency<T>(
   items: T[],
   limit: number,
-  worker: (item: T) => Promise<void>,
+  worker: (item: T) => Promise<void>
 ): Promise<void> {
   const queue = [...items];
   const size = Math.max(1, Math.min(limit, queue.length));
@@ -172,7 +172,7 @@ async function runWithConcurrency<T>(
       for (let item = queue.shift(); item !== undefined; item = queue.shift()) {
         await worker(item);
       }
-    }),
+    })
   );
 }
 
@@ -342,17 +342,13 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
         }
       );
 
-      const succeeded = results.filter(
-        (result): result is UploadedImage => result !== null
-      );
+      const succeeded = results.filter((result): result is UploadedImage => result !== null);
       if (succeeded.length > 0) applyResults(succeeded);
 
       setPreviews((prev) =>
         prev
           .filter((item) => !succeededIds.has(item.id))
-          .map((item) =>
-            failedIds.has(item.id) ? { ...item, uploading: false } : item
-          )
+          .map((item) => (failedIds.has(item.id) ? { ...item, uploading: false } : item))
       );
 
       if (firstError) {
@@ -444,7 +440,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
         {canAdd && !useGallery ? dropzone : null}
 
         {visible.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {visible.map((item) => {
               const isPrimary =
                 mode === "multiple" &&

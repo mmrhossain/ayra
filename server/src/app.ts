@@ -56,7 +56,10 @@ app.use(requestIdMiddleware);
 
 app.use(
   cors({
-    origin: [env.FRONTEND_URL, "http://localhost:3000"],
+    origin: [
+      env.FRONTEND_URL,
+      ...(env.isProduction ? [] : ["http://localhost:3000"]),
+    ],
     credentials: true,
   })
 );

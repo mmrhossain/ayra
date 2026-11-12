@@ -153,7 +153,9 @@ export function SliderTable({ initialData }: SliderTableProps) {
                         </p>
                       ) : null}
                     </TableCell>
-                    <TableCell className="tabular-nums">{slider.priority}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {slider.priority > 0 ? slider.priority : "—"}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(slider.startDate)} – {formatDate(slider.endDate)}
                     </TableCell>

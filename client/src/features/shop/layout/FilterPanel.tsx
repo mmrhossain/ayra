@@ -13,7 +13,7 @@ type FilterPanelProps = {
   onAttributeChange: (attributeId: string, valueIds: string[]) => void;
   priceBuckets: PriceBucket[];
   selectedBucket: PriceBucket | null;
-  onSelectBucket: (bucket: PriceBucket) => void;
+  onSelectBucket: (bucket: PriceBucket | null) => void;
   onClearAll: () => void;
 };
 
@@ -43,7 +43,7 @@ const FilterPanel = ({
         <h3 className="text-lg font-semibold text-slate-900">Filters</h3>
         <button
           type="button"
-          className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+          className="flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:underline"
           onClick={onClearAll}
         >
           <RotateCcw size={12} /> Reset
@@ -60,13 +60,14 @@ const FilterPanel = ({
               return (
                 <label
                   key={`${bucket.from}-${bucket.to}`}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                  className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
                 >
                   <input
                     type="radio"
                     name="price-bucket"
                     checked={checked}
-                    onChange={() => onSelectBucket(bucket)}
+                    onChange={() => onSelectBucket(checked ? null : bucket)}
+                    className="size-4 shrink-0"
                   />
                   {formatPrice(bucket.from)} - {formatPrice(bucket.to)}
                 </label>
@@ -83,13 +84,13 @@ const FilterPanel = ({
             {categories.map((category) => (
               <label
                 key={category.id}
-                className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
               >
                 <input
                   type="checkbox"
                   checked={selectedCategories.includes(category.slug)}
                   onChange={() => onToggleCategory(category.slug)}
-                  className="rounded border-gray-300 text-primary focus:ring-primary/20"
+                  className="size-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary/20"
                 />
                 {category.label}
               </label>
@@ -110,13 +111,13 @@ const FilterPanel = ({
               {attribute.options.map((option) => (
                 <label
                   key={option.valueId}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                  className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
                 >
                   <input
                     type="checkbox"
                     checked={activeValues.includes(option.valueId)}
                     onChange={() => toggleValue(attribute.attributeId, option.valueId)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary/20"
+                    className="size-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary/20"
                   />
                   {option.color ? (
                     <span

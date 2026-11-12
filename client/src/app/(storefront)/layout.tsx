@@ -1,37 +1,29 @@
 import Footer from "@/components/layout/Footer";
 import FooterNavigationMenu from "@/components/layout/FooterNavigation-menu";
 import Header from "@/components/layout/Header";
-import HeaderHeightObserver from "@/components/layout/HeaderHeightObserver"; // Import it here
+import HeaderHeightObserver from "@/components/layout/HeaderHeightObserver";
 import Navbar from "@/components/layout/Navbar";
 import StorefrontProvider from "@/components/providers/StorefrontProvider";
-import SocialContact from "@/components/shared/SocialContact";
 import { getCategories } from "@/features/catalog/api";
 import { CategoryListItem } from "@/features/catalog/types";
-import StorefrontChat from "@/features/content/components/chat/StorefrontChat";
+import StorefrontDeferredWidgets from "@/features/content/components/chat/StorefrontDeferredWidgets";
 import { redirectStaffFromStorefront } from "@/lib/api/auth/server";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
+  const categoriesPromise = getCategories()
+    .then((data) => (Array.isArray(data) ? data : []))
+    .catch((): CategoryListItem[] => []);
+
   await redirectStaffFromStorefront();
-
-  let categories: CategoryListItem[] = [];
-
-  try {
-    const data = await getCategories();
-    if (Array.isArray(data)) {
-      categories = data;
-    }
-  } catch {
-    categories = [];
-  }
+  const categories = await categoriesPromise;
 
   return (
     <StorefrontProvider>
       <div className="min-w-0">
-        <HeaderHeightObserver /> {/* Measures Header + Navbar combined */}
+        <HeaderHeightObserver />
         <Header />
         <Navbar categories={categories} />
-        <SocialContact />
-        <StorefrontChat />
+        <StorefrontDeferredWidgets />
         {children}
         <Footer />
         <FooterNavigationMenu categories={categories} />

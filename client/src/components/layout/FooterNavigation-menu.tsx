@@ -236,7 +236,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
 
                 <button
                   type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-primary hover:bg-primary hover:text-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-primary hover:bg-primary hover:text-white"
                   onClick={closeDrawer}
                   aria-label="Close menu"
                 >

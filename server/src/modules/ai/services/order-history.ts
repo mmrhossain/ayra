@@ -11,8 +11,20 @@ const ORDER_LIMIT = 8;
 const ORDER_INTENT =
   /\b(order|orders|tracking|track|refund|return|invoice|payment)\b|অর্ডার|ট্র্যাক|রিফান্ড|রিটার্ন/i;
 
+const ACCOUNT_INTENT =
+  /\b(account|password|address|wishlist|my email|my phone)\b|অ্যাকাউন্ট|পাসওয়ার্ড|ঠিকানা/i;
+
+export const CHAT_LOGIN_REQUIRED =
+  "Please log in to ask about your orders or account.";
+
 export function isOrderIntent(message: string): boolean {
   return ORDER_INTENT.test(message.trim());
+}
+
+export function isProtectedIntent(message: string): boolean {
+  const text = message.trim();
+  if (!text) return false;
+  return isOrderIntent(text) || ACCOUNT_INTENT.test(text);
 }
 
 function isBangla(message: string): boolean {

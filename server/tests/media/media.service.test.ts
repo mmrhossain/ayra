@@ -12,6 +12,13 @@ const mediaAsset = {
   findUnique: vi.fn(),
   count: vi.fn(),
 };
+const emptyFindMany = () => ({ findMany: vi.fn().mockResolvedValue([]) });
+const productImage = emptyFindMany();
+const category = emptyFindMany();
+const brand = emptyFindMany();
+const slider = emptyFindMany();
+const blog = emptyFindMany();
+const user = emptyFindMany();
 
 vi.mock("../../src/lib/cloudinary.ts", () => ({
   uploadImageFileToCloudinary: (...args: unknown[]) =>
@@ -25,6 +32,12 @@ vi.mock("../../src/lib/cloudinary.ts", () => ({
 vi.mock("../../src/lib/prisma.ts", () => ({
   prisma: {
     mediaAsset,
+    productImage,
+    category,
+    brand,
+    slider,
+    blog,
+    user,
   },
 }));
 
@@ -77,6 +90,12 @@ describe("media.service", () => {
     mediaAsset.updateMany.mockResolvedValue({ count: 0 });
     mediaAsset.findMany.mockResolvedValue([]);
     mediaAsset.findFirst.mockResolvedValue(null);
+    productImage.findMany.mockResolvedValue([]);
+    category.findMany.mockResolvedValue([]);
+    brand.findMany.mockResolvedValue([]);
+    slider.findMany.mockResolvedValue([]);
+    blog.findMany.mockResolvedValue([]);
+    user.findMany.mockResolvedValue([]);
     url.mockImplementation(
       (publicId: string, options?: { transformation?: Array<{ width?: number }> }) => {
         const width = options?.transformation?.[0]?.width ?? 0;
@@ -225,7 +244,10 @@ describe("media.service", () => {
     });
 
     const built = buildImageUrls("awxvgitg1do5vu2a2xtw", "product")[0];
-    expect(url).toHaveBeenCalled();
+    expect(url).toHaveBeenCalledWith(
+      "awxvgitg1do5vu2a2xtw",
+      expect.objectContaining({ urlAnalytics: false }),
+    );
     expect(built).toContain("derived.webp");
   });
 
@@ -266,6 +288,43 @@ describe("media.service", () => {
 
     expect(purged).toBe(0);
     expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
+  });
+
+  it("reattaches PENDING assets still used by a product instead of deleting them", async () => {
+    mediaAsset.findMany.mockResolvedValue([{ publicId: "liveid", status: "PENDING" }]);
+    productImage.findMany.mockResolvedValue([
+      { publicId: "liveid", productId: "prod-1" },
+    ]);
+
+    const purged = await purgeExpiredMediaAssets();
+
+    expect(purged).toBe(0);
+    expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
+    expect(mediaAsset.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { publicId: "liveid", status: "PENDING" },
+        data: expect.objectContaining({
+          status: "ATTACHED",
+          entityType: "product",
+          entityId: "prod-1",
+        }),
+      })
+    );
+  });
+
+  it("does not destroy SOFT_DELETED assets still referenced by a product", async () => {
+    mediaAsset.findMany.mockResolvedValue([
+      { publicId: "softid", status: "SOFT_DELETED" },
+    ]);
+    productImage.findMany.mockResolvedValue([
+      { publicId: "softid", productId: "prod-2" },
+    ]);
+
+    const purged = await purgeExpiredMediaAssets();
+
+    expect(purged).toBe(0);
+    expect(deleteCloudinaryAsset).not.toHaveBeenCalled();
+    expect(mediaAsset.updateMany).not.toHaveBeenCalled();
   });
 
   it("lists Cloudinary library items of one type, excluding soft-deleted", async () => {

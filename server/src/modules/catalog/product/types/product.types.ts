@@ -30,6 +30,7 @@ export type VariantOverrideInput = z.infer<typeof variantOverrideSchema>;
 export type ImageRef = {
   publicId?: string | null | undefined;
   imageUrl?: string | null | undefined;
+  url?: string | null | undefined;
 };
 
 export type CreateProductPayload = CreateProductInput;

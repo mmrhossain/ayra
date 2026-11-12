@@ -6,7 +6,9 @@ import { listProducts } from "../../catalog/product/services/product.service.ts"
 import type { ChatInput, ChatResult, ChatTurn } from "../types.ts";
 import {
   buildOrderHistoryAnswer,
+  CHAT_LOGIN_REQUIRED,
   isOrderIntent,
+  isProtectedIntent,
 } from "./order-history.ts";
 
 const FAQ_TTL_SECONDS = 24 * 60 * 60;
@@ -251,6 +253,10 @@ export async function chat(input: ChatInput): Promise<ChatResult> {
   const normalized = normalizeMessage(input.message);
   const isStandalone = !input.conversationId;
   const faqKey = `ai:faq:${sha256(normalized)}`;
+
+  if (isProtectedIntent(normalized) && !input.userId) {
+    return { answer: CHAT_LOGIN_REQUIRED, cached: false };
+  }
 
   if (input.userId && isOrderIntent(normalized)) {
     const history = input.conversationId

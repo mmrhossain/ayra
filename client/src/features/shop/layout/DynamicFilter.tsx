@@ -16,7 +16,7 @@ import {
 import type { PriceBucket } from "@/features/catalog/types";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FilterPanel from "./FilterPanel";
 
 interface DynamicFilterBarProps {
@@ -36,7 +36,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentSort = useMemo(() => searchParams.get("sort") || "newest", [searchParams]);
+  const currentSort = searchParams.get("sort") || "newest";
 
   const selectedAttributes = useMemo(
     () => parseAttributesParam(searchParams.get("attrs")),
@@ -59,51 +59,105 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
     return priceBuckets.find((bucket) => bucket.from === min && bucket.to === max) ?? null;
   }, [searchParams, priceBuckets]);
 
-  const updateQueryParams = useCallback(
-    (newParams: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
+  const [draftCategories, setDraftCategories] = useState(selectedCategories);
+  const [draftAttributes, setDraftAttributes] = useState(selectedAttributes);
+  const [draftBucket, setDraftBucket] = useState<PriceBucket | null>(selectedBucket);
 
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (value === null || value === "") {
-          params.delete(key);
-        } else {
-          params.set(key, value);
+  const searchParamsRef = useRef(searchParams);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingParamsRef = useRef<Record<string, string | null>>({});
+
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (debounceRef.current) return;
+    setDraftCategories(selectedCategories);
+    setDraftAttributes(selectedAttributes);
+    setDraftBucket(selectedBucket);
+  }, [selectedAttributes, selectedBucket, selectedCategories]);
+
+  const pushParams = useCallback(
+    (newParams: Record<string, string | null>, debounceMs = 0) => {
+      const apply = (patch: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParamsRef.current.toString());
+        Object.entries(patch).forEach(([key, value]) => {
+          if (value === null || value === "") {
+            params.delete(key);
+          } else {
+            params.set(key, value);
+          }
+        });
+        params.set("page", "1");
+        pendingParamsRef.current = {};
+        startTransition(() => {
+          router.push(`${pathname}?${params.toString()}`);
+        });
+      };
+
+      if (debounceMs <= 0) {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+          debounceRef.current = null;
         }
-      });
+        const patch = { ...pendingParamsRef.current, ...newParams };
+        apply(patch);
+        return;
+      }
 
-      params.set("page", "1");
-      router.push(`${pathname}?${params.toString()}`);
+      pendingParamsRef.current = { ...pendingParamsRef.current, ...newParams };
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null;
+        apply(pendingParamsRef.current);
+      }, debounceMs);
     },
-    [pathname, router, searchParams]
+    [pathname, router]
   );
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const handleToggleCategory = (slug: string) => {
-    const next = selectedCategories.includes(slug)
-      ? selectedCategories.filter((item) => item !== slug)
-      : [...selectedCategories, slug];
-    updateQueryParams({ categories: next.length > 0 ? next.join(",") : null });
+    const next = draftCategories.includes(slug)
+      ? draftCategories.filter((item) => item !== slug)
+      : [...draftCategories, slug];
+    setDraftCategories(next);
+    pushParams({ categories: next.length > 0 ? next.join(",") : null }, 400);
   };
 
   const handleAttributeChange = (attributeId: string, valueIds: string[]) => {
-    const next = { ...selectedAttributes };
+    const next = { ...draftAttributes };
     if (valueIds.length > 0) next[attributeId] = valueIds;
     else delete next[attributeId];
-    updateQueryParams({ attrs: serializeAttributesParam(next) ?? null });
+    setDraftAttributes(next);
+    pushParams({ attrs: serializeAttributesParam(next) ?? null }, 400);
   };
 
   const handleSelectBucket = (bucket: PriceBucket | null) => {
+    setDraftBucket(bucket);
     if (!bucket) {
-      updateQueryParams({ minPrice: null, maxPrice: null });
+      pushParams({ minPrice: null, maxPrice: null }, 400);
       return;
     }
-    updateQueryParams({
-      minPrice: String(bucket.from),
-      maxPrice: String(bucket.to),
-    });
+    pushParams(
+      {
+        minPrice: String(bucket.from),
+        maxPrice: String(bucket.to),
+      },
+      400
+    );
   };
 
   const handleClearAll = () => {
-    updateQueryParams({
+    setDraftCategories([]);
+    setDraftAttributes({});
+    setDraftBucket(null);
+    pushParams({
       categories: null,
       attrs: null,
       minPrice: null,
@@ -112,15 +166,15 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateQueryParams({
+    pushParams({
       sort: e.target.value === "newest" ? null : e.target.value,
     });
   };
 
   const activeCount =
-    selectedCategories.length +
-    Object.values(selectedAttributes).filter((values) => values.length > 0).length +
-    (selectedBucket ? 1 : 0);
+    draftCategories.length +
+    Object.values(draftAttributes).filter((values) => values.length > 0).length +
+    (draftBucket ? 1 : 0);
 
   return (
     <>
@@ -130,7 +184,8 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             type="button"
             onClick={() => setIsOpen(true)}
             aria-expanded={isOpen}
-            className="group flex shrink-0 items-center gap-2 rounded-md bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-5"
+            aria-label={activeCount > 0 ? `Filters, ${activeCount} active` : "Filters"}
+            className="group flex min-h-11 shrink-0 items-center gap-2 rounded-md bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-5"
           >
             <SlidersHorizontal
               size={14}
@@ -139,11 +194,11 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             <span className="text-xs font-semibold tracking-wide uppercase hidden md:block">
               Filters
             </span>
-            {activeCount > 0 && (
-              <span className="animate-in zoom-in flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
+            {activeCount > 0 ? (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
                 {activeCount}
               </span>
-            )}
+            ) : null}
           </button>
 
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
@@ -163,7 +218,8 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
               <select
                 value={currentSort}
                 onChange={handleSortChange}
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                aria-label="Sort products"
+                className="absolute inset-0 h-full min-h-11 w-full cursor-pointer opacity-0"
               >
                 <option value="newest">Newest</option>
                 <option value="price_desc">Price: High to Low</option>
@@ -193,13 +249,13 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
             <FilterPanel
               categories={facets?.categories}
-              selectedCategories={selectedCategories}
+              selectedCategories={draftCategories}
               onToggleCategory={handleToggleCategory}
               attributes={facets?.attributes}
-              selectedAttributes={selectedAttributes}
+              selectedAttributes={draftAttributes}
               onAttributeChange={handleAttributeChange}
               priceBuckets={priceBuckets}
-              selectedBucket={selectedBucket}
+              selectedBucket={draftBucket}
               onSelectBucket={handleSelectBucket}
               onClearAll={handleClearAll}
             />

@@ -13,8 +13,6 @@ import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import SubcategoriesSkeleton from "@/features/catalog/skeleton/SubcategoriesSkeleton";
 import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
-
 const SORTS = new Set<ProductSort>(["newest", "price_asc", "price_desc", "popular"]);
 
 type SearchParams = {
@@ -27,6 +25,42 @@ type SearchParams = {
   attrs?: string;
   categories?: string;
 };
+
+function FilterBarSkeleton() {
+  return (
+    <div
+      className="h-14 border-b border-zinc-100 sm:h-16"
+      aria-hidden="true"
+    />
+  );
+}
+
+async function ShopFilterBar({
+  category,
+  search,
+  minPrice,
+  maxPrice,
+  attrs,
+  categories,
+}: {
+  category?: string;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  attrs?: string;
+  categories?: string;
+}) {
+  const facets = await fetchProductFacets({
+    category,
+    search,
+    minPrice,
+    maxPrice,
+    attributes: parseAttributesParam(attrs),
+    categories: parseCategoriesParam(categories),
+  });
+
+  return <DynamicFilterBar facets={facets} />;
+}
 
 export default async function ShopPage({
   params,
@@ -49,13 +83,10 @@ export default async function ShopPage({
 
   const directProductsCount = categoryDetails?.productsCount ?? 0;
 
-  // Has direct products if count > 0, OR if we're at root /shop (categoryDetails is null)
   const hasProducts = directProductsCount > 0 || !categoryDetails;
 
-  // Show Subcategories ONLY when category has NO direct products BUT HAS child categories
   const isPureCategoryHub = !hasProducts && hasChildren;
 
-  // Build parent_category object
   const parent_category = {
     id: categoryDetails?.id,
     slug: categoryDetails?.slug,
@@ -71,29 +102,23 @@ export default async function ShopPage({
   const maxPriceRaw = Number(sp.maxPrice);
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : undefined;
 
-  const facets = isPureCategoryHub
-    ? null
-    : await fetchProductFacets({
-        category: routeCategoryPath,
-        search: sp.search,
-        minPrice,
-        maxPrice,
-        attributes: parseAttributesParam(sp.attrs),
-        categories: parseCategoriesParam(sp.categories),
-      });
-
   return (
     <div className="relative min-h-dvh min-w-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
       {isPureCategoryHub ? (
-        /* Scenario A: No direct products, only child categories -> Show Subcategories Grid */
         <Suspense fallback={<SubcategoriesSkeleton />}>
           <Subcategories subCategories={children} parent_category={parent_category} />
         </Suspense>
       ) : (
-        /* Scenario B: Has direct products (even if it has subcategories) -> Direct Product Grid */
         <>
-          <Suspense fallback={null}>
-            <DynamicFilterBar facets={facets} />
+          <Suspense fallback={<FilterBarSkeleton />}>
+            <ShopFilterBar
+              category={routeCategoryPath}
+              search={sp.search}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              attrs={sp.attrs}
+              categories={sp.categories}
+            />
           </Suspense>
 
           <Suspense

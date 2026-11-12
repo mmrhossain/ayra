@@ -1,4 +1,3 @@
-import { AppSplash } from "@/components/shared/AppSplash";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import ScrollToTopOnNavigation from "@/components/shared/ScrollToTopOnNavigation";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,7 +12,7 @@ import "./globals.css";
 
 const jost = Jost({
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700"],
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
   variable: "--font-jost",
   display: "swap",
 });
@@ -29,7 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={jost.variable} suppressHydrationWarning>
       <body className={`${jost.className} antialiased`} suppressHydrationWarning>
         <ThemeColorManager />
-        <AppSplash />
         <Suspense fallback={null}>
           <ScrollToTopOnNavigation />
         </Suspense>

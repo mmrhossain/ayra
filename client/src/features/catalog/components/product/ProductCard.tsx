@@ -68,7 +68,7 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
               disabled={wishBusy || !defaultVariantId}
               className={cn(
                 productCardIconBtn({ tone: inWish ? "active" : "default" }),
-                "disabled:opacity-50"
+                "min-h-11 min-w-11 disabled:opacity-50"
               )}
               aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
               aria-pressed={inWish}

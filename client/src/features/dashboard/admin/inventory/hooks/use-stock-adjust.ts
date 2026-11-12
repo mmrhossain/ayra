@@ -3,10 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import {
-  approveInventoryAdjustment,
-  createInventoryAdjustment,
-} from "@/features/dashboard/admin/inventory/api/inventory";
+import { setInventoryStock } from "@/features/dashboard/admin/inventory/api/inventory";
 import type { AdjustFormValues } from "@/features/dashboard/admin/inventory/schemas";
 import type { InventoryListItem } from "@/features/dashboard/admin/inventory/types";
 import {
@@ -32,17 +29,16 @@ export function useStockAdjustMutation({
       }
       const difference = differenceFor(values.type, quantity, item.quantityOnHand);
       if (difference === 0) throw new Error("No quantity change");
-      const reason = values.notes?.trim()
-        ? `${values.reason}: ${values.notes.trim()}`
-        : values.reason;
-      const created = await createInventoryAdjustment({
+      const targetQty = item.quantityOnHand + difference;
+      if (targetQty < 0) {
+        throw new Error("Adjustment would result in negative inventory");
+      }
+      const result = await setInventoryStock({
         warehouseId: item.warehouseId,
-        variantId: item.variantId,
-        difference,
-        reason,
+        items: [{ variantId: item.variantId, targetQty }],
       });
-      await approveInventoryAdjustment(created.id);
-      return item.quantityAvailable + difference;
+      const applied = result.items[0];
+      return applied?.quantityAvailable ?? item.quantityAvailable + difference;
     },
     onSuccess: (available) => {
       queryClient.invalidateQueries({ queryKey: ["admin-inventory"] });

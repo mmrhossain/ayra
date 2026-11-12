@@ -67,4 +67,5 @@ export type ListMediaQuery = {
   type: ImageType;
   page: number;
   limit: number;
+  ownerUserId?: string;
 };

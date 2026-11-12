@@ -36,7 +36,8 @@ const SearchBox = ({
         type="submit"
         variant="ghost"
         size="sm"
-        className="absolute left-0 p-0 hover:bg-transparent text-muted-foreground group-focus-within:text-primary transition-colors"
+        aria-label="Search"
+        className="absolute left-0 h-11 w-11 p-0 text-muted-foreground hover:bg-transparent group-focus-within:text-primary transition-colors"
       >
         <Search className="h-4 w-4 xl:h-5 xl:w-5 2xl:h-6 2xl:w-6" />
       </Button>
@@ -45,22 +46,23 @@ const SearchBox = ({
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         type="text"
+        enterKeyHint="search"
+        autoComplete="off"
+        aria-label="Search products"
         placeholder="Search products..."
-        className="border-0 bg-transparent py-6 pr-8 pl-8 text-base placeholder:font-light focus-visible:ring-0 xl:pl-10"
+        className="h-11 min-h-11 border-0 bg-transparent py-0 pr-12 pl-11 text-base placeholder:font-normal focus-visible:ring-0 xl:pl-12"
       />
 
-      {searchValue && (
-        <X
-          size={18}
-          role="button"
-          tabIndex={0}
+      {searchValue ? (
+        <button
+          type="button"
+          aria-label="Clear search"
           onClick={() => setSearchValue("")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setSearchValue("");
-          }}
-          className="absolute right-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-        />
-      )}
+          className="absolute right-1 flex h-11 w-11 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <X size={18} />
+        </button>
+      ) : null}
     </form>
   );
 };

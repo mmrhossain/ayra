@@ -197,10 +197,18 @@ export function SliderFormDialog({ open, onOpenChange, mode, initialData }: Slid
               name="priority"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Priority</FormLabel>
+                  <FormLabel>Priority (optional)</FormLabel>
                   <FormControl>
-                    <Input type="text" inputMode="numeric" placeholder="Priority" {...field} />
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Leave blank for newest first"
+                      {...field}
+                    />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Higher numbers show first. Blank uses newest first.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
