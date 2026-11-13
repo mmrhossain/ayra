@@ -32,14 +32,14 @@ const copy: Record<
   fail: {
     title: "Payment failed",
     description:
-      "The online payment could not be verified. If money left your account, contact support with the transaction ID below.",
+      "The online payment could not be verified. You can retry from the order details while the order is active. If money left your account, contact support with the transaction ID below.",
     icon: CircleX,
     tone: "bg-red-50 text-red-600",
   },
   cancel: {
     title: "Payment cancelled",
     description:
-      "You cancelled the online payment. This page is informational only — our records update from the payment gateway IPN.",
+      "You cancelled the online payment. You can retry from the order details while the order is active; our records update from the payment gateway IPN.",
     icon: CircleAlert,
     tone: "bg-amber-50 text-amber-700",
   },

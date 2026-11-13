@@ -10,11 +10,22 @@ import { OrderDetailSkeleton } from "@/features/dashboard/customer/orders/compon
 import { useOrderDetail } from "@/features/dashboard/customer/orders/hooks/use-order-detail";
 import { ReturnRequestDialog } from "@/features/dashboard/customer/orders/components/return-request-dialog";
 import type { OrderDetailProps } from "@/features/dashboard/customer/orders/types";
+import {
+  initiatePayment,
+  pickGatewayUrl,
+} from "@/features/checkout/api";
+import { toCustomerApiError } from "@/features/dashboard/customer/orders/utils";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
-import { statusColor } from "@/helpers";
+import { errorToast, statusColor } from "@/helpers";
 import { formatPrice } from "@/lib/format";
 import clsx from "clsx";
-import { ChevronLeft, Package, Printer } from "lucide-react";
+import {
+  ChevronLeft,
+  CreditCard,
+  Loader2,
+  Package,
+  Printer,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -27,6 +38,7 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
 
   const [cancelOpen, setCancelOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
+  const [retryingPayment, setRetryingPayment] = useState(false);
 
   const { query, order: currentOrder } = useOrderDetail({
     orderId,
@@ -64,10 +76,39 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
   const canCancel = CANCELLABLE.has(currentOrder.status);
   const canReturn =
     currentOrder.canRequestReturn ?? currentOrder.status === "DELIVERED";
+  const canRetryPayment =
+    currentOrder.status === "PENDING" &&
+    currentOrder.paymentStatus !== "PAID" &&
+    currentOrder.payments?.some(
+      (payment) => payment.method === "SSLCOMMERZ",
+    );
+  const hasFailedOnlinePayment = currentOrder.payments?.some(
+    (payment) =>
+      payment.method === "SSLCOMMERZ" &&
+      ["FAILED", "CANCELLED"].includes(payment.status),
+  );
   const returnRequests = currentOrder.returnRequests ?? [];
   const refunds = (currentOrder.payments ?? []).flatMap((payment) =>
     payment.refunds.map((refund) => ({ ...refund, method: payment.method })),
   );
+
+  const handleRetryPayment = async () => {
+    if (retryingPayment) return;
+    setRetryingPayment(true);
+    try {
+      const result = await initiatePayment(currentOrder.id, "SSLCOMMERZ");
+      const gatewayUrl = pickGatewayUrl(result);
+      if (!gatewayUrl) {
+        errorToast("Online payment could not be started. Please try again.");
+        return;
+      }
+      window.location.href = gatewayUrl;
+    } catch (error) {
+      errorToast(toCustomerApiError(error));
+    } finally {
+      setRetryingPayment(false);
+    }
+  };
 
   return (
     <>
@@ -108,6 +149,26 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
             Back to Orders
           </button>
           <div className="flex flex-wrap gap-2 max-sm:w-full max-sm:flex-col">
+            {canRetryPayment ? (
+              <button
+                type="button"
+                onClick={() => void handleRetryPayment()}
+                disabled={retryingPayment}
+                aria-busy={retryingPayment}
+                className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary px-6 py-3 text-xs font-bold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {retryingPayment ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  <CreditCard size={16} aria-hidden />
+                )}
+                {retryingPayment
+                  ? "Opening payment…"
+                  : hasFailedOnlinePayment
+                    ? "Retry payment"
+                    : "Pay online"}
+              </button>
+            ) : null}
             {canCancel ? (
               <button
                 onClick={() => setCancelOpen(true)}
