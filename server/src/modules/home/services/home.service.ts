@@ -1,8 +1,11 @@
 import type { CollectionSource, Prisma } from "../../../generated/prisma/client.ts";
+import { AppError } from "../../../common/errors/AppError.ts";
+import { decodeCursor, encodeCursor } from "../../../common/utils/cursor.ts";
 import { prisma } from "../../../lib/prisma.ts";
 import { listActiveSliders } from "../../slider/services/slider.service.ts";
 import { invalidateHomeCache, readCachedHome, writeCachedHome } from "../cache.ts";
 import type { HomeCategoryCard, HomePayload, HomeProductCard, HomeSection } from "../types.ts";
+import { z } from "zod";
 
 const DEFAULT_LIMIT = 8;
 const CATEGORY_LIMIT = 8;
@@ -16,6 +19,9 @@ const homeProductSelect = {
   id: true,
   name: true,
   slug: true,
+  createdAt: true,
+  salesCount30d: true,
+  trendingScore: true,
   status: true,
   isFeatured: true,
   averageRating: true,
@@ -80,6 +86,30 @@ type ResolvedCollection = {
   limit: number;
 };
 
+const homeCursorSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("createdAt"),
+    id: z.string().min(1),
+    createdAt: z.string().datetime(),
+  }),
+  z.object({
+    kind: z.literal("salesCount30d"),
+    id: z.string().min(1),
+    value: z.number().finite(),
+  }),
+  z.object({
+    kind: z.literal("trendingScore"),
+    id: z.string().min(1),
+    value: z.number().finite(),
+  }),
+  z.object({
+    kind: z.literal("manual"),
+    id: z.string().min(1),
+    sortOrder: z.number().int(),
+  }),
+]);
+type HomeCursor = z.infer<typeof homeCursorSchema>;
+
 const DEFAULT_SECTIONS: ResolvedCollection[] = [
   {
     id: "default-new-arrivals",
@@ -104,56 +134,158 @@ const DEFAULT_SECTIONS: ResolvedCollection[] = [
   },
 ];
 
-const findPublished = async (
+const cursorAfterPublishedProduct = (
+  cursor: HomeCursor | undefined,
+  sortBy: "createdAt" | "salesCount30d" | "trendingScore"
+): Prisma.ProductWhereInput | undefined => {
+  if (!cursor) return undefined;
+  if (cursor.kind !== sortBy) {
+    throw new AppError("Cursor does not match homepage section", 400);
+  }
+  if (sortBy === "createdAt" && cursor.kind === "createdAt") {
+    const createdAt = new Date(cursor.createdAt);
+    return {
+      OR: [
+        { createdAt: { lt: createdAt } },
+        { createdAt, id: { lt: cursor.id } },
+      ],
+    };
+  }
+  if (sortBy === "salesCount30d" && cursor.kind === "salesCount30d") {
+    return {
+      OR: [
+        { salesCount30d: { lt: cursor.value } },
+        { salesCount30d: cursor.value, id: { lt: cursor.id } },
+      ],
+    };
+  }
+  if (sortBy === "trendingScore" && cursor.kind === "trendingScore") {
+    return {
+      OR: [
+        { trendingScore: { lt: cursor.value } },
+        { trendingScore: cursor.value, id: { lt: cursor.id } },
+      ],
+    };
+  }
+  throw new AppError("Cursor does not match homepage section", 400);
+};
+
+const loadPublishedPage = async (
   where: Prisma.ProductWhereInput,
-  orderBy: Prisma.ProductOrderByWithRelationInput,
-  take: number
-) =>
-  prisma.product.findMany({
-    where: { ...publishedWhere, ...where },
+  sortBy: "createdAt" | "salesCount30d" | "trendingScore",
+  take: number,
+  cursor?: HomeCursor
+) => {
+  const after = cursorAfterPublishedProduct(cursor, sortBy);
+  const orderBy: Prisma.ProductOrderByWithRelationInput[] =
+    sortBy === "createdAt"
+      ? [{ createdAt: "desc" }, { id: "desc" }]
+      : sortBy === "salesCount30d"
+        ? [{ salesCount30d: "desc" }, { id: "desc" }]
+        : [{ trendingScore: "desc" }, { id: "desc" }];
+  const products = await prisma.product.findMany({
+    where: {
+      AND: [publishedWhere, where, ...(after ? [after] : [])],
+    },
     orderBy,
-    take,
+    take: take + 1,
     select: homeProductSelect,
   });
+  const visible = products.slice(0, take);
+  const last = visible[visible.length - 1];
+  const hasMore = products.length > take;
+  let nextCursor: string | null = null;
+  if (hasMore && last) {
+    const value =
+      sortBy === "createdAt"
+        ? { kind: "createdAt" as const, id: last.id, createdAt: last.createdAt.toISOString() }
+        : sortBy === "salesCount30d"
+          ? { kind: "salesCount30d" as const, id: last.id, value: last.salesCount30d }
+          : { kind: "trendingScore" as const, id: last.id, value: last.trendingScore };
+    nextCursor = encodeCursor(value);
+  }
+  return { products: visible, nextCursor };
+};
 
-const loadManualProducts = async (collectionId: string, take: number) => {
+const loadManualPage = async (
+  collectionId: string,
+  take: number,
+  cursor?: HomeCursor
+) => {
+  if (cursor && cursor.kind !== "manual") {
+    throw new AppError("Cursor does not match homepage section", 400);
+  }
   const items = await prisma.productCollectionItem.findMany({
     where: {
       collectionId,
       product: publishedWhere,
+      ...(cursor
+        ? {
+            OR: [
+              { sortOrder: { gt: cursor.sortOrder } },
+              {
+                sortOrder: cursor.sortOrder,
+                productId: { gt: cursor.id },
+              },
+            ],
+          }
+        : {}),
     },
-    orderBy: { sortOrder: "asc" },
-    take,
+    orderBy: [{ sortOrder: "asc" }, { productId: "asc" }],
+    take: take + 1,
     select: {
+      sortOrder: true,
+      productId: true,
       product: { select: homeProductSelect },
     },
   });
-  return items.map((item) => item.product);
+  const visible = items.slice(0, take);
+  const last = visible[visible.length - 1];
+  const nextCursor =
+    items.length > take && last
+      ? encodeCursor({
+          kind: "manual",
+          id: last.productId,
+          sortOrder: last.sortOrder,
+        })
+      : null;
+  return { products: visible.map((item) => item.product), nextCursor };
 };
 
-const resolveProducts = async (collection: ResolvedCollection): Promise<HomeProductRow[]> => {
+const resolveProducts = async (
+  collection: ResolvedCollection,
+  cursor?: HomeCursor
+) => {
   const take = collection.limit > 0 ? collection.limit : DEFAULT_LIMIT;
 
   switch (collection.source) {
     case "NEW_ARRIVALS":
-      return findPublished({}, { createdAt: "desc" }, take);
+      return loadPublishedPage({}, "createdAt", take, cursor);
     case "BEST_SELLERS":
-      return findPublished({}, { salesCount30d: "desc" }, take);
+      return loadPublishedPage({}, "salesCount30d", take, cursor);
     case "TRENDING":
-      return findPublished({}, { trendingScore: "desc" }, take);
+      return loadPublishedPage({}, "trendingScore", take, cursor);
     case "DISCOUNT":
-      return findPublished({ variants: { some: onSaleVariantWhere } }, { createdAt: "desc" }, take);
+      return loadPublishedPage(
+        { variants: { some: onSaleVariantWhere } },
+        "createdAt",
+        take,
+        cursor
+      );
     case "FEATURED": {
       if (!collection.id.startsWith("default-")) {
-        const curated = await loadManualProducts(collection.id, take);
-        if (curated.length) return curated;
+        const curated = await prisma.productCollectionItem.findFirst({
+          where: { collectionId: collection.id, product: publishedWhere },
+          select: { productId: true },
+        });
+        if (curated) return loadManualPage(collection.id, take, cursor);
       }
-      return findPublished({ isFeatured: true }, { createdAt: "desc" }, take);
+      return loadPublishedPage({ isFeatured: true }, "createdAt", take, cursor);
     }
     case "MANUAL":
-      return loadManualProducts(collection.id, take);
+      return loadManualPage(collection.id, take, cursor);
     default:
-      return [];
+      return { products: [], nextCursor: null };
   }
 };
 
@@ -208,12 +340,13 @@ const buildHomePayload = async (): Promise<HomePayload> => {
     loadHomeCollections(now),
   ]);
 
-  const sectionProducts = await Promise.all(
+  const sectionPages = await Promise.all(
     collections.map((collection) => resolveProducts(collection))
   );
 
   const sections: HomeSection[] = collections.flatMap((collection, index) => {
-    const products = (sectionProducts[index] ?? []).map(toCard);
+    const page = sectionPages[index];
+    const products = (page?.products ?? []).map(toCard);
     if (!products.length) return [];
     return [
       {
@@ -223,6 +356,7 @@ const buildHomePayload = async (): Promise<HomePayload> => {
         source: collection.source,
         href: "/shop",
         products,
+        nextCursor: page?.nextCursor ?? null,
       },
     ];
   });
@@ -231,6 +365,23 @@ const buildHomePayload = async (): Promise<HomePayload> => {
 };
 
 export { invalidateHomeCache };
+
+export const getHomeSectionProducts = async (
+  sectionId: string,
+  cursorToken?: string
+): Promise<{ items: HomeProductCard[]; nextCursor: string | null }> => {
+  const collections = await loadHomeCollections(new Date());
+  const collection = collections.find((item) => item.id === sectionId);
+  if (!collection) throw new AppError("Homepage section not found", 404);
+  const cursor = cursorToken
+    ? decodeCursor(cursorToken, homeCursorSchema)
+    : undefined;
+  const page = await resolveProducts(collection, cursor);
+  return {
+    items: page.products.map(toCard),
+    nextCursor: page.nextCursor,
+  };
+};
 
 export const getHome = async (): Promise<HomePayload> => {
   const cached = await readCachedHome();

@@ -8,8 +8,12 @@ import { requireCustomer } from "@/lib/api/auth/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function Layout({ children }: { children: ReactNode }) {
   await requireCustomer();

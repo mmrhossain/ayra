@@ -1,7 +1,7 @@
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import ScrollToTopOnNavigation from "@/components/shared/ScrollToTopOnNavigation";
 import { Toaster } from "@/components/ui/sonner";
-import { SITE_NAME, SITE_URL } from "@/config/site";
+import { PUBLIC_SITE_URL, SITE_NAME } from "@/config/site";
 import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import ThemeColorManager from "@/hooks/ThemeColorManager";
 import "@smastrom/react-rating/style.css";
@@ -21,9 +21,9 @@ const jost = Jost({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchPublicSettingsOrDefault();
   return {
-    metadataBase: new URL(SITE_URL),
-    title: `${settings.store.name || SITE_NAME} | Modern Online Shopping in Bangladesh`,
-    description: "Bangladesh's premier modern e-commerce platform.",
+    ...(PUBLIC_SITE_URL ? { metadataBase: new URL(PUBLIC_SITE_URL) } : {}),
+    title: `${settings.store.name || SITE_NAME} | Online Shopping in Bangladesh`,
+    description: `Discover quality products and shop online with ${settings.store.name || SITE_NAME}.`,
   };
 }
 

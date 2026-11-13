@@ -11,6 +11,8 @@ import ShopContent from "@/features/catalog/components/shop/ShopContent";
 import DynamicFilterBar from "@/features/shop/layout/DynamicFilter";
 import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import SubcategoriesSkeleton from "@/features/catalog/skeleton/SubcategoriesSkeleton";
+import { PUBLIC_SITE_URL, SITE_NAME } from "@/config/site";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
 const SORTS = new Set<ProductSort>(["newest", "price_asc", "price_desc", "popular"]);
@@ -25,6 +27,58 @@ type SearchParams = {
   attrs?: string;
   categories?: string;
 };
+
+const INDEXING_FILTERS = new Set([
+  "page",
+  "category",
+  "sort",
+  "minPrice",
+  "maxPrice",
+  "search",
+  "attrs",
+  "categories",
+]);
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  const categoryPath = slug?.join("/");
+  const category = categoryPath ? await getCategoryBySlug(categoryPath) : null;
+  const isFiltered = Object.keys(query).some((key) => INDEXING_FILTERS.has(key));
+  const canonicalPath = categoryPath ? `/shop/${categoryPath}` : "/shop";
+
+  if (categoryPath && !category) {
+    return {
+      title: `Category Not Found | ${SITE_NAME}`,
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const title = category?.name ? `${category.name} | ${SITE_NAME}` : `Shop | ${SITE_NAME}`;
+  const description =
+    category?.description?.replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim() ||
+    (category?.name
+      ? `Shop ${category.name} at ${SITE_NAME}. Explore available products and find your favorites.`
+      : `Explore products and shop online at ${SITE_NAME}.`);
+
+  return {
+    title,
+    description: description.slice(0, 160),
+    ...(PUBLIC_SITE_URL
+      ? {
+          alternates: {
+            canonical: new URL(canonicalPath, PUBLIC_SITE_URL).toString(),
+          },
+        }
+      : {}),
+    ...(isFiltered ? { robots: { index: false, follow: true } } : {}),
+  };
+}
 
 function FilterBarSkeleton() {
   return (

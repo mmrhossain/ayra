@@ -137,6 +137,8 @@ export const updateProductSchema = requireOnePrimaryImage(
 const queryStringParam = z.union([z.string(), z.array(z.string())]).optional();
 
 export const listProductsQuerySchema = paginationQuerySchema.extend({
+  page: z.coerce.number().int().min(1).optional(),
+  cursor: z.string().min(1).max(2048).optional(),
   category: z.string().optional(),
   brand: z.string().optional(),
   search: z.string().optional(),
@@ -149,6 +151,14 @@ export const listProductsQuerySchema = paginationQuerySchema.extend({
   status: productStatusSchema.optional(),
   attrs: queryStringParam,
   categories: queryStringParam,
+}).superRefine((query, ctx) => {
+  if (query.cursor && query.page !== undefined) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["cursor"],
+      message: "Use either page or cursor pagination",
+    });
+  }
 });
 
 export const productFacetsQuerySchema = listProductsQuerySchema;

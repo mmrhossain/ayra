@@ -19,7 +19,7 @@ import { errorToast, successToast } from "@/helpers/index";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { Heart, Share2 } from "lucide-react";
+import { ChevronDown, Heart, Share2 } from "lucide-react";
 import React, { useRef } from "react";
 
 function excerptFromHtml(html: string | null | undefined, max = 220): string {
@@ -203,40 +203,68 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
 
               {attributeGroups.map((group) => (
                 <div key={group.attributeId} className="min-w-0 lg:flex-1">
-                  <label
-                    htmlFor={`product-attribute-${group.attributeId}`}
+                  <span
+                    id={`product-attribute-label-${group.attributeId}`}
                     className="mb-2 block h-5 text-sm font-semibold text-foreground"
                   >
                     {group.name}
-                  </label>
-                  <Select
-                    value={selectedValues[group.attributeId] ?? ""}
-                    onValueChange={(value) => setAttributeValue(group.attributeId, value)}
-                  >
-                    <SelectTrigger
-                      id={`product-attribute-${group.attributeId}`}
-                      className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
+                  </span>
+                  <div className="relative md:hidden">
+                    <select
+                      aria-labelledby={`product-attribute-label-${group.attributeId}`}
+                      value={selectedValues[group.attributeId] ?? ""}
+                      onChange={(event) =>
+                        setAttributeValue(group.attributeId, event.target.value)
+                      }
+                      className="h-12 min-h-12 w-full appearance-none rounded-none border border-border-color bg-background px-3 pr-10 text-base text-foreground"
                     >
-                      <SelectValue placeholder="Choose an option" />
-                    </SelectTrigger>
-                    <SelectContent position="popper" className="w-[var(--radix-select-trigger-width)]">
+                      <option value="" disabled>
+                        Choose an option
+                      </option>
                       {group.values.map((item) => (
-                        <SelectItem key={item.id} value={item.id} className="min-h-11">
-                          <span className="flex min-h-5 items-center gap-2">
-                            {groupKind(group.name) === "color" ? (
-                              <span
-                                className="inline-block size-4 shrink-0 rounded-full border border-black/10"
-                                style={{
-                                  backgroundColor: item.color ?? parseColor(item.value),
-                                }}
-                              />
-                            ) : null}
-                            <span className="truncate">{item.value}</span>
-                          </span>
-                        </SelectItem>
+                        <option key={item.id} value={item.id}>
+                          {item.value}
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                  </div>
+                  <div className="hidden md:block">
+                    <Select
+                      value={selectedValues[group.attributeId] ?? ""}
+                      onValueChange={(value) => setAttributeValue(group.attributeId, value)}
+                    >
+                      <SelectTrigger
+                        aria-labelledby={`product-attribute-label-${group.attributeId}`}
+                        className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
+                      >
+                        <SelectValue placeholder="Choose an option" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        className="w-[var(--radix-select-trigger-width)]"
+                      >
+                        {group.values.map((item) => (
+                          <SelectItem key={item.id} value={item.id} className="min-h-11">
+                            <span className="flex min-h-5 items-center gap-2">
+                              {groupKind(group.name) === "color" ? (
+                                <span
+                                  className="inline-block size-4 shrink-0 rounded-full border border-black/10"
+                                  style={{
+                                    backgroundColor: item.color ?? parseColor(item.value),
+                                  }}
+                                />
+                              ) : null}
+                              <span className="truncate">{item.value}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               ))}
             </div>

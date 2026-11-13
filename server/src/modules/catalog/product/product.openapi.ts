@@ -24,7 +24,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "List products",
   description:
-    "Public paginated catalog of ACTIVE products. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
+    "Public catalog of ACTIVE products with cursor pagination by default; page-based pagination remains available when page is supplied. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
   request: { query: listProductsQuerySchema },
   responses: {
     200: successResponse("Products fetched"),

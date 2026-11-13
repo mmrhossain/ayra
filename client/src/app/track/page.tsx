@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Track your order",
   description: "Track a shipment with your shipment number.",
+  robots: { index: false, follow: false },
 };
 
 function statusVariant(status: string): StatusBadgeVariant {

@@ -3,6 +3,10 @@ import { requireCustomer } from "@/lib/api/auth/server";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  title: "Order Confirmation",
+  robots: { index: false, follow: false },
+};
 
 const CheckoutConfirmationPage = async () => {
   await requireCustomer();

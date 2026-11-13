@@ -1,7 +1,7 @@
 import { fetchProducts } from "@/features/catalog/api";
 import { Tag } from "lucide-react";
 import Link from "next/link";
-import ProductCard from "./ProductCard";
+import ProductGrid from "./ProductGrid";
 
 const RelatedProduct = async ({
   categorySlug,
@@ -47,11 +47,7 @@ const RelatedProduct = async ({
             View all
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-7">
-          {items.map((item) => (
-            <ProductCard key={item.id} product={item} />
-          ))}
-        </div>
+        <ProductGrid items={items} />
       </div>
     </div>
   );

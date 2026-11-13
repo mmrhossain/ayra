@@ -34,8 +34,10 @@ export default function HomePage({
       {data.sections.map((section) => (
         <section key={section.id}>
           <HomeProductSection
+            sectionId={section.id}
             title={section.title}
             products={section.products}
+            initialCursor={section.nextCursor ?? null}
             seeMorePath={section.href}
             seeMoreText="See All"
           />

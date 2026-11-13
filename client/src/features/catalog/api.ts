@@ -152,8 +152,9 @@ export async function fetchProductList(params: ProductListParams = {}): Promise<
   const res = await api.get<Envelope<ProductListResult>>("/products", {
     next: { revalidate: 60, tags: ["products"] },
     params: {
-      page: params.page ?? 1,
+      page: params.page,
       limit: params.limit ?? 20,
+      cursor: params.cursor,
       search: params.search || undefined,
       category: params.category || undefined,
       brand: params.brand || undefined,
@@ -279,7 +280,6 @@ export async function fetchProducts(
   params: ProductListParams = {}
 ): Promise<ProductListResult> {
   return fetchProductList({
-    page: 1,
     limit: 20,
     sort: "newest",
     ...params,

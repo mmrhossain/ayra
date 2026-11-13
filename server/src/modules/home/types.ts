@@ -26,6 +26,7 @@ export type HomeSection = {
   source: CollectionSource;
   href: string;
   products: HomeProductCard[];
+  nextCursor: string | null;
 };
 
 export type HomeCategoryCard = {

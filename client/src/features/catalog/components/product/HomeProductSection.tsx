@@ -1,21 +1,41 @@
+"use client";
+
+import { useCallback } from "react";
 import CustomButton from "@/components/shared/CustomButton";
 import FancyHeading from "@/components/shared/FancyHeading";
-import ProductCard from "@/features/catalog/components/product/ProductCard";
+import ProductGrid from "@/features/catalog/components/product/ProductGrid";
 import { ArrowRight } from "lucide-react";
-import { ProductListItem } from "../../types";
+import type { ProductListItem } from "../../api";
+import { fetchHomeSectionProducts } from "@/features/home/api";
+import { useInfiniteProductList } from "@/features/catalog/hooks/use-infinite-product-list";
 
 export default function HomeProductSection({
+  sectionId,
   title,
   products,
+  initialCursor,
   seeMorePath,
   seeMoreText,
 }: {
+  sectionId: string;
   title: string;
   products: ProductListItem[];
+  initialCursor: string | null;
   seeMorePath: string;
   seeMoreText: string;
 }) {
-  if (!products || products.length === 0) return null;
+  const loadPage = useCallback(
+    (cursor: string) => fetchHomeSectionProducts(sectionId, cursor),
+    [sectionId]
+  );
+  const { items, cursor, loading, error, sentinelRef, loadMore } = useInfiniteProductList({
+    initialItems: products,
+    initialCursor,
+    loadPage,
+    enabled: products.length > 0,
+  });
+
+  if (!products.length) return null;
 
   return (
     <section className="container my-8 md:my-12">
@@ -39,11 +59,31 @@ export default function HomeProductSection({
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-7">
-        {products.map((item) => (
-          <ProductCard key={item.id} product={item} />
-        ))}
-      </div>
+      <ProductGrid items={items} className="gap-4 sm:gap-6 lg:gap-7" />
+      {cursor ? (
+        <div className="mt-6 flex flex-col items-center gap-3">
+          {loading ? (
+            <p role="status" aria-live="polite" className="text-sm text-zinc-500">
+              Loading more products...
+            </p>
+          ) : null}
+          {error ? (
+            <div className="flex flex-col items-center gap-2">
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+              <button
+                type="button"
+                onClick={loadMore}
+                className="text-sm font-medium underline underline-offset-4"
+              >
+                Try again
+              </button>
+            </div>
+          ) : null}
+          <div ref={sentinelRef} className="h-px w-full" aria-hidden="true" />
+        </div>
+      ) : null}
     </section>
   );
 }

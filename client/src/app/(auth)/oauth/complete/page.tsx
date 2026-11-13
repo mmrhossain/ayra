@@ -18,26 +18,34 @@ function OAuthComplete() {
   useEffect(() => {
     let cancelled = false;
 
+    const syncCustomerData = async () => {
+      try {
+        await mergeGuestCartOnLogin();
+        await Promise.all([
+          useCartStore.getState().fetchCart(),
+          useWishStore.getState().fetchWishList(),
+        ]);
+      } catch (syncErr) {
+        console.error(toCartErrorMessage(syncErr));
+      }
+    };
+
     const finish = async () => {
+      let role: string | null | undefined;
+      let sessionLoaded = false;
       try {
         const { data: session } = await authClient.getSession();
-        const dashboard = staffDashboardPath(session?.user?.role);
-        if (dashboard) {
-          if (!cancelled) router.replace(dashboard);
-          return;
-        }
-        if (!isStaffRole(session?.user?.role)) {
-          await mergeGuestCartOnLogin();
-          await Promise.all([
-            useCartStore.getState().fetchCart(),
-            useWishStore.getState().fetchWishList(),
-          ]);
-        }
-      } catch (mergeErr) {
-        console.error(toCartErrorMessage(mergeErr));
+        role = session?.user?.role;
+        sessionLoaded = true;
+      } catch (sessionErr) {
+        console.error(toCartErrorMessage(sessionErr));
       }
-      if (!cancelled) {
-        router.replace(redirect);
+
+      const dashboard = staffDashboardPath(role);
+      if (!cancelled) router.replace(dashboard ?? redirect);
+
+      if (sessionLoaded && !isStaffRole(role)) {
+        void syncCustomerData();
       }
     };
 

@@ -91,4 +91,56 @@ describe("GET /home", () => {
     expect(sections[0]?.title).toBe("Eid Picks");
     expect(sections[0]?.products.map((p) => p.id)).toContain(featured.product.id);
   });
+
+  it("loads manual homepage collection products with a stable cursor", async () => {
+    const first = await createTestProduct(tracker);
+    const second = await createTestProduct(tracker);
+    const third = await createTestProduct(tracker);
+    const collection = await prisma.productCollection.create({
+      data: {
+        name: "Cursor Picks",
+        slug: `cursor-picks-${Date.now()}`,
+        source: "MANUAL",
+        placement: "HOME",
+        sortOrder: 0,
+        limit: 2,
+        isActive: true,
+        products: {
+          create: [
+            { productId: first.product.id, sortOrder: 0 },
+            { productId: second.product.id, sortOrder: 1 },
+            { productId: third.product.id, sortOrder: 2 },
+          ],
+        },
+      },
+    });
+    tracker.collectionIds.push(collection.id);
+
+    const firstPage = await api().get(
+      `/api/v1/home/sections/${collection.id}/products`
+    );
+    expect(firstPage.status).toBe(200);
+    const firstData = firstPage.body.data as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(firstData.items.map((product) => product.id)).toEqual([
+      first.product.id,
+      second.product.id,
+    ]);
+    expect(firstData.nextCursor).toBeTruthy();
+
+    const secondPage = await api().get(
+      `/api/v1/home/sections/${collection.id}/products?cursor=${encodeURIComponent(firstData.nextCursor!)}`
+    );
+    expect(secondPage.status).toBe(200);
+    const secondData = secondPage.body.data as {
+      items: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(secondData.items.map((product) => product.id)).toEqual([
+      third.product.id,
+    ]);
+    expect(secondData.nextCursor).toBeNull();
+  });
 });

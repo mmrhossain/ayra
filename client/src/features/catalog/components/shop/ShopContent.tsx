@@ -5,10 +5,13 @@ import {
   parseCategoriesParam,
   type ProductSort,
 } from "@/features/catalog/api";
-import ProductCard from "@/features/catalog/components/product/ProductCard";
 import ProductNotFound from "@/features/catalog/components/product/ProductNotFound";
+import ProductGrid from "@/features/catalog/components/product/ProductGrid";
+import CursorProductList from "@/features/catalog/components/shop/CursorProductList";
 import Pagination from "@/features/catalog/components/shop/Pagination";
 import { notFound } from "next/navigation";
+
+const SHOP_PAGE_SIZE = 12;
 
 interface ShopContentProps {
   slug?: string[];
@@ -34,7 +37,8 @@ export default async function ShopContent({
   minPrice,
   maxPrice,
 }: ShopContentProps) {
-  const page = Math.max(1, Number(sp.page) || 1);
+  const page =
+    sp.page === undefined ? undefined : Math.max(1, Number(sp.page) || 1);
   const search = sp.search || undefined;
 
   const routeCategoryPath = slug?.length ? slug.join("/") : undefined;
@@ -49,8 +53,8 @@ export default async function ShopContent({
 
   const [productResult, categoryDetails] = await Promise.all([
     fetchProducts({
-      page,
-      limit: 20,
+      ...(page === undefined ? {} : { page }),
+      limit: SHOP_PAGE_SIZE,
       category: categorySlug,
       search,
       sort,
@@ -109,11 +113,24 @@ export default async function ShopContent({
 
       {hasProducts ? (
         <div className="mt-6 md:mt-8">
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-7 xl:grid-cols-4">
-            {items.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
+          {page === undefined ? (
+            <CursorProductList
+              initialItems={items}
+              initialCursor={productResult.nextCursor ?? null}
+              query={{
+                limit: SHOP_PAGE_SIZE,
+                category: categorySlug,
+                search,
+                sort,
+                minPrice,
+                maxPrice,
+                attributes,
+                categories: selectedCategories,
+              }}
+            />
+          ) : (
+            <ProductGrid items={items} eagerFirstImage />
+          )}
         </div>
       ) : (
         <div className="mt-8">
@@ -121,7 +138,7 @@ export default async function ShopContent({
         </div>
       )}
 
-      {pagination && hasProducts ? (
+      {pagination && hasProducts && page !== undefined ? (
         <Pagination pagination={pagination} filters={filters} basePath={basePath} />
       ) : null}
     </div>

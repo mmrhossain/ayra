@@ -29,7 +29,13 @@ function imageSrc(item: ProductListItem): string {
   return "https://placehold.jp/400x400.png";
 }
 
-export default function ProductCard({ product }: { product: ProductListItem }) {
+export default function ProductCard({
+  product,
+  eagerImage = false,
+}: {
+  product: ProductListItem;
+  eagerImage?: boolean;
+}) {
   const defaultVariantId =
     product?.variants?.find((v) => v?.id)?.id ?? product?.variants?.[0]?.id ?? null;
   const { inWish, busy: wishBusy, toggleWishlist } = useWishlistToggle(defaultVariantId);
@@ -52,6 +58,7 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
             alt={product?.name ?? "Product image"}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            loading={eagerImage ? "eager" : "lazy"}
             className={productCardImage}
           />
           <div className="absolute top-2 right-2 z-[5] flex flex-col items-end gap-1.5 sm:top-3 sm:right-3 sm:gap-2">
@@ -68,12 +75,16 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
               disabled={wishBusy || !defaultVariantId}
               className={cn(
                 productCardIconBtn({ tone: inWish ? "active" : "default" }),
-                "min-h-11 min-w-11 disabled:opacity-50"
+                "flex h-10 w-10 min-h-10 min-w-10 items-center justify-center p-0 disabled:opacity-50 sm:h-11 sm:w-11 sm:min-h-11 sm:min-w-11"
               )}
               aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
               aria-pressed={inWish}
             >
-              <Heart size={16} fill={inWish ? "currentColor" : "none"} />
+              <Heart
+                size={16}
+                className="h-4 w-4 sm:h-[18px] sm:w-[18px]"
+                fill={inWish ? "currentColor" : "none"}
+              />
             </button>
           </div>
         </div>

@@ -1,5 +1,8 @@
+import { z } from "zod";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
+import { decodeCursor, encodeCursor } from "../../../../common/utils/cursor.ts";
+import type { Prisma } from "../../../../generated/prisma/client.ts";
 import { sanitizeHtml } from "../../../../common/utils/sanitize-html.ts";
 import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
 import { generateSlug } from "../../../../common/utils/slug.ts";
@@ -61,9 +64,30 @@ const publicVisibility = { status: "ACTIVE" as const, deletedAt: null };
 
 export const listProducts = async (query: ListProductsQuery) => {
   const productWhere = await buildProductWhere(query);
-  const skip = (query.page - 1) * query.limit;
-  const take = query.limit;
+  const page = query.page ?? 1;
+  const skip = (page - 1) * query.limit;
+  const cursorMode = query.page === undefined || query.cursor !== undefined;
+  const take = query.limit + (cursorMode ? 1 : 0);
   const isPriceSort = query.sort === "price_asc" || query.sort === "price_desc";
+  const cursorSchema = z.discriminatedUnion("kind", [
+    z.object({
+      kind: z.enum(["newest", "popular"]),
+      id: z.string().min(1),
+      createdAt: z.string().datetime(),
+    }),
+    z.object({
+      kind: z.enum(["price_asc", "price_desc"]),
+      id: z.string().min(1),
+      price: z.string().regex(/^\d+(?:\.\d+)?$/),
+    }),
+  ]);
+  const cursor = query.cursor
+    ? decodeCursor(query.cursor, cursorSchema)
+    : undefined;
+
+  if (cursor && cursor.kind !== query.sort) {
+    throw new AppError("Cursor does not match product sort", 400);
+  }
 
   const productListSelect = {
     id: true,
@@ -92,25 +116,95 @@ export const listProducts = async (query: ListProductsQuery) => {
       },
       orderBy: { isDefault: "desc" as const },
     },
+    createdAt: true,
   } as const;
 
-  const [items, total] = isPriceSort
+  const [rawItems, total, nextCursor] = isPriceSort
     ? await (async () => {
+        const cursorProductWhere: Prisma.ProductWhereInput | undefined =
+          cursor?.kind === "price_asc"
+            ? {
+                OR: [
+                  {
+                    variants: {
+                      none: {
+                        deletedAt: null,
+                        price: { lte: cursor.price },
+                      },
+                    },
+                  },
+                  {
+                    AND: [
+                      { id: { gt: cursor.id } },
+                      {
+                        variants: {
+                          some: { deletedAt: null, price: cursor.price },
+                        },
+                      },
+                      {
+                        variants: {
+                          none: {
+                            deletedAt: null,
+                            price: { lt: cursor.price },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              }
+            : cursor?.kind === "price_desc"
+              ? {
+                  OR: [
+                    {
+                      variants: {
+                        none: {
+                          deletedAt: null,
+                          price: { gte: cursor.price },
+                        },
+                      },
+                    },
+                    {
+                      AND: [
+                        { id: { lt: cursor.id } },
+                        {
+                          variants: {
+                            some: { deletedAt: null, price: cursor.price },
+                          },
+                        },
+                        {
+                          variants: {
+                            none: {
+                              deletedAt: null,
+                              price: { gt: cursor.price },
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                }
+              : undefined;
+        const rankedWhere: Prisma.ProductWhereInput = cursorProductWhere
+          ? { AND: [productWhere, cursorProductWhere] }
+          : productWhere;
         const [ranked, count] = await Promise.all([
           prisma.productVariant.groupBy({
             by: ["productId"],
-            where: { deletedAt: null, product: productWhere },
+            where: { deletedAt: null, product: rankedWhere },
             _min: { price: true },
-            orderBy: {
-              _min: { price: query.sort === "price_asc" ? "asc" : "desc" },
-            },
-            skip,
+            orderBy: [
+              { _min: { price: query.sort === "price_asc" ? "asc" : "desc" } },
+              { productId: query.sort === "price_asc" ? "asc" : "desc" },
+            ],
+            ...(cursorMode ? {} : { skip }),
             take,
           }),
           prisma.product.count({ where: productWhere }),
         ]);
 
-        const ids = ranked.map((row) => row.productId);
+        const visibleRanked = cursorMode ? ranked.slice(0, query.limit) : ranked;
+        const ids = visibleRanked.map((row) => row.productId);
         const unordered = ids.length
           ? await prisma.product.findMany({
               where: { id: { in: ids } },
@@ -118,31 +212,79 @@ export const listProducts = async (query: ListProductsQuery) => {
             })
           : [];
         const byId = new Map(unordered.map((product) => [product.id, product]));
-        return [
-          ids.flatMap((id) => {
+        const items = ids.flatMap((id) => {
             const product = byId.get(id);
             return product ? [product] : [];
-          }),
-          count,
-        ] as const;
+          });
+        const hasMore = cursorMode && ranked.length > query.limit;
+        let next: string | null = null;
+        if (hasMore) {
+          const last = visibleRanked[visibleRanked.length - 1];
+          const price = last?._min.price;
+          if (!last || !price) {
+            throw new AppError("Unable to create product cursor", 500);
+          }
+          next = encodeCursor({
+            kind: query.sort,
+            id: last.productId,
+            price: price.toString(),
+          });
+        }
+        return [items, count, next] as const;
       })()
     : await Promise.all([
-        prisma.product.findMany({
-          where: productWhere,
-          orderBy: { createdAt: "desc" as const },
-          skip,
-          take,
-          select: productListSelect,
-        }),
+        (async () => {
+          const cursorWhere =
+            cursor?.kind === "newest" || cursor?.kind === "popular"
+              ? {
+                  AND: [
+                    productWhere,
+                    {
+                      OR: [
+                        { createdAt: { lt: new Date(cursor.createdAt) } },
+                        {
+                          createdAt: new Date(cursor.createdAt),
+                          id: { lt: cursor.id },
+                        },
+                      ],
+                    },
+                  ],
+                }
+              : productWhere;
+          const products = await prisma.product.findMany({
+            where: cursorWhere,
+            orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }],
+            ...(cursorMode ? {} : { skip }),
+            take,
+            select: productListSelect,
+          });
+          return products;
+        })(),
         prisma.product.count({ where: productWhere }),
-      ]);
+      ]).then(([products, count]) => {
+        const visibleProducts = cursorMode ? products.slice(0, query.limit) : products;
+        const hasMore = cursorMode && products.length > query.limit;
+        const last = visibleProducts[visibleProducts.length - 1];
+        const next =
+          hasMore && last
+            ? encodeCursor({
+                kind: query.sort,
+                id: last.id,
+                createdAt: last.createdAt.toISOString(),
+              })
+            : null;
+        return [visibleProducts, count, next] as const;
+      });
 
-  return paginated(
-    items.map((product) => formatProductStock(product)),
-    query.page,
+  const result = paginated(
+    rawItems.map(({ createdAt: _createdAt, ...product }) =>
+      formatProductStock(product)
+    ),
+    page,
     query.limit,
     total
   );
+  return cursorMode ? { ...result, nextCursor } : result;
 };
 
 export const productDetailSelect = {

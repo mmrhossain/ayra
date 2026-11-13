@@ -85,6 +85,7 @@ export type ProductPagination = {
 export type ProductListResult = {
   items: ProductListItem[];
   pagination: ProductPagination;
+  nextCursor?: string | null;
 };
 
 export type ProductSort = "newest" | "price_asc" | "price_desc" | "popular";
@@ -94,6 +95,7 @@ export type AttributeFilterGroups = Record<string, string[]>;
 export type ProductListParams = {
   page?: number;
   limit?: number;
+  cursor?: string;
   search?: string;
   category?: string;
   brand?: string;

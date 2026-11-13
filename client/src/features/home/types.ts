@@ -16,6 +16,7 @@ export type HomeSection = {
   source: HomeSectionSource;
   href: string;
   products: ProductListItem[];
+  nextCursor: string | null;
 };
 
 export type HomePayload = {
