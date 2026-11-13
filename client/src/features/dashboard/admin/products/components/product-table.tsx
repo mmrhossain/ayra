@@ -184,7 +184,7 @@ export function ProductTable({ initialData }: ProductTableProps) {
                         />
                       </TableCell>
                       <TableCell data-label="Image">
-                        <div className="relative h-12 w-14 overflow-hidden rounded-md bg-gray-50 dark:bg-zinc-900 border">
+                        <div className="relative h-10 w-12 shrink-0 overflow-hidden rounded-md border bg-gray-50 dark:bg-zinc-900 sm:h-12 sm:w-14">
                           <Image
                             src={imageUrl || "https://placehold.jp/160x96.png"}
                             alt={product.name}

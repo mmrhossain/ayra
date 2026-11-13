@@ -185,6 +185,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
     const useGallery = GALLERY_TYPES.has(type);
     const [dragOver, setDragOver] = useState(false);
     const [previews, setPreviews] = useState<PreviewItem[]>([]);
+    const [activePreviewId, setActivePreviewId] = useState<string | null>(null);
     const [libraryOpen, setLibraryOpen] = useState(false);
     const pendingFiles = useRef<Array<{ file: File; previewId: string; url: string }>>([]);
     const committed = asUrls(props);
@@ -193,6 +194,8 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
       ...committed.map((url) => ({ id: url, url, uploading: false, pending: false })),
       ...previews,
     ];
+    const activePreview =
+      visible.find((item) => item.id === activePreviewId) ?? visible[0];
     const slotsLeft = Math.max(0, maxFiles - committed.length - previews.length);
     const canAdd = !disabled && !uploading && slotsLeft > 0;
 
@@ -440,71 +443,142 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
         {canAdd && !useGallery ? dropzone : null}
 
         {visible.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {visible.map((item) => {
-              const isPrimary =
-                mode === "multiple" &&
-                !item.uploading &&
-                !item.pending &&
-                props.primaryUrl === item.url;
-              return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    "relative aspect-square overflow-hidden rounded-lg border bg-muted/30",
-                    isPrimary && "ring-2 ring-primary"
-                  )}
-                >
-                  <Image
-                    src={item.url}
-                    alt=""
-                    fill={true}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
-                    loading="lazy"
-                  />
-                  {item.uploading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-                      <Loader2 className="size-6 animate-spin text-white" />
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="destructive"
-                      className="absolute top-1.5 right-1.5 z-10"
-                      disabled={disabled}
-                      onClick={() => removeItem(item)}
-                      aria-label="Remove image"
-                    >
-                      <X className="size-3.5" />
-                    </Button>
-                  )}
-                  {item.pending ? (
-                    <span className="absolute inset-x-0 bottom-0 z-10 bg-amber-500/90 px-2 py-1 text-center text-xs font-medium text-white">
-                      Uploads on save
-                    </span>
-                  ) : null}
-                  {mode === "multiple" &&
-                  props.onPrimaryChange &&
-                  !item.uploading &&
-                  !item.pending ? (
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => props.onPrimaryChange?.(item.url)}
+          mode === "multiple" ? (
+            <div className="flex w-full min-w-0 flex-col-reverse gap-3 lg:flex-row lg:items-start lg:gap-4">
+              <ul
+                aria-label="Image thumbnails"
+                className="flex max-w-full shrink-0 gap-2 overflow-x-auto py-1 scrollbar-hide sm:gap-2.5 lg:max-h-[420px] lg:w-16 lg:flex-col lg:overflow-y-auto xl:w-20"
+              >
+                {visible.map((item, index) => {
+                  const isPrimary =
+                    !item.uploading &&
+                    !item.pending &&
+                    props.primaryUrl === item.url;
+                  const isActive = activePreview?.id === item.id;
+
+                  return (
+                    <li
+                      key={item.id}
                       className={cn(
-                        "absolute inset-x-0 bottom-0 z-10 bg-black/60 px-2 py-1 text-xs font-medium text-white",
-                        isPrimary ? "bg-primary/90" : "hover:bg-black/75"
+                        "relative aspect-square w-14 shrink-0 overflow-hidden rounded-md border bg-muted/30 sm:w-16 lg:w-full",
+                        isPrimary && "ring-2 ring-primary ring-offset-1",
+                        isActive && !isPrimary && "ring-2 ring-foreground/50 ring-offset-1",
                       )}
                     >
-                      {isPrimary ? "Primary" : "Set as primary"}
-                    </button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
+                      <button
+                        type="button"
+                        onClick={() => setActivePreviewId(item.id)}
+                        aria-label={`View image ${index + 1}`}
+                        aria-current={isActive}
+                        className="absolute inset-0"
+                      >
+                        <Image
+                          src={item.url}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 56px, 80px"
+                          className="object-cover"
+                          loading="lazy"
+                        />
+                      </button>
+                      {item.uploading ? (
+                        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+                          <Loader2 className="size-5 animate-spin text-white" />
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="destructive"
+                          className="absolute top-1 right-1 z-20 size-7"
+                          disabled={disabled}
+                          onClick={() => removeItem(item)}
+                          aria-label={`Remove image ${index + 1}`}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      )}
+                      {item.pending ? (
+                        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-amber-500/90 px-1 py-0.5 text-center text-[10px] font-medium text-white">
+                          Pending
+                        </span>
+                      ) : null}
+                      {props.onPrimaryChange && !item.uploading && !item.pending ? (
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => props.onPrimaryChange?.(item.url)}
+                          className={cn(
+                            "absolute inset-x-0 bottom-0 z-20 truncate bg-black/60 px-1 py-1 text-[10px] font-medium text-white",
+                            isPrimary ? "bg-primary/90" : "hover:bg-black/75",
+                          )}
+                        >
+                          {isPrimary ? "Primary" : "Set primary"}
+                        </button>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {activePreview ? (
+                <div className="relative min-w-0 flex-1">
+                  <div className="relative mx-auto aspect-square max-h-[420px] w-full overflow-hidden rounded-lg border bg-muted/30">
+                    <Image
+                      src={activePreview.url}
+                      alt=""
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 420px"
+                      className="object-contain"
+                      priority
+                    />
+                    {activePreview.uploading ? (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+                        <Loader2 className="size-8 animate-spin text-white" />
+                      </div>
+                    ) : null}
+                    {activePreview.pending ? (
+                      <span className="absolute inset-x-0 bottom-0 z-10 bg-amber-500/90 px-3 py-2 text-center text-sm font-medium text-white">
+                        Uploads on save
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="relative aspect-square max-h-[320px] w-full overflow-hidden rounded-lg border bg-muted/30 sm:max-h-[380px]">
+              <Image
+                src={visible[0]!.url}
+                alt=""
+                fill
+                sizes="(max-width: 640px) 100vw, 380px"
+                className="object-cover"
+              />
+              {visible[0]!.uploading ? (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+                  <Loader2 className="size-6 animate-spin text-white" />
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="destructive"
+                  className="absolute top-1.5 right-1.5 z-10"
+                  disabled={disabled}
+                  onClick={() => removeItem(visible[0]!)}
+                  aria-label="Remove image"
+                >
+                  <X className="size-3.5" />
+                </Button>
+              )}
+              {visible[0]!.pending ? (
+                <span className="absolute inset-x-0 bottom-0 z-10 bg-amber-500/90 px-3 py-2 text-center text-sm font-medium text-white">
+                  Uploads on save
+                </span>
+              ) : null}
+            </div>
+          )
         ) : null}
 
         {useGallery ? (
@@ -553,9 +627,9 @@ function MediaLibraryDialog({
   const queryClient = useQueryClient();
   const inputId = useId();
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Record<string, MediaLibraryItem>>({});
+  const [selected, setSelected] = useState<MediaLibraryItem[]>([]);
   const [dragOver, setDragOver] = useState(false);
-  const selectedList = Object.values(selected);
+  const selectedList = selected;
   const canConfirm = selectedList.length > 0 && selectedList.length <= slotsLeft;
 
   const query = useQuery({
@@ -571,19 +645,20 @@ function MediaLibraryDialog({
 
   const toggle = (item: MediaLibraryItem) => {
     setSelected((prev) => {
-      if (prev[item.publicId]) {
-        const next = { ...prev };
-        delete next[item.publicId];
-        return next;
+      const selectedIndex = prev.findIndex(
+        (selectedItem) => selectedItem.publicId === item.publicId,
+      );
+      if (selectedIndex >= 0) {
+        return prev.filter((selectedItem) => selectedItem.publicId !== item.publicId);
       }
       if (mode === "single") {
-        return { [item.publicId]: item };
+        return [item];
       }
-      if (Object.keys(prev).length >= slotsLeft) {
+      if (prev.length >= slotsLeft) {
         toast.error(`A maximum of ${maxFiles} images is allowed`);
         return prev;
       }
-      return { ...prev, [item.publicId]: item };
+      return [...prev, item];
     });
   };
 
@@ -591,7 +666,7 @@ function MediaLibraryDialog({
     onUpload(files);
     void queryClient.invalidateQueries({ queryKey: ["media-library", type] });
     onOpenChange(false);
-    setSelected({});
+    setSelected([]);
     setPage(1);
   };
 
@@ -601,7 +676,7 @@ function MediaLibraryDialog({
       onOpenChange={(next) => {
         onOpenChange(next);
         if (!next) {
-          setSelected({});
+          setSelected([]);
           setPage(1);
         }
       }}
@@ -678,9 +753,11 @@ function MediaLibraryDialog({
               No images in this library yet. Upload from your device.
             </p>
           ) : (
-            <ul className="grid max-h-[50vh] grid-cols-3 gap-3 overflow-y-auto sm:grid-cols-4">
+            <ul className="grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto xs:grid-cols-3 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5">
               {items.map((item) => {
-                const isSelected = Boolean(selected[item.publicId]);
+                const isSelected = selected.some(
+                  (selectedItem) => selectedItem.publicId === item.publicId,
+                );
                 return (
                   <li key={item.publicId}>
                     <button
@@ -744,7 +821,7 @@ function MediaLibraryDialog({
             disabled={!canConfirm || uploading}
             onClick={() => {
               onSelect(selectedList);
-              setSelected({});
+              setSelected([]);
             }}
           >
             Use selected{selectedList.length ? ` (${selectedList.length})` : ""}

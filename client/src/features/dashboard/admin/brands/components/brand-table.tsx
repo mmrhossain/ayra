@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import {
   toBrandErrorMessage,
   type BrandListItem,
@@ -103,7 +103,7 @@ export function BrandTable({ initialData }: Props) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Logo</TableHead>
@@ -126,19 +126,21 @@ export function BrandTable({ initialData }: Props) {
 
                   return (
                     <TableRow key={brand.id}>
-                      <TableCell>
-                        <Image
-                          src={brand.logo || "https://placehold.jp/80x80.png"}
-                          alt={brand.name}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 rounded-md object-cover"
-                          unoptimized={!brand.logo}
-                        />
+                      <TableCell data-label="Logo">
+                        <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted sm:size-12">
+                          <Image
+                            src={brand.logo || "https://placehold.jp/80x80.png"}
+                            alt={brand.name}
+                            fill
+                            sizes="(max-width: 640px) 40px, 48px"
+                            className="object-cover"
+                            unoptimized={!brand.logo}
+                          />
+                        </div>
                       </TableCell>
-                      <TableCell className="font-medium">{brand.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{brand.slug}</TableCell>
-                      <TableCell>
+                      <TableCell data-label="Name" className="font-medium">{brand.name}</TableCell>
+                      <TableCell data-label="Slug" className="text-muted-foreground">{brand.slug}</TableCell>
+                      <TableCell data-label="Status">
                         <span
                           className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColor(
                             statusString
@@ -147,7 +149,7 @@ export function BrandTable({ initialData }: Props) {
                           {brand.isActive ? "Active" : "Inactive"}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="Actions" className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             type="button"
@@ -172,7 +174,7 @@ export function BrandTable({ initialData }: Props) {
                 })
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 

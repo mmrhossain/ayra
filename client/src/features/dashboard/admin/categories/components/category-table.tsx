@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import {
   toCategoryErrorMessage,
   type CategoryListItem,
@@ -110,7 +110,7 @@ export function CategoryTable({ initialData }: Props) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Image</TableHead>
@@ -135,22 +135,24 @@ export function CategoryTable({ initialData }: Props) {
 
                   return (
                     <TableRow key={category.id}>
-                      <TableCell>
-                        <Image
-                          src={category.image || "https://placehold.jp/160x96.png"}
-                          alt={category.name}
-                          width={80}
-                          height={48}
-                          className="h-12 w-20 rounded-md object-cover"
-                          unoptimized={!category.image}
-                        />
+                      <TableCell data-label="Image">
+                        <div className="relative h-10 w-16 shrink-0 overflow-hidden rounded-md bg-muted sm:h-12 sm:w-20">
+                          <Image
+                            src={category.image || "https://placehold.jp/160x96.png"}
+                            alt={category.name}
+                            fill
+                            sizes="(max-width: 640px) 64px, 80px"
+                            className="object-cover"
+                            unoptimized={!category.image}
+                          />
+                        </div>
                       </TableCell>
-                      <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{category.slug}</TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell data-label="Name" className="font-medium">{category.name}</TableCell>
+                      <TableCell data-label="Slug" className="text-muted-foreground">{category.slug}</TableCell>
+                      <TableCell data-label="Parent" className="text-muted-foreground">
                         {category.parentName ?? "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Status">
                         <span
                           className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColor(
                             statusString
@@ -159,10 +161,10 @@ export function CategoryTable({ initialData }: Props) {
                           {category.isActive ? "Active" : "Inactive"}
                         </span>
                       </TableCell>
-                      <TableCell className="tabular-nums text-muted-foreground">
+                      <TableCell data-label="Children" className="tabular-nums text-muted-foreground">
                         {category.childrenCount ?? category.children?.length ?? 0}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="Actions" className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             type="button"
@@ -187,7 +189,7 @@ export function CategoryTable({ initialData }: Props) {
                 })
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 

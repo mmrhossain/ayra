@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import { SliderDeleteDialog } from "@/features/dashboard/admin/sliders/components/slider-delete-dialog";
 import { SliderFormDialog } from "@/features/dashboard/admin/sliders/components/slider.dialog";
 import { useSliderList } from "@/features/dashboard/admin/sliders/hooks/use-slider-list";
@@ -113,7 +113,7 @@ export function SliderTable({ initialData }: SliderTableProps) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
@@ -134,18 +134,18 @@ export function SliderTable({ initialData }: SliderTableProps) {
               ) : (
                 items.map((slider) => (
                   <TableRow key={slider.id}>
-                    <TableCell>
-                      <div className="relative h-12 w-20 overflow-hidden rounded-md">
+                    <TableCell data-label="Image">
+                      <div className="relative h-10 w-16 shrink-0 overflow-hidden rounded-md sm:h-12 sm:w-20">
                         <Image
                           src={slider.imageUrl || "https://placehold.jp/160x96.png"}
                           alt={slider.title || "Slider image"}
                           fill={true}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          style={{ objectFit: "cover" }}
+                          sizes="(max-width: 640px) 64px, 80px"
+                          className="object-cover"
                         />
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Title">
                       <p className="font-medium">{slider.title}</p>
                       {slider.redirectUrl ? (
                         <p className="max-w-[220px] truncate text-xs text-muted-foreground">
@@ -153,14 +153,14 @@ export function SliderTable({ initialData }: SliderTableProps) {
                         </p>
                       ) : null}
                     </TableCell>
-                    <TableCell className="tabular-nums">
+                    <TableCell data-label="Priority" className="tabular-nums">
                       {slider.priority > 0 ? slider.priority : "—"}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell data-label="Window" className="text-muted-foreground">
                       {formatDate(slider.startDate)} – {formatDate(slider.endDate)}
                     </TableCell>
-                    <TableCell>{slider.isActive ? "Yes" : "No"}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell data-label="Active">{slider.isActive ? "Yes" : "No"}</TableCell>
+                    <TableCell data-label="Actions" className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           type="button"
@@ -191,7 +191,7 @@ export function SliderTable({ initialData }: SliderTableProps) {
                 ))
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 
