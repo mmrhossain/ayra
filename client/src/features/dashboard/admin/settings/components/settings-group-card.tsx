@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { updateSettingsGroup } from "@/features/dashboard/admin/settings/api/settings";
+import {
+  ADMIN_SETTINGS_QUERY_KEY,
+  updateSettingsGroup,
+} from "@/features/dashboard/admin/settings/api/settings";
 import { PUBLIC_SETTINGS_QUERY_KEY } from "@/features/settings/public-settings-provider";
 import type {
   AdminSettingField,
@@ -177,7 +179,6 @@ export function SettingsGroupCard({
 }: {
   group: AdminSettingGroup;
 }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [values, setValues] = useState<FieldValues>(() =>
     initialValues(group.fields),
@@ -205,13 +206,19 @@ export function SettingsGroupCard({
       }
       return updateSettingsGroup(group.key, payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (updatedGroup) => {
+      queryClient.setQueryData<AdminSettingGroup[]>(
+        ADMIN_SETTINGS_QUERY_KEY,
+        (current) =>
+          current?.map((item) =>
+            item.key === updatedGroup.key ? updatedGroup : item,
+          ),
+      );
       await queryClient.invalidateQueries({
         queryKey: PUBLIC_SETTINGS_QUERY_KEY,
       });
       toast.success(`${group.label} settings saved`);
       setSecrets({});
-      router.refresh();
     },
     onError: (error) => {
       toast.error(

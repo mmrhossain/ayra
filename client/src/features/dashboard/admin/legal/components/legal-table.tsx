@@ -28,7 +28,7 @@ import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-s
 import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 
 export function LegalTable({ initialData, type }: LegalTableProps) {
-  const [page, setPage] = useState(initialData?.meta?.page);
+  const [page, setPage] = useState(initialData?.meta?.page ?? 1);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<DialogMode>("create");
   const [editing, setEditing] = useState<LegalDocumentItem | undefined>();

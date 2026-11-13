@@ -16,8 +16,8 @@ export function useFaqList({
   initialItems,
   categoryFilter,
 }: {
-  initialCategories: FaqCategoryListItem[];
-  initialItems: FaqItemListItem[];
+  initialCategories?: FaqCategoryListItem[];
+  initialItems?: FaqItemListItem[];
   categoryFilter: string;
 }) {
   const categoriesQuery = useQuery({
@@ -35,7 +35,15 @@ export function useFaqList({
   });
 
   const categories = categoriesQuery.data ?? initialCategories;
-  const items = itemsQuery.data ?? (categoryFilter === "" ? initialItems : []);
+  const items =
+    itemsQuery.data ??
+    (categoryFilter === "" ? initialItems : undefined) ??
+    [];
 
-  return { categoriesQuery, itemsQuery, categories, items };
+  return {
+    categoriesQuery,
+    itemsQuery,
+    categories: categories ?? [],
+    items,
+  };
 }

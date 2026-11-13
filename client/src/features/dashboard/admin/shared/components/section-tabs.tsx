@@ -26,9 +26,16 @@ export function SectionTabs({
 
   return (
     <Tabs value={active} onValueChange={(next) => setActive(next)}>
-      <TabsList aria-label={label}>
+      <TabsList
+        aria-label={label}
+        className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl border border-border bg-muted/50 p-1 sm:w-fit"
+      >
         {sections.map((section) => (
-          <TabsTrigger key={section.value} value={section.value}>
+          <TabsTrigger
+            key={section.value}
+            value={section.value}
+            className="min-h-10 shrink-0 rounded-lg px-4 font-medium data-[state=active]:shadow-sm"
+          >
             {section.label}
           </TabsTrigger>
         ))}

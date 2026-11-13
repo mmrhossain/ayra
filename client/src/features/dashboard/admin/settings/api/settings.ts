@@ -4,6 +4,8 @@ import type {
   SettingsEnvelope,
 } from "@/features/dashboard/admin/settings/types";
 
+export const ADMIN_SETTINGS_QUERY_KEY = ["admin-settings"] as const;
+
 export async function fetchAdminSettings(): Promise<AdminSettingGroup[]> {
   const res = await dashboardApi.get<SettingsEnvelope<AdminSettingGroup[]>>(
     "/admin/settings",

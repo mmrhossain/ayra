@@ -23,15 +23,26 @@ const TYPE_BY_TAB: Record<TabKey, LegalType | ""> = {
   terms: "TERMS",
 };
 
-export function LegalTabs({ initialData }: { initialData: LegalListResult }) {
+export function LegalTabs({
+  initialData,
+}: {
+  initialData?: LegalListResult;
+}) {
   const [tab, setTab] = useUrlParam<TabKey>("tab", TAB_KEYS, "all");
   const type = TYPE_BY_TAB[tab];
 
   return (
     <Tabs value={tab} onValueChange={(next) => setTab(next as TabKey)}>
-      <TabsList aria-label="Legal document types">
+      <TabsList
+        aria-label="Legal document types"
+        className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl border border-border bg-muted/50 p-1 sm:w-fit"
+      >
         {TAB_KEYS.map((key) => (
-          <TabsTrigger key={key} value={key}>
+          <TabsTrigger
+            key={key}
+            value={key}
+            className="min-h-10 shrink-0 rounded-lg px-4 font-medium data-[state=active]:shadow-sm"
+          >
             {TAB_LABELS[key]}
           </TabsTrigger>
         ))}

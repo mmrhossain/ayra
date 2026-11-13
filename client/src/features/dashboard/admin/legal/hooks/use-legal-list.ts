@@ -9,13 +9,17 @@ import type {
 } from "@/features/dashboard/admin/legal/types";
 
 const PAGE_SIZE = 20;
+const EMPTY_LEGAL_LIST: LegalListResult = {
+  items: [],
+  meta: { page: 1, limit: PAGE_SIZE, total: 0, totalPages: 0 },
+};
 
 export function useLegalList({
   initialData,
   page,
   type,
 }: {
-  initialData: LegalListResult;
+  initialData?: LegalListResult;
   page: number;
   type: LegalType | "";
 }) {
@@ -33,6 +37,6 @@ export function useLegalList({
     staleTime: 30_000,
   });
 
-  const data = query.data ?? initialData;
+  const data = query.data ?? initialData ?? EMPTY_LEGAL_LIST;
   return { query, data, items: data.items, pagination: data.meta };
 }

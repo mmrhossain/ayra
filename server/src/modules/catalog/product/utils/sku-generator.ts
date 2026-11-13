@@ -86,8 +86,6 @@ const alnumUpper = (value: string): string =>
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, "");
 
-export const makeSkuSegment = (value: string): string => alnumUpper(value);
-
 const consonantMnemonic = (value: string, length = 3): string => {
   const alnum = alnumUpper(value);
   const seen = new Set<string>();
@@ -201,19 +199,6 @@ export const assertTypedSku = (sku: string): void => {
   if (!TYPED_SKU_PATTERN.test(sku)) {
     throw new AppError("Invalid SKU", 400);
   }
-};
-
-export const generateSku = (
-  productSku: string,
-  attributeValues: string[] = [],
-): string => {
-  const base = makeSkuSegment(productSku);
-  const parts = attributeValues.map(makeSkuSegment).filter(Boolean);
-  const sku = [base, ...parts].filter(Boolean).join("-");
-  if (!sku) {
-    return "SKU";
-  }
-  return sku;
 };
 
 export const ensureUniqueSku = (

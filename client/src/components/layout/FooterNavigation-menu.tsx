@@ -126,7 +126,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
                     </div>
 
                     <span
-                      className={`mt-1 max-w-[64px] truncate text-center text-xs font-medium uppercase tracking-wide transition-colors duration-300 ${
+                      className={`mt-1 max-w-[64px] truncate text-center text-xs font-normal uppercase tracking-wide transition-colors duration-300 ${
                         isActive ? "text-primary" : "text-slate-400"
                       }`}
                     >
@@ -164,7 +164,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
                   </div>
 
                   <span
-                    className={`mt-1 max-w-[64px] truncate text-center text-xs font-medium uppercase tracking-wide transition-colors duration-300 ${
+                    className={`mt-1 max-w-[64px] truncate text-center text-xs font-normal uppercase tracking-wide transition-colors duration-300 ${
                       isActive ? "text-primary" : "text-slate-400"
                     }`}
                   >

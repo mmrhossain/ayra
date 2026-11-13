@@ -53,7 +53,7 @@ export type RateDeleteDialogProps = {
 };
 
 export type ShippingTableProps = {
-  initialZones: ShippingZone[];
-  initialMethods: ShippingMethod[];
-  initialRates: ShippingRate[];
+  initialZones?: ShippingZone[];
+  initialMethods?: ShippingMethod[];
+  initialRates?: ShippingRate[];
 };

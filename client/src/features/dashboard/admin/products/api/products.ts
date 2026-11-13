@@ -34,7 +34,6 @@ export type {
 export {
   normalizeVariantAttributes,
   toErrorMessage,
-  productPrice,
   productPriceRange,
   productStockSum,
 } from "@/features/dashboard/admin/products/utils";

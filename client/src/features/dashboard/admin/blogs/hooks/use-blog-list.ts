@@ -13,6 +13,10 @@ import type {
 } from "@/features/dashboard/admin/blogs/types";
 
 const PAGE_SIZE = 20;
+const EMPTY_POSTS: BlogListResult = {
+  items: [],
+  pagination: { page: 1, limit: PAGE_SIZE, total: 0, totalPages: 0 },
+};
 
 export function useBlogList({
   initialPosts,
@@ -22,8 +26,8 @@ export function useBlogList({
   status,
   categoryId,
 }: {
-  initialPosts: BlogListResult;
-  initialCategories: BlogCategoryListItem[];
+  initialPosts?: BlogListResult;
+  initialCategories?: BlogCategoryListItem[];
   page: number;
   search: string;
   status: BlogStatus | "";
@@ -40,6 +44,7 @@ export function useBlogList({
         categoryId: categoryId || undefined,
       }),
     initialData:
+      initialPosts &&
       page === initialPosts.pagination.page &&
       search === "" &&
       status === "" &&
@@ -57,13 +62,13 @@ export function useBlogList({
     staleTime: 30_000,
   });
 
-  const data = query.data ?? initialPosts;
+  const data = query.data ?? initialPosts ?? EMPTY_POSTS;
   return {
     query,
     categoriesQuery,
     data,
     items: data.items,
     pagination: data.pagination,
-    categories: categoriesQuery.data ?? initialCategories,
+    categories: categoriesQuery.data ?? initialCategories ?? [],
   };
 }

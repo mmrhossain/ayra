@@ -21,8 +21,8 @@ export type {
 export type DialogMode = "create" | "edit";
 
 export type BlogTableProps = {
-  initialPosts: BlogListResult;
-  initialCategories: BlogCategoryListItem[];
+  initialPosts?: BlogListResult;
+  initialCategories?: BlogCategoryListItem[];
 };
 
 export type BlogFormDialogProps = {

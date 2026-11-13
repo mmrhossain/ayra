@@ -11,7 +11,6 @@ import {
   assertTypedSku,
   buildSuggestedSku,
   ensureUniqueSku,
-  generateSku,
 } from "../../src/modules/catalog/product/utils/sku-generator.ts";
 import {
   generateVariantCombinations,
@@ -163,11 +162,6 @@ describe("sku-generator", () => {
     const taken = new Set<string>();
     expect(ensureUniqueSku("AYR-TSH-BLK-M", taken)).toBe("AYR-TSH-BLK-M");
     expect(ensureUniqueSku("AYR-TSH-BLK-M", taken)).toBe("AYR-TSH-BLK-M-2");
-  });
-
-  it("keeps the legacy product-name helper for compatibility", () => {
-    expect(generateSku("tshirt", ["Red", "M"])).toBe("TSHIRT-RED-M");
-    expect(generateSku("Leather Wallet", ["DEFAULT"])).toBe("LEATHERWALLET-DEFAULT");
   });
 });
 

@@ -23,9 +23,16 @@ export function SettingsTabs({ groups }: { groups: AdminSettingGroup[] }) {
 
   return (
     <Tabs value={tab} onValueChange={(next) => setTab(next as GroupKey)}>
-      <TabsList aria-label="Settings sections">
+      <TabsList
+        aria-label="Settings sections"
+        className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl border border-border bg-muted/50 p-1 sm:w-fit"
+      >
         {ordered.map((group) => (
-          <TabsTrigger key={group.key} value={group.key}>
+          <TabsTrigger
+            key={group.key}
+            value={group.key}
+            className="min-h-10 shrink-0 rounded-lg px-4 font-medium data-[state=active]:shadow-sm"
+          >
             {group.label}
           </TabsTrigger>
         ))}

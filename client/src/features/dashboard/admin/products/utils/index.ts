@@ -70,14 +70,6 @@ export function blockInvalidNumberKey(
   if (blocked.includes(event.key)) event.preventDefault();
 }
 
-export function productPrice(item: ProductListItem): number | null {
-  const prices = item.variants
-    .map((v) => Number(v.price))
-    .filter((n) => Number.isFinite(n));
-  if (prices.length === 0) return null;
-  return Math.min(...prices);
-}
-
 export function productPriceRange(item: ProductListItem): {
   min: number;
   max: number;
@@ -115,14 +107,6 @@ export function cartesian<T>(lists: T[][]): T[][] {
     (acc, list) => acc.flatMap((prefix) => list.map((item) => [...prefix, item])),
     [[]],
   );
-}
-
-export function uniqueSku(base: string, taken: Set<string>): string {
-  const root = slugify(base) || "sku";
-  if (!taken.has(root)) return root;
-  let i = 2;
-  while (taken.has(`${root}-${i}`)) i += 1;
-  return `${root}-${i}`;
 }
 
 export function focusFirstInvalid(): void {

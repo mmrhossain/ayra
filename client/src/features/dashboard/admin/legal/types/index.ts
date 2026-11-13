@@ -33,6 +33,6 @@ export type LegalPublishDialogProps = {
 };
 
 export type LegalTableProps = {
-  initialData: LegalListResult;
+  initialData?: LegalListResult;
   type: LegalType | "";
 };

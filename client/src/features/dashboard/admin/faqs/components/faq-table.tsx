@@ -34,8 +34,8 @@ import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/re
 import { SectionTabs } from "@/features/dashboard/admin/shared/components/section-tabs";
 
 type Props = {
-  initialCategories: FaqCategoryListItem[];
-  initialItems: FaqItemListItem[];
+  initialCategories?: FaqCategoryListItem[];
+  initialItems?: FaqItemListItem[];
 };
 
 export function FaqTable({ initialCategories, initialItems }: Props) {

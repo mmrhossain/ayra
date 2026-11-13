@@ -94,7 +94,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
           </div>
 
           {/* Search Input */}
-          <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="relative z-50 min-w-0 flex-1">
             <SearchBox />
           </div>
         </div>

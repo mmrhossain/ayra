@@ -38,6 +38,16 @@ function ActiveStatusBadge({ active }: { active: boolean }) {
   );
 }
 
+function TableLoading({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="space-y-2 p-4" role="status" aria-label="Loading records">
+      {Array.from({ length: rows }).map((_, index) => (
+        <Skeleton key={index} className="h-10 w-full" />
+      ))}
+    </div>
+  );
+}
+
 export function ShippingTable({
   initialZones,
   initialMethods,
@@ -99,11 +109,7 @@ export function ShippingTable({
       ) : null}
       <div className="rounded-xl border">
         {zonesQuery.isFetching && zones.length === 0 ? (
-          <div className="space-y-2 p-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
+          <TableLoading rows={3} />
         ) : (
           <ResponsiveTable>
             <TableHeader>
@@ -224,69 +230,73 @@ export function ShippingTable({
         </div>
       ) : null}
       <div className="rounded-xl border">
-        <ResponsiveTable>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {methods.length === 0 ? (
+        {methodsQuery.isFetching && methods.length === 0 ? (
+          <TableLoading />
+        ) : (
+          <ResponsiveTable>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={4}>
-                  <EmptyState
-                    title="No shipping methods"
-                    body="Add a method such as standard or express delivery."
-                  />
-                </TableCell>
+                <TableHead>Name</TableHead>
+                <TableHead>Code</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : (
-              methods.map((method) => (
-                <TableRow key={method.id}>
-                  <TableCell className="font-medium" data-label="Name">
-                    {method.name}
-                  </TableCell>
-                  <TableCell
-                    className="text-muted-foreground"
-                    data-label="Code"
-                  >
-                    {method.code}
-                  </TableCell>
-                  <TableCell data-label="Status">
-                    <ActiveStatusBadge active={method.isActive} />
-                  </TableCell>
-                  <TableCell className="text-right" data-label="Actions">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleMethod.mutate(method)}
-                      >
-                        {method.isActive ? "Deactivate" : "Activate"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setMethodFormMode("edit");
-                          setEditingMethod(method);
-                          setMethodFormOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {methods.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <EmptyState
+                      title="No shipping methods"
+                      body="Add a method such as standard or express delivery."
+                    />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </ResponsiveTable>
+              ) : (
+                methods.map((method) => (
+                  <TableRow key={method.id}>
+                    <TableCell className="font-medium" data-label="Name">
+                      {method.name}
+                    </TableCell>
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Code"
+                    >
+                      {method.code}
+                    </TableCell>
+                    <TableCell data-label="Status">
+                      <ActiveStatusBadge active={method.isActive} />
+                    </TableCell>
+                    <TableCell className="text-right" data-label="Actions">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleMethod.mutate(method)}
+                        >
+                          {method.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setMethodFormMode("edit");
+                            setEditingMethod(method);
+                            setMethodFormOpen(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </ResponsiveTable>
+        )}
       </div>
     </section>
   );
@@ -315,82 +325,86 @@ export function ShippingTable({
         </div>
       ) : null}
       <div className="rounded-xl border">
-        <ResponsiveTable>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Zone</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Free from</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rates.length === 0 ? (
+        {ratesQuery.isFetching && rates.length === 0 ? (
+          <TableLoading rows={5} />
+        ) : (
+          <ResponsiveTable>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6}>
-                  <EmptyState
-                    title="No shipping rates"
-                    body="Add a rate to price delivery for a zone and method."
-                  />
-                </TableCell>
+                <TableHead>Zone</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Free from</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : (
-              rates.map((rate) => (
-                <TableRow key={rate.id}>
-                  <TableCell className="font-medium" data-label="Zone">
-                    {rate.shippingZone?.name ?? rate.shippingZoneId}
-                  </TableCell>
-                  <TableCell
-                    className="text-muted-foreground"
-                    data-label="Method"
-                  >
-                    {rate.shippingMethod?.name ?? rate.shippingMethodId}
-                  </TableCell>
-                  <TableCell data-label="Price">
-                    {formatMoney(rate.price)}
-                  </TableCell>
-                  <TableCell data-label="Free from">
-                    {rate.freeShippingFrom == null
-                      ? "—"
-                      : formatMoney(rate.freeShippingFrom)}
-                  </TableCell>
-                  <TableCell data-label="Status">
-                    <ActiveStatusBadge active={rate.isActive} />
-                  </TableCell>
-                  <TableCell className="text-right" data-label="Actions">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setRateFormMode("edit");
-                          setEditingRate(rate);
-                          setRateFormOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setDeletingRate(rate);
-                          setRateDeleteOpen(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {rates.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <EmptyState
+                      title="No shipping rates"
+                      body="Add a rate to price delivery for a zone and method."
+                    />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </ResponsiveTable>
+              ) : (
+                rates.map((rate) => (
+                  <TableRow key={rate.id}>
+                    <TableCell className="font-medium" data-label="Zone">
+                      {rate.shippingZone?.name ?? rate.shippingZoneId}
+                    </TableCell>
+                    <TableCell
+                      className="text-muted-foreground"
+                      data-label="Method"
+                    >
+                      {rate.shippingMethod?.name ?? rate.shippingMethodId}
+                    </TableCell>
+                    <TableCell data-label="Price">
+                      {formatMoney(rate.price)}
+                    </TableCell>
+                    <TableCell data-label="Free from">
+                      {rate.freeShippingFrom == null
+                        ? "—"
+                        : formatMoney(rate.freeShippingFrom)}
+                    </TableCell>
+                    <TableCell data-label="Status">
+                      <ActiveStatusBadge active={rate.isActive} />
+                    </TableCell>
+                    <TableCell className="text-right" data-label="Actions">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setRateFormMode("edit");
+                            setEditingRate(rate);
+                            setRateFormOpen(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setDeletingRate(rate);
+                            setRateDeleteOpen(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </ResponsiveTable>
+        )}
       </div>
     </section>
   );

@@ -22,9 +22,9 @@ export function useShipping({
   initialMethods,
   initialRates,
 }: {
-  initialZones: ShippingZone[];
-  initialMethods: ShippingMethod[];
-  initialRates: ShippingRate[];
+  initialZones?: ShippingZone[];
+  initialMethods?: ShippingMethod[];
+  initialRates?: ShippingRate[];
 }) {
   const queryClient = useQueryClient();
 
@@ -71,9 +71,9 @@ export function useShipping({
     zonesQuery,
     methodsQuery,
     ratesQuery,
-    zones: zonesQuery.data ?? initialZones,
-    methods: methodsQuery.data ?? initialMethods,
-    rates: ratesQuery.data ?? initialRates,
+    zones: zonesQuery.data ?? initialZones ?? [],
+    methods: methodsQuery.data ?? initialMethods ?? [],
+    rates: ratesQuery.data ?? initialRates ?? [],
     toggleZone,
     toggleMethod,
   };

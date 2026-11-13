@@ -39,8 +39,11 @@ import { EmptyState } from "@/features/dashboard/admin/shared/components/empty-s
 import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import { SectionTabs } from "@/features/dashboard/admin/shared/components/section-tabs";
 
-export function BlogTable({ initialPosts, initialCategories }: BlogTableProps) {
-  const [page, setPage] = useState(initialPosts.pagination.page);
+export function BlogTable({
+  initialPosts,
+  initialCategories,
+}: BlogTableProps) {
+  const [page, setPage] = useState(initialPosts?.pagination.page ?? 1);
   const [search, setSearch] = useState("");
 
   const [status, setStatus] = useState<BlogStatus | "">("");
@@ -136,6 +139,7 @@ export function BlogTable({ initialPosts, initialCategories }: BlogTableProps) {
         actions={
           <Button
             type="button"
+            disabled={categoriesQuery.isLoading}
             onClick={() => {
               setFormMode("create");
               setEditing(undefined);
