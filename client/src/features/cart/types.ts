@@ -8,11 +8,17 @@ export type { Envelope } from "@/lib/api/http";
 export type CartLine = AuthCartLine;
 export type CartSnapshot = AuthCartSnapshot;
 
+export type CartItemAttribute = {
+  name: string;
+  value: string;
+};
+
 export type CartItemSnapshot = {
   productName?: string;
   productSlug?: string | null;
   productImage?: string | null;
   sku?: string;
+  attributes?: CartItemAttribute[];
   unitPrice?: number;
   compareAtPrice?: number | null;
 };
@@ -24,6 +30,7 @@ export type GuestCartLine = {
   productSlug?: string | null;
   productImage?: string | null;
   sku?: string;
+  attributes?: CartItemAttribute[];
   unitPrice?: number;
   compareAtPrice?: number | null;
 };

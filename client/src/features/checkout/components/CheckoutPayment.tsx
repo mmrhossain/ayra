@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -11,8 +11,7 @@ import {
 import { usePlaceOrder } from "@/features/checkout/hooks/use-place-order";
 import { formatPrice } from "@/helpers";
 import type { CheckoutPayload } from "@/features/checkout/types";
-import { fetchPublicSettings } from "@/features/settings/api";
-import type { PaymentMethodCode } from "@/features/settings/types";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 
 type CheckoutPaymentProps = {
   paymentMethod: CheckoutPayload["paymentMethod"];
@@ -31,32 +30,15 @@ const CheckoutPayment = ({
     confirmPriceChange,
     dismissPriceChange,
   } = usePlaceOrder(paymentMethod);
-  const [enabledMethods, setEnabledMethods] = useState<PaymentMethodCode[]>([
-    "COD",
-    "SSLCOMMERZ",
-  ]);
+  const { payment } = usePublicSettings();
+  const enabledMethods = payment.enabledMethods;
 
   useEffect(() => {
-    let cancelled = false;
-
-    fetchPublicSettings()
-      .then((settings) => {
-        if (cancelled) return;
-        const methods = settings.payment.enabledMethods;
-        if (methods.length === 0) return;
-        setEnabledMethods(methods);
-        if (!methods.includes(paymentMethod)) {
-          onPaymentMethodChange(methods[0]);
-        }
-      })
-      .catch(() => {
-        // Keep the default methods if settings cannot be loaded.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [onPaymentMethodChange, paymentMethod]);
+    const firstEnabledMethod = enabledMethods[0];
+    if (firstEnabledMethod && !enabledMethods.includes(paymentMethod)) {
+      onPaymentMethodChange(firstEnabledMethod);
+    }
+  }, [enabledMethods, onPaymentMethodChange, paymentMethod]);
 
   return (
     <form

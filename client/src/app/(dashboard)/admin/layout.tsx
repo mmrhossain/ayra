@@ -1,4 +1,5 @@
 import { DashboardShell } from "@/features/dashboard/admin/shared/components/dashboard-shell";
+import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import { getFirstPermittedAdminHref } from "@/lib/admin-navigation";
 import { requireRole, toAdminAccess } from "@/lib/api/auth/server";
 import {
@@ -22,12 +23,14 @@ export default async function AdminAreaLayout({
     cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
   );
   const homeHref = getFirstPermittedAdminHref(access) ?? "/unauthorized";
+  const publicSettings = await fetchPublicSettingsOrDefault();
 
   return (
     <DashboardShell
       defaultOpen={defaultOpen}
       access={access}
       homeHref={homeHref}
+      initialPublicSettings={publicSettings}
     >
       {children}
     </DashboardShell>

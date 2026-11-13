@@ -366,6 +366,44 @@ describe("Analytics overview aggregates", () => {
     expect(
       after.body.data.newCustomersCount - before.body.data.newCustomersCount,
     ).toBeGreaterThanOrEqual(1);
+    expect(after.body.data.generatedAt).toEqual(expect.any(String));
+  });
+
+  it("counts pending refunds from the full backlog, not only the selected period", async () => {
+    const cookie = await adminCookie(`an-rf-${Date.now()}`);
+    const buyer = await createTestUser(tracker, {
+      suffix: `an-rfb-${Date.now()}`,
+    });
+    const query = { range: "day" };
+
+    const before = await api()
+      .get("/api/v1/admin/analytics/overview")
+      .query(query)
+      .set("Cookie", cookie);
+
+    const order = await createTestOrder(tracker, buyer, {
+      status: "PENDING",
+      grandTotal: 100,
+    });
+    const payment = await createSslcommerzPayment(tracker, order.id, {
+      status: "PENDING",
+    });
+    await prisma.refund.create({
+      data: {
+        amount: 25,
+        paymentId: payment.id,
+        createdAt: new Date("2000-01-01T00:00:00.000Z"),
+      },
+    });
+
+    const after = await api()
+      .get("/api/v1/admin/analytics/overview")
+      .query(query)
+      .set("Cookie", cookie);
+
+    expect(after.body.data.pendingRefundsCount).toBe(
+      before.body.data.pendingRefundsCount + 1,
+    );
   });
 
   it("keeps BDT and USD totals separate", async () => {

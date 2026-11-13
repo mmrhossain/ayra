@@ -2,6 +2,7 @@
 
 import SearchDrawer from "@/components/shared/Search.drawer";
 import { SITE_LOGO } from "@/config/site";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
@@ -20,6 +21,7 @@ const useIsHydrated = () =>
   );
 
 const MobileNavbar = () => {
+  const { store } = usePublicSettings();
   const [searchDrawerOpen, setSearchDrawerOpen] = useState<boolean>(false);
   const isHydrated = useIsHydrated();
 
@@ -33,10 +35,15 @@ const MobileNavbar = () => {
       <div className="container flex min-w-0 items-center justify-between gap-3 py-2.5">
         {/* Logo */}
         <div className="flex h-11 w-[100px] shrink-0 items-center overflow-hidden">
-          <Link href="/" className="relative block h-8 w-full" aria-label="Ayra Home">
+          <Link
+            href="/"
+            className="relative block h-8 w-full"
+            aria-label={`${store.name} Home`}
+          >
             <Image
-              src={SITE_LOGO}
-              alt="Ayra"
+              src={store.logoUrl || SITE_LOGO}
+              alt={store.name}
+              unoptimized
               fill
               sizes="100px"
               priority

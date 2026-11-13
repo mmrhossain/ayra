@@ -85,7 +85,7 @@ export function OrderStatusActions({
             <div className="space-y-2">
               <Label htmlFor="order-status">Status</Label>
               <Select
-                value={status || undefined}
+                value={status}
                 onValueChange={(v) => onStatusChange(v as OrderStatus)}
               >
                 <SelectTrigger id="order-status" className="w-full">

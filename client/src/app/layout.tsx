@@ -2,6 +2,7 @@ import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import ScrollToTopOnNavigation from "@/components/shared/ScrollToTopOnNavigation";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE_NAME, SITE_URL } from "@/config/site";
+import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import ThemeColorManager from "@/hooks/ThemeColorManager";
 import "@smastrom/react-rating/style.css";
 import type { Metadata } from "next";
@@ -17,11 +18,14 @@ const jost = Jost({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: `${SITE_NAME} | Modern Online Shopping in Bangladesh`,
-  description: "Bangladesh's premier modern e-commerce platform.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await fetchPublicSettingsOrDefault();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: `${settings.store.name || SITE_NAME} | Modern Online Shopping in Bangladesh`,
+    description: "Bangladesh's premier modern e-commerce platform.",
+  };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -14,20 +14,30 @@ import {
 import { AttentionStrip } from "@/features/dashboard/admin/overview/components/attention-strip";
 import { DetailedMetrics } from "@/features/dashboard/admin/overview/components/detailed-metrics";
 import { KpiGrid } from "@/features/dashboard/admin/overview/components/kpi-grid";
+import { OverviewRangeFilter } from "@/features/dashboard/admin/overview/components/overview-range-filter";
 import {
   ChartSkeleton,
-  MetricsSkeleton,
+  DetailedMetricsSkeleton,
+  HeadlineSkeleton,
+  OrdersStatusSkeleton,
+  RecentOrdersSkeleton,
+  TopProductsSkeleton,
   OverviewError,
-  WidgetSkeleton,
 } from "@/features/dashboard/admin/overview/components/overview-states";
 import { RecentOrders } from "@/features/dashboard/admin/overview/components/recent-orders";
 import { SalesChart } from "@/features/dashboard/admin/overview/components/sales-chart";
 import { TopProductsTable } from "@/features/dashboard/admin/overview/components/top-products";
-import { GRANULARITY_BY_RANGE } from "@/features/dashboard/admin/overview/utils/range";
+import {
+  GRANULARITY_BY_RANGE,
+  RANGE_KEYS,
+  type RangeKey,
+} from "@/features/dashboard/admin/overview/utils/range";
 import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 import { requireAdminPageAccess, toAdminAccess } from "@/lib/api/auth/server";
 
-const RANGE = "day" as const;
+function isRangeKey(value: string): value is RangeKey {
+  return RANGE_KEYS.some((range) => range === value);
+}
 
 function previousWindow(data: OverviewMetrics) {
   const from = new Date(data.dateFrom).getTime();
@@ -39,20 +49,13 @@ function previousWindow(data: OverviewMetrics) {
   };
 }
 
-async function HeadlineSection({
+async function PreviousHeadlineKpis({
   query,
-  access,
+  data,
 }: {
   query: AnalyticsQuery;
-  access: ReturnType<typeof toAdminAccess>;
+  data: OverviewMetrics;
 }) {
-  let data;
-  try {
-    data = await fetchOverview(query);
-  } catch (err) {
-    return <OverviewError message={toErrorMessage(err)} />;
-  }
-
   let previous: OverviewMetrics | null = null;
   try {
     previous = await fetchOverview({
@@ -63,22 +66,49 @@ async function HeadlineSection({
     previous = null;
   }
 
+  return <KpiGrid data={data} previous={previous} />;
+}
+
+async function HeadlineSection({
+  query,
+  overview,
+  access,
+}: {
+  query: AnalyticsQuery;
+  overview: Promise<OverviewMetrics>;
+  access: ReturnType<typeof toAdminAccess>;
+}) {
+  let data;
+  try {
+    data = await overview;
+  } catch (err) {
+    return <OverviewError message={toErrorMessage(err)} />;
+  }
+
   return (
     <>
-      <KpiGrid data={data} previous={previous} />
+      <Suspense fallback={<KpiGrid data={data} previous={null} />}>
+        <PreviousHeadlineKpis query={query} data={data} />
+      </Suspense>
       <AttentionStrip data={data} access={access} />
     </>
   );
 }
 
-async function SalesSection({ query }: { query: AnalyticsQuery }) {
+async function SalesSection({
+  query,
+  range,
+}: {
+  query: AnalyticsQuery;
+  range: RangeKey;
+}) {
   let sales;
   try {
     sales = await fetchSales(query);
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
-  return <SalesChart initialData={sales} initialRange={RANGE} />;
+  return <SalesChart initialData={sales} range={range} />;
 }
 
 async function RecentOrdersSection() {
@@ -111,10 +141,14 @@ async function TopProductsSection({ query }: { query: AnalyticsQuery }) {
   return <TopProductsTable data={topProducts} />;
 }
 
-async function DetailedSection({ query }: { query: AnalyticsQuery }) {
+async function DetailedSection({
+  overview,
+}: {
+  overview: Promise<OverviewMetrics>;
+}) {
   let data;
   try {
-    data = await fetchOverview(query);
+    data = await overview;
   } catch (err) {
     return <OverviewError message={toErrorMessage(err)} />;
   }
@@ -122,14 +156,21 @@ async function DetailedSection({ query }: { query: AnalyticsQuery }) {
 }
 
 type Props = {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{
+    notice?: string | string[];
+    range?: string | string[];
+  }>;
 };
 
-export default async function DashboardOverviewPage({ searchParams }: Props) {
-  const { notice } = await searchParams;
+export default async function AdminOverviewPage({ searchParams }: Props) {
+  const { notice, range: requestedRange } = await searchParams;
+  const range =
+    typeof requestedRange === "string" && isRangeKey(requestedRange)
+      ? requestedRange
+      : "day";
   const query: AnalyticsQuery = {
-    range: RANGE,
-    groupBy: GRANULARITY_BY_RANGE[RANGE],
+    range,
+    groupBy: GRANULARITY_BY_RANGE[range],
   };
 
   const redirectQuery =
@@ -137,40 +178,42 @@ export default async function DashboardOverviewPage({ searchParams }: Props) {
 
   const session = await requireAdminPageAccess("/admin", redirectQuery);
   const access = toAdminAccess(session.user);
+  const overview = fetchOverview(query);
 
   return (
     <section className="min-w-0 space-y-6">
       <PageHeader
         title="Overview"
-        description="Store health at a glance. Switch the sales trend between day, month and year."
+        description="Sales and growth for the selected period, with current operational queues."
+        actions={<OverviewRangeFilter />}
       />
 
-      <Suspense fallback={<MetricsSkeleton />}>
-        <HeadlineSection query={query} access={access} />
+      <Suspense fallback={<HeadlineSkeleton />}>
+        <HeadlineSection query={query} overview={overview} access={access} />
       </Suspense>
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
         <Suspense fallback={<ChartSkeleton />}>
-          <SalesSection query={query} />
+          <SalesSection query={query} range={range} />
         </Suspense>
 
-        <Suspense fallback={<WidgetSkeleton />}>
+        <Suspense fallback={<RecentOrdersSkeleton />}>
           <RecentOrdersSection />
         </Suspense>
       </div>
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
-        <Suspense fallback={<WidgetSkeleton />}>
+        <Suspense fallback={<OrdersStatusSkeleton />}>
           <OrdersStatusSection query={query} />
         </Suspense>
 
-        <Suspense fallback={<WidgetSkeleton />}>
+        <Suspense fallback={<TopProductsSkeleton />}>
           <TopProductsSection query={query} />
         </Suspense>
       </div>
 
-      <Suspense fallback={<MetricsSkeleton />}>
-        <DetailedSection query={query} />
+      <Suspense fallback={<DetailedMetricsSkeleton />}>
+        <DetailedSection overview={overview} />
       </Suspense>
     </section>
   );

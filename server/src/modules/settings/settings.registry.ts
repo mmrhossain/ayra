@@ -60,6 +60,15 @@ const definitions: SettingDefinition[] = [
     isPublic: true,
   },
   {
+    key: "store.address",
+    group: "store",
+    label: "Store address",
+    type: "textarea",
+    schema: z.string().trim().max(500),
+    defaultValue: "Gulshan-2, Dhaka\nBangladesh",
+    isPublic: true,
+  },
+  {
     key: "store.logoUrl",
     group: "store",
     label: "Logo URL",

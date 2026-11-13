@@ -1,5 +1,5 @@
-import ContactForm from "@/features/content/components/contact/ContactForm";
 import FancyHeading from "@/components/shared/FancyHeading";
+import ContactForm from "@/features/content/components/contact/ContactForm";
 import ContactInfo from "@/features/content/components/contact/ContactInfo";
 
 const Contact = () => {
@@ -10,7 +10,7 @@ const Contact = () => {
 
       <FancyHeading text={"Get In Touch"} as="h1" className="text-2xl lg:text-3xl" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 mt-8 md:mt-10 max-w-7xl mx-auto shadow-2xl shadow-gray-200/50 rounded-[1.25rem] sm:rounded-[2rem] overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 mt-8 md:mt-10 max-w-7xl mx-auto shadow-2xl shadow-gray-200/50 rounded-md overflow-hidden border border-gray-100">
         {/* Contact Info - Taking 4/12 columns */}
         <div className="lg:col-span-4 h-full">
           <ContactInfo />

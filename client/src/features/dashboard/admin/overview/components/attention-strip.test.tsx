@@ -46,7 +46,7 @@ const FULL = {
 };
 
 describe("AttentionStrip", () => {
-  it("links the four queues for a full-access admin", () => {
+  it("links only actionable queues for a full-access admin", () => {
     act(() =>
       root.render(<AttentionStrip data={OVERVIEW_FIXTURE} access={FULL} />),
     );
@@ -58,8 +58,28 @@ describe("AttentionStrip", () => {
       "/admin/refunds",
       "/admin/inventory",
       "/admin/payments",
-      "/admin/users",
     ]);
+    expect(container.querySelector('[role="group"]')?.className).toContain(
+      "sm:grid-cols-2",
+    );
+  });
+
+  it("shows all clear when every visible queue has zero items", () => {
+    act(() =>
+      root.render(
+        <AttentionStrip
+          data={{
+            ...OVERVIEW_FIXTURE,
+            pendingRefundsCount: 0,
+            lowStockCount: 0,
+            pendingPaymentsCount: 0,
+          }}
+          access={FULL}
+        />,
+      ),
+    );
+    expect(container.querySelectorAll("a")).toHaveLength(0);
+    expect(container.textContent).toContain("All clear");
   });
 
   it("hides links the access cannot open", () => {
@@ -72,5 +92,6 @@ describe("AttentionStrip", () => {
       ),
     );
     expect(container.querySelectorAll("a")).toHaveLength(0);
+    expect(container.textContent).not.toContain("All clear");
   });
 });

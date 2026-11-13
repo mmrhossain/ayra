@@ -10,6 +10,9 @@ import { DashboardTopbar } from "@/features/dashboard/admin/shared/components/da
 import { StaffShoppingNotice } from "@/features/dashboard/admin/shared/components/staff-shopping-notice";
 import { DashboardQueryProvider } from "@/features/dashboard/admin/shared/components/query-provider";
 import { ThemeProvider } from "@/hooks/theme-provider";
+import { DEFAULT_PUBLIC_SETTINGS } from "@/features/settings/defaults";
+import { PublicSettingsProvider } from "@/features/settings/public-settings-provider";
+import type { PublicSettings } from "@/features/settings/types";
 
 // Dark mode is scoped to the admin dashboard. next-themes writes the class to
 // <html>, so we explicitly clear it when the admin shell unmounts (e.g. when the
@@ -38,6 +41,7 @@ interface DashboardShellProps {
   defaultOpen?: boolean;
   access?: AdminAccess;
   homeHref?: string;
+  initialPublicSettings?: PublicSettings;
 }
 
 const EMPTY_ACCESS: AdminAccess = {
@@ -53,6 +57,7 @@ export function DashboardShell({
   defaultOpen = true,
   access = EMPTY_ACCESS,
   homeHref = "/admin",
+  initialPublicSettings = DEFAULT_PUBLIC_SETTINGS,
 }: DashboardShellProps) {
   return (
     <ThemeProvider
@@ -63,21 +68,22 @@ export function DashboardShell({
     >
       <AdminThemeScope />
       <DashboardQueryProvider>
-        {/* defaultOpen এ সার্ভারের কুকি স্টেট পাস করা হলো */}
-        <SidebarProvider defaultOpen={defaultOpen} className="bg-background text-foreground">
-          <Suspense fallback={null}>
-            <DashboardSidebar access={access} homeHref={homeHref} />
-          </Suspense>
-          <SidebarInset className="min-w-0">
-            <DashboardTopbar />
-            <div className="min-w-0 flex-1 overflow-x-auto bg-background p-4 text-foreground sm:p-6">
-              <Suspense fallback={null}>
-                <StaffShoppingNotice />
-              </Suspense>
-              {children}
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
+        <PublicSettingsProvider initialSettings={initialPublicSettings}>
+          <SidebarProvider defaultOpen={defaultOpen} className="bg-background text-foreground">
+            <Suspense fallback={null}>
+              <DashboardSidebar access={access} homeHref={homeHref} />
+            </Suspense>
+            <SidebarInset className="min-w-0">
+              <DashboardTopbar />
+              <div className="min-w-0 flex-1 overflow-x-auto bg-background p-4 text-foreground sm:p-6">
+                <Suspense fallback={null}>
+                  <StaffShoppingNotice />
+                </Suspense>
+                {children}
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
+        </PublicSettingsProvider>
       </DashboardQueryProvider>
     </ThemeProvider>
   );

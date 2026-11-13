@@ -58,6 +58,7 @@ function mapGuestLine(line: GuestCartLine): CartLine {
     productSlug: line.productSlug,
     productImage: line.productImage,
     sku: line.sku,
+    attributes: line.attributes,
     compareAtPrice:
       line.compareAtPrice != null ? num(line.compareAtPrice) : null,
   };
@@ -113,6 +114,7 @@ export async function addCartItem(
     if (snapshot.productImage !== undefined)
       existing.productImage = snapshot.productImage;
     if (snapshot.sku) existing.sku = snapshot.sku;
+    if (snapshot.attributes) existing.attributes = snapshot.attributes;
     if (snapshot.unitPrice != null) existing.unitPrice = snapshot.unitPrice;
     if (snapshot.compareAtPrice !== undefined)
       existing.compareAtPrice = snapshot.compareAtPrice;
@@ -124,6 +126,7 @@ export async function addCartItem(
       productSlug: snapshot.productSlug,
       productImage: snapshot.productImage,
       sku: snapshot.sku,
+      attributes: snapshot.attributes,
       unitPrice: snapshot.unitPrice,
       compareAtPrice: snapshot.compareAtPrice,
     });

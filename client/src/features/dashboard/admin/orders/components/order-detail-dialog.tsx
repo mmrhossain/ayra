@@ -64,6 +64,7 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
   const history = detailQuery.data?.statusHistory ?? [];
   const payments = detailQuery.data?.payments ?? [];
   const shipments = detailQuery.data?.shipments ?? [];
+  const orderSummary = detail ?? order;
   const shippingText = detailQuery.data
     ? formatAddress(pickOrderAddress(detailQuery.data, "SHIPPING"))
     : null;
@@ -73,11 +74,15 @@ export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl scrollbar-hide">
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] overflow-x-hidden overflow-y-auto p-4 scrollbar-hide sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-3xl sm:p-6">
         <DialogHeader>
-          <DialogTitle>{detail ? `Order ${detail.orderNumber}` : "Order"}</DialogTitle>
+          <DialogTitle className="break-words pr-8">
+            {orderSummary ? `Order ${orderSummary.orderNumber}` : "Order"}
+          </DialogTitle>
           <DialogDescription>
-            {detail ? `${customerLabel(detail)} · ${detail.status}` : "Order details"}
+            {orderSummary
+              ? `${customerLabel(orderSummary)} · ${orderSummary.status}`
+              : "Order details"}
           </DialogDescription>
         </DialogHeader>
 

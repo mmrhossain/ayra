@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { toCartErrorMessage } from "@/features/cart/api";
 import { errorToast, formatPrice, successToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { useCartStore } from "@/stores/useCartStore";
 import { ArrowRight, Tag } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const Subtotal = () => {
+  const { checkout } = usePublicSettings();
   const { totalAmount, discountAmount, payableAmount, couponCode, applyCoupon, removeCoupon } =
     useCartStore();
   const { data } = authClient.useSession();
@@ -96,6 +98,12 @@ const Subtotal = () => {
       <p className="mt-3 text-xs text-sky-color">
         Tax and shipping costs will be calculated at checkout.
       </p>
+      {checkout.freeShippingThreshold != null ? (
+        <p className="mt-1 text-xs text-sky-color">
+          Free shipping threshold: {formatPrice(checkout.freeShippingThreshold)}.
+          Shipping rates are confirmed at checkout.
+        </p>
+      ) : null}
 
       <div className="mt-4 sm:mt-5">
         {couponCode ? (

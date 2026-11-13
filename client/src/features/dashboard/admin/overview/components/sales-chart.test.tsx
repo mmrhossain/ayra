@@ -90,19 +90,18 @@ afterEach(() => {
 });
 
 describe("SalesChart", () => {
-  it("renders the server-provided data and the range switch", () => {
-    render(<SalesChart initialData={trend("day", 920)} initialRange="day" />);
+  it("renders server-provided data without a duplicate period selector", () => {
+    render(<SalesChart initialData={trend("day", 920)} range="day" />);
     expect(container.textContent).toContain("Sales trend");
-    const pressedRanges = Array.from(
-      container.querySelectorAll<HTMLButtonElement>("button[aria-pressed]"),
-    ).filter((button) => button.getAttribute("aria-pressed") === "true");
-    expect(pressedRanges.map((button) => button.textContent)).toContain("Day");
+    expect(container.textContent).not.toContain("Day");
+    expect(container.textContent).not.toContain("Month");
+    expect(container.textContent).not.toContain("Year");
     expect(container.textContent).toContain("Net sales");
     expect(container.textContent).toContain("Avg / order");
   });
 
   it("toggles a series off and shows the table fallback", () => {
-    render(<SalesChart initialData={trend("day", 920)} initialRange="day" />);
+    render(<SalesChart initialData={trend("day", 920)} range="day" />);
 
     const ordersToggle = Array.from(
       container.querySelectorAll<HTMLButtonElement>("button[aria-pressed]"),
@@ -122,16 +121,12 @@ describe("SalesChart", () => {
     expect(container.textContent).toContain("Period");
   });
 
-  it("refetches with the selected range on click", async () => {
+  it("fetches with the range selected by the overview filter", async () => {
     mocks.fetchSales.mockResolvedValue(trend("year", 5000));
-    render(<SalesChart initialData={trend("day", 920)} initialRange="day" />);
-
-    const year = Array.from(
-      container.querySelectorAll<HTMLButtonElement>("button"),
-    ).find((button) => button.textContent === "Year")!;
+    render(<SalesChart initialData={trend("day", 920)} range="year" />);
 
     await act(async () => {
-      year.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await Promise.resolve();
     });
 
     expect(mocks.fetchSales).toHaveBeenCalledWith({

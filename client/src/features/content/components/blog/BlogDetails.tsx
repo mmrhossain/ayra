@@ -44,7 +44,7 @@ const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
               </div>
             </header>
 
-            <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 md:mb-12 shadow-sm">
+            <div className="relative w-full aspect-video rounded-md overflow-hidden mb-8 md:mb-12 shadow-sm">
               <StoreImage
                 src={blog.featuredImage || PLACEHOLDER}
                 alt={blog.title}

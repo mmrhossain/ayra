@@ -17,11 +17,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function variantLabel(item: CustomerCartItem): string | undefined {
   const sku = item.sku || item.variant?.sku;
-  const meta = variantMetaFromSku(sku);
-  if (meta.color && meta.size) return `${meta.color}/${meta.size}`;
-  if (meta.color) return meta.color;
-  if (meta.size) return meta.size;
-  return sku || undefined;
+  const attributes =
+    item.variant?.attributes
+      ?.map((entry) => {
+        const attribute = entry.attributeValue;
+        return attribute?.attribute?.name && attribute.value
+          ? `${attribute.attribute.name}: ${attribute.value}`
+          : null;
+      })
+      .filter((attribute): attribute is string => attribute !== null) ?? [];
+  if (attributes.length === 0) {
+    const meta = variantMetaFromSku(sku);
+    if (meta.size) attributes.push(`Size: ${meta.size}`);
+    if (meta.color) attributes.push(`Color: ${meta.color}`);
+  }
+  if (sku) attributes.push(`SKU: ${sku}`);
+  return attributes.length > 0 ? attributes.join(" · ") : undefined;
 }
 
 const OrderReview = ({

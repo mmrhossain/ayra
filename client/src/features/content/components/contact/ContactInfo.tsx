@@ -1,66 +1,104 @@
+"use client";
+
 import { FiPhone, FiMail, FiMapPin } from "react-icons/fi";
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import { AiFillTikTok } from "react-icons/ai";
-import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/config/site";
+import { SOCIAL_LINKS } from "@/config/site";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import Link from "next/link";
 
 const ContactInfo: React.FC = () => {
-    return (
-        <div className="bg-primary text-white h-full p-5 sm:p-8 md:p-12 flex flex-col justify-between space-y-10 md:space-y-12">
-            <div>
-                <h2 className="text-xl lg:text-2xl font-black uppercase tracking-tight lg:tracking-tighter mb-6 md:mb-8">Contact Information</h2>
-                
-                <div className="space-y-6 md:space-y-8">
-                    <div className="flex items-start gap-4 group">
-                        <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-primary transition-all duration-300">
-                            <FiPhone size={22} />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase font-black tracking-widest text-white/60 mb-1">Call Us</p>
-                            <Link href="tel:+01234567890" className="text-base md:text-lg font-bold hover:underline">+880 1703-581774</Link>
-                        </div>
-                    </div>
+  const { store } = usePublicSettings();
+  const telephoneHref = store.supportPhone.replace(/[^\d+]/g, "");
 
-                    <div className="flex items-start gap-4 group">
-                        <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-primary transition-all duration-300">
-                            <FiMail size={22} />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase font-black tracking-widest text-white/60 mb-1">Email Us</p>
-                            <Link href={`mailto:${SUPPORT_EMAIL}`} className="text-base md:text-lg font-bold hover:underline break-all">{SUPPORT_EMAIL}</Link>
-                        </div>
-                    </div>
+  return (
+    <div className="flex h-full flex-col justify-between space-y-10 bg-primary p-5 text-white sm:p-8 md:space-y-12 md:p-12">
+      <div>
+        <h2 className="mb-6 text-xl font-black uppercase tracking-tight lg:mb-8 lg:text-2xl lg:tracking-tighter">
+          Contact Information
+        </h2>
 
-                    <div className="flex items-start gap-4 group">
-                        <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-primary transition-all duration-300">
-                            <FiMapPin size={22} />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase font-black tracking-widest text-white/60 mb-1">Address</p>
-                            <p className="text-sm lg:text-base font-medium leading-relaxed">
-                                Gulshan-2, Dhaka<br /> Bangladesh
-                            </p>
-                        </div>
-                    </div>
-                </div>
+        <div className="space-y-6 md:space-y-8">
+          {store.supportPhone ? (
+            <div className="group flex items-start gap-4">
+              <div className="rounded-xl bg-white/10 p-3 transition-all duration-300 group-hover:bg-white group-hover:text-primary">
+                <FiPhone size={22} />
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-black uppercase tracking-widest text-white/60">
+                  Call Us
+                </p>
+                <Link
+                  href={`tel:${telephoneHref}`}
+                  className="text-base font-bold hover:underline md:text-lg"
+                >
+                  {store.supportPhone}
+                </Link>
+              </div>
             </div>
+          ) : null}
 
-            <div>
-                <p className="text-xs uppercase font-black tracking-[0.12em] md:tracking-widest text-white/60 mb-4">Social Presence</p>
-                <div className="flex gap-4">
-                    {SOCIAL_LINKS.map((social) => (
-                        <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white hover:text-primary transition-all duration-300" aria-label={social.label}>
-                            {social.label === "Facebook" && <FaFacebookF />}
-                            {social.label === "TikTok" && <AiFillTikTok />}
-                            {social.label === "Instagram" && <FaInstagram />}
-                            {social.label === "YouTube" && <FaYoutube />}
-                        </a>
-                    ))}
-                </div>
+          {store.supportEmail ? (
+            <div className="group flex items-start gap-4">
+              <div className="rounded-xl bg-white/10 p-3 transition-all duration-300 group-hover:bg-white group-hover:text-primary">
+                <FiMail size={22} />
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-black uppercase tracking-widest text-white/60">
+                  Email Us
+                </p>
+                <Link
+                  href={`mailto:${store.supportEmail}`}
+                  className="break-all text-base font-bold hover:underline md:text-lg"
+                >
+                  {store.supportEmail}
+                </Link>
+              </div>
             </div>
+          ) : null}
+
+          {store.address ? (
+            <div className="group flex items-start gap-4">
+              <div className="rounded-xl bg-white/10 p-3 transition-all duration-300 group-hover:bg-white group-hover:text-primary">
+                <FiMapPin size={22} />
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-black uppercase tracking-widest text-white/60">
+                  Address
+                </p>
+                <p className="whitespace-pre-line text-sm font-medium leading-relaxed lg:text-base">
+                  {store.address}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
-    );
-};
+      </div>
 
+      <div>
+        <p className="mb-4 text-xs font-black uppercase tracking-[0.12em] text-white/60 md:tracking-widest">
+          Social Presence
+        </p>
+        <div className="flex gap-4">
+          {SOCIAL_LINKS.map((social) => (
+            <a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex size-11 items-center justify-center rounded-full bg-white/10 transition-all duration-300 hover:bg-white hover:text-primary"
+              aria-label={social.label}
+            >
+              {social.label === "Facebook" && <FaFacebookF />}
+              {social.label === "TikTok" && <AiFillTikTok />}
+              {social.label === "Instagram" && <FaInstagram />}
+              {social.label === "YouTube" && <FaYoutube />}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default ContactInfo;

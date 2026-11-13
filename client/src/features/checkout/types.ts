@@ -18,6 +18,12 @@ export type CustomerCartItem = {
     id: string;
     sku?: string;
     price: number | string;
+    attributes?: Array<{
+      attributeValue?: {
+        value: string;
+        attribute?: { name: string };
+      };
+    }>;
     product?: {
       id: string;
       name: string;

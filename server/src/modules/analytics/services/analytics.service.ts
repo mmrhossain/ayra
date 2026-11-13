@@ -300,37 +300,29 @@ const aggregatePeriod = async (
   dateTo: Date,
   currency: "BDT" | "USD",
 ) => {
-  const [orders, returns, payments, refunds, pendingRefundsCount] =
-    await Promise.all([
-      loadSalesOrders(dateFrom, dateTo, currency),
-      loadApprovedReturns(dateFrom, dateTo, currency),
-      prisma.payment.findMany({
-        where: {
-          deletedAt: null,
-          paidAt: { gte: dateFrom, lte: dateTo },
-          currency,
-          status: {
-            notIn: ["PENDING", "INITIATED", "FAILED", "CANCELLED"],
-          },
+  const [orders, returns, payments, refunds] = await Promise.all([
+    loadSalesOrders(dateFrom, dateTo, currency),
+    loadApprovedReturns(dateFrom, dateTo, currency),
+    prisma.payment.findMany({
+      where: {
+        deletedAt: null,
+        paidAt: { gte: dateFrom, lte: dateTo },
+        currency,
+        status: {
+          notIn: ["PENDING", "INITIATED", "FAILED", "CANCELLED"],
         },
-        select: { amount: true },
-      }),
-      prisma.refund.findMany({
-        where: {
-          status: "COMPLETED",
-          refundedAt: { gte: dateFrom, lte: dateTo },
-          payment: { deletedAt: null, currency },
-        },
-        select: { amount: true },
-      }),
-      prisma.refund.count({
-        where: {
-          status: { in: ["PENDING", "APPROVED", "PROCESSING"] },
-          createdAt: { gte: dateFrom, lte: dateTo },
-          payment: { deletedAt: null, currency },
-        },
-      }),
-    ]);
+      },
+      select: { amount: true },
+    }),
+    prisma.refund.findMany({
+      where: {
+        status: "COMPLETED",
+        refundedAt: { gte: dateFrom, lte: dateTo },
+        payment: { deletedAt: null, currency },
+      },
+      select: { amount: true },
+    }),
+  ]);
 
   const sales = saleRecords(orders);
   const returned = returns.records;
@@ -416,14 +408,13 @@ const aggregatePeriod = async (
     estimatedGrossProfitMinor,
     returnedQuantity,
     completeCostData,
-    pendingRefundsCount,
   };
 };
 
 export const getOverview = async (query: OverviewQuery) => {
   const { dateFrom, dateTo, lowStockThreshold, currency } = query;
   const key = cacheKey([
-    "overview",
+    "overview-v2",
     currency,
     iso(dateFrom),
     iso(dateTo),
@@ -432,23 +423,34 @@ export const getOverview = async (query: OverviewQuery) => {
 
   return cached(key, async () => {
     const dateFilter = { gte: dateFrom, lte: dateTo };
-    const [period, pendingPaymentsCount, lowStockCount, newCustomersCount] =
-      await Promise.all([
-        aggregatePeriod(dateFrom, dateTo, currency),
-        prisma.payment.count({
-          where: {
-            deletedAt: null,
-            currency,
-            status: { in: ["PENDING", "INITIATED"] },
-          },
-        }),
-        prisma.inventory.count({
-          where: { quantityAvailable: { lt: lowStockThreshold } },
-        }),
-        prisma.customerProfile.count({
-          where: { deletedAt: null, createdAt: dateFilter },
-        }),
-      ]);
+    const [
+      period,
+      pendingRefundsCount,
+      pendingPaymentsCount,
+      lowStockCount,
+      newCustomersCount,
+    ] = await Promise.all([
+      aggregatePeriod(dateFrom, dateTo, currency),
+      prisma.refund.count({
+        where: {
+          status: { in: ["PENDING", "APPROVED", "PROCESSING"] },
+          payment: { deletedAt: null, currency },
+        },
+      }),
+      prisma.payment.count({
+        where: {
+          deletedAt: null,
+          currency,
+          status: { in: ["PENDING", "INITIATED"] },
+        },
+      }),
+      prisma.inventory.count({
+        where: { quantityAvailable: { lt: lowStockThreshold } },
+      }),
+      prisma.customerProfile.count({
+        where: { deletedAt: null, createdAt: dateFilter },
+      }),
+    ]);
 
     const totalOrders = period.orders.length;
     const averageOrderValue =
@@ -461,6 +463,7 @@ export const getOverview = async (query: OverviewQuery) => {
     return {
       currency,
       timezone: DHAKA_TIME_ZONE,
+      generatedAt: new Date().toISOString(),
       reportingBasis: {
         sales: "Delivered orders, by delivery date in Asia/Dhaka",
         returns: "Approved returns, by approval date in Asia/Dhaka",
@@ -492,7 +495,7 @@ export const getOverview = async (query: OverviewQuery) => {
       lowStockCount,
       newCustomersCount,
       totalRefunded: money(period.cashRefundedMinor),
-      pendingRefundsCount: period.pendingRefundsCount,
+      pendingRefundsCount,
       cashCollected: money(period.cashCollectedMinor),
       cashRefunded: money(period.cashRefundedMinor),
       netCash: money(period.cashCollectedMinor - period.cashRefundedMinor),

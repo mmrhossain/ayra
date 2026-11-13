@@ -1,6 +1,5 @@
 "use client";
 
-import { SITE_NAME } from "@/config/site";
 import {
   formatCheckoutAddress,
   pickOrderAddress,
@@ -11,6 +10,7 @@ import { OrderDetailSkeleton } from "@/features/dashboard/customer/orders/compon
 import { useOrderDetail } from "@/features/dashboard/customer/orders/hooks/use-order-detail";
 import { ReturnRequestDialog } from "@/features/dashboard/customer/orders/components/return-request-dialog";
 import type { OrderDetailProps } from "@/features/dashboard/customer/orders/types";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { statusColor } from "@/helpers";
 import { formatPrice } from "@/lib/format";
 import clsx from "clsx";
@@ -21,6 +21,7 @@ import { useState } from "react";
 const CANCELLABLE = new Set(["PENDING", "CONFIRMED"]);
 
 export function OrderDetail({ initialData }: OrderDetailProps) {
+  const { store } = usePublicSettings();
   const router = useRouter();
   const orderId = initialData.id;
 
@@ -150,7 +151,7 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
           <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:pb-8">
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground lg:text-3xl">
-                {SITE_NAME.toUpperCase()}
+                {store.name.toUpperCase()}
               </h1>
               <div className="text-sm text-muted-foreground">
                 <p>

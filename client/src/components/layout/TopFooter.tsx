@@ -1,6 +1,7 @@
 "use client";
 
 import Newsletter from "@/components/shared/Newsletter";
+import { SOCIAL_LINKS } from "@/config/site";
 import Image from "next/image";
 import Link from "next/link";
 import { AiFillTikTok } from "react-icons/ai";
@@ -34,20 +35,18 @@ const TopFooter = () => {
               Follow Our Journey
             </h4>
             <div className="flex flex-wrap gap-3">
-              {[
-                { icon: FaFacebookF, url: "#" },
-                { icon: AiFillTikTok, url: "#" },
-                { icon: FaInstagram, url: "#" },
-                { icon: FaYoutube, url: "#" },
-              ].map((social, idx) => (
+              {SOCIAL_LINKS.map((social) => (
                 <a
-                  key={idx}
-                  href={social.url}
+                  key={social.label}
+                  href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-black hover:text-white hover:border-black transition-all duration-300"
                 >
-                  <social.icon size={14} />
+                  {social.label === "Facebook" ? <FaFacebookF size={14} /> : null}
+                  {social.label === "TikTok" ? <AiFillTikTok size={14} /> : null}
+                  {social.label === "Instagram" ? <FaInstagram size={14} /> : null}
+                  {social.label === "YouTube" ? <FaYoutube size={14} /> : null}
                 </a>
               ))}
             </div>

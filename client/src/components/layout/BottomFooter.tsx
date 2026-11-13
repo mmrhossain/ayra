@@ -1,6 +1,10 @@
+"use client";
+
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import Image from "next/image";
 
 const BottomFooter = () => {
+  const { store } = usePublicSettings();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -23,11 +27,11 @@ const BottomFooter = () => {
           {/* Copyright & Credits (Centered Below) */}
           <div className="text-center">
             <p className="text-slate-500 text-sm leading-relaxed tracking-wide">
-              © {currentYear} <span className="text-foreground font-semibold">Ayra</span>. All rights
+              © {currentYear} <span className="text-foreground font-semibold">{store.name}</span>. All rights
               reserved.
               <span className="hidden sm:inline mx-2 text-slate-300">|</span>
               <br className="sm:hidden" />
-              <span className="text-slate-400">Crafted with precision by Ayra Team.</span>
+              <span className="text-slate-400">Crafted with precision by {store.name} Team.</span>
             </p>
           </div>
         </div>

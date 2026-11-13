@@ -2,7 +2,6 @@ import {
   Banknote,
   Boxes,
   ChevronDown,
-  CreditCard,
   PackageCheck,
   Percent,
   PiggyBank,
@@ -12,12 +11,10 @@ import {
   Tag,
   TrendingUp,
   Truck,
-  Users,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/analytics";
 import {
   formatMetric,
@@ -177,42 +174,6 @@ const GROUPS: Array<{ heading: string; metrics: Metric[] }> = [
         accent: "text-primary",
         glow: "from-primary/15",
       },
-      {
-        key: "pendingRefundsCount",
-        label: "Open refunds",
-        format: "count",
-        hint: "Refunds created in this period still pending, approved or processing.",
-        icon: RotateCcw,
-        accent: "text-amber-600 dark:text-amber-400",
-        glow: "from-amber-500/15",
-      },
-      {
-        key: "pendingPaymentsCount",
-        label: "Pending payments",
-        format: "count",
-        hint: "Payments currently pending or initiated for this currency.",
-        icon: CreditCard,
-        accent: "text-sky-600 dark:text-sky-400",
-        glow: "from-sky-500/15",
-      },
-      {
-        key: "lowStockCount",
-        label: "Low stock",
-        format: "count",
-        hint: "Inventory rows below the configured threshold.",
-        icon: Boxes,
-        accent: "text-orange-600 dark:text-orange-400",
-        glow: "from-orange-500/15",
-      },
-      {
-        key: "newCustomersCount",
-        label: "New customers",
-        format: "count",
-        hint: "Customer profiles created in the period.",
-        icon: Users,
-        accent: "text-teal-600 dark:text-teal-400",
-        glow: "from-teal-500/15",
-      },
     ],
   },
 ];
@@ -228,35 +189,31 @@ function DetailedMetricCard({
 }) {
   const Icon = metric.icon;
   return (
-    <Card
+    <div
       data-slot="detailed-metric-card"
-      className="group relative min-w-0 overflow-hidden transition-shadow hover:shadow-md"
+      className="min-w-0 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:bg-muted/20 sm:px-4"
     >
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b ${metric.glow} to-transparent opacity-70`}
-      />
-      <CardContent className="relative space-y-2 pt-4 sm:space-y-3 sm:pt-6">
-        <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 text-xs font-medium leading-snug text-muted-foreground sm:text-sm">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className={`grid size-7 shrink-0 place-items-center rounded-md bg-gradient-to-br ${metric.glow} ring-1 ring-border/70 ${metric.accent}`}
+          >
+            <Icon className="size-3.5" aria-hidden />
+          </span>
+          <p className="min-w-0 truncate text-sm font-medium leading-snug">
             {metric.label}
           </p>
-          <span
-            className={`grid size-8 shrink-0 place-items-center rounded-lg bg-background/80 ring-1 ring-border/70 ${metric.accent}`}
-          >
-            <Icon className="size-4" aria-hidden />
-          </span>
         </div>
-        <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl lg:text-3xl">
+        <p className="shrink-0 text-base font-semibold tabular-nums tracking-tight sm:text-lg">
           {formatMetric(value, metric.format, currency)}
         </p>
-        {metric.hint ? (
-          <p className="text-xs leading-snug text-muted-foreground">
-            {metric.hint}
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+      </div>
+      {metric.hint ? (
+        <p className="mt-1.5 pl-9 text-xs leading-snug text-muted-foreground">
+          {metric.hint}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -276,7 +233,11 @@ export function DetailedMetrics({ data }: { data: OverviewMetrics }) {
             <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               {group.heading}
             </h3>
-            <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
+            <div
+              className={`grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 ${
+                group.metrics.length === 2 ? "" : "xl:grid-cols-3"
+              }`}
+            >
               {group.metrics.map((metric) => (
                 <DetailedMetricCard
                   key={metric.key}

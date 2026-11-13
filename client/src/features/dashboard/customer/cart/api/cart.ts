@@ -3,6 +3,7 @@
  * Guest cart lives in `@/features/cart/api` (store-front client).
  */
 import { resolveProductImage } from "@/features/cart/lib/product-image";
+import type { CartItemAttribute } from "@/features/cart/types";
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
 import type { Envelope } from "@/lib/api/http";
 
@@ -16,6 +17,7 @@ export type CartLine = {
   productSlug?: string | null;
   productImage?: string | null;
   sku?: string;
+  attributes?: CartItemAttribute[];
   compareAtPrice?: number | null;
 };
 
@@ -32,6 +34,22 @@ export type CartSnapshot = {
 function num(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+function mapVariantAttributes(raw: unknown): CartItemAttribute[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry): CartItemAttribute[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const attributeValue = (entry as Record<string, unknown>).attributeValue;
+    if (!attributeValue || typeof attributeValue !== "object") return [];
+    const value = attributeValue as Record<string, unknown>;
+    const attribute = value.attribute;
+    if (typeof value.value !== "string" || !attribute || typeof attribute !== "object") {
+      return [];
+    }
+    const name = (attribute as Record<string, unknown>).name;
+    return typeof name === "string" ? [{ name, value: value.value }] : [];
+  });
 }
 
 function emptyCart(): CartSnapshot {
@@ -77,6 +95,7 @@ function mapAuthItem(item: Record<string, unknown>): CartLine | null {
         : null,
     }),
     sku: (item.sku ?? variant?.sku) as string | undefined,
+    attributes: mapVariantAttributes(variant?.attributes),
     compareAtPrice: compareAt != null ? num(compareAt) : null,
   };
 }

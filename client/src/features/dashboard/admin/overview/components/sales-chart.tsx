@@ -6,7 +6,6 @@ import {
   Download,
   Eye,
   EyeOff,
-  Loader2,
   Table2,
   TrendingUp,
   X,
@@ -39,7 +38,6 @@ import {
   toErrorMessage,
   type SalesTrend,
 } from "@/features/dashboard/admin/overview/api/analytics";
-import { RangeSwitch } from "@/features/dashboard/admin/overview/components/range-toggle";
 import {
   moneyFormatter,
   NUM,
@@ -190,12 +188,11 @@ function csvCell(value: string | number): string {
 
 export function SalesChart({
   initialData,
-  initialRange = "day",
+  range,
 }: {
   initialData: SalesTrend;
-  initialRange?: RangeKey;
+  range: RangeKey;
 }) {
-  const [range, setRange] = useState<RangeKey>(initialRange);
   const [visible, setVisible] = useState<Record<SeriesKey, boolean>>({
     sales: true,
     orders: true,
@@ -210,14 +207,16 @@ export function SalesChart({
     queryKey: ["admin-sales-trend", range],
     queryFn: () =>
       fetchSales({ range, groupBy: GRANULARITY_BY_RANGE[range] }),
-    initialData: range === initialRange ? initialData : undefined,
+    initialData:
+      initialData.groupBy === GRANULARITY_BY_RANGE[range]
+        ? initialData
+        : undefined,
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 
   const data = query.data ?? initialData;
   const granularity = (data.groupBy as Granularity) ?? "day";
-  const isUpdating = query.isFetching;
 
   const series = useMemo(
     () =>
@@ -295,12 +294,6 @@ export function SalesChart({
               timeZone={data.timezone}
             />
           </div>
-          <RangeSwitch
-            value={range}
-            onChange={setRange}
-            disabled={isUpdating}
-            label="Sales trend period"
-          />
         </div>
 
         <dl className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/30 px-4 py-3">
@@ -374,13 +367,10 @@ export function SalesChart({
             Select at least one series to display.
           </p>
         ) : (
-          <div className="relative" aria-busy={isUpdating}>
+          <div>
             <ChartContainer
               config={chartConfig}
-              className={cn(
-                "aspect-auto h-[260px] w-full transition-opacity sm:h-[300px]",
-                isUpdating ? "opacity-60" : "opacity-100",
-              )}
+              className="aspect-auto h-[260px] w-full sm:h-[300px]"
             >
               <AreaChart data={series} accessibilityLayer margin={{ top: 8 }}>
                 <defs>
@@ -489,14 +479,6 @@ export function SalesChart({
                 ) : null}
               </AreaChart>
             </ChartContainer>
-            {isUpdating ? (
-              <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <span className="flex items-center gap-2 rounded-full border bg-background/90 px-3 py-1 text-xs font-medium shadow-sm">
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Updating…
-                </span>
-              </div>
-            ) : null}
           </div>
         )}
 

@@ -19,6 +19,7 @@ export type CurrencyCode = "BDT" | "USD";
 export type OverviewMetrics = {
   currency: CurrencyCode;
   timezone: string;
+  generatedAt: string;
   reportingBasis: {
     sales: string;
     returns: string;

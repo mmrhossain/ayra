@@ -1,8 +1,9 @@
 "use client";
 
 import MobileCategoryItem from "@/features/catalog/components/category/MobileCategory";
-import { CategoryListItem } from "@/features/catalog/types";
 import { SITE_LOGO } from "@/config/site";
+import { CategoryListItem } from "@/features/catalog/types";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { useWishStore } from "@/stores/useWishStore";
@@ -34,6 +35,7 @@ interface FooterNavigationMenuProps {
 }
 
 const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) => {
+  const { store } = usePublicSettings();
   const pathname = usePathname();
   const [categoriesDrawerOpen, setCategoriesDrawerOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
@@ -224,8 +226,9 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
                 <div className="flex h-8 w-[120px] items-center overflow-hidden">
                   <Link href="/" onClick={closeDrawer} className="relative block h-8 w-full">
                     <Image
-                      src={SITE_LOGO}
-                      alt="Ayra"
+                      src={store.logoUrl || SITE_LOGO}
+                      alt={store.name}
+                      unoptimized
                       fill
                       sizes="120px"
                       priority

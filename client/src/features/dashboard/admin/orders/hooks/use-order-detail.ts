@@ -37,7 +37,7 @@ export function useOrderDetail(open: boolean, order: OrderListItem | null) {
     staleTime: 30_000,
   });
 
-  const detail = detailQuery.data ?? (order ? { ...order } : null);
+  const detail = detailQuery.data ?? null;
 
   const nextStatuses = detail?.status
     ? (ALLOWED_TRANSITIONS[detail.status as OrderStatus] ?? [])

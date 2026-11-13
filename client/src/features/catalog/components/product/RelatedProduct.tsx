@@ -30,10 +30,10 @@ const RelatedProduct = async ({
 
   return (
     <div className="container">
-      <div className="p-4 sm:p-5 mt-6 md:mt-8">
+      <div className="mt-6 md:mt-8">
         <div className="flex items-center justify-between mb-4 md:mb-6 gap-3">
           <div className="flex items-center gap-2">
-            <span className="bg-white p-2 rounded-md">
+            <span className="bg-white p-1 rounded-md">
               <Tag size={20} className="text-primary" />
             </span>
             <h2 className="text-sm sm:text-lg md:text-2xl font-bold capitalize text-primary">

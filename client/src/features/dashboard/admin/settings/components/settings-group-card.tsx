@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { updateSettingsGroup } from "@/features/dashboard/admin/settings/api/settings";
+import { PUBLIC_SETTINGS_QUERY_KEY } from "@/features/settings/public-settings-provider";
 import type {
   AdminSettingField,
   AdminSettingGroup,
@@ -148,6 +150,16 @@ function FieldControl({
           aria-label={field.label}
         />
       );
+    case "textarea":
+      return (
+        <Textarea
+          id={field.key}
+          value={String(value ?? "")}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          aria-label={field.label}
+        />
+      );
     default:
       return (
         <Input
@@ -166,6 +178,7 @@ export function SettingsGroupCard({
   group: AdminSettingGroup;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [values, setValues] = useState<FieldValues>(() =>
     initialValues(group.fields),
   );
@@ -192,7 +205,10 @@ export function SettingsGroupCard({
       }
       return updateSettingsGroup(group.key, payload);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: PUBLIC_SETTINGS_QUERY_KEY,
+      });
       toast.success(`${group.label} settings saved`);
       setSecrets({});
       router.refresh();

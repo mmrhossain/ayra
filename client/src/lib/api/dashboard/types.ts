@@ -6650,6 +6650,7 @@ export type paths = {
                                     name: string;
                                     supportEmail: string;
                                     supportPhone: string;
+                                    address: string;
                                     logoUrl: string;
                                     currency: string;
                                 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { CHAT_MAX_MESSAGE } from "@/features/content/api/chat";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +11,7 @@ import { useStorefrontChat } from "./use-storefront-chat";
 const HIDDEN_ROUTES = ["/checkout", "/cart"];
 
 export default function StorefrontChat() {
+  const { store } = usePublicSettings();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -87,7 +89,7 @@ export default function StorefrontChat() {
         >
           <div className="flex items-center justify-between gap-3 border-b border-border bg-slate-900 px-4 py-3 text-white">
             <p id={titleId} className="text-sm font-semibold">
-              Ask Ayra
+              Ask {store.name}
             </p>
             <button
               type="button"

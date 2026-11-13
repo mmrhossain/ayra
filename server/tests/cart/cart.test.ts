@@ -4,7 +4,9 @@ import { prisma } from "../../src/lib/prisma.ts";
 import { addItem } from "../../src/modules/cart/cart.service.ts";
 import {
   CleanupTracker,
+  attachVariantAttributeValues,
   api,
+  createAttributeGroup,
   createTestProduct,
   createTestUser,
 } from "../helpers/index.ts";
@@ -23,6 +25,12 @@ describe("Cart items", () => {
   it("adds an item and stores name/sku/price snapshot", async () => {
     const user = await createTestUser(tracker, { suffix: `ca-${Date.now()}` });
     const catalog = await createTestProduct(tracker, { stock: 10, price: 150 });
+    const sizes = await createAttributeGroup(tracker, "Size", ["Large"]);
+    const colors = await createAttributeGroup(tracker, "Color", ["Green"]);
+    await attachVariantAttributeValues(catalog.variant.id, [
+      sizes.values[0].id,
+      colors.values[0].id,
+    ]);
 
     const res = await api()
       .post("/api/v1/cart/items")
@@ -39,6 +47,22 @@ describe("Cart items", () => {
     expect(item).toBeTruthy();
     expect(item.productName).toBe(catalog.product.name);
     expect(item.sku).toBe(catalog.variant.sku);
+    expect(item.variant.attributes).toEqual(
+      expect.arrayContaining([
+        {
+          attributeValue: {
+            value: "Large",
+            attribute: { name: sizes.attribute.name },
+          },
+        },
+        {
+          attributeValue: {
+            value: "Green",
+            attribute: { name: colors.attribute.name },
+          },
+        },
+      ])
+    );
     expect(Number(item.unitPrice)).toBe(150);
     expect(item.quantity).toBe(2);
   });

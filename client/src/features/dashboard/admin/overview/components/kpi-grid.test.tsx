@@ -25,14 +25,15 @@ afterEach(() => {
 });
 
 describe("KpiGrid", () => {
-  it("renders exactly four headline KPIs", () => {
+  it("renders five headline KPIs for performance and growth", () => {
     act(() => root.render(<KpiGrid data={OVERVIEW_FIXTURE} previous={null} />));
-    expect(container.querySelectorAll("[data-slot=kpi-card]")).toHaveLength(4);
+    expect(container.querySelectorAll("[data-slot=kpi-card]")).toHaveLength(5);
     for (const label of [
       "Net product sales",
       "Estimated gross profit",
       "Delivered orders",
       "Outstanding COD",
+      "New customers",
     ]) {
       expect(container.textContent).toContain(label);
     }
@@ -56,6 +57,7 @@ describe("KpiGrid", () => {
             estimatedGrossProfit: 320,
             totalOrders: 10,
             outstandingCod: 300,
+            newCustomersCount: 8,
           }}
         />,
       ),
@@ -69,5 +71,6 @@ describe("KpiGrid", () => {
     expect(cardFor("Estimated gross profit").textContent).toContain("0.0%");
     expect(cardFor("Delivered orders").textContent).toContain("+20.0%");
     expect(cardFor("Outstanding COD").textContent).toContain("-50.0%");
+    expect(cardFor("New customers").textContent).toContain("+12.5%");
   });
 });

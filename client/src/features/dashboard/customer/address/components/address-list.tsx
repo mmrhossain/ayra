@@ -1,7 +1,9 @@
+"use client";
+
 import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 
-import { SITE_NAME } from "@/config/site";
 import type { AddressListProps } from "@/features/dashboard/customer/address/types";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 
 export function AddressList({
   addresses,
@@ -11,6 +13,7 @@ export function AddressList({
   onEdit,
   onDelete,
 }: AddressListProps) {
+  const { store } = usePublicSettings();
   return (
     <>
       <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-center">
@@ -19,7 +22,7 @@ export function AddressList({
             My Addresses
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage delivery locations for your {SITE_NAME} orders
+            Manage delivery locations for your {store.name} orders
           </p>
         </div>
         <button

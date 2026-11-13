@@ -17,6 +17,7 @@ import {
 import { SITE_LOGO } from "@/config/site";
 import CategoryMegaMenu from "@/features/catalog/components/category/CategoryMegaMenu";
 import { CategoryListItem } from "@/features/catalog/types";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { successToast } from "@/helpers";
 import { useHydratedStore } from "@/hooks/useHydratedStore";
 import { authClient } from "@/lib/api/auth/auth-client";
@@ -25,6 +26,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
 
 const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
+  const { store } = usePublicSettings();
   const cartCount = useHydratedStore(useCartStore, (s) => s.cartCount, 0);
   const wishCount = useHydratedStore(useWishStore, (s) => s.wishCount, 0);
   const router = useRouter();
@@ -54,10 +56,15 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
     <div className="container hidden min-w-0 items-center gap-4 py-2 lg:flex xl:gap-6">
       {/* 1. Logo */}
       <div className="flex h-9 w-[120px] shrink-0 items-center xl:w-[130px]">
-        <Link href="/" className="relative block h-9 w-full" aria-label="Ayra Home">
+        <Link
+          href="/"
+          className="relative block h-9 w-full"
+          aria-label={`${store.name} Home`}
+        >
           <Image
-            src={SITE_LOGO}
-            alt="Ayra"
+            src={store.logoUrl || SITE_LOGO}
+            alt={store.name}
+            unoptimized
             fill
             priority
             sizes="120px"

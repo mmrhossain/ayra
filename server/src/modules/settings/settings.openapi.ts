@@ -46,6 +46,7 @@ const publicSettingsSchema = z.object({
     name: z.string(),
     supportEmail: z.string(),
     supportPhone: z.string(),
+    address: z.string(),
     logoUrl: z.string(),
     currency: z.string(),
   }),

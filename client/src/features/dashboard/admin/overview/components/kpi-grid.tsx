@@ -6,6 +6,7 @@ import {
   PackageCheck,
   PiggyBank,
   TrendingUp,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,6 +37,11 @@ export function KpiGrid({
   data: OverviewMetrics;
   previous: OverviewMetrics | null;
 }) {
+  const generatedAt = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: data.timezone,
+  }).format(new Date(data.generatedAt));
   const kpis: Kpi[] = [
     {
       label: "Net product sales",
@@ -75,6 +81,15 @@ export function KpiGrid({
       accent: "text-amber-600 dark:text-amber-400",
       glow: "from-amber-500/15",
     },
+    {
+      label: "New customers",
+      value: data.newCustomersCount,
+      format: "count",
+      previous: previous?.newCustomersCount ?? null,
+      icon: Users,
+      accent: "text-violet-600 dark:text-violet-400",
+      glow: "from-violet-500/15",
+    },
   ];
 
   return (
@@ -88,9 +103,9 @@ export function KpiGrid({
           timeZone: data.timezone,
         })}
         . Sales use delivery date; returns use approval date; cash uses payment
-        and refund dates.
+        and refund dates. Timezone: {data.timezone}. Data as of {generatedAt}.
       </p>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {kpis.map((kpi) => {
           const delta = percentChange(kpi.value, kpi.previous);
           const good =

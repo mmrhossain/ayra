@@ -131,6 +131,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     name,
     supportEmail,
     supportPhone,
+    address,
     logoUrl,
     currency,
     enabledMethods,
@@ -141,6 +142,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     getSettingValue<string>("store.name"),
     getSettingValue<string>("store.supportEmail"),
     getSettingValue<string>("store.supportPhone"),
+    getSettingValue<string>("store.address"),
     getSettingValue<string>("store.logoUrl"),
     getSettingValue<string>("store.currency"),
     getSettingValue<PublicSettings["payment"]["enabledMethods"]>(
@@ -152,7 +154,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
   ]);
 
   return {
-    store: { name, supportEmail, supportPhone, logoUrl, currency },
+    store: { name, supportEmail, supportPhone, address, logoUrl, currency },
     payment: { enabledMethods },
     checkout: { pricesIncludeTax, taxRatePercent, freeShippingThreshold },
   };

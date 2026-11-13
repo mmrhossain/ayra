@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,13 +15,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ResponsiveTable } from "@/features/dashboard/admin/shared/components/responsive-table";
 import {
   isUserBanned,
   toUserErrorMessage,
@@ -138,7 +138,7 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
             ))}
           </div>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
@@ -161,18 +161,18 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
               ) : (
                 items.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell>
-                      <Image
-                        src={user.image || "https://placehold.jp/160x96.png"}
-                        alt={user.name}
-                        width={80}
-                        height={48}
-                        className="h-12 w-20 rounded-md object-cover"
+                    <TableCell data-label="Image">
+                      <UserAvatar
+                        src={user.image}
+                        name={user.name}
+                        showInitials
+                        iconSize={18}
+                        className="size-10 border sm:size-12"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell data-label="Name" className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span>{user.name}</span>
+                        <span className="break-words">{user.name}</span>
                         {isUserBanned(user) ? (
                           <StatusBadge variant="danger" className="uppercase tracking-wide">
                             Banned
@@ -180,22 +180,24 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                    <TableCell>
+                    <TableCell data-label="Email" className="break-all text-muted-foreground">
+                      {user.email}
+                    </TableCell>
+                    <TableCell data-label="Role">
                       <StatusBadge variant="info">{user.role}</StatusBadge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell data-label="Status" className="text-muted-foreground">
                       {isUserBanned(user) ? "BANNED" : (user.status ?? "ACTIVE")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Email verified">
                       <StatusBadge variant={user.emailVerified ? "success" : "danger"}>
                         {user.emailVerified ? "Verified" : "Not Verified"}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell data-label="Joined" className="text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell data-label="Actions" className="text-right">
                       <div>
                         <Button
                           type="button"
@@ -215,7 +217,7 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
                 ))
               )}
             </TableBody>
-          </Table>
+          </ResponsiveTable>
         )}
       </div>
 

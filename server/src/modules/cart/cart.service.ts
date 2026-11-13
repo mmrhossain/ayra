@@ -53,6 +53,16 @@ export const cartInclude = {
           sku: true,
           price: true,
           compareAtPrice: true,
+          attributes: {
+            select: {
+              attributeValue: {
+                select: {
+                  value: true,
+                  attribute: { select: { name: true } },
+                },
+              },
+            },
+          },
           product: {
             select: {
               id: true,

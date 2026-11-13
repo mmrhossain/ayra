@@ -1,11 +1,14 @@
 import { fetchHome } from "@/features/home/api";
 import HomePage from "@/features/home/components/HomePage";
 import HomePageSkeleton from "@/features/home/skeleton/HomePageSkeleton";
+import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import { Suspense } from "react";
 
 async function HomeContent() {
-  // Handle the error gracefully without a try/catch block
-  const data = await fetchHome().catch(() => null);
+  const [data, settings] = await Promise.all([
+    fetchHome().catch(() => null),
+    fetchPublicSettingsOrDefault(),
+  ]);
 
   if (!data) {
     return (
@@ -13,7 +16,7 @@ async function HomeContent() {
     );
   }
 
-  return <HomePage data={data} />;
+  return <HomePage data={data} storeName={settings.store.name} />;
 }
 
 export default function Home() {

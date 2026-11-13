@@ -73,7 +73,7 @@ const FAQPage = ({ categories }: Props) => {
             <input
               type="text"
               placeholder="Search for a topic"
-              className="h-12 w-full rounded-full border border-slate-200 pr-4 pl-12 text-base shadow-sm transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none md:h-14 md:pr-6 md:pl-14"
+              className="h-12 w-full rounded-md border border-slate-200 pr-4 pl-12 text-base shadow-sm transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none md:h-14 md:pr-6 md:pl-14"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
@@ -86,7 +86,7 @@ const FAQPage = ({ categories }: Props) => {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 sm:px-6 md:px-8 h-10 md:h-11 rounded-full text-xs md:text-xs font-black uppercase tracking-[0.08em] md:tracking-widest transition-all ${
+              className={`px-4 sm:px-6 md:px-8 h-10 md:h-11 rounded-md text-xs md:text-xs font-black uppercase tracking-[0.08em] md:tracking-widest transition-all ${
                 activeCategory === cat
                   ? "bg-primary text-white shadow-lg shadow-teal-600/20"
                   : "bg-white text-slate-500 border border-slate-200 hover:border-primary"
@@ -114,7 +114,7 @@ const FAQPage = ({ categories }: Props) => {
       </section>
 
       <section className="container mt-8 md:mt-12">
-        <div className="bg-slate-900 rounded-[1.5rem] sm:rounded-[3rem] p-6 sm:p-10 md:p-12 text-center text-white relative overflow-hidden">
+        <div className="bg-slate-900 rounded-md p-6 sm:p-10 md:p-12 text-center text-white relative overflow-hidden">
           <div className="relative">
             <h3 className="text-2xl md:text-3xl font-black mb-3 md:mb-4">Still have questions?</h3>
             <p className="text-slate-400 mb-6 md:mb-8 max-w-md mx-auto text-sm md:text-base">
@@ -123,7 +123,7 @@ const FAQPage = ({ categories }: Props) => {
             <div className="flex flex-wrap justify-center gap-3 md:gap-4">
               <a
                 href="/contact"
-                className="bg-primary hover:bg-primary/80 text-white px-6 md:px-10 h-11 md:h-12 rounded-full font-black uppercase text-xs tracking-[0.08em] md:tracking-widest transition-all inline-flex items-center"
+                className="bg-primary hover:bg-primary/80 text-white px-6 md:px-10 h-11 md:h-12 rounded-md font-black uppercase text-xs tracking-[0.08em] md:tracking-widest transition-all inline-flex items-center"
               >
                 Contact Support
               </a>
@@ -146,7 +146,7 @@ const FAQItem = ({ faq }: { faq: { question: string; answer: string } }) => {
       initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
-      className={`border transition-all duration-300 ${isOpen ? "bg-white border-primary shadow-xl rounded-[1.25rem] md:rounded-[2rem]" : "bg-transparent border-slate-200 rounded-[1rem] md:rounded-[1.5rem]"}`}
+      className={`border rounded-md transition-all duration-300 ${isOpen ? "bg-white border-primary shadow-xl" : "bg-transparent border-slate-200"}`}
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -155,7 +155,7 @@ const FAQItem = ({ faq }: { faq: { question: string; answer: string } }) => {
         <span className={`text-base md:text-lg font-bold tracking-tight ${isOpen ? "text-teal-900" : "text-slate-800"}`}>
           {faq.question}
         </span>
-        <div className={`flex-shrink-0 ml-3 md:ml-4 p-2 rounded-full transition-colors ${isOpen ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"}`}>
+        <div className={`flex-shrink-0 ml-3 md:ml-4 p-2 rounded-md transition-colors ${isOpen ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"}`}>
           {isOpen ? <Minus size={18} /> : <Plus size={18} />}
         </div>
       </button>

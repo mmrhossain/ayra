@@ -1,9 +1,9 @@
 "use client";
 
 import { RichTextContent } from "@/components/shared/rich-text-content";
-import { SITE_NAME } from "@/config/site";
 import type { ProductDetail } from "@/features/catalog/api";
 import ReviewTab from "@/features/reviews/components/ReviewTab";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { formatPrice } from "@/helpers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -17,6 +17,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const ProductTabs = ({ product }: { product: ProductDetail }) => {
+  const { store } = usePublicSettings();
   const [activeTab, setActiveTab] = useState<TabId>("description");
   const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
   const price = Number(defaultVariant?.price ?? 0);
@@ -26,7 +27,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
     { label: "Price", value: price ? formatPrice(price) : "—" },
     { label: "SKU", value: defaultVariant?.sku || product.sku || "—" },
     { label: "Category", value: product.category?.name || "—" },
-    { label: "Brand", value: product.brand?.name || SITE_NAME },
+    { label: "Brand", value: product.brand?.name || store.name },
   ];
 
   return (

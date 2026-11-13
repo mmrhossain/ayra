@@ -43,7 +43,7 @@ export function LegalDocument({
             className="text-slate-600 leading-relaxed"
           />
         ) : (
-          <div className="bg-muted border border-border p-8 rounded-2xl">
+          <div className="bg-muted border border-border p-8 rounded-md">
             <div className="flex items-center gap-4 mb-4">
               <FileText className="text-primary" />
               <h2 className="text-xl font-bold text-slate-900">Coming soon</h2>

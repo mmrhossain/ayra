@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SITE_NAME, SUPPORT_EMAIL } from "@/config/site";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { Mail, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,13 +16,14 @@ import { RxDividerVertical } from "react-icons/rx";
 
 const Header: React.FC = () => {
   const [value, setValue] = useState<string>("English");
+  const { store } = usePublicSettings();
 
   return (
     <header className="bg-brand text-light-color text-sm font-normal">
       <div className="flex flex-col md:flex-row justify-center md:justify-between items-center gap-2 sm:gap-0 py-1.5 container">
         {/* Left Section */}
         <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-          <span>Welcome to {SITE_NAME} Online Store</span>
+          <span>Welcome to {store.name} Online Store</span>
 
           <div className="hidden sm:flex">
             <RxDividerVertical size={28} />
@@ -35,17 +36,18 @@ const Header: React.FC = () => {
             </Link>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2">
-            <RxDividerVertical size={28} />
-
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className="flex items-center gap-1.5 hover:underline text-light-color hover:text-white"
-            >
-              <Mail size={16} />
-              <span className="hidden sm:inline">{SUPPORT_EMAIL}</span>
-            </a>
-          </div>
+          {store.supportEmail ? (
+            <div className="hidden items-center gap-2 sm:flex">
+              <RxDividerVertical size={28} />
+              <a
+                href={`mailto:${store.supportEmail}`}
+                className="flex items-center gap-1.5 text-light-color hover:text-white hover:underline"
+              >
+                <Mail size={16} />
+                <span className="hidden sm:inline">{store.supportEmail}</span>
+              </a>
+            </div>
+          ) : null}
         </div>
 
         {/* Right Section (Language Switcher) */}

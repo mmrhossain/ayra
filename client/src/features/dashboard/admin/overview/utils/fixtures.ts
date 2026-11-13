@@ -3,6 +3,7 @@ import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/an
 export const OVERVIEW_FIXTURE: OverviewMetrics = {
   currency: "BDT",
   timezone: "Asia/Dhaka",
+  generatedAt: "2026-10-30T18:00:00.000Z",
   reportingBasis: { sales: "", returns: "", cash: "", cogs: "" },
   grossProductSales: 1000,
   productDiscounts: 50,

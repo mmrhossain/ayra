@@ -10322,6 +10322,9 @@
                             "supportPhone": {
                               "type": "string"
                             },
+                            "address": {
+                              "type": "string"
+                            },
                             "logoUrl": {
                               "type": "string"
                             },
@@ -10333,6 +10336,7 @@
                             "name",
                             "supportEmail",
                             "supportPhone",
+                            "address",
                             "logoUrl",
                             "currency"
                           ]

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addCartItem, toCartErrorMessage } from "@/features/cart/api";
+import { normalizeVariantAttributes } from "@/features/catalog/api";
 import type { ProductDetail, ProductVariant } from "@/features/catalog/types";
 import { num } from "@/features/catalog/utils/variants";
 import { errorToast, successToast } from "@/helpers";
@@ -59,6 +60,10 @@ export function useAddToCart() {
         productSlug: product.slug,
         productImage: galleryImageUrl,
         sku: selected.sku,
+        attributes: normalizeVariantAttributes(selected).map((attribute) => ({
+          name: attribute.attributeName ?? "Option",
+          value: attribute.value,
+        })),
         unitPrice: selectedPrice,
         compareAtPrice: selectedHasDiscount ? selectedCompareAt : null,
       });

@@ -9,16 +9,27 @@ import type {
   OrderStatus,
   OrdersByStatusResult,
 } from "@/features/dashboard/admin/overview/api/analytics";
-import { statusColor } from "@/helpers";
 
-const LABELS: Array<{ status: OrderStatus }> = [
-  { status: "PENDING" },
-  { status: "CONFIRMED" },
-  { status: "PROCESSING" },
-  { status: "SHIPPED" },
-  { status: "DELIVERED" },
-  { status: "CANCELLED" },
+const STATUSES: OrderStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
 ];
+
+const STATUS_TONES: Record<OrderStatus, string> = {
+  PENDING: "bg-amber-500",
+  CONFIRMED: "bg-blue-500",
+  PROCESSING: "bg-indigo-500",
+  SHIPPED: "bg-sky-500",
+  DELIVERED: "bg-emerald-500",
+  CANCELLED: "bg-rose-500",
+};
+
+const statusLabel = (status: OrderStatus) =>
+  `${status[0]}${status.slice(1).toLowerCase()}`;
 
 export function OrdersStatusBreakdown({
   data,
@@ -27,37 +38,42 @@ export function OrdersStatusBreakdown({
 }) {
   const total = Object.values(data.breakdown).reduce((sum, n) => sum + n, 0);
 
-  if (total === 0) {
-    return (
-      <Card className="h-full min-w-0">
-        <CardHeader>
-          <CardTitle>Orders by status</CardTitle>
-          <CardDescription>Current period breakdown</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            No orders in this period yet.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="h-full min-w-0">
       <CardHeader>
         <CardTitle>Orders by status</CardTitle>
-        <CardDescription>{total} orders in this period</CardDescription>
+        <CardDescription>
+          {total === 0 ? "No orders in this period yet." : `${total} orders in this period`}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-2">
-        {LABELS.map(({ status }) => (
-          <span
-            key={status}
-            className={`inline-flex w-fit items-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium ${statusColor(status)}`}
-          >
-            {status}: {data.breakdown[status] || 0}
-          </span>
-        ))}
+      <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {STATUSES.map((status) => {
+          const count = data.breakdown[status] || 0;
+          const share = total > 0 ? Math.round((count / total) * 100) : 0;
+          return (
+            <div key={status} className="min-w-0 space-y-2">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="truncate font-medium">{statusLabel(status)}</span>
+                <span className="shrink-0 tabular-nums text-muted-foreground">
+                  {count} · {share}%
+                </span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label={`${statusLabel(status)} orders`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={share}
+                className="h-2 overflow-hidden rounded-full bg-muted"
+              >
+                <div
+                  className={`h-full rounded-full transition-[width] ${STATUS_TONES[status]}`}
+                  style={{ width: `${share}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );

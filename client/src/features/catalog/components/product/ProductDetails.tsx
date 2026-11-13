@@ -210,7 +210,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                     {group.name}
                   </label>
                   <Select
-                    value={selectedValues[group.attributeId] || undefined}
+                    value={selectedValues[group.attributeId] ?? ""}
                     onValueChange={(value) => setAttributeValue(group.attributeId, value)}
                   >
                     <SelectTrigger

@@ -58,9 +58,9 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl scrollbar-hide">
+        <DialogContent className="flex max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] min-w-0 flex-col overflow-hidden p-4 scrollbar-hide sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-2xl sm:p-6">
           <DialogHeader className="shrink-0">
-            <DialogTitle>Payment detail</DialogTitle>
+            <DialogTitle className="break-words pr-8">Payment detail</DialogTitle>
             <DialogDescription>
               {payment
                 ? `${payment.method} · ${payment.order?.orderNumber ?? payment.id}`
@@ -68,14 +68,24 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
             {!payment ? (
               <p className="text-sm text-muted-foreground">No payment selected.</p>
-            ) : query.isLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-full" />
-                ))}
+            ) : query.isFetching && !detail ? (
+              <div className="space-y-5 py-2" aria-busy="true" aria-live="polite">
+                <span className="sr-only">Loading payment details</span>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
               </div>
             ) : query.isError ? (
               <div role="alert" className="rounded-xl border border-destructive/30 p-4">
@@ -84,11 +94,11 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
             ) : detail ? (
               <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Amount</p>
                     <p className="font-medium tabular-nums">{money(detail.amount)}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Status</p>
                     <span
                       className={`inline-flex w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium ${statusColor(detail.status)}`}
@@ -96,29 +106,29 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
                       {detail.status}
                     </span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Method</p>
                     <p className="text-sm">{detail.method}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Order</p>
-                    <p className="text-sm">{detail.order?.orderNumber ?? "—"}</p>
+                    <p className="break-words text-sm">{detail.order?.orderNumber ?? "—"}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Customer</p>
-                    <p className="text-sm">{paymentCustomerLabel(detail)}</p>
+                    <p className="break-words text-sm">{paymentCustomerLabel(detail)}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Provider ref</p>
                     <p className="text-sm break-all">{detail.providerReference || "—"}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Created</p>
-                    <p className="text-sm">{new Date(detail.createdAt).toLocaleString()}</p>
+                    <p className="break-words text-sm">{new Date(detail.createdAt).toLocaleString()}</p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Paid at</p>
-                    <p className="text-sm">
+                    <p className="break-words text-sm">
                       {detail.paidAt ? new Date(detail.paidAt).toLocaleString() : "—"}
                     </p>
                   </div>

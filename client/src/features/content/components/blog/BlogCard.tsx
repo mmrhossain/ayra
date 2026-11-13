@@ -65,7 +65,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blogItem }) => {
               Read Article
               <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-slate-100 group-hover/btn:bg-primary transition-colors" />
             </span>
-            <div className="p-2 rounded-full border border-slate-100 group-hover/btn:bg-primary group-hover/btn:text-white group-hover/btn:border-primary transition-all duration-300">
+            <div className="p-2 rounded-md border border-slate-100 group-hover/btn:bg-primary group-hover/btn:text-white group-hover/btn:border-primary transition-all duration-300">
               <ArrowRight
                 size={14}
                 className="group-hover/btn:translate-x-1 transition-transform"

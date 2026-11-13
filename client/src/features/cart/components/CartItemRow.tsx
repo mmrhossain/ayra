@@ -46,6 +46,7 @@ const CartItemRow = ({
   const unitPrice = Number(item.unitPrice ?? 0);
   const href = productHref(item);
   const meta = variantMetaFromSku(item.sku);
+  const attributes = item.attributes ?? [];
 
   return (
     <article
@@ -76,16 +77,30 @@ const CartItemRow = ({
             >
               {item.productName || "Product"}
             </Link>
-            {meta.size ? (
-              <p className="mt-0.5 text-xs text-sky-color sm:text-sm">
-                Size: {meta.size}
-              </p>
-            ) : null}
-            {meta.color ? (
-              <p className="text-xs text-sky-color sm:text-sm">
-                Color: {meta.color}
-              </p>
-            ) : !meta.size && item.sku ? (
+            {attributes.length > 0 ? (
+              attributes.map((attribute) => (
+                <p
+                  key={`${attribute.name}-${attribute.value}`}
+                  className="mt-0.5 text-xs text-sky-color sm:text-sm"
+                >
+                  {attribute.name}: {attribute.value}
+                </p>
+              ))
+            ) : (
+              <>
+                {meta.size ? (
+                  <p className="mt-0.5 text-xs text-sky-color sm:text-sm">
+                    Size: {meta.size}
+                  </p>
+                ) : null}
+                {meta.color ? (
+                  <p className="text-xs text-sky-color sm:text-sm">
+                    Color: {meta.color}
+                  </p>
+                ) : null}
+              </>
+            )}
+            {item.sku ? (
               <p className="mt-0.5 text-xs text-sky-color sm:text-sm">
                 SKU: {item.sku}
               </p>

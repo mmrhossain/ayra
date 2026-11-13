@@ -47,13 +47,12 @@ describe("DetailedMetrics", () => {
       "Cash collected",
       "Cash refunded",
       "Net cash movement",
-      "Open refunds",
-      "Pending payments",
-      "Low stock",
-      "New customers",
     ]) {
       expect(details.textContent).toContain(label);
     }
+    expect(details.textContent).not.toContain("Pending payments");
+    expect(details.textContent).not.toContain("Low stock");
+    expect(details.textContent).not.toContain("New customers");
   });
 
   it("groups the metrics under four headings", () => {
@@ -66,5 +65,13 @@ describe("DetailedMetrics", () => {
     ]) {
       expect(container.textContent).toContain(heading);
     }
+
+    const costGroup = Array.from(container.querySelectorAll("h3")).find(
+      (heading) => heading.textContent === "Cost & profit",
+    );
+    expect(costGroup?.nextElementSibling?.className).toContain("sm:grid-cols-2");
+    expect(costGroup?.nextElementSibling?.className).not.toContain(
+      "xl:grid-cols-3",
+    );
   });
 });

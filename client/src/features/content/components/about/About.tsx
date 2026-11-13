@@ -29,7 +29,7 @@ const About = () => {
               Established 2009 - Netrokona, Bangladesh
             </span>
             <h1 className="text-[14vw] sm:text-[12vw] lg:text-[10vw] font-black leading-none tracking-tight sm:tracking-tighter uppercase italic drop-shadow-sm">
-              Raan<span className="text-primary italic font-serif">galay</span>
+              Ay<span className="text-primary italic font-serif">ra</span>
             </h1>
             <div className="mt-8 sm:mt-12 max-w-lg mx-auto border-t border-slate-200 pt-6 sm:pt-8">
               <p className="text-slate-500 font-medium leading-relaxed tracking-[0.05em] uppercase text-xs">
@@ -61,7 +61,7 @@ const About = () => {
               </h2>
               <p className="text-slate-600 text-base md:text-lg leading-relaxed md:leading-loose font-medium">
                 Founder <strong>Kamrunnahar Munni</strong> reimagined the concept of &ldquo;House of Color&rdquo; through a theatrical lens.
-                Based at the foot of the <strong>Garo Hills</strong>, Raangalay bridges the gap between urban sophistication and the raw, sylvan beauty of Durgapur.
+                Based at the foot of the <strong>Garo Hills</strong>, Ayra bridges the gap between urban sophistication and the raw, sylvan beauty of Durgapur.
               </p>
               <div className="pt-2 md:pt-6">
                 <Link href="/vision" className="group inline-flex items-center gap-3 text-xs font-black uppercase tracking-[0.12em] md:tracking-widest text-primary">
@@ -72,7 +72,7 @@ const About = () => {
           </motion.div>
 
           <div className="lg:col-span-7 order-1 lg:order-2">
-            <div className="relative aspect-[16/10] bg-bg-primary rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden group shadow-2xl">
+            <div className="relative aspect-[16/10] bg-bg-primary rounded-md overflow-hidden group shadow-2xl">
               <div className="absolute inset-0 bg-teal-900/10 group-hover:bg-transparent transition-colors duration-700" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-primary text-4xl sm:text-5xl lg:text-9xl font-black opacity-20 pointer-events-none">HERITAGE</span>
@@ -82,7 +82,7 @@ const About = () => {
         </div>
       </section>
 
-      <section className="bg-slate-900 py-16 md:py-24 lg:py-32 text-white overflow-hidden relative rounded-[2rem] sm:rounded-[4rem]">
+      <section className="bg-slate-900 py-16 md:py-24 lg:py-32 text-white overflow-hidden relative rounded-md">
         <div className="container mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
           <div className="relative">
             <Quote className="text-primary w-12 h-12 md:w-16 md:h-16 mb-6 md:mb-8 opacity-50" />
@@ -143,7 +143,7 @@ const About = () => {
             <motion.div
               key={i}
               whileHover={shouldReduceMotion ? { y: 0 } : { y: -12 }}
-              className="p-6 sm:p-8 md:p-12 bg-[#F9F9F7] rounded-[2rem] sm:rounded-[3rem] border border-slate-100 transition-all hover:shadow-2xl hover:bg-white text-center"
+              className="p-6 sm:p-8 md:p-12 bg-[#F9F9F7] rounded-md border border-slate-100 transition-all hover:shadow-2xl hover:bg-white text-center"
             >
               <div className="flex justify-center mb-6 md:mb-8 text-primary">{item.icon}</div>
               <h4 className="text-xl md:text-2xl font-black mb-4">{item.title}</h4>
@@ -154,7 +154,7 @@ const About = () => {
       </section>
 
       <section className="py-16 md:py-24 lg:py-32">
-        <div className="bg-primary rounded-[2rem] sm:rounded-[4rem] p-6 sm:p-8 md:p-20 lg:p-32 text-center text-white relative overflow-hidden">
+        <div className="bg-primary rounded-md p-6 sm:p-8 md:p-20 lg:p-32 text-center text-white relative overflow-hidden">
           <motion.div
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -167,7 +167,7 @@ const About = () => {
             <p className="text-teal-50 text-base md:text-xl lg:text-2xl max-w-2xl mx-auto mb-10 md:mb-12 font-medium leading-relaxed opacity-90">
               Buying is not a transaction; it&apos;s a celebration of heritage. Redefining global lifestyle through the red and green flag.
             </p>
-            <Link href="/shop" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 sm:px-8 md:px-12 h-12 md:h-14 rounded-full font-black uppercase text-xs tracking-[0.08em] md:tracking-[0.1em] hover:bg-white hover:text-teal-600 transition-all shadow-2xl">
+            <Link href="/shop" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 sm:px-8 md:px-12 h-12 md:h-14 rounded-md font-black uppercase text-xs tracking-[0.08em] md:tracking-[0.1em] hover:bg-white hover:text-teal-600 transition-all shadow-2xl">
               Enter the House of Color <ArrowRight size={18} />
             </Link>
           </motion.div>

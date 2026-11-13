@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import {
   getVisibleAdminNavGroups,
   isAdminNavItemActive,
@@ -36,6 +37,7 @@ export function DashboardSidebar({
   access?: AdminAccess;
   homeHref?: string;
 }) {
+  const { store } = usePublicSettings();
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const groups = getVisibleAdminNavGroups(access);
@@ -56,7 +58,7 @@ export function DashboardSidebar({
             A
           </span>
           <span className="truncate text-sm font-semibold group-data-[collapsible=icon]:hidden">
-            Ayra
+            {store.name}
           </span>
         </Link>
       </SidebarHeader>

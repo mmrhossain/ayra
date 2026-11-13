@@ -18,7 +18,7 @@ export default function HomeProductSection({
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="container my-12 md:my-16">
+    <section className="container my-8 md:my-12">
       {/* Top Header: Title on Left, See All Button on Right */}
       <div className="flex flex-row items-center justify-between mb-6 md:mb-8">
         <FancyHeading text={title} />

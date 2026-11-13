@@ -6,6 +6,7 @@ import ProductTab from "@/features/catalog/components/product/ProductTab";
 import RelatedProduct from "@/features/catalog/components/product/RelatedProduct";
 import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import { SITE_NAME, SITE_URL } from "@/config/site";
+import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -23,11 +24,15 @@ function firstImageUrl(product: {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
+  const [product, settings] = await Promise.all([
+    fetchProduct(slug),
+    fetchPublicSettingsOrDefault(),
+  ]);
+  const siteName = settings.store.name || SITE_NAME;
 
   if (!product) {
     return {
-      title: `Product Not Found | ${SITE_NAME}`,
+      title: `Product Not Found | ${siteName}`,
       description: "The requested product could not be found.",
     };
   }
@@ -38,17 +43,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     firstImageUrl(product) || `${siteUrl}/images/placeholder/product_placeholder.jpg`;
   const cleanDescription =
     (product.description || "").replace(/<[^>]*>?/gm, "").slice(0, 160) ||
-    `Discover premium quality products at ${SITE_NAME}.`;
+    `Discover premium quality products at ${siteName}.`;
 
   return {
-    title: `${product.name} | ${SITE_NAME}`,
+    title: `${product.name} | ${siteName}`,
     description: cleanDescription,
     alternates: { canonical: productUrl },
     openGraph: {
       title: product.name,
       description: cleanDescription,
       url: productUrl,
-      siteName: SITE_NAME,
+      siteName,
       images: [{ url: imageUrl, width: 800, height: 600, alt: product.name }],
       type: "website",
     },
