@@ -6,7 +6,7 @@ export default async function AdminNewProductModalPage() {
   await requireAdminPageAccess("/admin/products");
   return (
     <ProductWizardSheet>
-      <ProductWizard mode="create" />
+      <ProductWizard mode="create" closeOnSuccess />
     </ProductWizardSheet>
   );
 }

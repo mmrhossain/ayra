@@ -99,7 +99,12 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
   });
 }
 
-export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardProps) {
+export function ProductWizard({
+  mode,
+  product,
+  initialStep = 1,
+  closeOnSuccess = false,
+}: ProductWizardProps) {
   const router = useRouter();
   const slugManual = useRef(mode === "edit");
   const imageUploadRef = useRef<ImageUploadHandle>(null);
@@ -258,7 +263,8 @@ export function ProductWizard({ mode, product, initialStep = 1 }: ProductWizardP
     save.finish(
       kind,
       details.status === "ACTIVE" && kind === "save" && result.variants.length > 0,
-      result.variants
+      result.variants,
+      closeOnSuccess,
     );
   };
 

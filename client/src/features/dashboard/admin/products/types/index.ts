@@ -68,4 +68,5 @@ export type ProductWizardProps = {
   mode: WizardMode;
   product?: ProductDetail;
   initialStep?: WizardStep;
+  closeOnSuccess?: boolean;
 };

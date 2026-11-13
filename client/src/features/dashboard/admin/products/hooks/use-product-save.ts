@@ -348,6 +348,7 @@ export function useProductSave() {
     kind: SaveKind,
     published: boolean,
     variants: VariantRow[],
+    closeModal = false,
   ) => {
     const defaultVariant = variants.find((row) => row.isDefault) ?? variants[0];
     const stockHref = defaultVariant?.id
@@ -374,7 +375,11 @@ export function useProductSave() {
           : { action: { label: "Set stock", onClick: goStock } },
       );
     }
-    router.push("/admin/products");
+    if (closeModal) {
+      router.back();
+    } else {
+      router.push("/admin/products");
+    }
   };
 
   return { pending, pendingKind, progress, productId, setProductId, run, finish };

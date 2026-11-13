@@ -53,6 +53,7 @@ export default async function AdminEditProductModalPage({
           mode="edit"
           product={product}
           initialStep={initialStep}
+          closeOnSuccess
         />
       )}
     </ProductWizardSheet>
