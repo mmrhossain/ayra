@@ -118,6 +118,7 @@ export const ModelName = {
   LegalDocument: 'LegalDocument',
   FaqCategory: 'FaqCategory',
   FaqItem: 'FaqItem',
+  ContactMessage: 'ContactMessage',
   CMSPage: 'CMSPage',
   PageSection: 'PageSection',
   ContentBlock: 'ContentBlock',
@@ -1205,6 +1206,21 @@ export const FaqItemScalarFieldEnum = {
 } as const
 
 export type FaqItemScalarFieldEnum = (typeof FaqItemScalarFieldEnum)[keyof typeof FaqItemScalarFieldEnum]
+
+
+export const ContactMessageScalarFieldEnum = {
+  id: 'id',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  phone: 'phone',
+  email: 'email',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContactMessageScalarFieldEnum = (typeof ContactMessageScalarFieldEnum)[keyof typeof ContactMessageScalarFieldEnum]
 
 
 export const CMSPageScalarFieldEnum = {

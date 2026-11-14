@@ -3,11 +3,15 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { getWhatsAppUrl } from "@/config/site";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 
 const HIDDEN_ROUTES = ["/checkout", "/cart"];
 
 export default function SocialContact() {
   const pathname = usePathname();
+  const { store } = usePublicSettings();
+  const whatsAppUrl = getWhatsAppUrl(store.supportPhone);
   const [visible, setVisible] = useState(false);
 
   // Check if current path matches any hidden route or sub-route
@@ -43,7 +47,7 @@ export default function SocialContact() {
     };
   }, [pathname, isHiddenRoute]);
 
-  if (isHiddenRoute) return null;
+  if (isHiddenRoute || !whatsAppUrl) return null;
 
   return (
     <div
@@ -56,7 +60,7 @@ export default function SocialContact() {
 
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/8801703581774?text=Hello%20I%20have%20a%20question"
+        href={whatsAppUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"

@@ -143,6 +143,14 @@ export const reviewLimiter = perEndpointLimiter(
   "review:rl:"
 );
 
+export const contactLimiter = perEndpointLimiter(
+  15 * 60 * 1000,
+  5,
+  "contact form",
+  "contact:rl:",
+  clientIp
+);
+
 export const uploadLimiter = createLimiter({
   windowMs: 15 * 60 * 1000,
   max: 30,

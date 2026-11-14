@@ -1,10 +1,14 @@
 "use client";
 
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
+import { getSocialDisplayLinks } from "@/config/site";
 import Image from "next/image";
+import { AiFillTikTok } from "react-icons/ai";
+import { FaFacebookF, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 const BottomFooter = () => {
   const { store } = usePublicSettings();
+  const socialLinks = getSocialDisplayLinks(store.supportPhone);
   const currentYear = new Date().getFullYear();
 
   return (
@@ -22,6 +26,27 @@ const BottomFooter = () => {
                 className="w-full h-auto object-contain"
               />
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                aria-disabled={social.href === "#"}
+                onClick={social.href === "#" ? (event) => event.preventDefault() : undefined}
+                className="flex size-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition-colors hover:border-black hover:bg-black hover:text-white"
+              >
+                {social.label === "Facebook" ? <FaFacebookF size={14} /> : null}
+                {social.label === "TikTok" ? <AiFillTikTok size={14} /> : null}
+                {social.label === "Instagram" ? <FaInstagram size={14} /> : null}
+                {social.label === "WhatsApp" ? <FaWhatsapp size={14} /> : null}
+                {social.label === "YouTube" ? <FaYoutube size={14} /> : null}
+              </a>
+            ))}
           </div>
 
           {/* Copyright & Credits (Centered Below) */}

@@ -11,6 +11,7 @@ type CustomButtonProps = {
   path?: string;
   type?: "submit" | "reset" | "button";
   onClick?: MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
 };
 
 const CustomButton = ({
@@ -20,6 +21,7 @@ const CustomButton = ({
   path,
   type = "button",
   onClick,
+  disabled = false,
 }: CustomButtonProps) => {
 
     const buttonClassName = `flex items-center justify-center gap-2 font-normal tracking-wide transition-colors duration-300 ${className ?? ""}`;
@@ -42,6 +44,7 @@ const CustomButton = ({
             type={type}
             variant="brand"
             onClick={onClick}
+            disabled={disabled}
             className={buttonClassName}
         >
             {ctaText}

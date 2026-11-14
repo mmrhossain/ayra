@@ -1,13 +1,17 @@
 "use client";
 
 import Newsletter from "@/components/shared/Newsletter";
-import { SOCIAL_LINKS } from "@/config/site";
+import { getSocialDisplayLinks, INSTAGRAM_URL } from "@/config/site";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { AiFillTikTok } from "react-icons/ai";
-import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 const TopFooter = () => {
+  const { store } = usePublicSettings();
+  const socialLinks = getSocialDisplayLinks(store.supportPhone);
+
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 py-12 lg:py-20 border-t border-slate-100">
@@ -35,17 +39,21 @@ const TopFooter = () => {
               Follow Our Journey
             </h4>
             <div className="flex flex-wrap gap-3">
-              {SOCIAL_LINKS.map((social) => (
+              {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={social.label}
+                  aria-disabled={social.href === "#"}
+                  onClick={social.href === "#" ? (event) => event.preventDefault() : undefined}
                   className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-black hover:text-white hover:border-black transition-all duration-300"
                 >
                   {social.label === "Facebook" ? <FaFacebookF size={14} /> : null}
                   {social.label === "TikTok" ? <AiFillTikTok size={14} /> : null}
                   {social.label === "Instagram" ? <FaInstagram size={14} /> : null}
+                  {social.label === "WhatsApp" ? <FaWhatsapp size={14} /> : null}
                   {social.label === "YouTube" ? <FaYoutube size={14} /> : null}
                 </a>
               ))}
@@ -80,7 +88,7 @@ const TopFooter = () => {
           </h2>
           <div className="group relative overflow-hidden rounded-2xl border-4 border-slate-50 shadow-sm w-fit">
             <a
-              href="https://www.instagram.com/ayra"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="block overflow-hidden bg-white p-2"

@@ -275,6 +275,15 @@ export const ContentStatus = {
 export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
 
 
+export const ContactMessageStatus = {
+  NEW: 'NEW',
+  READ: 'READ',
+  RESOLVED: 'RESOLVED'
+} as const
+
+export type ContactMessageStatus = (typeof ContactMessageStatus)[keyof typeof ContactMessageStatus]
+
+
 export const PageType = {
   HOME: 'HOME',
   LANDING: 'LANDING',

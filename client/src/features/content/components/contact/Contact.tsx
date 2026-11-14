@@ -10,14 +10,14 @@ const Contact = () => {
 
       <FancyHeading text={"Get In Touch"} as="h1" className="text-2xl lg:text-3xl" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 mt-8 md:mt-10 max-w-7xl mx-auto shadow-2xl shadow-gray-200/50 rounded-md overflow-hidden border border-gray-100">
+      <div className="mx-auto mt-8 grid min-w-0 max-w-7xl grid-cols-1 overflow-hidden rounded-md border border-gray-100 shadow-2xl shadow-gray-200/50 lg:mt-10 lg:grid-cols-12">
         {/* Contact Info - Taking 4/12 columns */}
-        <div className="lg:col-span-4 h-full">
+        <div className="min-w-0 lg:col-span-4">
           <ContactInfo />
         </div>
 
         {/* Contact Form - Taking 8/12 columns */}
-        <div className="lg:col-span-8 bg-white h-full">
+        <div className="min-w-0 bg-white lg:col-span-8">
           <ContactForm />
         </div>
       </div>

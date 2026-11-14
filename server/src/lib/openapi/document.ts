@@ -25,6 +25,7 @@ import "../../modules/ai/ai.openapi.ts";
 import "../../modules/content/legal/legal.openapi.ts";
 import "../../modules/content/faq/faq.openapi.ts";
 import "../../modules/content/blog/blog.openapi.ts";
+import "../../modules/content/contact/contact.openapi.ts";
 import "../../modules/analytics/analytics.openapi.ts";
 import "../../modules/address/address.openapi.ts";
 import "../../modules/geography/geography.openapi.ts";

@@ -129,6 +129,9 @@ describe("requiredAdminPermissionForPath", () => {
       requiredAdminPermissionForPath("/api/v1/admin/faq-categories"),
     ).toBe("content");
     expect(
+      requiredAdminPermissionForPath("/api/v1/admin/contact-messages"),
+    ).toBe("content");
+    expect(
       requiredAdminPermissionForPath("/api/v1/admin/blog-categories"),
     ).toBe("content");
     expect(requiredAdminPermissionForPath("/api/v1/admin/refunds")).toBe(

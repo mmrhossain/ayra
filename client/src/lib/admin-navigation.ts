@@ -5,6 +5,7 @@ import {
   FolderTree,
   Images,
   LayoutDashboard,
+  Mail,
   Newspaper,
   Package,
   PackageCheck,
@@ -186,6 +187,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/faqs",
         label: "FAQs",
         icon: CircleHelp,
+        permission: "content",
+      },
+      {
+        href: "/admin/contact",
+        label: "Contact messages",
+        icon: Mail,
         permission: "content",
       },
       {

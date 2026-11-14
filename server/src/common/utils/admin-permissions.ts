@@ -95,6 +95,7 @@ const PATH_PERMISSIONS: Record<string, AdminPermission> = {
   users: "customers",
   settings: "settings",
   legal: "content",
+  "contact-messages": "content",
   faqs: "content",
   "faq-categories": "content",
   "faq-items": "content",
