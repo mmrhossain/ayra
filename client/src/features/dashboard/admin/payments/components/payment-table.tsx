@@ -185,6 +185,11 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
                       <p className="font-medium">
                         {payment.order?.orderNumber ?? "—"}
                       </p>
+                      {payment.paymentNumber ? (
+                        <p className="text-xs text-muted-foreground">
+                          {payment.paymentNumber}
+                        </p>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {paymentCustomerLabel(payment)}

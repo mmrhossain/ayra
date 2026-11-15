@@ -13,31 +13,31 @@ datasource db {
 }
 
 model User {
-  id                     String                      @id
-  name                   String
-  email                  String
-  emailVerified          Boolean                     @default(false)
-  image                  String?
-  imagePublicId          String?
-  role                   String?                     @default("customer")
-  adminPermissions       String[]                    @default([])
-  adminActions           String[]                    @default([])
-  isSuperAdmin           Boolean                     @default(false)
-  staffStatus            StaffStatus                 @default(ACTIVE)
-  banned                 Boolean?                    @default(false)
-  banReason              String?
-  banExpires             DateTime?
-  sessions               Session[]
-  accounts               Account[]
-  notifications          Notification[]
-  notificationPreference UserNotificationPreference?
-  customerProfile        CustomerProfile?
-  pushDevices            PushDevice[]
-  staffInvitationsSent   StaffInvitation[]           @relation("StaffInvitationInviter")
-  staffInvitationsAccepted StaffInvitation[]         @relation("StaffInvitationAcceptor")
-  createdAt              DateTime                    @default(now())
-  updatedAt              DateTime                    @updatedAt
-  deletedAt              DateTime?
+  id                       String                      @id
+  name                     String
+  email                    String
+  emailVerified            Boolean                     @default(false)
+  image                    String?
+  imagePublicId            String?
+  role                     String?                     @default("customer")
+  adminPermissions         String[]                    @default([])
+  adminActions             String[]                    @default([])
+  isSuperAdmin             Boolean                     @default(false)
+  staffStatus              StaffStatus                 @default(ACTIVE)
+  banned                   Boolean?                    @default(false)
+  banReason                String?
+  banExpires               DateTime?
+  sessions                 Session[]
+  accounts                 Account[]
+  notifications            Notification[]
+  notificationPreference   UserNotificationPreference?
+  customerProfile          CustomerProfile?
+  pushDevices              PushDevice[]
+  staffInvitationsSent     StaffInvitation[]           @relation("StaffInvitationInviter")
+  staffInvitationsAccepted StaffInvitation[]           @relation("StaffInvitationAcceptor")
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  deletedAt                DateTime?
 
   @@unique([email])
   @@index([role])
@@ -59,24 +59,24 @@ enum StaffInvitationStatus {
 }
 
 model StaffInvitation {
-  id            String                 @id @default(uuid())
-  email         String
-  name          String
-  permissions   String[]               @default([])
-  isSuperAdmin  Boolean                @default(false)
-  tokenHash     String                 @unique
-  status        StaffInvitationStatus  @default(PENDING)
-  expiresAt     DateTime
-  invitedById   String
-  invitedBy     User                   @relation("StaffInvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
-  acceptedById  String?
-  acceptedBy    User?                  @relation("StaffInvitationAcceptor", fields: [acceptedById], references: [id], onDelete: SetNull)
-  acceptedAt    DateTime?
-  revokedAt     DateTime?
-  revokedById   String?
-  lastSentAt    DateTime               @default(now())
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
+  id           String                @id @default(uuid())
+  email        String
+  name         String
+  permissions  String[]              @default([])
+  isSuperAdmin Boolean               @default(false)
+  tokenHash    String                @unique
+  status       StaffInvitationStatus @default(PENDING)
+  expiresAt    DateTime
+  invitedById  String
+  invitedBy    User                  @relation("StaffInvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
+  acceptedById String?
+  acceptedBy   User?                 @relation("StaffInvitationAcceptor", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+  revokedById  String?
+  lastSentAt   DateTime              @default(now())
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   @@index([email, status])
   @@index([status, expiresAt])
@@ -527,6 +527,7 @@ model CartActivity {
 model Order {
   id                 String            @id @default(uuid())
   orderNumber        String            @unique
+  invoiceNumber      String            @unique @default(dbgenerated())
   status             OrderStatus       @default(PENDING)
   paymentStatus      PaymentStatus     @default(PENDING)
   fulfillmentStatus  FulfillmentStatus @default(UNFULFILLED)
@@ -727,6 +728,7 @@ model OrderEvent {
 
 model Payment {
   id                String                   @id @default(uuid())
+  paymentNumber     String                   @unique @default(dbgenerated())
   method            PaymentMethod
   status            PaymentTransactionStatus @default(PENDING)
   amount            Decimal                  @db.Decimal(18, 2)
@@ -777,6 +779,7 @@ model PaymentTransaction {
 
 model Refund {
   id                       String       @id @default(uuid())
+  refundNumber             String       @unique @default(dbgenerated())
   amount                   Decimal      @db.Decimal(18, 2)
   reason                   String?
   status                   RefundStatus @default(PENDING)
@@ -1054,6 +1057,7 @@ model Shipment {
   deliveredAt       DateTime?
   returnedAt        DateTime?
   shippingCost      Decimal         @default(0) @db.Decimal(18, 2)
+  codAmount         Decimal         @default(0) @db.Decimal(18, 2)
   notes             String?
 
   items            ShipmentItem[]
@@ -1111,10 +1115,11 @@ model ShipmentTracking {
 }
 
 model DeliveryAttempt {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   attemptNumber Int
   remarks       String?
   attemptedAt   DateTime
+  nextAttemptAt DateTime?
 
   shipmentId String
   shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
@@ -1706,7 +1711,9 @@ enum OrderEventType {
   ORDER_CREATED
   PAYMENT_RECEIVED
   ORDER_CONFIRMED
+  ORDER_PICKING
   ORDER_PACKED
+  ORDER_READY_TO_SHIP
   ORDER_SHIPPED
   ORDER_DELIVERED
   ORDER_CANCELLED
@@ -1792,6 +1799,8 @@ enum ShipmentStatus {
   OUT_FOR_DELIVERY
   DELIVERED
   FAILED
+  LOST
+  DAMAGED
   RETURNED
   CANCELLED
 }
@@ -1832,6 +1841,8 @@ enum ShipmentEventType {
   IN_TRANSIT
   OUT_FOR_DELIVERY
   DELIVERED
+  LOST
+  DAMAGED
   RETURNED
 }
 
@@ -1917,7 +1928,9 @@ enum OrderStatus {
   PENDING
   CONFIRMED
   PROCESSING
+  PICKING
   PACKED
+  READY_TO_SHIP
   SHIPPED
   DELIVERED
   CANCELLED

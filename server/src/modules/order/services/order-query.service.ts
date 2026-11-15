@@ -26,6 +26,7 @@ export const listMyOrders = async (
       select: {
         id: true,
         orderNumber: true,
+        invoiceNumber: true,
         status: true,
         paymentStatus: true,
         currency: true,

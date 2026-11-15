@@ -105,6 +105,9 @@ export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
   | "PROCESSING"
+  | "PICKING"
+  | "PACKED"
+  | "READY_TO_SHIP"
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED";

@@ -2,7 +2,9 @@ import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
   hashPayload,
+  isEventOlderThan,
   mapCourierStatus,
+  parseCourierEventTime,
   safeSecretEqual,
   verifyHmacSignature,
 } from "../../src/modules/courier/courier.utils.ts";
@@ -20,6 +22,8 @@ describe("courier status mapping", () => {
     expect(mapCourierStatus("cancelled")).toBe("CANCELLED");
     expect(mapCourierStatus("partial_delivered")).toBeNull();
     expect(mapCourierStatus("delivery_failed")).toBe("FAILED");
+    expect(mapCourierStatus("damaged")).toBe("DAMAGED");
+    expect(mapCourierStatus("lost")).toBe("LOST");
   });
 
   it("normalizes separators and rejects unknown values", () => {
@@ -27,6 +31,35 @@ describe("courier status mapping", () => {
     expect(mapCourierStatus("out for delivery")).toBe("OUT_FOR_DELIVERY");
     expect(mapCourierStatus("teleported")).toBeNull();
     expect(mapCourierStatus(null)).toBeNull();
+  });
+});
+
+describe("courier event ordering", () => {
+  const receivedAt = new Date("2026-11-15T12:00:00.000Z");
+
+  it("uses only valid, non-future event timestamps", () => {
+    expect(
+      parseCourierEventTime("2026-11-15T11:00:00.000Z", receivedAt),
+    ).toEqual(new Date("2026-11-15T11:00:00.000Z"));
+    expect(parseCourierEventTime("not-a-date", receivedAt)).toBeNull();
+    expect(
+      parseCourierEventTime("2026-11-15T13:00:00.000Z", receivedAt),
+    ).toBeNull();
+  });
+
+  it("detects events older than the latest recorded tracking event", () => {
+    expect(
+      isEventOlderThan(
+        new Date("2026-11-15T10:00:00.000Z"),
+        new Date("2026-11-15T11:00:00.000Z"),
+      ),
+    ).toBe(true);
+    expect(
+      isEventOlderThan(
+        new Date("2026-11-15T12:00:00.000Z"),
+        new Date("2026-11-15T11:00:00.000Z"),
+      ),
+    ).toBe(false);
   });
 });
 

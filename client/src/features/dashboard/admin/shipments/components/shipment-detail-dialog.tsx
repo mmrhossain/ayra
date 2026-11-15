@@ -127,6 +127,10 @@ export function ShipmentDetailDialog({
                   value={formatMoney(detail.shippingCost)}
                 />
                 <Field
+                  label="COD to collect"
+                  value={formatMoney(detail.codAmount)}
+                />
+                <Field
                   label="Label"
                   value={
                     detail.labelUrl ? (
@@ -179,6 +183,30 @@ export function ShipmentDetailDialog({
                   </p>
                 )}
               </div>
+
+              {detail.deliveryAttempts.length > 0 ? (
+                <div>
+                  <h3 className="mb-2 text-sm font-medium">Delivery attempts</h3>
+                  <ol className="space-y-3">
+                    {detail.deliveryAttempts.map((attempt) => (
+                      <li key={attempt.id} className="text-sm">
+                        <p className="font-medium">
+                          Attempt {attempt.attemptNumber} ·{" "}
+                          {formatShipmentDate(attempt.attemptedAt)}
+                        </p>
+                        {attempt.remarks ? (
+                          <p className="text-muted-foreground">{attempt.remarks}</p>
+                        ) : null}
+                        {attempt.nextAttemptAt ? (
+                          <p className="text-xs text-muted-foreground">
+                            Rescheduled for {formatShipmentDate(attempt.nextAttemptAt)}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
 
               <div>
                 <h3 className="mb-2 text-sm font-medium">Items</h3>

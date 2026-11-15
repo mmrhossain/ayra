@@ -35,6 +35,8 @@ describe("shipment transitions", () => {
   it("keeps terminal statuses terminal", () => {
     expect(allowedNextStatuses("RETURNED")).toEqual([]);
     expect(allowedNextStatuses("CANCELLED")).toEqual([]);
+    expect(allowedNextStatuses("LOST")).toEqual([]);
+    expect(allowedNextStatuses("DAMAGED")).toEqual([]);
   });
 });
 
@@ -47,6 +49,8 @@ describe("courier status updates", () => {
       true,
     );
     expect(isCourierStatusUpdateAllowed("DELIVERED", "RETURNED")).toBe(true);
+    expect(isCourierStatusUpdateAllowed("IN_TRANSIT", "LOST")).toBe(true);
+    expect(isCourierStatusUpdateAllowed("OUT_FOR_DELIVERY", "DAMAGED")).toBe(true);
     expect(isCourierStatusUpdateAllowed("IN_TRANSIT", "CANCELLED")).toBe(true);
   });
 
@@ -69,16 +73,19 @@ describe("shipment metadata", () => {
 
   it("maps statuses to event types", () => {
     expect(SHIPMENT_EVENT_BY_STATUS.DELIVERED).toBe("DELIVERED");
+    expect(SHIPMENT_EVENT_BY_STATUS.LOST).toBe("LOST");
+    expect(SHIPMENT_EVENT_BY_STATUS.DAMAGED).toBe("DAMAGED");
     expect(SHIPMENT_EVENT_BY_STATUS.CANCELLED).toBeUndefined();
     expect(SHIPMENT_EVENT_BY_STATUS.FAILED).toBeUndefined();
   });
 });
 
 describe("generateShipmentNumber", () => {
-  it("generates unique prefixed numbers", () => {
-    const first = generateShipmentNumber();
-    const second = generateShipmentNumber();
-    expect(first).toMatch(/^SHP-[0-9A-Z]+-[0-9A-Z]+$/);
+  it("generates date-stamped references with a secure random suffix", () => {
+    const now = new Date("2026-11-15T00:00:00.000Z");
+    const first = generateShipmentNumber(now);
+    const second = generateShipmentNumber(now);
+    expect(first).toMatch(/^SHP-261115-[0-9A-Z]{6}$/);
     expect(second).not.toBe(first);
   });
 });

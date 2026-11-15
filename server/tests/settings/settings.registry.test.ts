@@ -47,4 +47,18 @@ describe("platform settings registry", () => {
     ]);
     expect(getSettingsByGroup("payment").length).toBeGreaterThan(0);
   });
+
+  it("exposes uploaded logo and Open Graph image settings publicly", () => {
+    for (const key of ["store.logoUrl", "store.ogImageUrl"]) {
+      const setting = SETTING_DEFINITIONS.get(key);
+      expect(setting).toMatchObject({ type: "image", isPublic: true });
+      expect(setting?.schema.parse("")).toBe("");
+    }
+
+    expect(() =>
+      SETTING_DEFINITIONS.get("store.ogImageUrl")?.schema.parse(
+        "https://example.com/social-preview.jpg",
+      ),
+    ).toThrow();
+  });
 });

@@ -9,6 +9,8 @@ export type ImageType =
   | "slider"
   | "blog"
   | "brand"
+  | "site_logo"
+  | "og_image"
   | "customer_avatar";
 
 export type UploadedImage = {
@@ -49,6 +51,10 @@ const FOLDER_TO_TYPE: Record<string, ImageType> = {
   blogs: "blog",
   brand: "brand",
   brands: "brand",
+  "site-logo": "site_logo",
+  site_logo: "site_logo",
+  "og-image": "og_image",
+  og_image: "og_image",
 };
 
 export function resolveImageType(folder: string): ImageType {

@@ -18,11 +18,9 @@ import {
 import { releaseOrderStock } from "./order-stock.service.ts";
 import { notifyOrderStatusChange } from "../../notification/services/notification.service.ts";
 
-// Orders have no shipment module yet, so fulfillment is derived from the order
-// status. Partial fulfillment is only used when a return is approved.
+// Fulfillment quantity is derived from shipments; order preparation stages do
+// not mean that any items have left the warehouse.
 const FULFILLMENT_BY_STATUS: Partial<Record<OrderStatus, FulfillmentStatus>> = {
-  PACKED: "FULFILLED",
-  SHIPPED: "FULFILLED",
   DELIVERED: "FULFILLED",
   RETURNED: "PARTIALLY_FULFILLED",
 };

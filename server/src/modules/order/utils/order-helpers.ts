@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import type { PrismaClient } from "../../../generated/prisma/client.ts";
+import type { TransactionClient } from "../../../lib/prisma.ts";
 import { isPrismaCode } from "../../../common/utils/prisma-error.ts";
 import type { CheckoutInput } from "../../cart/types.ts";
 import type { StatusHistoryEntry } from "../types.ts";
@@ -245,6 +245,7 @@ export const orderDetailInclude = {
   payments: {
     select: {
       id: true,
+      paymentNumber: true,
       method: true,
       status: true,
       amount: true,
@@ -253,6 +254,7 @@ export const orderDetailInclude = {
       refunds: {
         select: {
           id: true,
+          refundNumber: true,
           amount: true,
           status: true,
           reason: true,
@@ -301,6 +303,7 @@ export const customerOrderDetailInclude = {
   payments: {
     select: {
       id: true,
+      paymentNumber: true,
       method: true,
       status: true,
       amount: true,
@@ -309,6 +312,7 @@ export const customerOrderDetailInclude = {
       refunds: {
         select: {
           id: true,
+          refundNumber: true,
           amount: true,
           status: true,
           reason: true,
@@ -404,9 +408,24 @@ export const isOrderNumberConflict = (err: unknown): boolean => {
   return false;
 };
 
-export const generateOrderNumber = () => {
-  const id = randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
-  return `ORD-${id}`;
+export const formatOrderNumber = (reference: bigint, now = new Date()) => {
+  if (reference < 1n || reference > 2176782335n) {
+    throw new RangeError("Order reference sequence is out of range");
+  }
+  const date = now.toISOString().slice(2, 10).replace(/-/g, "");
+  return `AYR-${date}-${reference.toString(36).toUpperCase().padStart(6, "0")}`;
+};
+
+export const generateOrderNumber = async (
+  tx: TransactionClient,
+  now = new Date(),
+) => {
+  const [row] = await tx.$queryRaw<Array<{ reference: bigint }>>`
+    SELECT nextval('public.order_public_reference_seq') AS reference
+  `;
+  if (!row) throw new Error("Unable to allocate an order reference");
+
+  return formatOrderNumber(row.reference, now);
 };
 
 export const formatVariantName = (

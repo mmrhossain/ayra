@@ -57,6 +57,18 @@ export const IMAGE_TYPE_PRESETS: Record<ImageType, UploadPreset> = {
     maxFiles: 1,
     allowMultiple: false,
   },
+  site_logo: {
+    folder: `${CLOUDINARY_ROOT_FOLDER}/site/logo`,
+    variants: [{ width: 800, height: 400, crop: "fit" }],
+    maxFiles: 1,
+    allowMultiple: false,
+  },
+  og_image: {
+    folder: `${CLOUDINARY_ROOT_FOLDER}/site/og`,
+    variants: [{ width: 1200, height: 630, crop: "fill", gravity: "auto" }],
+    maxFiles: 1,
+    allowMultiple: false,
+  },
   customer_avatar: {
     folder: `${CLOUDINARY_ROOT_FOLDER}/avatars/customers`,
     variants: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
@@ -71,6 +83,8 @@ export const UPLOAD_TYPE_ROLES: Record<ImageType, readonly AuthRole[]> = {
   slider: ["ADMIN"],
   blog: ["ADMIN"],
   brand: ["ADMIN"],
+  site_logo: ["ADMIN"],
+  og_image: ["ADMIN"],
   customer_avatar: ["CUSTOMER", "ADMIN"],
 };
 

@@ -95,6 +95,10 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
               <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Payment reference</p>
+                    <p className="break-all text-sm">{detail.paymentNumber ?? "—"}</p>
+                  </div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Amount</p>
                     <p className="font-medium tabular-nums">{money(detail.amount)}</p>
                   </div>
@@ -162,7 +166,7 @@ export function PaymentDetailDialog({ open, onOpenChange, payment }: PaymentDeta
                         <div key={refund.id} className="rounded-lg border px-3 py-2 text-sm">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="font-medium tabular-nums">
-                              {money(refund.amount)} · {refund.status}
+                              {refund.refundNumber ?? "Refund"} · {money(refund.amount)} · {refund.status}
                             </p>
                             <div className="flex flex-wrap gap-1">
                               {refund.status === "PENDING" || refund.status === "APPROVED" ? (

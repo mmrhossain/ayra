@@ -44,7 +44,15 @@ const GALLERY_PAGE_SIZE = 24;
 // The server caps in-flight uploads at 4 per user; stay just under it so a
 // product's deferred images can upload in parallel without tripping the guard.
 const MAX_PARALLEL_UPLOADS = 3;
-const GALLERY_TYPES = new Set<ImageType>(["product", "category", "slider", "blog", "brand"]);
+const GALLERY_TYPES = new Set<ImageType>([
+  "product",
+  "category",
+  "slider",
+  "blog",
+  "brand",
+  "site_logo",
+  "og_image",
+]);
 
 type PreviewItem = {
   id: string;
@@ -55,6 +63,7 @@ type PreviewItem = {
 
 type BaseProps = {
   folder: string;
+  label?: string;
   disabled?: boolean;
   className?: string;
   /**
@@ -178,10 +187,11 @@ async function runWithConcurrency<T>(
 
 export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
   function ImageUpload(props, ref) {
-    const { mode, folder, disabled, className, deferUpload = false } = props;
+    const { mode, folder, label, disabled, className, deferUpload = false } = props;
     const maxFiles = mode === "multiple" ? (props.maxFiles ?? DEFAULT_MAX_FILES) : 1;
     const inputId = useId();
     const type = resolveImageType(folder);
+    const isOgImage = type === "og_image";
     const useGallery = GALLERY_TYPES.has(type);
     const [dragOver, setDragOver] = useState(false);
     const [previews, setPreviews] = useState<PreviewItem[]>([]);
@@ -386,6 +396,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
     const dropzone = (
       <label
         htmlFor={inputId}
+        aria-label={label}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -434,6 +445,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
             variant="outline"
             className="w-full justify-center gap-2"
             disabled={disabled || uploading}
+            aria-label={label ? `Choose ${label}` : undefined}
             onClick={() => setLibraryOpen(true)}
           >
             <Images className="size-4" />
@@ -530,7 +542,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
                       fill
                       sizes="(max-width: 1024px) 100vw, 420px"
                       className="object-contain"
-                      priority
+                      loading="eager"
                     />
                     {activePreview.uploading ? (
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
@@ -547,13 +559,21 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
               ) : null}
             </div>
           ) : (
-            <div className="relative aspect-square max-h-[320px] w-full overflow-hidden rounded-lg border bg-muted/30 sm:max-h-[380px]">
+            <div
+              className={cn(
+                "relative w-full overflow-hidden rounded-lg border bg-muted/30",
+                isOgImage
+                  ? "mx-auto aspect-[1200/630] max-w-[720px]"
+                  : "aspect-square max-h-[320px] sm:max-h-[380px]"
+              )}
+            >
               <Image
                 src={visible[0]!.url}
                 alt=""
                 fill
                 sizes="(max-width: 640px) 100vw, 380px"
-                className="object-cover"
+                className={isOgImage ? "object-contain" : "object-cover"}
+                loading="eager"
               />
               {visible[0]!.uploading ? (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">

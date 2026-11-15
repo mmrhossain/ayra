@@ -5,6 +5,7 @@ export type SettingFieldType =
   | "select"
   | "multiselect"
   | "url"
+  | "image"
   | "secret"
   | "textarea";
 

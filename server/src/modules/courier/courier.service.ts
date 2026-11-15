@@ -5,6 +5,7 @@ import { env } from "../../config/env.ts";
 import type { CourierProvider } from "../../generated/prisma/enums.ts";
 import { prisma, transaction } from "../../lib/prisma.ts";
 import { getShipmentById, updateShipmentStatus } from "../shipments/shipments.service.ts";
+import { isCourierStatusUpdateAllowed } from "../shipments/shipments.utils.ts";
 import type {
   CourierBookingInput,
   CourierProviderAdapter,
@@ -12,7 +13,12 @@ import type {
 } from "./courier.types.ts";
 import { pathaoProvider } from "./pathao.provider.ts";
 import { steadfastProvider } from "./steadfast.provider.ts";
-import { safeSecretEqual, verifyHmacSignature } from "./courier.utils.ts";
+import {
+  isEventOlderThan,
+  parseCourierEventTime,
+  safeSecretEqual,
+  verifyHmacSignature,
+} from "./courier.utils.ts";
 
 const ADAPTERS: Partial<Record<CourierProvider, CourierProviderAdapter>> = {
   PATHAO: pathaoProvider,
@@ -59,6 +65,7 @@ export const bookShipmentCourier = async (
       status: true,
       courierProvider: true,
       courierReference: true,
+      codAmount: true,
       shipmentAddress: true,
       items: {
         select: {
@@ -70,7 +77,6 @@ export const bookShipmentCourier = async (
         select: {
           orderNumber: true,
           paymentStatus: true,
-          grandTotal: true,
         },
       },
     },
@@ -107,7 +113,7 @@ export const bookShipmentCourier = async (
     codAmount:
       shipment.order.paymentStatus === "PAID"
         ? 0
-        : Number(shipment.order.grandTotal),
+        : Number(shipment.codAmount),
     itemQuantity: quantity,
     itemDescription: shipment.items
       .map((item) => `${item.orderItem.productName} x${item.quantity}`)
@@ -167,7 +173,17 @@ const resolveShipmentForEvent = (provider: CourierProvider, event: CourierWebhoo
 
   return prisma.shipment.findFirst({
     where: { courierProvider: provider, OR },
-    select: { id: true, status: true, trackingNumber: true, shipmentNumber: true },
+    select: {
+      id: true,
+      status: true,
+      trackingNumber: true,
+      shipmentNumber: true,
+      trackingEvents: {
+        orderBy: { eventTime: "desc" },
+        take: 1,
+        select: { eventTime: true },
+      },
+    },
   });
 };
 
@@ -212,9 +228,19 @@ export const handleCourierWebhook = async ({
     });
   } catch (error) {
     if (isPrismaCode(error, "P2002")) {
-      return { processed: false, duplicate: true };
+      log = await prisma.courierWebhookLog.findUnique({
+        where: {
+          provider_externalEventId: {
+            provider,
+            externalEventId: event.eventId,
+          },
+        },
+      });
+      if (!log) throw error;
+      if (log.processed) return { processed: false, duplicate: true };
+    } else {
+      throw error;
     }
-    throw error;
   }
 
   const finish = async (processed: boolean) => {
@@ -231,13 +257,19 @@ export const handleCourierWebhook = async ({
 
   const shipment = await resolveShipmentForEvent(provider, event);
   if (!shipment) {
-    await finish(true);
+    await finish(false);
     return { processed: false, duplicate: false, reason: "shipment_not_found" };
   }
 
-  if (shipment.status === event.status) {
+  const eventTime = parseCourierEventTime(event.eventTime);
+  const latestEventTime = shipment.trackingEvents[0]?.eventTime ?? null;
+  if (
+    shipment.status === event.status ||
+    isEventOlderThan(eventTime, latestEventTime) ||
+    !isCourierStatusUpdateAllowed(shipment.status, event.status)
+  ) {
     await finish(true);
-    return { processed: false, duplicate: false, reason: "status_unchanged" };
+    return { processed: false, duplicate: false, reason: "stale_event" };
   }
 
   try {
@@ -245,6 +277,7 @@ export const handleCourierWebhook = async ({
       shipment.id,
       {
         status: event.status,
+        ...(eventTime ? { eventTime: eventTime.toISOString() } : {}),
         ...(event.description ? { description: event.description } : {}),
         ...(event.location ? { location: event.location } : {}),
         ...(event.trackingNumber && !shipment.trackingNumber
@@ -257,18 +290,18 @@ export const handleCourierWebhook = async ({
     await finish(true);
     return { processed: true, duplicate: false };
   } catch (error) {
-    logger.warn({
-      msg: "Courier webhook status update ignored",
+    if (error instanceof AppError && error.statusCode === 409) {
+      await finish(true);
+      return { processed: false, duplicate: false, reason: "stale_event" };
+    }
+    await finish(false);
+    logger.error({
+      msg: "Courier webhook status update failed",
       provider,
       shipmentId: shipment.id,
       status: event.status,
       error: error instanceof Error ? error.message : String(error),
     });
-    await finish(false);
-    return {
-      processed: false,
-      duplicate: false,
-      reason: "invalid_transition",
-    };
+    throw error;
   }
 };

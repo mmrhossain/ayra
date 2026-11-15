@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { env } from "../../config/env.ts";
+import { cloudinaryImageUrlSchema } from "../media/media.validators.ts";
 import type {
   SettingDefinition,
   SettingGroup,
@@ -71,11 +72,22 @@ const definitions: SettingDefinition[] = [
   {
     key: "store.logoUrl",
     group: "store",
-    label: "Logo URL",
-    type: "url",
+    label: "Store logo",
+    type: "image",
     schema: z.union([z.string().trim().url().max(2000), z.literal("")]),
     defaultValue: "",
     isPublic: true,
+    help: "Upload the logo used across the storefront.",
+  },
+  {
+    key: "store.ogImageUrl",
+    group: "store",
+    label: "Open Graph image",
+    type: "image",
+    schema: z.union([cloudinaryImageUrlSchema, z.literal("")]),
+    defaultValue: "",
+    isPublic: true,
+    help: "Upload the social sharing image. Use a 1200 × 630 image for best results.",
   },
   {
     key: "store.frontendUrl",

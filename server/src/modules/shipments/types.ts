@@ -29,4 +29,6 @@ export type UpdateShipmentStatusInput = {
   description?: string | undefined;
   trackingNumber?: string | undefined;
   courierReference?: string | undefined;
+  rescheduledAt?: string | undefined;
+  eventTime?: string | undefined;
 };

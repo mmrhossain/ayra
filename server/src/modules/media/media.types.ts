@@ -6,6 +6,8 @@ export const IMAGE_TYPE_VALUES = [
   "slider",
   "blog",
   "brand",
+  "site_logo",
+  "og_image",
   "customer_avatar",
 ] as const;
 
@@ -47,6 +49,7 @@ export type MediaOwner =
   | "slider"
   | "blog"
   | "brand"
+  | "setting"
   | "user";
 
 export type SingleUploadQuery = {

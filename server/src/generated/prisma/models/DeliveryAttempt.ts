@@ -39,6 +39,7 @@ export type DeliveryAttemptMinAggregateOutputType = {
   attemptNumber: number | null
   remarks: string | null
   attemptedAt: Date | null
+  nextAttemptAt: Date | null
   shipmentId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -49,6 +50,7 @@ export type DeliveryAttemptMaxAggregateOutputType = {
   attemptNumber: number | null
   remarks: string | null
   attemptedAt: Date | null
+  nextAttemptAt: Date | null
   shipmentId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -59,6 +61,7 @@ export type DeliveryAttemptCountAggregateOutputType = {
   attemptNumber: number
   remarks: number
   attemptedAt: number
+  nextAttemptAt: number
   shipmentId: number
   createdAt: number
   updatedAt: number
@@ -79,6 +82,7 @@ export type DeliveryAttemptMinAggregateInputType = {
   attemptNumber?: true
   remarks?: true
   attemptedAt?: true
+  nextAttemptAt?: true
   shipmentId?: true
   createdAt?: true
   updatedAt?: true
@@ -89,6 +93,7 @@ export type DeliveryAttemptMaxAggregateInputType = {
   attemptNumber?: true
   remarks?: true
   attemptedAt?: true
+  nextAttemptAt?: true
   shipmentId?: true
   createdAt?: true
   updatedAt?: true
@@ -99,6 +104,7 @@ export type DeliveryAttemptCountAggregateInputType = {
   attemptNumber?: true
   remarks?: true
   attemptedAt?: true
+  nextAttemptAt?: true
   shipmentId?: true
   createdAt?: true
   updatedAt?: true
@@ -196,6 +202,7 @@ export type DeliveryAttemptGroupByOutputType = {
   attemptNumber: number
   remarks: string | null
   attemptedAt: Date
+  nextAttemptAt: Date | null
   shipmentId: string
   createdAt: Date
   updatedAt: Date
@@ -229,6 +236,7 @@ export type DeliveryAttemptWhereInput = {
   attemptNumber?: Prisma.IntFilter<"DeliveryAttempt"> | number
   remarks?: Prisma.StringNullableFilter<"DeliveryAttempt"> | string | null
   attemptedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"DeliveryAttempt"> | Date | string | null
   shipmentId?: Prisma.StringFilter<"DeliveryAttempt"> | string
   createdAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
@@ -240,6 +248,7 @@ export type DeliveryAttemptOrderByWithRelationInput = {
   attemptNumber?: Prisma.SortOrder
   remarks?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptedAt?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrderInput | Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -254,6 +263,7 @@ export type DeliveryAttemptWhereUniqueInput = Prisma.AtLeast<{
   attemptNumber?: Prisma.IntFilter<"DeliveryAttempt"> | number
   remarks?: Prisma.StringNullableFilter<"DeliveryAttempt"> | string | null
   attemptedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"DeliveryAttempt"> | Date | string | null
   shipmentId?: Prisma.StringFilter<"DeliveryAttempt"> | string
   createdAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
@@ -265,6 +275,7 @@ export type DeliveryAttemptOrderByWithAggregationInput = {
   attemptNumber?: Prisma.SortOrder
   remarks?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptedAt?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrderInput | Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -283,6 +294,7 @@ export type DeliveryAttemptScalarWhereWithAggregatesInput = {
   attemptNumber?: Prisma.IntWithAggregatesFilter<"DeliveryAttempt"> | number
   remarks?: Prisma.StringNullableWithAggregatesFilter<"DeliveryAttempt"> | string | null
   attemptedAt?: Prisma.DateTimeWithAggregatesFilter<"DeliveryAttempt"> | Date | string
+  nextAttemptAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeliveryAttempt"> | Date | string | null
   shipmentId?: Prisma.StringWithAggregatesFilter<"DeliveryAttempt"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DeliveryAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DeliveryAttempt"> | Date | string
@@ -293,6 +305,7 @@ export type DeliveryAttemptCreateInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   shipment: Prisma.ShipmentCreateNestedOneWithoutDeliveryAttemptsInput
@@ -303,6 +316,7 @@ export type DeliveryAttemptUncheckedCreateInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   shipmentId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -313,6 +327,7 @@ export type DeliveryAttemptUpdateInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   shipment?: Prisma.ShipmentUpdateOneRequiredWithoutDeliveryAttemptsNestedInput
@@ -323,6 +338,7 @@ export type DeliveryAttemptUncheckedUpdateInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -333,6 +349,7 @@ export type DeliveryAttemptCreateManyInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   shipmentId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -343,6 +360,7 @@ export type DeliveryAttemptUpdateManyMutationInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -352,6 +370,7 @@ export type DeliveryAttemptUncheckedUpdateManyInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,6 +391,7 @@ export type DeliveryAttemptCountOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
   remarks?: Prisma.SortOrder
   attemptedAt?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -386,6 +406,7 @@ export type DeliveryAttemptMaxOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
   remarks?: Prisma.SortOrder
   attemptedAt?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -396,6 +417,7 @@ export type DeliveryAttemptMinOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
   remarks?: Prisma.SortOrder
   attemptedAt?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   shipmentId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -452,6 +474,7 @@ export type DeliveryAttemptCreateWithoutShipmentInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -461,6 +484,7 @@ export type DeliveryAttemptUncheckedCreateWithoutShipmentInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -499,6 +523,7 @@ export type DeliveryAttemptScalarWhereInput = {
   attemptNumber?: Prisma.IntFilter<"DeliveryAttempt"> | number
   remarks?: Prisma.StringNullableFilter<"DeliveryAttempt"> | string | null
   attemptedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"DeliveryAttempt"> | Date | string | null
   shipmentId?: Prisma.StringFilter<"DeliveryAttempt"> | string
   createdAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DeliveryAttempt"> | Date | string
@@ -509,6 +534,7 @@ export type DeliveryAttemptCreateManyShipmentInput = {
   attemptNumber: number
   remarks?: string | null
   attemptedAt: Date | string
+  nextAttemptAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -518,6 +544,7 @@ export type DeliveryAttemptUpdateWithoutShipmentInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -527,6 +554,7 @@ export type DeliveryAttemptUncheckedUpdateWithoutShipmentInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -536,6 +564,7 @@ export type DeliveryAttemptUncheckedUpdateManyWithoutShipmentInput = {
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -547,6 +576,7 @@ export type DeliveryAttemptSelect<ExtArgs extends runtime.Types.Extensions.Inter
   attemptNumber?: boolean
   remarks?: boolean
   attemptedAt?: boolean
+  nextAttemptAt?: boolean
   shipmentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -558,6 +588,7 @@ export type DeliveryAttemptSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   attemptNumber?: boolean
   remarks?: boolean
   attemptedAt?: boolean
+  nextAttemptAt?: boolean
   shipmentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -569,6 +600,7 @@ export type DeliveryAttemptSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   attemptNumber?: boolean
   remarks?: boolean
   attemptedAt?: boolean
+  nextAttemptAt?: boolean
   shipmentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -580,12 +612,13 @@ export type DeliveryAttemptSelectScalar = {
   attemptNumber?: boolean
   remarks?: boolean
   attemptedAt?: boolean
+  nextAttemptAt?: boolean
   shipmentId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DeliveryAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "attemptNumber" | "remarks" | "attemptedAt" | "shipmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryAttempt"]>
+export type DeliveryAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "attemptNumber" | "remarks" | "attemptedAt" | "nextAttemptAt" | "shipmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryAttempt"]>
 export type DeliveryAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   shipment?: boolean | Prisma.ShipmentDefaultArgs<ExtArgs>
 }
@@ -606,6 +639,7 @@ export type $DeliveryAttemptPayload<ExtArgs extends runtime.Types.Extensions.Int
     attemptNumber: number
     remarks: string | null
     attemptedAt: Date
+    nextAttemptAt: Date | null
     shipmentId: string
     createdAt: Date
     updatedAt: Date
@@ -1037,6 +1071,7 @@ export interface DeliveryAttemptFieldRefs {
   readonly attemptNumber: Prisma.FieldRef<"DeliveryAttempt", 'Int'>
   readonly remarks: Prisma.FieldRef<"DeliveryAttempt", 'String'>
   readonly attemptedAt: Prisma.FieldRef<"DeliveryAttempt", 'DateTime'>
+  readonly nextAttemptAt: Prisma.FieldRef<"DeliveryAttempt", 'DateTime'>
   readonly shipmentId: Prisma.FieldRef<"DeliveryAttempt", 'String'>
   readonly createdAt: Prisma.FieldRef<"DeliveryAttempt", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DeliveryAttempt", 'DateTime'>

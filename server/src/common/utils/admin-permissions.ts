@@ -222,5 +222,7 @@ export const ADMIN_IMAGE_TYPE_PERMISSIONS = {
   brand: "catalog",
   slider: "content",
   blog: "content",
+  site_logo: "settings",
+  og_image: "settings",
   customer_avatar: "customers",
 } as const satisfies Record<string, AdminPermission>;

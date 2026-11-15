@@ -162,6 +162,94 @@ describe("SSLCommerz IPN", () => {
     if (log) tracker.webhookLogIds.push(log.id);
   });
 
+  it("queues a duplicate successful payment for refund without reprocessing it", async () => {
+    const user = await createTestUser(tracker, { suffix: `double-pay-${Date.now()}` });
+    const order = await createTestOrder(tracker, user, { grandTotal: 100 });
+    const first = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+    const retry = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+
+    const firstValId = `VAL-DOUBLE-A-${Date.now()}`;
+    mockVerify(100, first.providerReference as string);
+    const firstRes = await api()
+      .post("/api/v1/payments/sslcommerz/ipn")
+      .send(
+        sslcommerzIpnBody({
+          val_id: firstValId,
+          tran_id: first.providerReference as string,
+          status: "VALID",
+          amount: "100.00",
+        }),
+      );
+    expect(firstRes.status).toBe(200);
+    expect(firstRes.body.data.payment.status).toBe("SUCCESS");
+
+    const retryValId = `VAL-DOUBLE-B-${Date.now()}`;
+    mockVerify(100, retry.providerReference as string);
+    const retryRes = await api()
+      .post("/api/v1/payments/sslcommerz/ipn")
+      .send(
+        sslcommerzIpnBody({
+          val_id: retryValId,
+          tran_id: retry.providerReference as string,
+          status: "VALID",
+          amount: "100.00",
+        }),
+      );
+    expect(retryRes.status).toBe(200);
+    expect(retryRes.body.data.alreadyProcessed).toBe(true);
+
+    const persistedOrder = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+    });
+    const persistedRetry = await prisma.payment.findUniqueOrThrow({
+      where: { id: retry.id },
+      include: { refunds: true, transactions: true },
+    });
+    expect(persistedOrder.paymentStatus).toBe("PAID");
+    expect(persistedRetry.status).toBe("SUCCESS");
+    expect(persistedRetry.refunds).toHaveLength(1);
+    expect(persistedRetry.refunds[0]).toMatchObject({
+      status: "PENDING",
+      requiresManualProcessing: true,
+      reason: "Duplicate payment attempt for an already-paid order",
+    });
+    expect(persistedRetry.transactions).toHaveLength(1);
+
+    const replayValId = `VAL-DOUBLE-REPLAY-${Date.now()}`;
+    mockVerify(100, retry.providerReference as string);
+    const replay = await api()
+      .post("/api/v1/payments/sslcommerz/ipn")
+      .send(
+        sslcommerzIpnBody({
+          val_id: replayValId,
+          tran_id: retry.providerReference as string,
+          status: "VALID",
+          amount: "100.00",
+        }),
+      );
+    expect(replay.status).toBe(409);
+
+    const replayedPayment = await prisma.payment.findUniqueOrThrow({
+      where: { id: retry.id },
+      include: { refunds: true, transactions: true },
+    });
+    expect(replayedPayment.refunds).toHaveLength(1);
+    expect(replayedPayment.transactions).toHaveLength(1);
+
+    const logs = await prisma.paymentWebhookLog.findMany({
+      where: {
+        provider: "SSLCOMMERZ",
+        externalEventId: { in: [firstValId, retryValId, replayValId] },
+      },
+      select: { id: true },
+    });
+    tracker.webhookLogIds.push(...logs.map((log) => log.id));
+  });
+
   it("does not mark failed verification as processed", async () => {
     const user = await createTestUser(tracker, { suffix: `failv-${Date.now()}` });
     const order = await createTestOrder(tracker, user, { grandTotal: 100 });
@@ -207,6 +295,39 @@ describe("SSLCommerz IPN", () => {
     expect(unchanged.bankTranId).toBeNull();
   });
 
+  it("rejects a valid gateway response for a different transaction", async () => {
+    const user = await createTestUser(tracker, { suffix: `mismatch-${Date.now()}` });
+    const order = await createTestOrder(tracker, user, { grandTotal: 100 });
+    const payment = await createSslcommerzPayment(tracker, order.id, {
+      amount: 100,
+    });
+    const valId = `VAL-MISMATCH-${Date.now()}`;
+    mockVerify(100, `${payment.providerReference}-other`);
+
+    const res = await api()
+      .post("/api/v1/payments/sslcommerz/ipn")
+      .send(
+        sslcommerzIpnBody({
+          val_id: valId,
+          tran_id: payment.providerReference as string,
+          status: "VALID",
+          amount: "100.00",
+        }),
+      );
+
+    expect(res.status).toBe(400);
+    const persisted = await prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
+    expect(persisted.status).toBe("INITIATED");
+    expect(persisted.valId).toBeNull();
+    const log = await prisma.paymentWebhookLog.findFirst({
+      where: { provider: "SSLCOMMERZ", externalEventId: valId },
+    });
+    expect(log?.processed).toBe(false);
+    if (log) tracker.webhookLogIds.push(log.id);
+  });
+
   it("stores valId and leaves bankTranId null when bank_tran_id is missing", async () => {
     const user = await createTestUser(tracker, { suffix: `nobank-${Date.now()}` });
     const order = await createTestOrder(tracker, user, { grandTotal: 100 });
@@ -245,7 +366,7 @@ describe("SSLCommerz IPN", () => {
     if (log) tracker.webhookLogIds.push(log.id);
   });
 
-  it("returns alreadyProcessed on duplicate bankTranId without crashing IPN", async () => {
+  it("does not acknowledge a different payment that reuses a bankTranId", async () => {
     const user = await createTestUser(tracker, { suffix: `p2002-${Date.now()}` });
     const firstOrder = await createTestOrder(tracker, user, { grandTotal: 100 });
     const secondOrder = await createTestOrder(tracker, user, { grandTotal: 100 });
@@ -291,8 +412,7 @@ describe("SSLCommerz IPN", () => {
         }),
       );
 
-    expect(secondRes.status).toBe(200);
-    expect(secondRes.body.data.alreadyProcessed).toBe(true);
+    expect(secondRes.status).toBe(409);
 
     const firstPersisted = await prisma.payment.findUniqueOrThrow({
       where: { id: first.id },
@@ -312,7 +432,7 @@ describe("SSLCommerz IPN", () => {
     const secondLog = await prisma.paymentWebhookLog.findFirst({
       where: { provider: "SSLCOMMERZ", externalEventId: secondValId },
     });
-    expect(secondLog?.processed).toBe(true);
+    expect(secondLog?.processed).toBe(false);
     if (firstLog) tracker.webhookLogIds.push(firstLog.id);
     if (secondLog) tracker.webhookLogIds.push(secondLog.id);
   });

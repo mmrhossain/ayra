@@ -47,6 +47,7 @@ export type CustomerReturnRequest = {
 
 export type CustomerRefund = {
   id: string;
+  refundNumber?: string;
   amount: number | string;
   status: string;
   reason?: string | null;
@@ -56,6 +57,7 @@ export type CustomerRefund = {
 
 export type CustomerPayment = {
   id: string;
+  paymentNumber?: string;
   method: string;
   status: string;
   amount: number | string;
@@ -102,6 +104,7 @@ export type CustomerShipment = {
 export type CustomerOrder = {
   id: string;
   orderNumber: string;
+  invoiceNumber?: string;
   status: string;
   paymentStatus?: string;
   currency?: string;

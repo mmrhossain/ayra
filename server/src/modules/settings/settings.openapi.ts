@@ -21,6 +21,7 @@ const settingFieldSchema = z.object({
     "select",
     "multiselect",
     "url",
+    "image",
     "secret",
     "textarea",
   ]),
@@ -48,6 +49,7 @@ const publicSettingsSchema = z.object({
     supportPhone: z.string(),
     address: z.string(),
     logoUrl: z.string(),
+    ogImageUrl: z.string(),
     currency: z.string(),
   }),
   payment: z.object({

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { AppError } from "../../common/errors/AppError.ts";
 import type {
   CourierProvider,
@@ -9,11 +10,13 @@ export const SHIPMENT_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
   PENDING: ["READY_TO_SHIP", "CANCELLED"],
   READY_TO_SHIP: ["PICKUP_REQUESTED", "PICKED_UP", "CANCELLED"],
   PICKUP_REQUESTED: ["PICKED_UP", "FAILED", "CANCELLED"],
-  PICKED_UP: ["IN_TRANSIT", "FAILED", "RETURNED"],
-  IN_TRANSIT: ["OUT_FOR_DELIVERY", "DELIVERED", "FAILED", "RETURNED"],
-  OUT_FOR_DELIVERY: ["DELIVERED", "FAILED", "RETURNED"],
+  PICKED_UP: ["IN_TRANSIT", "FAILED", "LOST", "DAMAGED", "RETURNED"],
+  IN_TRANSIT: ["OUT_FOR_DELIVERY", "DELIVERED", "FAILED", "LOST", "DAMAGED", "RETURNED"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "FAILED", "LOST", "DAMAGED", "RETURNED"],
   DELIVERED: ["RETURNED"],
   FAILED: ["READY_TO_SHIP", "RETURNED", "CANCELLED"],
+  LOST: [],
+  DAMAGED: [],
   RETURNED: [],
   CANCELLED: [],
 };
@@ -26,6 +29,8 @@ export const SHIPMENT_EVENT_BY_STATUS: Partial<
   IN_TRANSIT: "IN_TRANSIT",
   OUT_FOR_DELIVERY: "OUT_FOR_DELIVERY",
   DELIVERED: "DELIVERED",
+  LOST: "LOST",
+  DAMAGED: "DAMAGED",
   RETURNED: "RETURNED",
 };
 
@@ -61,6 +66,8 @@ export const SHIPMENT_STATUSES = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
   "FAILED",
+  "LOST",
+  "DAMAGED",
   "RETURNED",
   "CANCELLED",
 ] as const satisfies readonly ShipmentStatus[];
@@ -74,6 +81,8 @@ export const SHIPMENT_STATUS_LABELS: Record<ShipmentStatus, string> = {
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Delivered",
   FAILED: "Failed",
+  LOST: "Lost",
+  DAMAGED: "Damaged",
   RETURNED: "Returned",
   CANCELLED: "Cancelled",
 };
@@ -84,6 +93,8 @@ export const NOTIFIABLE_SHIPMENT_STATUSES: ShipmentStatus[] = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
   "FAILED",
+  "LOST",
+  "DAMAGED",
   "RETURNED",
   "CANCELLED",
 ];
@@ -122,6 +133,13 @@ export function isCourierStatusUpdateAllowed(
       from === "OUT_FOR_DELIVERY"
     );
   }
+  if (to === "LOST" || to === "DAMAGED") {
+    return (
+      from === "PICKED_UP" ||
+      from === "IN_TRANSIT" ||
+      from === "OUT_FOR_DELIVERY"
+    );
+  }
   if (to === "RETURNED") {
     return (
       from === "PICKED_UP" ||
@@ -145,10 +163,22 @@ export function assertShipmentTransition(
   }
 }
 
-export function generateShipmentNumber(now = Date.now()): string {
-  const stamp = now.toString(36).toUpperCase();
-  const random = Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `SHP-${stamp}-${random}`;
+const REFERENCE_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function randomReferenceSuffix(length: number): string {
+  let suffix = "";
+  while (suffix.length < length) {
+    for (const byte of randomBytes(length - suffix.length)) {
+      if (byte < 252) suffix += REFERENCE_ALPHABET[byte % 36];
+      if (suffix.length === length) break;
+    }
+  }
+  return suffix;
+}
+
+export function generateShipmentNumber(now = new Date()): string {
+  const date = now.toISOString().slice(2, 10).replace(/-/g, "");
+  return `SHP-${date}-${randomReferenceSuffix(6)}`;
 }
 
 export function toNumber(

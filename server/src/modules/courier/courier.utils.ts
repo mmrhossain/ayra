@@ -12,6 +12,9 @@ const STATUS_ALIASES: Record<string, ShipmentStatus> = {
   delivered: "DELIVERED",
   delivery_failed: "FAILED",
   failed: "FAILED",
+  lost: "LOST",
+  damaged: "DAMAGED",
+  parcel_damaged: "DAMAGED",
   returned: "RETURNED",
   return: "RETURNED",
   cancelled: "CANCELLED",
@@ -44,6 +47,28 @@ export function hashPayload(payload: unknown): string {
   return createHash("sha256")
     .update(JSON.stringify(payload ?? null))
     .digest("hex");
+}
+
+export function parseCourierEventTime(
+  value: string | undefined,
+  receivedAt = new Date(),
+): Date | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  if (parsed.getTime() > receivedAt.getTime() + 5 * 60 * 1000) return null;
+  return parsed;
+}
+
+export function isEventOlderThan(
+  eventTime: Date | null,
+  latestEventTime: Date | null | undefined,
+): boolean {
+  return Boolean(
+    eventTime &&
+      latestEventTime &&
+      eventTime.getTime() < latestEventTime.getTime(),
+  );
 }
 
 export function verifyHmacSignature(

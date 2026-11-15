@@ -41,6 +41,7 @@ export function UpdateShipmentStatusDialog({
   );
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [rescheduledAt, setRescheduledAt] = useState("");
   const [trackingNumber, setTrackingNumber] = useState(
     () => shipment?.trackingNumber ?? "",
   );
@@ -101,6 +102,19 @@ export function UpdateShipmentStatusDialog({
                   placeholder="Optional"
                 />
               </div>
+              {status === "FAILED" ? (
+                <div className="space-y-1">
+                  <Label htmlFor="shipment-rescheduled-at">
+                    Next delivery attempt (optional)
+                  </Label>
+                  <Input
+                    id="shipment-rescheduled-at"
+                    type="datetime-local"
+                    value={rescheduledAt}
+                    onChange={(event) => setRescheduledAt(event.target.value)}
+                  />
+                </div>
+              ) : null}
               <div className="space-y-1">
                 <Label htmlFor="shipment-tracking-update">
                   Tracking number
@@ -139,6 +153,9 @@ export function UpdateShipmentStatusDialog({
                   ...(location.trim() ? { location: location.trim() } : {}),
                   ...(description.trim()
                     ? { description: description.trim() }
+                    : {}),
+                  ...(status === "FAILED" && rescheduledAt
+                    ? { rescheduledAt: new Date(rescheduledAt).toISOString() }
                     : {}),
                   ...(trackingNumber.trim()
                     ? { trackingNumber: trackingNumber.trim() }

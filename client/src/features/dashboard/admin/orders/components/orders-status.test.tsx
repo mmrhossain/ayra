@@ -32,6 +32,9 @@ const data: OrdersByStatusResult = {
     PENDING: 4,
     CONFIRMED: 2,
     PROCESSING: 0,
+    PICKING: 0,
+    PACKED: 0,
+    READY_TO_SHIP: 0,
     SHIPPED: 0,
     DELIVERED: 0,
     CANCELLED: 0,
@@ -45,7 +48,7 @@ describe("OrdersStatusBreakdown", () => {
     const progress = Array.from(
       container.querySelectorAll<HTMLElement>('[role="progressbar"]'),
     );
-    expect(progress).toHaveLength(6);
+    expect(progress).toHaveLength(9);
     expect(progress[0].getAttribute("aria-valuenow")).toBe("67");
     expect(progress[1].getAttribute("aria-valuenow")).toBe("33");
     expect(container.textContent).toContain("6 orders in this period");

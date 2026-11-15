@@ -222,6 +222,12 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
                   </span>
                 </p>
                 <p>
+                  Invoice Number:{" "}
+                  <span className="font-bold text-foreground">
+                    #{currentOrder.invoiceNumber ?? currentOrder.orderNumber}
+                  </span>
+                </p>
+                <p>
                   Date: {new Date(currentOrder.createdAt).toLocaleDateString()}
                 </p>
               </div>

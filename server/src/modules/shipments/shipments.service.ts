@@ -7,6 +7,7 @@ import type {
   ShipmentStatus,
 } from "../../generated/prisma/enums.ts";
 import { prisma, transaction, type TransactionClient } from "../../lib/prisma.ts";
+import { isPrismaCode } from "../../common/utils/prisma-error.ts";
 import { enqueueShipmentUpdate } from "../notification/services/notification.service.ts";
 import { buildOrderSummaryTable, escapeHtml } from "../../template/email.ts";
 import type {
@@ -14,6 +15,7 @@ import type {
   ListShipmentsQuery,
   UpdateShipmentStatusInput,
 } from "./types.ts";
+import { calculateShipmentCodAmount } from "./cod-allocation.ts";
 import {
   assertShipmentTransition,
   generateShipmentNumber,
@@ -35,7 +37,9 @@ const ACTIVE_SHIPMENT_STATUSES: ShipmentStatus[] = [
 const SHIPPABLE_ORDER_STATUSES: OrderStatus[] = [
   "CONFIRMED",
   "PROCESSING",
+  "PICKING",
   "PACKED",
+  "READY_TO_SHIP",
   "SHIPPED",
 ];
 
@@ -48,6 +52,7 @@ const shipmentListSelect = {
   courierReference: true,
   labelUrl: true,
   shippingCost: true,
+  codAmount: true,
   notes: true,
   pickupRequestedAt: true,
   pickedUpAt: true,
@@ -84,6 +89,7 @@ const shipmentDetailInclude = {
     },
   },
   trackingEvents: { orderBy: { eventTime: "desc" as const } },
+  deliveryAttempts: { orderBy: { attemptedAt: "desc" as const } },
   events: { orderBy: { createdAt: "desc" as const } },
   shipmentAddress: true,
   order: {
@@ -99,12 +105,16 @@ const shipmentDetailInclude = {
 } as const;
 
 const serializeShipment = <
-  T extends { shippingCost: { toNumber: () => number } | number | string },
+  T extends {
+    shippingCost: { toNumber: () => number } | number | string;
+    codAmount: { toNumber: () => number } | number | string;
+  },
 >(
   shipment: T,
 ) => ({
   ...shipment,
   shippingCost: toNumber(shipment.shippingCost) ?? 0,
+  codAmount: toNumber(shipment.codAmount) ?? 0,
 });
 
 export const listShipments = async (query: ListShipmentsQuery) => {
@@ -164,6 +174,10 @@ const findOrderForShipment = (client: TransactionClient, reference: string) =>
     include: {
       items: true,
       addresses: { where: { type: "SHIPPING" } },
+      shipments: {
+        where: { status: { not: "CANCELLED" } },
+        select: { codAmount: true },
+      },
     },
   });
 
@@ -189,129 +203,166 @@ export const createShipment = async (
   input: CreateShipmentInput,
   actorId: string,
 ) => {
-  return transaction(async (tx) => {
-    const order = await findOrderForShipment(tx, input.orderId);
-    if (!order) throw new AppError("Order not found", 404);
-
-    if (!SHIPPABLE_ORDER_STATUSES.includes(order.status)) {
-      throw new AppError(
-        `Order ${order.orderNumber} is not ready for shipment (status ${order.status})`,
-        409,
-      );
-    }
-
-    if (order.paymentStatus !== "PAID") {
-      const cod = await tx.payment.count({
-        where: {
-          orderId: order.id,
-          method: "COD",
-          deletedAt: null,
-          status: { not: "CANCELLED" },
-        },
-      });
-
-      if (cod === 0) {
-        throw new AppError("Order must be paid before shipping", 409);
-      }
-    }
-
-    const warehouse = await tx.warehouse.findFirst({
-      where: { id: input.warehouseId, deletedAt: null, isActive: true },
-      select: { id: true },
-    });
-    if (!warehouse) throw new AppError("Warehouse not found or inactive", 404);
-
-    const orderItems = new Map(order.items.map((item) => [item.id, item]));
-    const requested = new Map<string, number>();
-    for (const item of input.items) {
-      requested.set(
-        item.orderItemId,
-        (requested.get(item.orderItemId) ?? 0) + item.quantity,
-      );
-    }
-
-    const alreadyShipped = await shippedQuantities(tx, order.id);
-    for (const [orderItemId, quantity] of requested) {
-      const orderItem = orderItems.get(orderItemId);
-      if (!orderItem) {
-        throw new AppError("Shipment item does not belong to this order", 400);
-      }
-
-      const remaining =
-        orderItem.quantity - (alreadyShipped.get(orderItemId) ?? 0);
-
-      if (quantity > remaining) {
-        throw new AppError(
-          `Cannot ship ${quantity} of ${orderItem.sku}; only ${remaining} remaining`,
-          409,
-        );
-      }
-    }
-
-    const shippingAddress = order.addresses[0];
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     const shipmentNumber = generateShipmentNumber();
+    try {
+      return await transaction(async (tx) => {
+        const candidate = await findOrderForShipment(tx, input.orderId);
+        if (!candidate) throw new AppError("Order not found", 404);
 
-    const shipment = await tx.shipment.create({
-      data: {
-        shipmentNumber,
-        courierProvider: input.courierProvider,
-        status: "PENDING",
-        trackingNumber: input.trackingNumber ?? null,
-        courierReference: input.courierReference ?? null,
-        shippingCost: input.shippingCost ?? 0,
-        notes: input.notes ?? null,
-        orderId: order.id,
-        warehouseId: input.warehouseId,
-        items: {
-          create: [...requested].map(([orderItemId, quantity]) => ({
-            orderItemId,
-            quantity,
-          })),
-        },
-        trackingEvents: {
-          create: {
-            status: "PENDING",
-            description: "Shipment created",
-            eventTime: new Date(),
-          },
-        },
-        events: {
-          create: {
-            eventType: "SHIPMENT_CREATED",
-            metadata: {
-              actorId,
-              warehouseId: input.warehouseId,
-              orderNumber: order.orderNumber,
+        const lockedOrders = await tx.$queryRaw<Array<{ id: string }>>`
+          SELECT id FROM "order"
+          WHERE id = ${candidate.id} AND "deletedAt" IS NULL
+          FOR UPDATE
+        `;
+        if (!lockedOrders[0]) throw new AppError("Order not found", 404);
+
+        const order = await findOrderForShipment(tx, candidate.id);
+        if (!order) throw new AppError("Order not found", 404);
+
+        if (!SHIPPABLE_ORDER_STATUSES.includes(order.status)) {
+          throw new AppError(
+            `Order ${order.orderNumber} is not ready for shipment (status ${order.status})`,
+            409,
+          );
+        }
+
+        const codPaymentCount = await tx.payment.count({
+            where: {
+              orderId: order.id,
+              method: "COD",
+              deletedAt: null,
+              status: { not: "CANCELLED" },
             },
-          },
-        },
-        ...(shippingAddress
-          ? {
-              shipmentAddress: {
-                create: {
-                  fullName: shippingAddress.fullName,
-                  phone: shippingAddress.phone,
-                  email: shippingAddress.email,
-                  country: shippingAddress.country,
-                  state: shippingAddress.division,
-                  city: shippingAddress.district,
-                  area: shippingAddress.thana,
-                  postalCode: shippingAddress.postalCode,
-                  divisionCode: shippingAddress.divisionCode,
-                  districtCode: shippingAddress.districtCode,
-                  upazilaCode: shippingAddress.upazilaCode,
-                  addressLine1: shippingAddress.addressLine1,
-                  addressLine2: shippingAddress.addressLine2,
+          });
+
+        if (order.paymentStatus !== "PAID" && codPaymentCount === 0) {
+          throw new AppError("Order must be paid before shipping", 409);
+        }
+
+        const warehouse = await tx.warehouse.findFirst({
+          where: { id: input.warehouseId, deletedAt: null, isActive: true },
+          select: { id: true },
+        });
+        if (!warehouse) throw new AppError("Warehouse not found or inactive", 404);
+
+        const orderItems = new Map(order.items.map((item) => [item.id, item]));
+        const requested = new Map<string, number>();
+        for (const item of input.items) {
+          requested.set(
+            item.orderItemId,
+            (requested.get(item.orderItemId) ?? 0) + item.quantity,
+          );
+        }
+
+        const alreadyShipped = await shippedQuantities(tx, order.id);
+        for (const [orderItemId, quantity] of requested) {
+          const orderItem = orderItems.get(orderItemId);
+          if (!orderItem) {
+            throw new AppError("Shipment item does not belong to this order", 400);
+          }
+
+          const remaining =
+            orderItem.quantity - (alreadyShipped.get(orderItemId) ?? 0);
+
+          if (quantity > remaining) {
+            throw new AppError(
+              `Cannot ship ${quantity} of ${orderItem.sku}; only ${remaining} remaining`,
+              409,
+            );
+          }
+        }
+
+        const alreadyAllocatedMinor = order.shipments.reduce(
+          (total, shipment) =>
+            total + Math.round(Number(shipment.codAmount) * 100),
+          0,
+        );
+        const codAmount = calculateShipmentCodAmount({
+          order,
+          items: order.items,
+          requested,
+          shippedQuantities: alreadyShipped,
+          alreadyAllocatedMinor,
+          hasPriorShipment: order.shipments.length > 0,
+          isCod: order.paymentStatus !== "PAID" && codPaymentCount > 0,
+        });
+
+        const shippingAddress = order.addresses[0];
+        const shipment = await tx.shipment.create({
+          data: {
+            shipmentNumber,
+            courierProvider: input.courierProvider,
+            status: "PENDING",
+            trackingNumber: input.trackingNumber ?? null,
+            courierReference: input.courierReference ?? null,
+            shippingCost: input.shippingCost ?? 0,
+            codAmount,
+            notes: input.notes ?? null,
+            orderId: order.id,
+            warehouseId: input.warehouseId,
+            items: {
+              create: [...requested].map(([orderItemId, quantity]) => ({
+                orderItemId,
+                quantity,
+              })),
+            },
+            trackingEvents: {
+              create: {
+                status: "PENDING",
+                description: "Shipment created",
+                eventTime: new Date(),
+              },
+            },
+            events: {
+              create: {
+                eventType: "SHIPMENT_CREATED",
+                metadata: {
+                  actorId,
+                  warehouseId: input.warehouseId,
+                  orderNumber: order.orderNumber,
                 },
               },
-            }
-          : {}),
-      },
-      include: shipmentDetailInclude,
-    });
+            },
+            ...(shippingAddress
+              ? {
+                  shipmentAddress: {
+                    create: {
+                      fullName: shippingAddress.fullName,
+                      phone: shippingAddress.phone,
+                      email: shippingAddress.email,
+                      country: shippingAddress.country,
+                      state: shippingAddress.division,
+                      city: shippingAddress.district,
+                      area: shippingAddress.thana,
+                      postalCode: shippingAddress.postalCode,
+                      divisionCode: shippingAddress.divisionCode,
+                      districtCode: shippingAddress.districtCode,
+                      upazilaCode: shippingAddress.upazilaCode,
+                      addressLine1: shippingAddress.addressLine1,
+                      addressLine2: shippingAddress.addressLine2,
+                    },
+                  },
+                }
+              : {}),
+          },
+          include: shipmentDetailInclude,
+        });
 
-    return serializeShipment(shipment);
-  });
+        return serializeShipment(shipment);
+      });
+    } catch (error) {
+      const target = isPrismaCode(error, "P2002")
+        ? (error as { meta?: { target?: unknown } }).meta?.target
+        : undefined;
+      const isShipmentNumberConflict =
+        (Array.isArray(target) && target.includes("shipmentNumber")) ||
+        (typeof target === "string" && target.includes("shipmentNumber"));
+      if (!isShipmentNumberConflict || attempt === 2) throw error;
+    }
+  }
+
+  throw new AppError("Unable to allocate a unique shipment number", 500);
 };
 
 const recomputeOrderFulfillment = async (
@@ -362,13 +413,18 @@ const recomputeOrderFulfillment = async (
     fulfillmentStatus === "FULFILLED" &&
     allDelivered &&
     (order.status === "PROCESSING" ||
+      order.status === "PICKING" ||
       order.status === "PACKED" ||
+      order.status === "READY_TO_SHIP" ||
       order.status === "SHIPPED")
   ) {
     nextStatus = "DELIVERED";
   } else if (
     fulfillmentStatus === "FULFILLED" &&
-    (order.status === "PROCESSING" || order.status === "PACKED")
+    (order.status === "PROCESSING" ||
+      order.status === "PICKING" ||
+      order.status === "PACKED" ||
+      order.status === "READY_TO_SHIP")
   ) {
     nextStatus = "SHIPPED";
   }
@@ -423,6 +479,11 @@ export const updateShipmentStatus = async (
   options?: { allowCourierJump?: boolean },
 ) => {
   const result = await transaction(async (tx) => {
+    const lockedShipments = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM "shipment" WHERE id = ${id} FOR UPDATE
+    `;
+    if (!lockedShipments[0]) throw new AppError("Shipment not found", 404);
+
     const shipment = await tx.shipment.findUnique({
       where: { id },
       select: {
@@ -458,7 +519,17 @@ export const updateShipmentStatus = async (
       assertShipmentTransition(shipment.status, input.status);
     }
 
-    const now = new Date();
+    const receivedAt = new Date();
+    const now = input.eventTime ? new Date(input.eventTime) : receivedAt;
+    if (Number.isNaN(now.getTime())) {
+      throw new AppError("Invalid shipment event time", 400);
+    }
+    if (input.rescheduledAt && input.status !== "FAILED") {
+      throw new AppError(
+        "A reschedule date can only be recorded for a failed delivery",
+        400,
+      );
+    }
     const timestampField = SHIPMENT_TIMESTAMP_FIELD[input.status];
 
     await tx.shipment.update({
@@ -484,6 +555,23 @@ export const updateShipmentStatus = async (
         eventTime: now,
       },
     });
+
+    if (shipment.status === "OUT_FOR_DELIVERY" && input.status === "FAILED") {
+      const previousAttempts = await tx.deliveryAttempt.count({
+        where: { shipmentId: id },
+      });
+      await tx.deliveryAttempt.create({
+        data: {
+          shipmentId: id,
+          attemptNumber: previousAttempts + 1,
+          attemptedAt: now,
+          remarks: input.description ?? null,
+          nextAttemptAt: input.rescheduledAt
+            ? new Date(input.rescheduledAt)
+            : null,
+        },
+      });
+    }
 
     const eventType = SHIPMENT_EVENT_BY_STATUS[input.status];
     if (eventType) {
@@ -584,6 +672,7 @@ export const getShipmentOrderContext = async (reference: string) => {
             id: true,
             shipmentNumber: true,
             status: true,
+            codAmount: true,
             createdAt: true,
             items: { select: { orderItemId: true, quantity: true } },
           },
@@ -635,6 +724,7 @@ export const getShipmentOrderContext = async (reference: string) => {
       id: shipment.id,
       shipmentNumber: shipment.shipmentNumber,
       status: shipment.status,
+      codAmount: toNumber(shipment.codAmount) ?? 0,
       createdAt: shipment.createdAt,
     })),
     warehouses,

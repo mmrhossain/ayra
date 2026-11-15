@@ -55,6 +55,16 @@ export const createReturnRequest = async (
   input: CreateReturnRequestInput
 ) => {
   const created = await transaction(async (tx) => {
+    const lockedOrders = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT id
+      FROM "order"
+      WHERE id = ${orderId}
+        AND "customerProfileId" = ${customerProfileId}
+        AND "deletedAt" IS NULL
+      FOR UPDATE
+    `;
+    if (!lockedOrders[0]) throw new AppError("Order not found", 404);
+
     const order = await tx.order.findFirst({
       where: { id: orderId, customerProfileId, deletedAt: null },
       include: { items: true },

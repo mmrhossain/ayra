@@ -3,6 +3,11 @@ import { AppError } from "../../common/errors/AppError.ts";
 import { paginate } from "../../common/utils/paginate.ts";
 import { withDbRetry } from "../../common/utils/db-retry.ts";
 import { Prisma } from "../../generated/prisma/client.ts";
+import { extractCloudinaryPublicId } from "../../common/utils/cloudinary-public-id.ts";
+import {
+  attachMediaAssets,
+  detachMediaAssets,
+} from "../media/media.service.ts";
 import {
   decryptSecret,
   encryptSecret,
@@ -24,6 +29,10 @@ import type {
 
 const CACHE_TTL_MS = 30_000;
 const cache = new Map<string, { value: unknown; expiresAt: number }>();
+const MEDIA_TYPE_BY_SETTING: Record<string, "site_logo" | "og_image"> = {
+  "store.logoUrl": "site_logo",
+  "store.ogImageUrl": "og_image",
+};
 
 export const clearSettingsCache = () => cache.clear();
 
@@ -133,6 +142,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     supportPhone,
     address,
     logoUrl,
+    ogImageUrl,
     currency,
     enabledMethods,
     pricesIncludeTax,
@@ -144,6 +154,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     getSettingValue<string>("store.supportPhone"),
     getSettingValue<string>("store.address"),
     getSettingValue<string>("store.logoUrl"),
+    getSettingValue<string>("store.ogImageUrl"),
     getSettingValue<string>("store.currency"),
     getSettingValue<PublicSettings["payment"]["enabledMethods"]>(
       "payment.enabledMethods",
@@ -154,7 +165,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
   ]);
 
   return {
-    store: { name, supportEmail, supportPhone, address, logoUrl, currency },
+    store: { name, supportEmail, supportPhone, address, logoUrl, ogImageUrl, currency },
     payment: { enabledMethods },
     checkout: { pricesIncludeTax, taxRatePercent, freeShippingThreshold },
   };
@@ -196,11 +207,11 @@ export const updateSettingsGroup = async (
     for (const [key, input] of entries) {
       const definition = definitionByKey.get(key)!;
       const existing = existingByKey.get(key);
+      const previousRawValue = existing
+        ? decodeRowValue(definition, existing.value)
+        : resolveDefault(definition);
       const oldValue = existing
-        ? auditValue(
-            definition,
-            decodeRowValue(definition, existing.value),
-          )
+        ? auditValue(definition, previousRawValue)
         : null;
 
       if (definition.isSecret) {
@@ -255,6 +266,39 @@ export const updateSettingsGroup = async (
           newValue: value,
         },
       });
+
+      const expectedMediaType = MEDIA_TYPE_BY_SETTING[key];
+      if (expectedMediaType && typeof parsed === "string") {
+        const previousPublicId =
+          typeof previousRawValue === "string"
+            ? extractCloudinaryPublicId(previousRawValue)
+            : null;
+        const nextPublicId = extractCloudinaryPublicId(parsed);
+
+        if (nextPublicId && nextPublicId !== previousPublicId) {
+          const asset = await tx.mediaAsset.findUnique({
+            where: { publicId: nextPublicId },
+            select: { type: true },
+          });
+          if (!asset || asset.type !== expectedMediaType) {
+            throw new AppError("Uploaded image asset could not be found", 404);
+          }
+          await attachMediaAssets([nextPublicId], "setting", key, undefined, tx);
+        }
+
+        if (previousPublicId && previousPublicId !== nextPublicId) {
+          const previousAsset = await tx.mediaAsset.findUnique({
+            where: { publicId: previousPublicId },
+            select: { entityType: true, entityId: true },
+          });
+          if (
+            previousAsset?.entityType === "setting" &&
+            previousAsset.entityId === key
+          ) {
+            await detachMediaAssets([previousPublicId], tx);
+          }
+        }
+      }
     }
   });
 

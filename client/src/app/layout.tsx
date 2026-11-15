@@ -20,10 +20,44 @@ const jost = Jost({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchPublicSettingsOrDefault();
+  const storeName = settings.store.name || SITE_NAME;
+  const description = `Discover quality products and shop online with ${storeName}.`;
+  const logoUrl =
+    settings.store.ogImageUrl || settings.store.logoUrl || "/images/logo/logo.png";
+  const socialImage =
+    PUBLIC_SITE_URL || /^https?:\/\//i.test(logoUrl)
+      ? new URL(logoUrl, PUBLIC_SITE_URL).toString()
+      : undefined;
+
   return {
     ...(PUBLIC_SITE_URL ? { metadataBase: new URL(PUBLIC_SITE_URL) } : {}),
-    title: `${settings.store.name || SITE_NAME} | Online Shopping in Bangladesh`,
-    description: `Discover quality products and shop online with ${settings.store.name || SITE_NAME}.`,
+    applicationName: storeName,
+    title: `${storeName} | Online Shopping in Bangladesh`,
+    description,
+    keywords: [
+      storeName,
+      "online shopping Bangladesh",
+      "shop online Bangladesh",
+      "quality products",
+    ],
+    robots: {
+      index: true,
+      follow: true,
+    },
+    openGraph: {
+      title: `${storeName} | Online Shopping in Bangladesh`,
+      description,
+      siteName: storeName,
+      locale: "en_BD",
+      type: "website",
+      ...(socialImage ? { images: [{ url: socialImage, alt: `${storeName} logo` }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${storeName} | Online Shopping in Bangladesh`,
+      description,
+      ...(socialImage ? { images: [socialImage] } : {}),
+    },
   };
 }
 

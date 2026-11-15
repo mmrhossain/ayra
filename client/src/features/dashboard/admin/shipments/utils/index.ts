@@ -14,6 +14,8 @@ export const SHIPMENT_STATUSES: ShipmentStatus[] = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
   "FAILED",
+  "LOST",
+  "DAMAGED",
   "RETURNED",
   "CANCELLED",
 ];
@@ -37,6 +39,8 @@ export const SHIPMENT_STATUS_LABELS: Record<ShipmentStatus, string> = {
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Delivered",
   FAILED: "Failed",
+  LOST: "Lost",
+  DAMAGED: "Damaged",
   RETURNED: "Returned",
   CANCELLED: "Cancelled",
 };
@@ -45,11 +49,13 @@ export const SHIPMENT_TRANSITIONS: Record<ShipmentStatus, ShipmentStatus[]> = {
   PENDING: ["READY_TO_SHIP", "CANCELLED"],
   READY_TO_SHIP: ["PICKUP_REQUESTED", "PICKED_UP", "CANCELLED"],
   PICKUP_REQUESTED: ["PICKED_UP", "FAILED", "CANCELLED"],
-  PICKED_UP: ["IN_TRANSIT", "FAILED", "RETURNED"],
-  IN_TRANSIT: ["OUT_FOR_DELIVERY", "DELIVERED", "FAILED", "RETURNED"],
-  OUT_FOR_DELIVERY: ["DELIVERED", "FAILED", "RETURNED"],
+  PICKED_UP: ["IN_TRANSIT", "FAILED", "LOST", "DAMAGED", "RETURNED"],
+  IN_TRANSIT: ["OUT_FOR_DELIVERY", "DELIVERED", "FAILED", "LOST", "DAMAGED", "RETURNED"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "FAILED", "LOST", "DAMAGED", "RETURNED"],
   DELIVERED: ["RETURNED"],
   FAILED: ["READY_TO_SHIP", "RETURNED", "CANCELLED"],
+  LOST: [],
+  DAMAGED: [],
   RETURNED: [],
   CANCELLED: [],
 };
@@ -60,7 +66,13 @@ export function nextShipmentStatuses(status: ShipmentStatus): ShipmentStatus[] {
 
 export function shipmentStatusVariant(status: ShipmentStatus): StatusBadgeVariant {
   if (status === "DELIVERED") return "success";
-  if (status === "CANCELLED" || status === "FAILED" || status === "RETURNED") {
+  if (
+    status === "CANCELLED" ||
+    status === "FAILED" ||
+    status === "LOST" ||
+    status === "DAMAGED" ||
+    status === "RETURNED"
+  ) {
     return "danger";
   }
   if (status === "PENDING") return "warning";

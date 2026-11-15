@@ -2,7 +2,9 @@ export const HAPPY_PATH_STEPS = [
   "PENDING",
   "CONFIRMED",
   "PROCESSING",
+  "PICKING",
   "PACKED",
+  "READY_TO_SHIP",
   "SHIPPED",
   "DELIVERED",
 ] as const;
@@ -58,9 +60,17 @@ const STEP_COPY: Record<HappyPathStatus, { label: string; copy: string }> = {
     label: "Processing",
     copy: "We are preparing your items.",
   },
+  PICKING: {
+    label: "Picking",
+    copy: "We are collecting your items for packing.",
+  },
   PACKED: {
     label: "Packed",
-    copy: "Your order is packed and waiting to ship.",
+    copy: "Your items are packed.",
+  },
+  READY_TO_SHIP: {
+    label: "Ready to ship",
+    copy: "Your order is ready for courier pickup.",
   },
   SHIPPED: {
     label: "Shipped",

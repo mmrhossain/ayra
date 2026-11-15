@@ -9,6 +9,8 @@ export type ShipmentStatus =
   | "OUT_FOR_DELIVERY"
   | "DELIVERED"
   | "FAILED"
+  | "LOST"
+  | "DAMAGED"
   | "RETURNED"
   | "CANCELLED";
 
@@ -44,6 +46,7 @@ export type ShipmentListItem = {
   courierReference: string | null;
   labelUrl: string | null;
   shippingCost: number;
+  codAmount: number;
   notes: string | null;
   pickupRequestedAt: string | null;
   pickedUpAt: string | null;
@@ -94,6 +97,13 @@ export type ShipmentAddress = {
 export type ShipmentDetail = ShipmentListItem & {
   items: ShipmentDetailItem[];
   trackingEvents: ShipmentTrackingEvent[];
+  deliveryAttempts: Array<{
+    id: string;
+    attemptNumber: number;
+    remarks: string | null;
+    attemptedAt: string;
+    nextAttemptAt: string | null;
+  }>;
   events: Array<{ id: string; eventType: string; createdAt: string }>;
   shipmentAddress: ShipmentAddress | null;
   notes: string | null;
@@ -143,6 +153,7 @@ export type ShipmentOrderContext = {
     id: string;
     shipmentNumber: string;
     status: ShipmentStatus;
+    codAmount: number;
     createdAt: string;
   }>;
   warehouses: ShipmentWarehouse[];
@@ -165,4 +176,5 @@ export type UpdateShipmentStatusBody = {
   description?: string;
   trackingNumber?: string;
   courierReference?: string;
+  rescheduledAt?: string;
 };

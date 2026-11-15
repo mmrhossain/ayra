@@ -7,6 +7,7 @@ export type SettingFieldType =
   | "select"
   | "multiselect"
   | "url"
+  | "image"
   | "secret"
   | "textarea";
 
@@ -65,6 +66,7 @@ export type PublicSettings = {
     supportPhone: string;
     address: string;
     logoUrl: string;
+    ogImageUrl: string;
     currency: string;
   };
   payment: {

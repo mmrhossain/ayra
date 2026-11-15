@@ -7,9 +7,17 @@ export const ORDER_STATUS_MESSAGES = {
     label: "Processing",
     description: "We are preparing your order for shipment.",
   },
+  PICKING: {
+    label: "Picking",
+    description: "We are collecting your items for packing.",
+  },
   PACKED: {
     label: "Packed",
-    description: "Your order has been packed and is ready for courier pickup.",
+    description: "Your items have been packed.",
+  },
+  READY_TO_SHIP: {
+    label: "Ready to ship",
+    description: "Your order is ready for courier pickup.",
   },
   SHIPPED: {
     label: "Shipped",

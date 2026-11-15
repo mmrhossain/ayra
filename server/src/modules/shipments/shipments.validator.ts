@@ -39,6 +39,7 @@ export const updateShipmentStatusSchema = z.object({
   description: z.string().trim().max(1000).optional(),
   trackingNumber: z.string().trim().min(1).max(200).optional(),
   courierReference: z.string().trim().min(1).max(200).optional(),
+  rescheduledAt: z.iso.datetime().optional(),
 });
 
 export const shipmentNumberParamSchema = z.string().trim().min(3).max(100);

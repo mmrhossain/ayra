@@ -37,6 +37,7 @@ export type PaymentOrder = {
 
 export type PaymentRecord = {
   id: string;
+  paymentNumber?: string;
   method: PaymentMethod;
   status: string;
   amount: number | string;
@@ -70,6 +71,7 @@ export type PaymentEvent = {
 
 export type RefundRecord = {
   id: string;
+  refundNumber?: string;
   amount: number | string;
   reason?: string | null;
   status: string;

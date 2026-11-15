@@ -210,6 +210,11 @@ export function RefundTable({ initialData }: Props) {
                       <p className="font-medium">
                         {refund.payment.order?.orderNumber ?? "—"}
                       </p>
+                      {refund.refundNumber ? (
+                        <p className="text-xs text-muted-foreground">
+                          {refund.refundNumber}
+                        </p>
+                      ) : null}
                       {refund.reason ? (
                         <p className="max-w-56 truncate text-xs text-muted-foreground">
                           {refund.reason}

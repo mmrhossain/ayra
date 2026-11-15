@@ -6652,6 +6652,7 @@ export type paths = {
                                     supportPhone: string;
                                     address: string;
                                     logoUrl: string;
+                                    ogImageUrl: string;
                                     currency: string;
                                 };
                                 payment: {
@@ -6720,7 +6721,7 @@ export type paths = {
                                     key: string;
                                     label: string;
                                     /** @enum {string} */
-                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "secret" | "textarea";
+                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "image" | "secret" | "textarea";
                                     help?: string;
                                     options?: {
                                         value: string;
@@ -6885,7 +6886,7 @@ export type paths = {
                                     key: string;
                                     label: string;
                                     /** @enum {string} */
-                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "secret" | "textarea";
+                                    type: "string" | "number" | "boolean" | "select" | "multiselect" | "url" | "image" | "secret" | "textarea";
                                     help?: string;
                                     options?: {
                                         value: string;
@@ -11506,7 +11507,7 @@ export type paths = {
                 query: {
                     page?: number;
                     limit?: number;
-                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                    type: "product" | "category" | "slider" | "blog" | "brand" | "site_logo" | "og_image" | "customer_avatar";
                 };
                 header?: never;
                 path?: never;
@@ -11545,7 +11546,7 @@ export type paths = {
                                      */
                                     mobileImageUrl?: string;
                                     /** @enum {string} */
-                                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                                    type: "product" | "category" | "slider" | "blog" | "brand" | "site_logo" | "og_image" | "customer_avatar";
                                     /** @enum {string} */
                                     status: "PENDING" | "ATTACHED";
                                     /** Format: date-time */
@@ -11614,7 +11615,7 @@ export type paths = {
         post: {
             parameters: {
                 query: {
-                    type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                    type: "product" | "category" | "slider" | "blog" | "brand" | "site_logo" | "og_image" | "customer_avatar";
                 };
                 header?: never;
                 path?: never;
@@ -11627,7 +11628,7 @@ export type paths = {
                          * @description Image type. For multiple product images use POST /api/v1/media/uploads.
                          * @enum {string}
                          */
-                        type: "product" | "category" | "slider" | "blog" | "brand" | "customer_avatar";
+                        type: "product" | "category" | "slider" | "blog" | "brand" | "site_logo" | "og_image" | "customer_avatar";
                         /**
                          * Format: binary
                          * @description Image file (jpg, jpeg, png, webp). Max 5MB.

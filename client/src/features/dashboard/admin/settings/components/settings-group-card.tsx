@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/features/dashboard/admin/shared/components/image-upload";
 import {
   Select,
   SelectContent,
@@ -73,6 +74,17 @@ function FieldControl({
   }
 
   switch (field.type) {
+    case "image":
+      return (
+        <ImageUpload
+          mode="single"
+          folder={field.key === "store.logoUrl" ? "site-logo" : "og-image"}
+          label={field.label}
+          value={typeof value === "string" ? value : ""}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      );
     case "boolean":
       return (
         <Switch
@@ -159,6 +171,12 @@ function FieldControl({
           value={String(value ?? "")}
           onChange={(event) => onChange(event.target.value)}
           disabled={disabled}
+          rows={field.key === "store.address" ? 1 : undefined}
+          className={
+            field.key === "store.address"
+              ? "h-9 min-h-9 resize-none py-1 field-sizing-fixed"
+              : undefined
+          }
           aria-label={field.label}
         />
       );
@@ -238,7 +256,7 @@ export function SettingsGroupCard({
           <div
             key={field.key}
             className={
-              field.type === "multiselect"
+              field.type === "multiselect" || field.type === "image"
                 ? "space-y-2 sm:col-span-2"
                 : "space-y-2"
             }

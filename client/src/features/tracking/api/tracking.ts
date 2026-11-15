@@ -31,6 +31,8 @@ export const SHIPMENT_STATUS_LABELS: Record<string, string> = {
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Delivered",
   FAILED: "Failed",
+  LOST: "Lost",
+  DAMAGED: "Damaged",
   RETURNED: "Returned",
   CANCELLED: "Cancelled",
 };

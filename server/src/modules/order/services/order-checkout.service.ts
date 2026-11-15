@@ -56,7 +56,8 @@ export const checkout = async (
     await assertAddressGeoHierarchy(input.shippingAddress);
   }
 
-  const runCheckout = (orderNumber: string) => transaction(async (tx) => {
+  const runCheckout = () => transaction(async (tx) => {
+    const orderNumber = await generateOrderNumber(tx);
     const cartRows = await tx.$queryRaw<
         Array<{ id: string }>
     >`SELECT id FROM "cart" WHERE id IN (SELECT id FROM "cart" WHERE "customerProfileId" = ${customerProfileId} AND status = 'ACTIVE' ORDER BY "createdAt" ASC LIMIT 1) FOR UPDATE`;
@@ -311,9 +312,7 @@ export const checkout = async (
 
   for (let attempt = 1; attempt <= ORDER_NUMBER_ATTEMPTS; attempt++) {
     try {
-      const { order, profile, deliveryAddress, lowStockAlerts } = await runCheckout(
-        generateOrderNumber(),
-      );
+      const { order, profile, deliveryAddress, lowStockAlerts } = await runCheckout();
 
       // Stock changes are committed at this point, so alerting admins here can
       // never roll back a paid order.

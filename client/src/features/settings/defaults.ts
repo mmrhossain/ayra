@@ -8,6 +8,7 @@ export const DEFAULT_PUBLIC_SETTINGS: PublicSettings = {
     supportPhone: "",
     address: "Gulshan-2, Dhaka\nBangladesh",
     logoUrl: SITE_LOGO,
+    ogImageUrl: "",
     currency: "BDT",
   },
   payment: {

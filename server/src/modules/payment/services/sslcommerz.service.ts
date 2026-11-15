@@ -5,6 +5,10 @@ import { commitOrderStock } from "../../catalog/inventory/services/inventory.ser
 import { enqueuePaymentConfirmation } from "../../notification/services/notification.service.ts";
 import { escapeHtml } from "../../../template/email.ts";
 import { sslcommerzProvider } from "../providers/sslcommerz.provider.ts";
+import {
+  assertSslcommerzSettlementMatches,
+  assertSslcommerzVerificationMatches,
+} from "../utils/sslcommerz-verification.ts";
 import type {
   SslcommerzFailCancelInput,
   SslcommerzIpnInput,
@@ -15,6 +19,7 @@ type SettlementSource = "sslcommerz-ipn" | "sslcommerz-success";
 
 type LockedPayment = {
   id: string;
+  paymentNumber: string;
   method: string;
   status: string;
   amount: unknown;
@@ -22,6 +27,8 @@ type LockedPayment = {
   createdAt: Date;
   orderId: string;
   paidAt: Date | null;
+  valId: string | null;
+  bankTranId: string | null;
 };
 
 type SettlementResult = {
@@ -48,6 +55,7 @@ const findPaymentByProviderReference = async (tranId: string) => {
 
 const toCustomerPayment = (payment: {
   id: string;
+  paymentNumber: string;
   method: string;
   status: string;
   amount: unknown;
@@ -56,6 +64,7 @@ const toCustomerPayment = (payment: {
   orderId: string;
 }) => ({
   id: payment.id,
+  paymentNumber: payment.paymentNumber,
   method: payment.method,
   status: payment.status,
   amount: payment.amount,
@@ -63,30 +72,6 @@ const toCustomerPayment = (payment: {
   createdAt: payment.createdAt,
   orderId: payment.orderId,
 });
-
-const assertPaymentMatches = (
-  payment: Pick<LockedPayment, "amount" | "currency">,
-  verification: { amount?: number | undefined; currency?: string | undefined },
-) => {
-  if (verification.amount === undefined) {
-    throw new AppError("Transaction amount is missing from the gateway", 400);
-  }
-
-  const expected = Number(payment.amount);
-  if (Math.abs(verification.amount - expected) > 0.01) {
-    throw new AppError(
-      `Transaction amount ${verification.amount} does not match payment amount ${expected}`,
-      400,
-    );
-  }
-
-  if (!verification.currency || verification.currency.toUpperCase() !== payment.currency.toUpperCase()) {
-    throw new AppError(
-      `Transaction currency ${verification.currency ?? "unknown"} does not match payment currency ${payment.currency}`,
-      400,
-    );
-  }
-};
 
 const readBankTranId = (raw: unknown): string | null => {
   if (!raw || typeof raw !== "object") return null;
@@ -141,7 +126,7 @@ const settleVerifiedPayment = async (input: {
   try {
     const result = await transaction(async (tx) => {
       const lockedPayments = await tx.$queryRaw<LockedPayment[]>`
-        SELECT id, method, status, amount, currency, "createdAt", "orderId", "paidAt"
+        SELECT id, "paymentNumber", method, status, amount, currency, "createdAt", "orderId", "paidAt", "valId", "bankTranId"
         FROM "payment"
         WHERE "providerReference" = ${tranId} AND "deletedAt" IS NULL
         FOR UPDATE`;
@@ -149,7 +134,23 @@ const settleVerifiedPayment = async (input: {
       const payment = lockedPayments[0];
       if (!payment) throw new AppError("Payment not found", 404);
 
-      await assertPaymentMatches(payment, verification);
+      assertSslcommerzVerificationMatches(
+        tranId,
+        { amount: Number(payment.amount), currency: payment.currency },
+        verification,
+      );
+
+      if (payment.status === "SUCCESS") {
+        assertSslcommerzSettlementMatches(
+          { valId: payment.valId, bankTranId: payment.bankTranId },
+          { valId, bankTranId },
+        );
+        await markWebhookProcessed(tx, webhookLogId);
+        return {
+          payment: toCustomerPayment(payment),
+          alreadyProcessed: true as const,
+        };
+      }
 
       const lockedOrders = await tx.$queryRaw<
         Array<{
@@ -171,7 +172,9 @@ const settleVerifiedPayment = async (input: {
       if (
         order.status === "CANCELLED" ||
         order.status === "REFUNDED" ||
-        order.paymentStatus === "FAILED"
+        order.paymentStatus === "FAILED" ||
+        order.paymentStatus === "PAID" ||
+        order.paymentStatus === "REFUNDED"
       ) {
         await tx.payment.update({
           where: { id: payment.id },
@@ -202,7 +205,10 @@ const settleVerifiedPayment = async (input: {
             data: {
               paymentId: payment.id,
               amount: Number(payment.amount),
-              reason: "Payment received after the order was cancelled",
+              reason:
+                order.paymentStatus === "PAID"
+                  ? "Duplicate payment attempt for an already-paid order"
+                  : "Payment received after the order was closed",
               status: "PENDING",
               requiresManualProcessing: true,
             },
@@ -215,7 +221,10 @@ const settleVerifiedPayment = async (input: {
             eventType: "PAYMENT_SUCCESS",
             metadata: {
               source,
-              reason: "late-payment-after-cancel",
+              reason:
+                order.paymentStatus === "PAID"
+                  ? "duplicate-payment-attempt"
+                  : "late-payment-after-closed-order",
               valId,
               refundRequired: existingRefunds === 0,
             },
@@ -303,8 +312,20 @@ const settleVerifiedPayment = async (input: {
   } catch (error) {
     if (!isPrismaCode(error, "P2002")) throw error;
 
-    await markWebhookProcessedOutsideTransaction(webhookLogId);
     const existing = await findPaymentByProviderReference(tranId);
+    if (
+      existing.status !== "SUCCESS" ||
+      existing.valId !== valId ||
+      (bankTranId && existing.bankTranId !== bankTranId)
+    ) {
+      throw new AppError(
+        "Gateway transaction details conflict with an existing payment",
+        409,
+        "PAYMENT_REFERENCE_CONFLICT",
+      );
+    }
+
+    await markWebhookProcessedOutsideTransaction(webhookLogId);
 
     return {
       payment: toCustomerPayment(existing),
@@ -326,12 +347,6 @@ const markWebhookProcessedOutsideTransaction = async (
 export const handleSslcommerzSuccess = async (
   input: SslcommerzSuccessInput,
 ) => {
-  const payment = await findPaymentByProviderReference(input.tran_id);
-
-  if (payment.status === "SUCCESS") {
-    return { payment: toCustomerPayment(payment) };
-  }
-
   const verification = await sslcommerzProvider.verifyTransaction(input.val_id);
   if (!verification.valid) {
     throw new AppError("Transaction verification failed", 400);
@@ -419,7 +434,7 @@ export const handleSslcommerzIpn = async (input: SslcommerzIpnInput) => {
 
     const result = await transaction(async (tx) => {
       const lockedPayments = await tx.$queryRaw<LockedPayment[]>`
-        SELECT id, method, status, amount, currency, "createdAt", "orderId", "paidAt"
+        SELECT id, "paymentNumber", method, status, amount, currency, "createdAt", "orderId", "paidAt", "valId", "bankTranId"
         FROM "payment"
         WHERE "providerReference" = ${tranId} AND "deletedAt" IS NULL
         FOR UPDATE`;

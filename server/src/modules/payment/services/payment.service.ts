@@ -96,6 +96,7 @@ const activePaymentWhere = (
 
 const toCustomerPayment = (payment: {
   id: string;
+  paymentNumber: string;
   method: string;
   status: string;
   amount: unknown;
@@ -103,6 +104,7 @@ const toCustomerPayment = (payment: {
   createdAt: Date;
 }) => ({
   id: payment.id,
+  paymentNumber: payment.paymentNumber,
   method: payment.method,
   status: payment.status,
   amount: payment.amount,
@@ -157,7 +159,7 @@ export const initiatePayment = async (
   const callbacks = await getSslcommerzCallbackUrls();
 
   if (method === "SSLCOMMERZ") {
-    const suffix = randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
+    const suffix = randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
     providerOrder.orderNumber = `${providerOrder.orderNumber}-${suffix}`;
   }
 
@@ -516,6 +518,7 @@ export const updateRefundStatus = async (
 
 const adminPaymentListSelect = {
   id: true,
+  paymentNumber: true,
   method: true,
   status: true,
   amount: true,
@@ -625,6 +628,7 @@ export const getPayment = async (paymentId: string) => {
 
 const adminRefundListSelect = {
   id: true,
+  refundNumber: true,
   amount: true,
   reason: true,
   status: true,

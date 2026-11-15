@@ -520,6 +520,7 @@ export type CartActivityScalarFieldEnum = (typeof CartActivityScalarFieldEnum)[k
 export const OrderScalarFieldEnum = {
   id: 'id',
   orderNumber: 'orderNumber',
+  invoiceNumber: 'invoiceNumber',
   status: 'status',
   paymentStatus: 'paymentStatus',
   fulfillmentStatus: 'fulfillmentStatus',
@@ -656,6 +657,7 @@ export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof
 
 export const PaymentScalarFieldEnum = {
   id: 'id',
+  paymentNumber: 'paymentNumber',
   method: 'method',
   status: 'status',
   amount: 'amount',
@@ -693,6 +695,7 @@ export type PaymentTransactionScalarFieldEnum = (typeof PaymentTransactionScalar
 
 export const RefundScalarFieldEnum = {
   id: 'id',
+  refundNumber: 'refundNumber',
   amount: 'amount',
   reason: 'reason',
   status: 'status',
@@ -900,6 +903,7 @@ export const ShipmentScalarFieldEnum = {
   deliveredAt: 'deliveredAt',
   returnedAt: 'returnedAt',
   shippingCost: 'shippingCost',
+  codAmount: 'codAmount',
   notes: 'notes',
   orderId: 'orderId',
   warehouseId: 'warehouseId',
@@ -939,6 +943,7 @@ export const DeliveryAttemptScalarFieldEnum = {
   attemptNumber: 'attemptNumber',
   remarks: 'remarks',
   attemptedAt: 'attemptedAt',
+  nextAttemptAt: 'nextAttemptAt',
   shipmentId: 'shipmentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
