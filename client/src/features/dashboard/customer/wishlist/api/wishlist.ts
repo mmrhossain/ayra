@@ -1,3 +1,4 @@
+import { createSharedRequest } from "@/lib/shared-request";
 import { dashboardApi } from "@/lib/api/dashboard";
 import type {
   Envelope,
@@ -24,7 +25,7 @@ export {
 
 const noStore = { cache: "no-store" as const };
 
-export async function fetchWishlistItems(
+async function loadWishlistItems(
   params: { page?: number; limit?: number } = {},
 ): Promise<WishlistListResult> {
   const res = await dashboardApi.get<Envelope<WishlistListResult>>(
@@ -48,12 +49,21 @@ export async function fetchWishlistItems(
   };
 }
 
+export const wishlistRequest = createSharedRequest(() => loadWishlistItems({ page: 1, limit: 50 }));
+
+export function fetchWishlistItems(params: { page?: number; limit?: number } = {}) {
+  return (params.page ?? 1) === 1 && (params.limit ?? 50) === 50
+    ? wishlistRequest.read()
+    : loadWishlistItems(params);
+}
+
 export async function addWishlistItem(
   variantId: string,
 ): Promise<{ message: string }> {
   const res = await dashboardApi.post<Envelope<unknown>>("/wishlist/items", {
     body: { variantId },
   });
+  wishlistRequest.invalidate();
   return { message: res.message || "Item added to wishlist" };
 }
 
@@ -63,5 +73,6 @@ export async function removeWishlistItem(
   const res = await dashboardApi.delete<Envelope<unknown>>(
     `/wishlist/items/${variantId}`,
   );
+  wishlistRequest.invalidate();
   return { message: res.message || "Item removed from wishlist" };
 }

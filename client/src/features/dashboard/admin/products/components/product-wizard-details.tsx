@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTaxClasses, taxClassesKey } from "../api/tax-classes";
 import type { UseFormReturn } from "react-hook-form";
 
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
@@ -42,6 +44,7 @@ export function ProductWizardDetails({
   brands,
   imageUploadRef,
 }: Props) {
+  const taxClasses = useQuery({ queryKey: taxClassesKey, queryFn: fetchTaxClasses, staleTime: 60_000 });
   return (
     <Form {...form}>
       <div className="space-y-4">
@@ -126,6 +129,27 @@ export function ProductWizardDetails({
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="taxClassId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tax class</FormLabel>
+              <Select value={field.value || "__none__"} onValueChange={value => field.onChange(value === "__none__" ? "" : value)}>
+                <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select tax class" /></SelectTrigger></FormControl>
+                <SelectContent>
+                  <SelectItem value="__none__">No tax class</SelectItem>
+                  {(taxClasses.data ?? []).filter(row => row.isActive || row.id === field.value).map(row => (
+                    <SelectItem key={row.id} value={row.id} disabled={!row.isActive}>{row.name} ({row.rate}%){row.isActive ? "" : " - inactive"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {taxClasses.isError ? <p role="alert" className="text-sm text-destructive">Could not load tax classes.</p> : null}
+              <FormDescription><Link href="/admin/tax-classes" className="underline">Manage tax classes</Link></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="description"

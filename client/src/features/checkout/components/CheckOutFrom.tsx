@@ -42,6 +42,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
   const { data, isPending: sessionPending } = authClient.useSession();
   const user = data?.user;
   const userId = user?.id ?? null;
+  const userName = user?.name ?? "";
+  const userEmail = user?.email ?? "";
 
   const [hydrated, setHydrated] = useState(false);
   const formBusy = sessionPending || !hydrated;
@@ -67,10 +69,9 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
     let cancelled = false;
 
     const hydrate = async () => {
-      const activeUser = user;
-      if (!activeUser) return;
       try {
         await fetchDivisionList();
+        if (cancelled) return;
 
         let saved: SavedAddress | null = null;
         try {
@@ -81,8 +82,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
 
         if (cancelled) return;
 
-        handleChange("name", saved?.fullName || activeUser.name || "");
-        handleChange("email", saved?.email || activeUser.email || "");
+        handleChange("name", saved?.fullName || userName || "");
+        handleChange("email", saved?.email || userEmail || "");
         handleChange("phone", saved?.phone || "");
         handleChange("country", saved?.country || "Bangladesh");
         handleChange("address", saved?.addressLine1 || "");
@@ -94,7 +95,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
         handleChange("upazilaCode", saved?.upazilaCode || "");
         handleChange("postal_code", saved?.postalCode || "");
 
-        const parts = splitFullName(saved?.fullName || activeUser.name || "");
+        const parts = splitFullName(saved?.fullName || userName || "");
         setFirstName(parts.firstName);
         setLastName(parts.lastName);
 
@@ -149,7 +150,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
   }, [
     userId,
     sessionPending,
-    user,
+    userName,
+    userEmail,
     fetchDivisionList,
     fetchDistrictList,
     fetchUpazilaList,

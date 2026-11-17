@@ -1,3 +1,4 @@
+import { customerCartRequest } from "@/features/cart/cart-request";
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
 import type { CustomerOrder } from "@/features/dashboard/customer/orders/types";
 import { toCustomerApiError } from "@/features/dashboard/customer/orders/utils";
@@ -82,10 +83,7 @@ export function cartCouponCode(
 }
 
 export async function fetchMyCart(): Promise<CustomerCart> {
-  const res = await dashboardApi.get<Envelope<CustomerCart>>("/cart", {
-    cache: "no-store",
-  });
-  const data = res.data;
+  const data = await customerCartRequest.read();
   if (!data) {
     return {
       items: [],

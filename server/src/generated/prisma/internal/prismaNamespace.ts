@@ -405,6 +405,7 @@ export const ModelName = {
   Jwks: 'Jwks',
   Category: 'Category',
   Brand: 'Brand',
+  TaxClass: 'TaxClass',
   Product: 'Product',
   ProductVariant: 'ProductVariant',
   Attribute: 'Attribute',
@@ -493,7 +494,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staffInvitation" | "session" | "account" | "verification" | "jwks" | "category" | "brand" | "product" | "productVariant" | "attribute" | "attributeValue" | "variantAttribute" | "productImage" | "review" | "customerProfile" | "address" | "wishlist" | "wishlistItem" | "cart" | "cartItem" | "cartCoupon" | "cartActivity" | "order" | "orderItem" | "returnRequest" | "returnItem" | "orderAddress" | "orderStatusHistory" | "orderEvent" | "payment" | "paymentTransaction" | "refund" | "paymentWebhookLog" | "paymentEvent" | "platformSetting" | "platformSettingAudit" | "warehouse" | "inventory" | "stockReservation" | "inventoryTransaction" | "inventoryAdjustment" | "inventoryTransfer" | "inventoryTransferItem" | "inventoryEvent" | "shipment" | "shipmentItem" | "shipmentTracking" | "deliveryAttempt" | "courierWebhookLog" | "shipmentAddress" | "shipmentEvent" | "shippingZone" | "shippingMethod" | "shippingRate" | "coupon" | "couponUsage" | "couponProduct" | "couponCategory" | "notificationTemplate" | "notification" | "notificationLog" | "userNotificationPreference" | "pushDevice" | "legalDocument" | "faqCategory" | "faqItem" | "contactMessage" | "cMSPage" | "pageSection" | "contentBlock" | "slider" | "blogCategory" | "blog" | "productCollection" | "productCollectionItem" | "seoRedirect" | "seoMetadata" | "mediaAsset" | "idempotencyKey" | "adminAuditLog"
+    modelProps: "user" | "staffInvitation" | "session" | "account" | "verification" | "jwks" | "category" | "brand" | "taxClass" | "product" | "productVariant" | "attribute" | "attributeValue" | "variantAttribute" | "productImage" | "review" | "customerProfile" | "address" | "wishlist" | "wishlistItem" | "cart" | "cartItem" | "cartCoupon" | "cartActivity" | "order" | "orderItem" | "returnRequest" | "returnItem" | "orderAddress" | "orderStatusHistory" | "orderEvent" | "payment" | "paymentTransaction" | "refund" | "paymentWebhookLog" | "paymentEvent" | "platformSetting" | "platformSettingAudit" | "warehouse" | "inventory" | "stockReservation" | "inventoryTransaction" | "inventoryAdjustment" | "inventoryTransfer" | "inventoryTransferItem" | "inventoryEvent" | "shipment" | "shipmentItem" | "shipmentTracking" | "deliveryAttempt" | "courierWebhookLog" | "shipmentAddress" | "shipmentEvent" | "shippingZone" | "shippingMethod" | "shippingRate" | "coupon" | "couponUsage" | "couponProduct" | "couponCategory" | "notificationTemplate" | "notification" | "notificationLog" | "userNotificationPreference" | "pushDevice" | "legalDocument" | "faqCategory" | "faqItem" | "contactMessage" | "cMSPage" | "pageSection" | "contentBlock" | "slider" | "blogCategory" | "blog" | "productCollection" | "productCollectionItem" | "seoRedirect" | "seoMetadata" | "mediaAsset" | "idempotencyKey" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1086,6 +1087,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.BrandCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.BrandCountAggregateOutputType> | number
+        }
+      }
+    }
+    TaxClass: {
+      payload: Prisma.$TaxClassPayload<ExtArgs>
+      fields: Prisma.TaxClassFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxClassFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxClassFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        findFirst: {
+          args: Prisma.TaxClassFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxClassFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        findMany: {
+          args: Prisma.TaxClassFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>[]
+        }
+        create: {
+          args: Prisma.TaxClassCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        createMany: {
+          args: Prisma.TaxClassCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxClassCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>[]
+        }
+        delete: {
+          args: Prisma.TaxClassDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        update: {
+          args: Prisma.TaxClassUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxClassDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxClassUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxClassUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxClassUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxClassPayload>
+        }
+        aggregate: {
+          args: Prisma.TaxClassAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxClass>
+        }
+        groupBy: {
+          args: Prisma.TaxClassGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxClassGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxClassCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxClassCountAggregateOutputType> | number
         }
       }
     }
@@ -6670,6 +6745,17 @@ export const BrandScalarFieldEnum = {
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
 
 
+export const TaxClassScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  rate: 'rate',
+  isActive: 'isActive'
+} as const
+
+export type TaxClassScalarFieldEnum = (typeof TaxClassScalarFieldEnum)[keyof typeof TaxClassScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -6683,6 +6769,7 @@ export const ProductScalarFieldEnum = {
   reviewCount: 'reviewCount',
   metaTitle: 'metaTitle',
   metaDescription: 'metaDescription',
+  taxClassId: 'taxClassId',
   categoryId: 'categoryId',
   brandId: 'brandId',
   createdAt: 'createdAt',
@@ -6942,6 +7029,8 @@ export const OrderItemScalarFieldEnum = {
   costCapturedAt: 'costCapturedAt',
   discountAmount: 'discountAmount',
   taxAmount: 'taxAmount',
+  taxClassName: 'taxClassName',
+  taxRate: 'taxRate',
   allocationVersion: 'allocationVersion',
   subtotal: 'subtotal',
   orderId: 'orderId',
@@ -7949,6 +8038,20 @@ export type ListEnumStaffInvitationStatusFieldRefInput<$PrismaModel> = FieldRefI
 
 
 /**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
  * Reference to a field of type 'ProductStatus'
  */
 export type EnumProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductStatus'>
@@ -7987,20 +8090,6 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -8652,6 +8741,7 @@ export type GlobalOmitConfig = {
   jwks?: Prisma.JwksOmit
   category?: Prisma.CategoryOmit
   brand?: Prisma.BrandOmit
+  taxClass?: Prisma.TaxClassOmit
   product?: Prisma.ProductOmit
   productVariant?: Prisma.ProductVariantOmit
   attribute?: Prisma.AttributeOmit

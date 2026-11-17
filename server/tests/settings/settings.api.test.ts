@@ -71,8 +71,7 @@ describe("settings API", () => {
     expect(res.body.data.payment).not.toHaveProperty("callbackBaseUrl");
     expect(res.body.data.payment).not.toHaveProperty("sslcommerz");
     expect(res.body.data.checkout).toMatchObject({
-      pricesIncludeTax: expect.any(Boolean),
-      taxRatePercent: expect.any(Number),
+      taxEnabled: expect.any(Boolean),
     });
   });
 

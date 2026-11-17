@@ -7,7 +7,7 @@ import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE, staffShoppingRedirect } from "@
 import { DashboardApiError } from "@/lib/api/dashboard";
 import { useWishStore } from "@/stores/useWishStore";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 export function useWishlistToggle(variantId: string | null | undefined) {
   const { data: session } = authClient.useSession();
@@ -19,13 +19,7 @@ export function useWishlistToggle(variantId: string | null | undefined) {
   const removeFromWishList = useWishStore((s) => s.removeFromWishList);
   const wishLoading = useWishStore((s) => s.wishLoading);
   const setWishLoading = useWishStore((s) => s.setWishLoading);
-  const fetchWishList = useWishStore((s) => s.fetchWishList);
-
-  useEffect(() => {
-    if (isLoggedIn && !isStaffRole(session?.user?.role) && wishes === null) {
-      void fetchWishList();
-    }
-  }, [isLoggedIn, session?.user?.role, wishes, fetchWishList]);
+  // The storefront provider loads the shared wishlist once for all cards.
 
   const inWish = Boolean(
     variantId && wishes?.some((item) => item.variantId === variantId),

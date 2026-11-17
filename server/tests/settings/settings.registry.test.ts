@@ -6,6 +6,14 @@ import {
 } from "../../src/modules/settings/settings.registry.ts";
 
 describe("platform settings registry", () => {
+  it("exposes one VAT switch without legacy tax settings", () => {
+    const keys = getSettingsByGroup("checkout").map(field => field.key);
+    expect(keys).toContain("checkout.taxEnabled");
+    for (const key of ["checkout.pricesIncludeTax", "checkout.taxRatePercent", "checkout.showTaxAtCheckout"]) {
+      expect(SETTING_DEFINITIONS.has(key)).toBe(false);
+      expect(keys).not.toContain(key);
+    }
+  });
   it("has unique keys mapped to known groups", () => {
     const groupKeys = new Set(SETTING_GROUPS.map((group) => group.key));
     const keys = new Set<string>();

@@ -14,9 +14,7 @@ export type PublicSettings = {
     enabledMethods: PaymentMethodCode[];
   };
   checkout: {
-    pricesIncludeTax: boolean;
-    taxRatePercent: number;
-    freeShippingThreshold: number | null;
+    taxEnabled: boolean;
   };
 };
 

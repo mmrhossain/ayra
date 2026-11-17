@@ -126,6 +126,7 @@ export function detailsFromProduct(product?: ProductDetail): DetailsValues {
     slug: product?.slug ?? "",
     categoryId: product?.category?.id ?? "",
     brandId: product?.brand?.id ?? "",
+    taxClassId: product?.taxClassId ?? "",
     description: product?.description ?? "",
     imageUrls,
     primaryImageUrl: primary,
@@ -171,6 +172,7 @@ export function variantsFromProduct(product?: ProductDetail): VariantRow[] {
       skuEdited: true,
       lastSuggested: variant.sku,
       price: String(variant.price ?? ""),
+      compareAtPrice: variant.compareAtPrice == null ? "" : String(variant.compareAtPrice),
       costPrice:
         variant.costPrice === null || variant.costPrice === undefined
           ? ""

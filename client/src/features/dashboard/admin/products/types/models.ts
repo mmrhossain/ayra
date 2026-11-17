@@ -29,6 +29,7 @@ export type CreateProductBody = {
   description?: string;
   categoryId: string;
   brandId?: string | null;
+  taxClassId?: string | null;
   status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
   isFeatured?: boolean;
   images?: ProductImageInput[];
@@ -41,6 +42,7 @@ export type CreateVariantBody = {
   sku?: string;
   price: number;
   costPrice?: number | null;
+  compareAtPrice?: number | null;
   isDefault?: boolean;
   attributeValueIds?: string[];
 };

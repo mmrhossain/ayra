@@ -1,3 +1,4 @@
+import { createSharedRequest } from "@/lib/shared-request";
 import { dashboardApi } from "@/lib/api/dashboard";
 import type { Envelope } from "@/lib/api/http";
 import type {
@@ -21,9 +22,9 @@ async function fetchList(
   return res.data ?? [];
 }
 
-export function fetchDivisions(): Promise<GeoDivision[]> {
-  return fetchList("/geo/divisions");
-}
+const divisionRequest = createSharedRequest<GeoDivision[]>(() => fetchList("/geo/divisions"));
+
+export const fetchDivisions = divisionRequest.read;
 
 export function fetchDistricts(divisionCode: string): Promise<GeoDistrict[]> {
   return fetchList("/geo/districts", { divisionCode });

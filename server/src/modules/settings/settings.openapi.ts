@@ -56,9 +56,7 @@ const publicSettingsSchema = z.object({
     enabledMethods: z.array(z.enum(["COD", "SSLCOMMERZ"])),
   }),
   checkout: z.object({
-    pricesIncludeTax: z.boolean(),
-    taxRatePercent: z.number(),
-    freeShippingThreshold: z.number().nullable(),
+    taxEnabled: z.boolean(),
   }),
 });
 

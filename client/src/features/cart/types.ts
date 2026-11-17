@@ -44,6 +44,7 @@ export type CartState = {
   totalAmount: number;
   discountAmount: number;
   vatAmount: number;
+  taxRates: number[];
   payableAmount: number;
   couponCode: string | null;
   cartLoading: Record<string, boolean>;

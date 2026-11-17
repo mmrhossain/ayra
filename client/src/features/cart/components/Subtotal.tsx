@@ -13,7 +13,7 @@ import { useState } from "react";
 
 const Subtotal = () => {
   const { checkout } = usePublicSettings();
-  const { totalAmount, discountAmount, payableAmount, couponCode, applyCoupon, removeCoupon } =
+  const { totalAmount, discountAmount, vatAmount, taxRates, payableAmount, couponCode, applyCoupon, removeCoupon } =
     useCartStore();
   const { data } = authClient.useSession();
   const isLogin = Boolean(data?.user);
@@ -68,7 +68,7 @@ const Subtotal = () => {
 
   return (
     <aside className="h-fit rounded-md border border-border-color p-4 sm:p-5 md:p-6">
-      <h2 className="mb-4 text-lg font-semibold text-foreground">Order Summary</h2>
+      <h2 className="mb-4 text-lg font-semibold text-foreground">Cart Summary</h2>
 
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between text-sm sm:text-base">
@@ -83,12 +83,18 @@ const Subtotal = () => {
             <span className="text-sky-color">
               Discount{discountPct ? ` (-${discountPct}%)` : ""}
             </span>
-            <span className="font-semibold tabular-nums text-danger">-{formatPrice(discount)}</span>
+            <span className="font-semibold tabular-nums text-foreground">-{formatPrice(discount)}</span>
           </div>
         ) : null}
 
+        {checkout.taxEnabled ? (
+          <div className="flex items-center justify-between text-sm sm:text-base">
+            <span className="text-sky-color">Tax/VAT{taxRates.length ? " (" + taxRates.map(rate => rate + "%").join(", ") + ")" : ""}</span>
+            <span className="font-semibold tabular-nums">{formatPrice(Number(vatAmount))}</span>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between border-t border-border-color pt-3 text-base sm:pt-4">
-          <span className="text-foreground">Total</span>
+          <span className="text-foreground">Estimated Total</span>
           <span className="font-semibold tabular-nums text-foreground">
             {formatPrice(Number(payableAmount))}
           </span>
@@ -96,14 +102,8 @@ const Subtotal = () => {
       </div>
 
       <p className="mt-3 text-xs text-sky-color">
-        Tax and shipping costs will be calculated at checkout.
+        Shipping is calculated at checkout after you select your delivery location.
       </p>
-      {checkout.freeShippingThreshold != null ? (
-        <p className="mt-1 text-xs text-sky-color">
-          Free shipping threshold: {formatPrice(checkout.freeShippingThreshold)}.
-          Shipping rates are confirmed at checkout.
-        </p>
-      ) : null}
 
       <div className="mt-4 sm:mt-5">
         {couponCode ? (

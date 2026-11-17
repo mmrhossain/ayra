@@ -7,6 +7,7 @@ import "./common-schemas.ts";
 import "../../modules/auth/auth.openapi.ts";
 import "../../modules/catalog/category/category.openapi.ts";
 import "../../modules/catalog/brand/brand.openapi.ts";
+import "../../modules/catalog/collection/collection.openapi.ts";
 import "../../modules/catalog/product/product.openapi.ts";
 import "../../modules/catalog/inventory/inventory.openapi.ts";
 import "../../modules/warehouse/warehouse.openapi.ts";

@@ -7,6 +7,8 @@ import {
 
 const router = Router();
 
+router.use("/shipping", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+
 const customerOnly = [requireAuth, requireCustomer];
 
 router.get("/shipping/options", ...customerOnly, getShippingOptionsHandler);

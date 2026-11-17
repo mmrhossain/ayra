@@ -73,9 +73,7 @@ export type PublicSettings = {
     enabledMethods: PaymentMethod[];
   };
   checkout: {
-    pricesIncludeTax: boolean;
-    taxRatePercent: number;
-    freeShippingThreshold: number | null;
+    taxEnabled: boolean;
   };
 };
 

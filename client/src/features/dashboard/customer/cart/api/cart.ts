@@ -2,6 +2,7 @@
  * Authenticated customer cart. Dashboard client only.
  * Guest cart lives in `@/features/cart/api` (store-front client).
  */
+import { customerCartRequest } from "@/features/cart/cart-request";
 import { resolveProductImage } from "@/features/cart/lib/product-image";
 import type { CartItemAttribute } from "@/features/cart/types";
 import { dashboardApi, DashboardApiError } from "@/lib/api/dashboard";
@@ -22,6 +23,7 @@ export type CartLine = {
 };
 
 export type CartSnapshot = {
+  taxRates?: number[];
   items: CartLine[];
   couponCode: string | null;
   subtotal: number;
@@ -118,6 +120,7 @@ function mapAuthCart(data: unknown): CartSnapshot {
     subtotal: num(cart.subtotal),
     discountAmount: num(cart.discountAmount),
     taxAmount: num(cart.taxAmount),
+    taxRates: Array.isArray(cart.taxRates) ? cart.taxRates.filter((rate): rate is number => typeof rate === "number" && Number.isFinite(rate)) : [],
     shippingAmount: num(cart.shippingAmount),
     grandTotal: num(cart.grandTotal),
   };
@@ -128,10 +131,7 @@ export function isCartUnauthorized(err: unknown): boolean {
 }
 
 export async function fetchAuthCartSnapshot(): Promise<CartSnapshot> {
-  const res = await dashboardApi.get<Envelope<unknown>>("/cart", {
-    cache: "no-store",
-  });
-  return mapAuthCart(res.data);
+  return mapAuthCart(await customerCartRequest.read());
 }
 
 export async function addAuthCartItem(
@@ -141,6 +141,7 @@ export async function addAuthCartItem(
   const res = await dashboardApi.post<Envelope<unknown>>("/cart/items", {
     body: { variantId, quantity },
   });
+  customerCartRequest.invalidate();
   return { message: res.message || "Item added to cart" };
 }
 
@@ -152,6 +153,7 @@ export async function updateAuthCartItem(
     `/cart/items/${variantId}`,
     { body: { quantity } },
   );
+  customerCartRequest.invalidate();
   return { message: res.message || "Cart item updated" };
 }
 
@@ -161,6 +163,7 @@ export async function removeAuthCartItem(
   const res = await dashboardApi.delete<Envelope<unknown>>(
     `/cart/items/${variantId}`,
   );
+  customerCartRequest.invalidate();
   return { message: res.message || "Item removed from cart" };
 }
 
@@ -170,11 +173,13 @@ export async function applyCartCoupon(
   const res = await dashboardApi.post<Envelope<unknown>>("/cart/coupon", {
     body: { code: code.trim() },
   });
+  customerCartRequest.invalidate();
   return { message: res.message || "Coupon applied" };
 }
 
 export async function removeCartCoupon(): Promise<{ message: string }> {
   const res = await dashboardApi.delete<Envelope<unknown>>("/cart/coupon");
+  customerCartRequest.invalidate();
   return { message: res.message || "Coupon removed" };
 }
 
@@ -185,6 +190,7 @@ export async function mergeGuestCartOnLogin(
   await dashboardApi.post<Envelope<unknown>>("/cart/guest/merge", {
     body: { items },
   });
+  customerCartRequest.invalidate();
 }
 
 export function toCartErrorMessage(err: unknown): string {

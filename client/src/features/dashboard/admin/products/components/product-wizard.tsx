@@ -2,9 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,7 @@ import {
   typedSkuError,
 } from "@/features/dashboard/admin/products/utils/sku-generator";
 import type { ImageUploadHandle } from "@/features/dashboard/admin/shared/components/image-upload";
+import { useProductEditorClose } from "./product-wizard-sheet";
 import { ProductWizardDetails } from "./product-wizard-details";
 import { ProductWizardStock } from "./product-wizard-stock";
 import { ProductWizardVariants } from "./product-wizard-variants";
@@ -69,6 +69,7 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
       ...row,
       skuError: undefined,
       priceError: undefined,
+      compareAtError: undefined,
       costError: undefined,
       attrError: undefined,
       isDefault: fallbackDefaultKey ? row.key === fallbackDefaultKey : row.isDefault,
@@ -79,6 +80,10 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
     const price = Number(row.price);
     if (!row.price.trim() || !Number.isFinite(price) || price <= 0) {
       next.priceError = "Price must be greater than 0";
+    }
+    if (row.compareAtPrice?.trim()) {
+      const compare = Number(row.compareAtPrice);
+      if (!Number.isFinite(compare) || compare < price) next.compareAtError = "Compare-at price cannot be below selling price";
     }
     if (row.costPrice.trim()) {
       const cost = Number(row.costPrice);
@@ -106,6 +111,7 @@ export function ProductWizard({
   closeOnSuccess = false,
 }: ProductWizardProps) {
   const router = useRouter();
+  const editorClose = useProductEditorClose();
   const slugManual = useRef(mode === "edit");
   const imageUploadRef = useRef<ImageUploadHandle>(null);
   const [step, setStep] = useState<WizardStep>(initialStep);
@@ -163,20 +169,24 @@ export function ProductWizard({
     form.setValue("slug", slugify(nameValue ?? ""), { shouldValidate: false });
   }, [nameValue, form]);
 
+  const hasUnsavedChanges = form.formState.isDirty || variantsDirty;
+
   useEffect(() => {
+    if (!hasUnsavedChanges) return;
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!form.formState.isDirty && !variantsDirty) return;
       event.preventDefault();
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [form.formState.isDirty, variantsDirty]);
-
-  const confirmLeave = () => {
-    if (!form.formState.isDirty && !variantsDirty) return true;
+  }, [hasUnsavedChanges]);
+  const confirmLeave = useCallback(() => {
+    if (isSaving) return false;
+    if (!hasUnsavedChanges) return true;
     return window.confirm("Leave without saving? Unsaved changes will be lost.");
-  };
+  }, [isSaving, hasUnsavedChanges]);
+
+  useEffect(() => editorClose?.registerGuard(confirmLeave), [editorClose, confirmLeave]);
 
   const setRowsDirty = (next: VariantRow[]) => {
     setVariantsDirty(true);
@@ -189,6 +199,10 @@ export function ProductWizard({
   };
 
   const goList = () => {
+    if (editorClose) {
+      editorClose.requestClose();
+      return;
+    }
     if (!confirmLeave()) return;
     router.push("/admin/products");
   };
@@ -200,7 +214,7 @@ export function ProductWizard({
       setRowsDirty(checked);
       if (
         checked.some(
-          (row) => row.skuError || row.priceError || row.costError || row.attrError,
+          (row) => row.skuError || row.priceError || row.compareAtError || row.costError || row.attrError,
         )
       ) {
         setStep(2);
@@ -302,7 +316,7 @@ export function ProductWizard({
       setRowsDirty(checked);
       if (
         checked.some(
-          (row) => row.skuError || row.priceError || row.costError || row.attrError,
+          (row) => row.skuError || row.priceError || row.compareAtError || row.costError || row.attrError,
         )
       ) {
         requestAnimationFrame(focusFirstInvalid);
@@ -329,6 +343,7 @@ export function ProductWizard({
           type="button"
           variant="outline"
           onClick={goList}
+          disabled={isSaving}
           className="shrink-0 max-sm:w-full"
         >
           Back to products
@@ -485,17 +500,6 @@ export function ProductWizard({
           Retry failed variants
         </Button>
       ) : null}
-      <p className="text-xs text-muted-foreground">
-        <Link
-          href="/admin/products"
-          className="underline"
-          onClick={(e) => {
-            if (!confirmLeave()) e.preventDefault();
-          }}
-        >
-          Cancel
-        </Link>
-      </p>
     </section>
   );
 }

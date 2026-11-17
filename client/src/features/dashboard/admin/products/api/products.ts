@@ -76,8 +76,11 @@ export async function fetchProductList(
 }
 
 export async function fetchAdminProduct(id: string): Promise<ProductDetail> {
+  // Intercepted Next routes can include repeated (.) markers in params.id.
+  // Keep routing metadata out of the backend product identifier.
+  const productId = id.replace(/^(?:\(\.\))+/, "");
   const res = await dashboardApi.get<Envelope<ProductDetail>>(
-    `/admin/products/${id}`,
+    `/admin/products/${encodeURIComponent(productId)}`,
     { ...noStore, timeoutMs: PRODUCT_API_TIMEOUT_MS },
   );
   return res.data;

@@ -60,6 +60,7 @@ export type NormalizedVariantAttribute = {
 };
 
 export type ProductDetail = {
+  taxClassId?: string | null;
   id: string;
   name: string;
   slug: string;

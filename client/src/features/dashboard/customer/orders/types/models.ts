@@ -30,6 +30,8 @@ export type CustomerOrderItem = {
   unitPrice: number | string;
   discountAmount?: number | string;
   taxAmount?: number | string;
+  taxClassName?: string | null;
+  taxRate?: number | string | null;
   subtotal: number | string;
 };
 

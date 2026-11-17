@@ -112,9 +112,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         permission: "catalog",
       },
       {
+        href: "/admin/collections",
+        label: "Collections",
+        icon: FolderTree,
+        permission: "catalog",
+      },
+      {
         href: "/admin/categories",
         label: "Categories",
         icon: FolderTree,
+        permission: "catalog",
+      },
+      {
+        href: "/admin/tax-classes",
+        label: "Tax classes",
+        icon: Tag,
         permission: "catalog",
       },
       {

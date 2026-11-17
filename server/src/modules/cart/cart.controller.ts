@@ -12,6 +12,7 @@ import {
 } from "./cart.validator.ts";
 import {
     getCart,
+    quoteGuestCart,
     addItem,
     updateItemQuantity,
     removeItem,
@@ -113,3 +114,9 @@ export const removeCouponHandler = asyncHandler(
         successResponse(res, await removeCoupon(customerProfile.id), "Coupon removed");
     }
 );
+
+export const quoteGuestCartHandler = asyncHandler(async (req: Request, res: Response) => {
+  const input = mergeGuestCartSchema.parse(req.body);
+  res.setHeader("Cache-Control", "no-store");
+  successResponse(res, await quoteGuestCart(input.items), "Cart estimated");
+});

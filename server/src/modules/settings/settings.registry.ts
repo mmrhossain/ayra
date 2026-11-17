@@ -33,6 +33,7 @@ export const SETTING_GROUPS: SettingGroup[] = [
 ];
 
 const definitions: SettingDefinition[] = [
+  { key: "checkout.taxEnabled", group: "checkout", label: "Enable tax/VAT", type: "boolean", schema: z.boolean(), defaultValue: true, isPublic: true },
   {
     key: "store.name",
     group: "store",
@@ -180,35 +181,6 @@ const definitions: SettingDefinition[] = [
     schema: z.string().max(500),
     defaultValue: "",
     isSecret: true,
-  },
-  {
-    key: "checkout.pricesIncludeTax",
-    group: "checkout",
-    label: "Prices include tax",
-    type: "boolean",
-    schema: z.boolean(),
-    defaultValue: true,
-    isPublic: true,
-    help: "When enabled, no additional tax is added to item prices.",
-  },
-  {
-    key: "checkout.taxRatePercent",
-    group: "checkout",
-    label: "Tax rate (%)",
-    type: "number",
-    schema: z.number().min(0).max(100),
-    defaultValue: 0,
-    isPublic: true,
-  },
-  {
-    key: "checkout.freeShippingThreshold",
-    group: "checkout",
-    label: "Free shipping threshold",
-    type: "number",
-    schema: z.number().min(0).nullable(),
-    defaultValue: null,
-    isPublic: true,
-    help: "Display-only in Phase 1; shipping rates remain in the shipping module.",
   },
 ];
 

@@ -44,6 +44,7 @@ const productFields = z.object({
   isFeatured: z.boolean().default(false),
   categoryId: z.string().min(1),
   brandId: z.string().nullable().optional(),
+  taxClassId: z.string().min(1).nullable().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   images: z.array(productImageSchema).max(5).optional(),
@@ -95,8 +96,11 @@ export const nestedCreateVariantSchema = createVariantSchema;
 // Explicit null clears a known buying cost. Omitted leaves it unchanged, so
 // "unknown" and zero remain distinct values.
 export const updateVariantSchema = createVariantSchema.partial().extend({
+  // Partial updates must not apply the create-only default and unset a default variant.
+  isDefault: z.boolean().optional(),
   // Check null before the coerce schema: z.coerce.number() turns null into 0.
   costPrice: z.union([z.null(), costPriceSchema]).optional(),
+  compareAtPrice: z.union([z.null(), priceSchema]).optional(),
 });
 
 

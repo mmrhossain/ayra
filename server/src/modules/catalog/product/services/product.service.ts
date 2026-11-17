@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { assertAssignableTaxClass } from "../../../tax/tax.service.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
 import { decodeCursor, encodeCursor } from "../../../../common/utils/cursor.ts";
@@ -363,6 +364,7 @@ export const productDetailSelect = {
 } as const;
 
 export const adminProductDetailSelect = {
+  taxClassId: true,
   ...productDetailSelect,
   variants: {
     ...productDetailSelect.variants,
@@ -467,6 +469,7 @@ export const createProduct = async (input: CreateProductPayload) => {
         productData.categoryId,
         productData.brandId,
       );
+      await assertAssignableTaxClass(productData.taxClassId, tx);
       const slug = await resolveCreateSlug(tx, input);
 
       const product = await tx.product.create({
@@ -477,6 +480,7 @@ export const createProduct = async (input: CreateProductPayload) => {
           isFeatured: productData.isFeatured,
           categoryId: productData.categoryId,
           brandId: productData.brandId ?? null,
+          taxClassId: productData.taxClassId ?? null,
           description: productData.description ? sanitizeHtml(productData.description) : null,
           metaTitle: productData.metaTitle ?? null,
           metaDescription: productData.metaDescription ?? null,
@@ -555,6 +559,9 @@ export const updateProduct = async (id: string, input: UpdateProductPayload) => 
 
   try {
     const result = await transaction(async (tx) => {
+      if (productData.taxClassId !== undefined && productData.taxClassId !== existing.taxClassId) {
+        await assertAssignableTaxClass(productData.taxClassId, tx);
+      }
       const effectiveCategoryId = productData.categoryId ?? existing.categoryId;
       const effectiveBrandId =
         productData.brandId === undefined ? existing.brandId : productData.brandId;
@@ -597,6 +604,11 @@ export const updateProduct = async (id: string, input: UpdateProductPayload) => 
               brand: { connect: { id: productData.brandId } },
             }),
           ...(productData.brandId === null && { brand: { disconnect: true } }),
+          ...(productData.taxClassId !== undefined && {
+            taxClass: productData.taxClassId === null
+              ? { disconnect: true }
+              : { connect: { id: productData.taxClassId } },
+          }),
           ...(productData.description !== undefined && {
             description: productData.description
               ? sanitizeHtml(productData.description)

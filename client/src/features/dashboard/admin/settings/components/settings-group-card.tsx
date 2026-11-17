@@ -215,9 +215,6 @@ export function SettingsGroupCard({
         }
         const value = values[field.key];
         if (field.type === "number" && value === null) {
-          if (field.key === "checkout.freeShippingThreshold") {
-            payload[field.key] = null;
-          }
           continue;
         }
         payload[field.key] = value;

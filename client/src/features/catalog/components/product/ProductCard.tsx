@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductListItem, productPrice } from "@/features/catalog/api";
+import { ProductListItem } from "@/features/catalog/api";
 import {
   productCardBadge,
   productCardBody,
@@ -13,6 +13,7 @@ import {
   productCardShell,
   productCardTitle,
 } from "@/features/catalog/components/product/product-card.styles";
+import { productCardPricing } from "@/features/catalog/lib/product-card-pricing";
 import { formatPrice } from "@/helpers";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 
@@ -36,17 +37,9 @@ export default function ProductCard({
   product: ProductListItem;
   eagerImage?: boolean;
 }) {
-  const defaultVariantId =
-    product?.variants?.find((v) => v?.id)?.id ?? product?.variants?.[0]?.id ?? null;
-  const { inWish, busy: wishBusy, toggleWishlist } = useWishlistToggle(defaultVariantId);
-  const price = productPrice(product);
-  const compare =
-    product?.variants
-      ?.map((v) => Number(v?.compareAtPrice))
-      .filter((n) => Number.isFinite(n) && n > 0) ?? [];
-  const compareAt = compare.length > 0 ? Math.min(...compare) : null;
-  const hasDiscount = price != null && compareAt != null && compareAt > price;
-  const discountPct = hasDiscount ? Math.floor((1 - price / compareAt) * 100) : 0;
+  const { variantId, price, compareAt, discountPct } = productCardPricing(product);
+  const { inWish, busy: wishBusy, toggleWishlist } = useWishlistToggle(variantId);
+  const hasDiscount = price !== null && compareAt !== null;
   const href = `/product-details/${product?.slug}`;
 
   return (
@@ -72,7 +65,7 @@ export default function ProductCard({
                 e.stopPropagation();
                 void toggleWishlist();
               }}
-              disabled={wishBusy || !defaultVariantId}
+              disabled={wishBusy || !variantId}
               className={cn(
                 productCardIconBtn({ tone: inWish ? "active" : "default" }),
                 "flex h-10 w-10 min-h-10 min-w-10 items-center justify-center p-0 disabled:opacity-50 sm:h-11 sm:w-11 sm:min-h-11 sm:min-w-11"

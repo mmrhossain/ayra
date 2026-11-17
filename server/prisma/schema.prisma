@@ -194,6 +194,17 @@ model Brand {
   @@map("brand")
 }
 
+model TaxClass {
+  id       String @id @default(uuid())
+  name     String
+  code     String @unique
+  rate     Decimal @db.Decimal(5, 2)
+  isActive Boolean @default(true)
+  products Product[]
+
+  @@map("tax_class")
+}
+
 model Product {
   id              String        @id @default(uuid())
   name            String
@@ -207,6 +218,9 @@ model Product {
   reviewCount     Int           @default(0)
   metaTitle       String?
   metaDescription String?
+
+  taxClassId String?
+  taxClass TaxClass? @relation(fields: [taxClassId], references: [id], onDelete: Restrict)
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -225,6 +239,7 @@ model Product {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  @@index([taxClassId])
   @@index([slug])
   @@index([status, deletedAt, createdAt])
   @@index([categoryId, status, deletedAt, createdAt])
@@ -535,8 +550,8 @@ model Order {
   subtotal           Decimal           @db.Decimal(18, 2)
   discountAmount     Decimal           @default(0) @db.Decimal(18, 2)
   taxAmount          Decimal           @default(0) @db.Decimal(18, 2)
-  // Pricing configuration captured at checkout so historical line tax and
-  // reporting never depend on the current platform setting.
+  // Historical pricing snapshots retained for correct refunds and reporting.
+  // New orders set pricesIncludeTax=false and snapshot rates on each item.
   pricesIncludeTax   Boolean           @default(true)
   taxRatePercent     Decimal           @default(0) @db.Decimal(5, 2)
   shippingAmount     Decimal           @default(0) @db.Decimal(18, 2)
@@ -592,6 +607,8 @@ model OrderItem {
   taxAmount         Decimal   @default(0) @db.Decimal(18, 2)
   // 1 = per-line discount/tax was allocated by the current server. 0 = legacy
   // row that only has order-level amounts and needs a reporting fallback.
+  taxClassName      String?
+  taxRate           Decimal?  @db.Decimal(5, 2)
   allocationVersion Int       @default(0)
   subtotal          Decimal   @db.Decimal(18, 2)
 

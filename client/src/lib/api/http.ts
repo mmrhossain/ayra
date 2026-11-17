@@ -1,3 +1,5 @@
+import { unstable_rethrow } from "next/navigation";
+
 export type Envelope<T> = {
   success: true;
   message: string;
@@ -200,6 +202,7 @@ export function createHttpClient<E extends Error>(clientOptions: HttpClientOptio
         credentials: forwardSession || isBrowser ? "include" : "omit",
       });
     } catch (err) {
+      unstable_rethrow(err);
       const timedOut =
         err instanceof DOMException &&
         (err.name === "TimeoutError" || err.name === "AbortError");

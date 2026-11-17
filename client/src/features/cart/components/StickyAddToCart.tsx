@@ -9,7 +9,8 @@ interface StickyAddToCartProps {
     price: number;
     discountPrice: number;
     discount: number;
-    isOutOfStock: boolean;
+    disabled: boolean;
+    buttonLabel: string;
     isLoading: boolean;
     onAddToCart: () => void;
     /** Ref to the main CTA section - sticky bar appears when this scrolls out of view */
@@ -21,7 +22,8 @@ const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
     price,
     discountPrice,
     discount,
-    isOutOfStock,
+    disabled,
+    buttonLabel,
     isLoading,
     onAddToCart,
     ctaRef,
@@ -70,21 +72,21 @@ const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
 
                     {/* CTA button */}
                     <button
+                        type="button"
                         onClick={onAddToCart}
-                        disabled={isLoading || isOutOfStock}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-[0.96] shrink-0 ${isLoading || isOutOfStock
-                                ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                : "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90"
+                        aria-busy={isLoading}
+                        disabled={disabled}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-lg border text-white text-xs font-bold uppercase tracking-wider transition-all active:scale-[0.96] shrink-0 ${isLoading
+                                ? "cursor-not-allowed border-light-color2 bg-light-color2"
+                                : disabled
+                                    ? "cursor-not-allowed border-danger bg-danger"
+                                    : "cursor-pointer border-ink bg-ink hover:bg-primary"
                             }`}
                     >
                         {isLoading ? (
-                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        ) : (
-                            <>
-                                <ShoppingCart size={14} />
-                                <span>{isOutOfStock ? "Sold Out" : "Add to Cart"}</span>
-                            </>
-                        )}
+                            <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        ) : <ShoppingCart size={14} aria-hidden="true" />}
+                        <span>{buttonLabel}</span>
                     </button>
                 </div>
             </div>

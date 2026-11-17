@@ -1,15 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchMyCart } from "@/features/checkout/api";
+import { useCheckoutCart } from "./use-checkout-cart";
 import { fetchShippingOptions } from "@/features/shipping/shipping-api";
 
 export function useCheckoutShipping(district: string, districtCode?: string) {
-  const cartQuery = useQuery({
-    queryKey: ["checkout-cart"],
-    queryFn: fetchMyCart,
-    staleTime: 15_000,
-  });
+  const cartQuery = useCheckoutCart();
   const cartSubtotal = Number(cartQuery.data?.subtotal ?? 0);
   const cartDiscount = Number(cartQuery.data?.discountAmount ?? 0);
   const shippingSubtotal = Math.max(0, cartSubtotal - cartDiscount);
@@ -27,14 +23,17 @@ export function useCheckoutShipping(district: string, districtCode?: string) {
         districtCode,
         subtotal: shippingSubtotal,
       }),
-    enabled: Boolean(district || districtCode),
-    staleTime: 15_000,
+    enabled: cartQuery.isSuccess && Boolean(cartQuery.data?.items.length) && Boolean(district || districtCode),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   return {
     cartQuery,
     optionsQuery,
     cartSubtotal,
-    shippingOptions: optionsQuery.data?.options ?? [],
+    shippingOptions: (optionsQuery.data?.options ?? []).map(option => cartQuery.data?.freeShipping ? { ...option, shippingAmount: 0, isFreeShipping: true } : option),
   };
 }

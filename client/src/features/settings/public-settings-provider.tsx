@@ -20,8 +20,9 @@ export function PublicSettingsProvider({
     queryKey: PUBLIC_SETTINGS_QUERY_KEY,
     queryFn: fetchPublicSettings,
     initialData: initialSettings,
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {

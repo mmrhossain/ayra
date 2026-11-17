@@ -145,9 +145,7 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     ogImageUrl,
     currency,
     enabledMethods,
-    pricesIncludeTax,
-    taxRatePercent,
-    freeShippingThreshold,
+    taxEnabled,
   ] = await Promise.all([
     getSettingValue<string>("store.name"),
     getSettingValue<string>("store.supportEmail"),
@@ -159,15 +157,13 @@ export const getPublicSettings = async (): Promise<PublicSettings> => {
     getSettingValue<PublicSettings["payment"]["enabledMethods"]>(
       "payment.enabledMethods",
     ),
-    getSettingValue<boolean>("checkout.pricesIncludeTax"),
-    getSettingValue<number>("checkout.taxRatePercent"),
-    getSettingValue<number | null>("checkout.freeShippingThreshold"),
+    getSettingValue<boolean>("checkout.taxEnabled"),
   ]);
 
   return {
     store: { name, supportEmail, supportPhone, address, logoUrl, ogImageUrl, currency },
     payment: { enabledMethods },
-    checkout: { pricesIncludeTax, taxRatePercent, freeShippingThreshold },
+    checkout: { taxEnabled },
   };
 };
 

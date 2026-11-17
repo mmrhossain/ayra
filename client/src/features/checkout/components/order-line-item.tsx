@@ -15,7 +15,6 @@ type OrderLineItemProps = {
   name: string;
   image?: string | null;
   variantLabel?: string;
-  quantity: number;
   price: number;
   changeHref?: string;
 };
@@ -24,7 +23,6 @@ export default function OrderLineItem({
   name,
   image,
   variantLabel,
-  quantity,
   price,
   changeHref = "/cart",
 }: OrderLineItemProps) {
@@ -52,8 +50,7 @@ export default function OrderLineItem({
           </Link>
         </div>
         {variantLabel ? <p className="mt-0.5 text-xs text-neutral-400">{variantLabel}</p> : null}
-        <div className="mt-auto flex items-end justify-between pt-2">
-          <span className="text-xs text-neutral-400">({quantity})</span>
+        <div className="mt-auto flex items-end justify-end pt-2">
           <span className="text-sm tabular-nums text-foreground">{formatPrice(price)}</span>
         </div>
       </div>

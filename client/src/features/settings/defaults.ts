@@ -15,8 +15,6 @@ export const DEFAULT_PUBLIC_SETTINGS: PublicSettings = {
     enabledMethods: ["COD", "SSLCOMMERZ"],
   },
   checkout: {
-    pricesIncludeTax: true,
-    taxRatePercent: 0,
-    freeShippingThreshold: null,
+    taxEnabled: true,
   },
 };

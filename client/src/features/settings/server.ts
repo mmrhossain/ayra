@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { cache } from "react";
 
 import { fetchPublicSettings } from "@/features/settings/api";
@@ -7,6 +8,7 @@ export const fetchPublicSettingsOrDefault = cache(async () => {
   try {
     return await fetchPublicSettings();
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Could not load public platform settings", error);
     return DEFAULT_PUBLIC_SETTINGS;
   }

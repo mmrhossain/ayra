@@ -1,3 +1,4 @@
+import { calculateTaxTotals } from "../../tax/tax-calculation.ts";
 import { prisma, transaction } from "../../../lib/prisma.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { env } from "../../../config/env.ts";
@@ -15,8 +16,6 @@ import {
 } from "../../../template/email.ts";
 import type { CheckoutInput } from "../../cart/types.ts";
 import {
-  allocateLineMoney,
-  computeCheckoutTotals,
   formatVariantName,
   fromMinor,
   generateOrderNumber,
@@ -41,9 +40,8 @@ export const checkout = async (
     customerProfileId: string,
     input: CheckoutInput
 ) => {
-  const [pricesIncludeTax, taxRatePercent, enabledMethods] = await Promise.all([
-    getSettingValue<boolean>("checkout.pricesIncludeTax"),
-    getSettingValue<number>("checkout.taxRatePercent"),
+  const [taxEnabled, enabledMethods] = await Promise.all([
+    getSettingValue<boolean>("checkout.taxEnabled"),
     getSettingValue<string[]>("payment.enabledMethods"),
   ]);
 
@@ -77,6 +75,7 @@ export const checkout = async (
                     status: true,
                     deletedAt: true,
                     categoryId: true,
+                    taxClassId: true,
                   },
                 },
                 attributes: { include: { attributeValue: true } },
@@ -139,6 +138,7 @@ export const checkout = async (
     }));
 
     let discountAmount = 0;
+    let discountEligible: boolean[] = [];
     let coupon: { id: string; discountType: string } | null = null;
     const couponCode = input.couponCode ?? cart.coupon?.couponCode;
 
@@ -150,6 +150,7 @@ export const checkout = async (
           tx
       );
       discountAmount = res.discountAmount;
+      discountEligible = res.discountEligible;
       coupon = res.coupon;
     }
 
@@ -160,20 +161,18 @@ export const checkout = async (
       fromMinor(Math.max(0, toMinor(subtotal) - toMinor(discountAmount))),
       tx
     );
-    const { taxAmount, shippingAmount, grandTotal } = computeCheckoutTotals(
-      subtotal,
+    // Final order calculation bypasses lookup caching within the transaction.
+    const classIds = [...new Set(cart.items.flatMap(item => item.variant!.product.taxClassId ? [item.variant!.product.taxClassId!] : []))];
+    const taxClasses = classIds.length
+      ? await tx.taxClass.findMany({ where: { id: { in: classIds } } })
+      : [];
+    const { taxAmount, shippingAmount, grandTotal, allocations: lineAllocations } = calculateTaxTotals(
+      cart.items.map((item, index) => ({ unitPrice: item.variant!.price, quantity: item.quantity, taxClassId: item.variant!.product.taxClassId, discountEligible: discountEligible[index] ?? true })),
       discountAmount,
-      coupon,
+      taxClasses.map(row => ({ ...row, rate: Number(row.rate) })),
+      { taxEnabled },
       shippingQuote.shippingAmount,
-      { pricesIncludeTax, taxRatePercent },
-    );
-    const lineAllocations = allocateLineMoney(
-      cart.items.map((item) => ({
-        unitPrice: item.variant!.price,
-        quantity: item.quantity,
-      })),
-      discountAmount,
-      { pricesIncludeTax, taxRatePercent },
+      coupon?.discountType === "FREE_SHIPPING",
     );
 
     const {
@@ -202,8 +201,8 @@ export const checkout = async (
         discountAmount,
         taxAmount,
         shippingAmount,
-        pricesIncludeTax,
-        taxRatePercent,
+        // Historical refunds still read this snapshot; new orders add VAT.
+        pricesIncludeTax: false,
         shippingMethodName: shippingQuote.methodName,
         shippingMethodCode: shippingQuote.methodCode,
         shippingZoneId: shippingQuote.zoneId,
@@ -232,6 +231,8 @@ export const checkout = async (
               lineAllocations[index]?.discountMinor ?? 0,
             ),
             taxAmount: fromMinor(lineAllocations[index]?.taxMinor ?? 0),
+            taxClassName: lineAllocations[index]?.taxClassName ?? null,
+            taxRate: lineAllocations[index]?.taxRate ?? 0,
             allocationVersion: 1,
             subtotal: fromMinor(lineAllocations[index]?.grossMinor ?? 0),
             variantId: item.variantId,

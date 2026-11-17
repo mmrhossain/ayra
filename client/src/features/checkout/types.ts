@@ -34,6 +34,8 @@ export type CustomerCartItem = {
 };
 
 export type CustomerCart = {
+  freeShipping?: boolean;
+  taxRates?: number[];
   items: CustomerCartItem[];
   coupon?: { code?: string; couponCode?: string } | null;
   subtotal: number | string;

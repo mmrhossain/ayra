@@ -2,7 +2,7 @@
  * Guest cart lives in localStorage until login.
  * Logged-in cart lives in `@/features/dashboard/customer/cart/api/cart`.
  */
-import { ApiError } from "@/lib/api/store-front";
+import { api, ApiError, type Envelope } from "@/lib/api/store-front";
 import {
   addAuthCartItem,
   applyCartCoupon as applyAuthCartCoupon,
@@ -81,7 +81,15 @@ function mapGuestCart(items: GuestCartLine[]): CartSnapshot {
 export async function fetchGuestCartSnapshot(): Promise<CartSnapshot> {
   const items = readGuestCart();
   if (items.length === 0) return emptyCart();
-  return mapGuestCart(items);
+  const local = mapGuestCart(items);
+  const response = await api.post<Envelope<Omit<CartSnapshot, "items" | "couponCode"> & { items: Array<{ variantId: string; unitPrice: number; quantity: number; subtotal: number }> }>>("/cart/guest/quote", {
+    body: { items: items.map(({ variantId, quantity }) => ({ variantId, quantity })) },
+    cache: "no-store",
+  });
+  const byId = new Map(local.items.map(item => [item.variantId, item]));
+  return { ...local, ...response.data, couponCode: null,
+    items: response.data.items.flatMap(item => { const snapshot = byId.get(item.variantId); return snapshot ? [{ ...snapshot, ...item }] : []; }),
+  };
 }
 
 export async function fetchCartSnapshot(): Promise<CartSnapshot> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchMyCart } from "@/features/checkout/api";
+import { useCheckoutCart } from "@/features/checkout/hooks/use-checkout-cart";
 import { CheckoutBack } from "@/features/checkout/components/checkout-ui";
 import CheckoutPayment from "@/features/checkout/components/CheckoutPayment";
 import CheckoutShipping from "@/features/checkout/components/CheckoutShipping";
@@ -8,48 +8,17 @@ import EmptyState from "@/features/checkout/components/EmptyState";
 import OrderReview from "@/features/checkout/components/OrderReview";
 import { StepBreadcrumb, type CheckoutStep } from "@/features/checkout/components/StepBreadcrumb";
 import type { CheckoutPayload } from "@/features/checkout/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import CheckOutForm from "./CheckOutFrom";
 
 const CheckOut = () => {
-  const [cartStatus, setCartStatus] = useState<"loading" | "success" | "empty" | "error">(
-    "loading"
-  );
-  const [cartError, setCartError] = useState<string | null>(null);
+  const cartQuery = useCheckoutCart();
+  const cartStatus = cartQuery.isPending ? "loading" : cartQuery.isError ? "error" : cartQuery.data.items.length ? "success" : "empty";
+  const cartError = cartQuery.error?.message;
   const [step, setStep] = useState<CheckoutStep>("information");
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPayload["paymentMethod"]>("COD");
-  const requestId = useRef(0);
-
-  const loadCart = useCallback(async () => {
-    await Promise.resolve();
-    const id = ++requestId.current;
-    setCartStatus("loading");
-    setCartError(null);
-
-    try {
-      const cart = await fetchMyCart();
-      if (id !== requestId.current) return;
-      setCartStatus((cart.items ?? []).length === 0 ? "empty" : "success");
-    } catch (err) {
-      if (id !== requestId.current) return;
-      console.error(err);
-      setCartStatus("error");
-      setCartError(
-        err instanceof Error && err.message ? err.message : "We couldn't load your cart."
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    const task = setTimeout(() => void loadCart(), 0);
-    return () => {
-      clearTimeout(task);
-      requestId.current += 1;
-    };
-  }, [loadCart]);
-
   const handleBack = useCallback(() => {
     if (step === "shipping") setStep("information");
     else if (step === "payment") setStep("shipping");
@@ -66,7 +35,7 @@ const CheckOut = () => {
         <p role="alert" className="mt-2 text-sm text-muted-foreground">
           {cartError ?? "Please try again in a moment."}
         </p>
-        <Button type="button" className="mt-6" onClick={() => void loadCart()}>
+        <Button type="button" className="mt-6" onClick={() => void cartQuery.refetch()}>
           Try again
         </Button>
       </div>

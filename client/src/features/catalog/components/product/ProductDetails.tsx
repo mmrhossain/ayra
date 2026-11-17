@@ -20,7 +20,7 @@ import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Heart, Share2 } from "lucide-react";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 function excerptFromHtml(html: string | null | undefined, max = 220): string {
   const text = (html ?? "")
@@ -56,6 +56,8 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
   const ctaRef = useRef<HTMLDivElement>(null);
   const { inWish, busy: wishBusy, toggleWishlist } = useWishlistToggle(selectedId);
   const hasAttributes = attributeGroups.length > 0;
+  const [selectionAttempted, setSelectionAttempted] = useState(false);
+  const missingAttributes = attributeGroups.filter(group => !selectedValues[group.attributeId]);
   const sku = selected?.sku || product.sku || "";
   const brandName = product.brand?.name;
   const descriptionExcerpt = excerptFromHtml(product.description);
@@ -78,26 +80,28 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
     }
   };
 
-  const handleAddToCart = () =>
-    addToCart({
-      product,
-      selected,
-      isComplete,
-      quantity,
+  const handleAddToCart = () => {
+    setSelectionAttempted(true);
+    if (missingAttributes.length) {
+      const group = document.getElementById("product-attribute-" + missingAttributes[0].attributeId);
+      group?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      const controls = group?.querySelectorAll<HTMLElement>("select, button[role=combobox]");
+      Array.from(controls ?? []).find(control => control.getClientRects().length > 0)?.focus({ preventScroll: true });
+    }
+    return addToCart({
+      product, selected, isComplete, quantity,
       galleryImageUrl: galleryImages[0]?.imageUrl,
     });
+  };
 
   const buttonLabel = cartBusy
     ? "Processing..."
-    : !isComplete
-      ? "Select options"
-      : !selected
-        ? "Unavailable"
-        : stock < 1
-          ? "Out of stock"
-          : "Add to Bag";
-
-  const buttonDisabled = cartBusy || !canAddToCart;
+    : isComplete && !selected
+      ? "Unavailable"
+      : isComplete && stock < 1
+        ? "Out of stock"
+        : "Add to Bag";
+  const buttonDisabled = cartBusy || (isComplete && !canAddToCart);
 
   return (
     <>
@@ -202,7 +206,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               </div>
 
               {attributeGroups.map((group) => (
-                <div key={group.attributeId} className="min-w-0 lg:flex-1">
+                <div key={group.attributeId} id={"product-attribute-" + group.attributeId} className="min-w-0 scroll-mt-24 lg:flex-1">
                   <span
                     id={`product-attribute-label-${group.attributeId}`}
                     className="mb-2 block h-5 text-sm font-semibold text-foreground"
@@ -212,11 +216,13 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                   <div className="relative md:hidden">
                     <select
                       aria-labelledby={`product-attribute-label-${group.attributeId}`}
+                      aria-invalid={selectionAttempted && !selectedValues[group.attributeId]}
+                      aria-describedby={selectionAttempted && !selectedValues[group.attributeId] ? "product-attribute-error-" + group.attributeId : undefined}
                       value={selectedValues[group.attributeId] ?? ""}
                       onChange={(event) =>
                         setAttributeValue(group.attributeId, event.target.value)
                       }
-                      className="h-12 min-h-12 w-full appearance-none rounded-none border border-border-color bg-background px-3 pr-10 text-base text-foreground"
+                      className="h-12 min-h-12 w-full appearance-none rounded-none border border-border-color aria-invalid:border-danger bg-background px-3 pr-10 text-base text-foreground"
                     >
                       <option value="" disabled>
                         Choose an option
@@ -239,7 +245,9 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                     >
                       <SelectTrigger
                         aria-labelledby={`product-attribute-label-${group.attributeId}`}
-                        className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
+                      aria-invalid={selectionAttempted && !selectedValues[group.attributeId]}
+                      aria-describedby={selectionAttempted && !selectedValues[group.attributeId] ? "product-attribute-error-" + group.attributeId : undefined}
+                        className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color aria-invalid:border-danger bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
                       >
                         <SelectValue placeholder="Choose an option" />
                       </SelectTrigger>
@@ -265,6 +273,11 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                       </SelectContent>
                     </Select>
                   </div>
+                  {selectionAttempted && !selectedValues[group.attributeId] ? (
+                    <p id={"product-attribute-error-" + group.attributeId} role="alert" className="mt-1 text-sm text-danger">
+                      Please select {group.name.toLowerCase()}.
+                    </p>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -277,6 +290,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 type="button"
                 onClick={() => void handleAddToCart()}
                 disabled={buttonDisabled}
+                aria-busy={cartBusy}
                 className={cn(
                   "h-12 min-h-12 min-w-0 flex-1 cursor-pointer border border-ink px-4 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-all active:scale-[0.99] sm:h-[52px] sm:min-h-[52px] sm:text-base",
                   cartBusy
@@ -320,7 +334,8 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
         price={hasDiscount ? compareAt : price}
         discountPrice={price}
         discount={hasDiscount ? Math.floor((1 - price / compareAt) * 100) : 0}
-        isOutOfStock={!canAddToCart}
+        disabled={buttonDisabled}
+        buttonLabel={buttonLabel}
         isLoading={cartBusy}
         onAddToCart={() => void handleAddToCart()}
         ctaRef={ctaRef}

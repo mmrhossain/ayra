@@ -26,6 +26,7 @@ import analyticsRoutes from "./modules/analytics/index.ts";
 import { adminAuditMiddleware } from "./modules/audit/admin-audit.middleware.ts";
 import auditRoutes from "./modules/audit/index.ts";
 import authRoutes from "./modules/auth/auth.routes.ts";
+import taxRoutes from "./modules/tax/tax.routes.ts";
 import cartRoutes from "./modules/cart/cart.routes.ts";
 import catalogRoutes from "./modules/catalog/index.ts";
 import contentRoutes from "./modules/content/index.ts";
@@ -159,6 +160,7 @@ if (env.enableApiDocs) {
 app.use("/api/v1/admin", adminAuditMiddleware);
 app.use("/api/v1", catalogRoutes);
 app.use("/api/v1", homeRoutes);
+app.use("/api/v1", taxRoutes);
 app.use("/api/v1", cartRoutes);
 app.use("/api/v1", orderRoutes);
 app.use("/api/v1", paymentRoutes);

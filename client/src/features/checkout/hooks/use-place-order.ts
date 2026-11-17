@@ -1,6 +1,7 @@
 "use client";
 
-import { cartCouponCode, fetchMyCart } from "@/features/checkout/api";
+import { cartCouponCode } from "@/features/checkout/api";
+import { useCheckoutCart } from "./use-checkout-cart";
 import {
   initiatePayment,
   pickGatewayUrl,
@@ -16,7 +17,7 @@ import { locationStore } from "@/stores/location.store";
 import { useOrderStore } from "@/stores/useOrderStore";
 import type { PlaceOrderInput } from "@/features/checkout/types";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const CHECKOUT_CONFLICT_RETRY_MS = 1_500;
 
@@ -54,32 +55,13 @@ export function usePlaceOrder(
   const { data } = authClient.useSession();
   const user = data?.user;
   const [placing, setPlacing] = useState(false);
-  const [couponCode, setCouponCode] = useState<string | null>(null);
-  const [expectedSubtotal, setExpectedSubtotal] = useState<number | undefined>();
+  const cartQuery = useCheckoutCart();
+  const couponCode = cartQuery.data ? cartCouponCode(cartQuery.data) : null;
+  const expectedSubtotal = cartQuery.data ? Number(cartQuery.data.subtotal) : undefined;
   const [priceChange, setPriceChange] = useState<PriceChangeDetails | null>(null);
   const idempotencyKeyRef = useRef<string | null>(null);
   const acceptPriceChangeRef = useRef(false);
   const inFlightRef = useRef(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const cart = await fetchMyCart();
-        if (cancelled) return;
-        setCouponCode(cartCouponCode(cart));
-        setExpectedSubtotal(Number(cart.subtotal ?? 0));
-      } catch {
-        if (!cancelled) {
-          setCouponCode(null);
-          setExpectedSubtotal(undefined);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const placeOrder = useCallback(async () => {
     const {

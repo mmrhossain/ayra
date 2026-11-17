@@ -131,6 +131,23 @@ const calculateDiscount = (
   }
 };
 
+const discountEligibility = (restrictions: CouponRestrictions, ctx: CouponContext) =>
+  (ctx.lines ?? []).map(line =>
+    (restrictions.productIds.size === 0 || restrictions.productIds.has(line.productId)) &&
+    (restrictions.categoryIds.size === 0 || restrictions.categoryIds.has(line.categoryId)),
+  );
+
+export const calculateCouponPricingForRecord = async (
+  db: Pick<TransactionClient, "$queryRaw">, coupon: CouponRecord, ctx: CouponContext,
+) => {
+  const restrictions = await loadCouponRestrictions(db, coupon.id);
+  assertCouponApplicable(restrictions, ctx);
+  return {
+    discountAmount: calculateDiscount(toCouponSnapshot(coupon), eligibleSubtotalMinorFromRestrictions(restrictions, ctx)),
+    discountEligible: discountEligibility(restrictions, ctx),
+  };
+};
+
 export const calculateCouponDiscount = async (
   db: Pick<TransactionClient, "$queryRaw">,
   coupon: CouponSnapshot,
@@ -322,7 +339,7 @@ export const applyCouponAtomic = async (
   const basisMinor = eligibleSubtotalMinorFromRestrictions(restrictions, ctx);
   const discountAmount = calculateDiscount(snapshot, basisMinor);
 
-  return { coupon, discountAmount };
+  return { coupon, discountAmount, discountEligible: discountEligibility(restrictions, ctx) };
 };
 
 export const listCoupons = async (query: ListCouponsQuery) => {

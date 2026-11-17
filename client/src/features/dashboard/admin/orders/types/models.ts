@@ -45,6 +45,8 @@ export type OrderItem = {
   costPrice?: number | string | null;
   discountAmount?: number | string;
   taxAmount?: number | string;
+  taxClassName?: string | null;
+  taxRate?: number | string | null;
   subtotal: number | string;
 };
 

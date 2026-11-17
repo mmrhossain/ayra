@@ -2,15 +2,15 @@
 
 import { resolveProductImage } from "@/features/cart/lib/product-image";
 import { variantMetaFromSku } from "@/features/cart/lib/variant-meta";
-import { cartCouponCode, fetchMyCart, type CustomerCartItem } from "@/features/checkout/api";
+import type { CustomerCartItem } from "@/features/checkout/api";
 import { CheckoutSummaryRow } from "@/features/checkout/components/checkout-ui";
 import OrderLineItem from "@/features/checkout/components/order-line-item";
 import type { CheckoutPayload } from "@/features/checkout/types";
-import { fetchShippingOptions, toShippingErrorMessage } from "@/features/shipping/shipping-api";
+import { toShippingErrorMessage } from "@/features/shipping/shipping-api";
+import { useCheckoutShipping } from "@/features/checkout/hooks/use-checkout-shipping";
+import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { formatPrice } from "@/helpers";
 import { locationStore } from "@/stores/location.store";
-import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,86 +42,20 @@ const OrderReview = ({
 }) => {
   void _paymentMethod;
   const { formState } = locationStore();
-  const [items, setItems] = useState<CustomerCartItem[]>([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [vatAmount, setVatAmount] = useState(0);
-  const [cartGrandTotal, setCartGrandTotal] = useState(0);
-  const [couponCode, setCouponCode] = useState<string | null>(null);
-  const [cartStatus, setCartStatus] = useState<"loading" | "success" | "empty" | "error">(
-    "loading"
-  );
-  const [cartError, setCartError] = useState<string | null>(null);
-  const requestId = useRef(0);
-  const shippingSubtotal = Math.max(0, subtotal - discountAmount);
-  const taxIncluded =
-    Number(vatAmount) > 0 && Math.abs(Number(cartGrandTotal) - Number(shippingSubtotal)) < 0.01;
-
-  const optionsQuery = useQuery({
-    queryKey: [
-      "checkout-shipping-options",
-      formState.district,
-      formState.districtCode,
-      shippingSubtotal,
-    ],
-    queryFn: () =>
-      fetchShippingOptions({
-        district: formState.district,
-        districtCode: formState.districtCode,
-        subtotal: shippingSubtotal,
-      }),
-    enabled: cartStatus === "success" && Boolean(formState.district || formState.districtCode),
-    staleTime: 15_000,
-  });
-
-  const selectedQuote = optionsQuery.data?.options.find(
-    (option) => option.methodCode === formState.shippingMethodCode
-  );
-  const shippingAmount = selectedQuote?.shippingAmount ?? 0;
-  // Cart grandTotal is authoritative for whether tax is already included in
-  // the item prices; adding tax again here would overstate the total.
-  const payableAmount = useMemo(
-    () => Number(cartGrandTotal) + shippingAmount,
-    [cartGrandTotal, shippingAmount]
-  );
-
-  const loadCart = useCallback(async () => {
-    // Yield before updating state so the initial effect run does not trigger a
-    // synchronous cascading render.
-    await Promise.resolve();
-    const id = ++requestId.current;
-    setCartStatus("loading");
-    setCartError(null);
-
-    try {
-      const cart = await fetchMyCart();
-      if (id !== requestId.current) return;
-
-      const nextItems = cart.items ?? [];
-      setItems(nextItems);
-      setSubtotal(Number(cart.subtotal ?? 0));
-      setDiscountAmount(Number(cart.discountAmount ?? 0));
-      setVatAmount(Number(cart.taxAmount ?? 0));
-      setCartGrandTotal(Number(cart.grandTotal ?? cart.subtotal ?? 0));
-      setCouponCode(cartCouponCode(cart));
-      setCartStatus(nextItems.length === 0 ? "empty" : "success");
-    } catch (err) {
-      if (id !== requestId.current) return;
-      console.error(err);
-      setCartStatus("error");
-      setCartError(
-        err instanceof Error && err.message ? err.message : "We couldn't load your cart."
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    const task = setTimeout(() => void loadCart(), 0);
-    return () => {
-      clearTimeout(task);
-      requestId.current += 1;
-    };
-  }, [loadCart]);
+  const { checkout } = usePublicSettings();
+  const { cartQuery, optionsQuery } = useCheckoutShipping(formState.district, formState.districtCode);
+  const cart = cartQuery.data;
+  const items = cart?.items ?? [];
+  const subtotal = Number(cart?.subtotal ?? 0);
+  const discountAmount = Number(cart?.discountAmount ?? 0);
+  const vatAmount = Number(cart?.taxAmount ?? 0);
+  const taxRates = cart?.taxRates ?? [];
+  const discountPct = subtotal > 0 && discountAmount > 0 ? Math.round((discountAmount / subtotal) * 100) : 0;
+  const cartStatus = cartQuery.isPending ? "loading" : cartQuery.isError ? "error" : items.length ? "success" : "empty";
+  const cartError = cartQuery.error?.message;
+  const selectedQuote = optionsQuery.data?.options.find(option => option.methodCode === formState.shippingMethodCode);
+  const shippingAmount = cart?.freeShipping ? 0 : selectedQuote?.shippingAmount ?? 0;
+  const payableAmount = Math.round((Number(cart?.grandTotal ?? 0) + shippingAmount) * 100) / 100;
 
   const shippingValue = !formState.district
     ? "Calculated at next step"
@@ -130,7 +64,7 @@ const OrderReview = ({
       : optionsQuery.isError
         ? toShippingErrorMessage(optionsQuery.error)
         : selectedQuote
-          ? selectedQuote.isFreeShipping
+          ? selectedQuote.isFreeShipping || cart?.freeShipping
             ? "Free"
             : formatPrice(shippingAmount)
           : "Calculated at next step";
@@ -171,7 +105,7 @@ const OrderReview = ({
             variant="outline"
             size="sm"
             className="mt-3"
-            onClick={() => void loadCart()}
+            onClick={() => void cartQuery.refetch()}
           >
             Try again
           </Button>
@@ -193,7 +127,6 @@ const OrderReview = ({
                   name={productName}
                   image={resolveProductImage(item)}
                   variantLabel={variantLabel(item)}
-                  quantity={qty}
                   price={Number(item.subtotal ?? unitPrice * qty)}
                   changeHref={slug ? `/product-details/${slug}` : "/cart"}
                 />
@@ -203,22 +136,26 @@ const OrderReview = ({
 
           <div className="mt-1 border-t border-border pt-3">
             <CheckoutSummaryRow label="Subtotal" value={formatPrice(Number(subtotal))} />
-            {couponCode ? <CheckoutSummaryRow label="Coupon" value={couponCode} /> : null}
-            {Number(discountAmount) > 0 ? (
-              <CheckoutSummaryRow label="Discount" value={formatPrice(Number(discountAmount))} />
-            ) : null}
-            {Number(vatAmount) > 0 ? (
+            {discountAmount > 0 ? (
               <CheckoutSummaryRow
-                label={taxIncluded ? "Tax (included in prices)" : "Tax"}
+                label={"Discount" + (discountPct ? " (-" + discountPct + "%)" : "")}
+                value={"-" + formatPrice(discountAmount)}
+              />
+            ) : null}
+            {checkout.taxEnabled ? (
+              <CheckoutSummaryRow
+                label={"Tax/VAT" + (taxRates.length ? " (" + taxRates.map(rate => rate + "%").join(", ") + ")" : "")}
                 value={formatPrice(Number(vatAmount))}
               />
             ) : null}
-            <CheckoutSummaryRow label="Shipping" value={shippingValue} muted={shippingMuted} />
-            <CheckoutSummaryRow
-              label="Total"
-              value={formatPrice(Number(payableAmount))}
-              emphasize
-            />
+            <CheckoutSummaryRow label="Shipping Charge" value={shippingValue} muted={shippingMuted} />
+            <div className="mt-3 border-t border-border">
+              <CheckoutSummaryRow
+                label="Grand Total"
+                value={formatPrice(Number(payableAmount))}
+                emphasize
+              />
+            </div>
           </div>
         </>
       )}

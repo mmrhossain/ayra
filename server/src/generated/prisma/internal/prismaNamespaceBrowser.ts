@@ -59,6 +59,7 @@ export const ModelName = {
   Jwks: 'Jwks',
   Category: 'Category',
   Brand: 'Brand',
+  TaxClass: 'TaxClass',
   Product: 'Product',
   ProductVariant: 'ProductVariant',
   Attribute: 'Attribute',
@@ -290,6 +291,17 @@ export const BrandScalarFieldEnum = {
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
 
 
+export const TaxClassScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  rate: 'rate',
+  isActive: 'isActive'
+} as const
+
+export type TaxClassScalarFieldEnum = (typeof TaxClassScalarFieldEnum)[keyof typeof TaxClassScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -303,6 +315,7 @@ export const ProductScalarFieldEnum = {
   reviewCount: 'reviewCount',
   metaTitle: 'metaTitle',
   metaDescription: 'metaDescription',
+  taxClassId: 'taxClassId',
   categoryId: 'categoryId',
   brandId: 'brandId',
   createdAt: 'createdAt',
@@ -562,6 +575,8 @@ export const OrderItemScalarFieldEnum = {
   costCapturedAt: 'costCapturedAt',
   discountAmount: 'discountAmount',
   taxAmount: 'taxAmount',
+  taxClassName: 'taxClassName',
+  taxRate: 'taxRate',
   allocationVersion: 'allocationVersion',
   subtotal: 'subtotal',
   orderId: 'orderId',

@@ -47,6 +47,8 @@ export type VariantRow = {
   lastSuggested?: string;
   price: string;
   costPrice: string;
+  compareAtPrice?: string;
+  compareAtError?: string;
   isDefault: boolean;
   attributeValueIds: string[];
   label: string;

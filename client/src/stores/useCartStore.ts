@@ -5,8 +5,11 @@ import {
   removeCartItem,
   updateCartItem,
 } from "@/features/cart/api";
+import { customerCartRequest } from "@/features/cart/cart-request";
 import { CartState } from "@/features/cart/types";
 import { create } from "zustand";
+
+let cartFetchVersion = 0;
 
 export const useCartStore = create<CartState>((set, get) => ({
   cart: null,
@@ -14,6 +17,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   discount: 0,
   discountAmount: 0,
   vatAmount: 0,
+  taxRates: [],
   payableAmount: 0,
   couponCode: null,
   cartCount: 0,
@@ -28,24 +32,29 @@ export const useCartStore = create<CartState>((set, get) => ({
     })),
 
   fetchCart: async () => {
+    const version = ++cartFetchVersion;
     try {
       const snapshot = await fetchCartSnapshot();
+      if (version !== cartFetchVersion) return;
       set({
         cart: snapshot.items,
         cartCount: snapshot.items.reduce((sum, item) => sum + item.quantity, 0),
         totalAmount: snapshot.subtotal,
         discountAmount: snapshot.discountAmount,
         vatAmount: snapshot.taxAmount,
+        taxRates: snapshot.taxRates ?? [],
         payableAmount: snapshot.grandTotal,
         couponCode: snapshot.couponCode,
       });
     } catch {
+      if (version !== cartFetchVersion) return;
       set({
         cart: [],
         cartCount: 0,
         totalAmount: 0,
         discountAmount: 0,
         vatAmount: 0,
+        taxRates: [],
         payableAmount: 0,
         couponCode: null,
       });
@@ -77,12 +86,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   clearCart: () => {
+    cartFetchVersion += 1;
+    customerCartRequest.invalidate();
     set({
       cart: [],
       cartCount: 0,
       totalAmount: 0,
       discountAmount: 0,
       vatAmount: 0,
+      taxRates: [],
       payableAmount: 0,
       couponCode: null,
     });

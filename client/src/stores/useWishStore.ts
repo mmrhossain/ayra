@@ -1,12 +1,15 @@
 import {
   addWishlistItem,
   fetchWishlistItems,
+  wishlistRequest,
   removeWishlistItem,
   type WishlistItem,
 } from "@/features/dashboard/customer/wishlist/api/wishlist";
 import { DashboardApiError } from "@/lib/api/dashboard";
 import type { WishState } from "@/features/dashboard/customer/wishlist/types";
 import { create } from "zustand";
+
+let wishlistGeneration = 0;
 
 export const useWishStore = create<WishState>((set, get) => ({
   wishListLoading: false,
@@ -28,11 +31,14 @@ export const useWishStore = create<WishState>((set, get) => ({
   wishCount: 0,
 
   fetchWishList: async () => {
+    const generation = ++wishlistGeneration;
     try {
       const result = await fetchWishlistItems({ page: 1, limit: 50 });
+      if (generation !== wishlistGeneration) return;
       const data: WishlistItem[] = result.items ?? [];
       set({ wishes: data, wishCount: result.pagination?.total ?? data.length });
     } catch (err) {
+      if (generation !== wishlistGeneration) return;
       if (
         err instanceof DashboardApiError &&
         (err.status === 401 || err.status === 403)
@@ -47,17 +53,23 @@ export const useWishStore = create<WishState>((set, get) => ({
 
   addToWish: async (variantId: string) => {
     const res = await addWishlistItem(variantId);
+    wishlistGeneration += 1;
+    wishlistRequest.invalidate();
     await get().fetchWishList();
     return res;
   },
 
   removeFromWishList: async (variantId: string) => {
     const res = await removeWishlistItem(variantId);
+    wishlistGeneration += 1;
+    wishlistRequest.invalidate();
     await get().fetchWishList();
     return res;
   },
 
   clearWish: () => {
+    wishlistGeneration += 1;
+    wishlistRequest.invalidate();
     set({ wishes: [], wishCount: 0 });
   },
 }));

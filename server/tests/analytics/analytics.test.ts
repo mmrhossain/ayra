@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/lib/prisma.ts";
-import { allocateLineMoney } from "../../src/modules/order/utils/order-helpers.ts";
 import {
   CleanupTracker,
   api,
@@ -798,33 +797,5 @@ describe("Analytics validation", () => {
       })
       .set("Cookie", cookie);
     expect(tooWide.status).toBe(400);
-  });
-});
-
-describe("Money allocation", () => {
-  it("allocates discounts and tax to lines without losing a cent", () => {
-    const lines = allocateLineMoney(
-      [
-        { unitPrice: 100, quantity: 1 },
-        { unitPrice: 33.33, quantity: 1 },
-        { unitPrice: 33.33, quantity: 1 },
-      ],
-      1,
-      { pricesIncludeTax: false, taxRatePercent: 5 },
-    );
-    const discount = lines.reduce((sum, line) => sum + line.discountMinor, 0);
-    const tax = lines.reduce((sum, line) => sum + line.taxMinor, 0);
-    expect(discount).toBe(100);
-    // Discount leaves 165.66 taxable at 5% = 8.283 -> 8.28
-    expect(tax).toBe(828);
-  });
-
-  it("extracts included tax instead of adding it", () => {
-    const [line] = allocateLineMoney([{ unitPrice: 110, quantity: 1 }], 0, {
-      pricesIncludeTax: true,
-      taxRatePercent: 10,
-    });
-    expect(line?.taxMinor).toBe(1000);
-    expect(line?.netSalesMinor).toBe(10000);
   });
 });

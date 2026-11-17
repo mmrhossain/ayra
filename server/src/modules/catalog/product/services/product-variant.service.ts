@@ -269,6 +269,14 @@ export const updateVariant = async (id: string, input: UpdateVariantInput) => {
   }
   const existing = await prisma.productVariant.findUnique({ where: { id } });
   if (!existing) throw new AppError("Variant not found", 404);
+  if (input.price !== undefined || input.compareAtPrice !== undefined) {
+    validateVariantPayload({
+      price: input.price ?? Number(existing.price),
+      compareAtPrice: input.compareAtPrice === undefined
+        ? existing.compareAtPrice === null ? null : Number(existing.compareAtPrice)
+        : input.compareAtPrice,
+    });
+  }
 
   const { attributeValueIds, ...variantData } = input;
 
@@ -446,6 +454,20 @@ export const upsertProductVariants = async (
   const unknownIds = incomingIds.filter((id) => !existingById.has(id));
   if (unknownIds.length > 0) {
     throw new AppError("Unknown variant id for this product", 400);
+  }
+
+  for (const variant of variants) {
+    const saved = variant.id ? existingById.get(variant.id) : undefined;
+    if (!saved && variant.price === undefined) throw new AppError("New variants require a selling price", 400);
+    if (variant.price !== undefined || variant.compareAtPrice !== undefined) {
+      validateVariantPayload({
+        ...variant,
+        price: variant.price ?? (saved ? Number(saved.price) : undefined),
+        compareAtPrice: variant.compareAtPrice === undefined
+          ? saved?.compareAtPrice == null ? undefined : Number(saved.compareAtPrice)
+          : variant.compareAtPrice,
+      });
+    }
   }
 
   const incomingVariantIds = new Set(incomingIds);

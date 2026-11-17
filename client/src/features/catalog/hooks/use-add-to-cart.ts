@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { addCartItem, toCartErrorMessage } from "@/features/cart/api";
 import { normalizeVariantAttributes } from "@/features/catalog/api";
 import type { ProductDetail, ProductVariant } from "@/features/catalog/types";
@@ -21,6 +21,7 @@ type AddToCartInput = {
 
 export function useAddToCart() {
   const [cartBusy, setCartBusy] = useState(false);
+  const inFlight = useRef(false);
   const router = useRouter();
   const { data: session } = authClient.useSession();
 
@@ -31,10 +32,9 @@ export function useAddToCart() {
     quantity,
     galleryImageUrl,
   }: AddToCartInput): Promise<void> => {
-    if (!isComplete) {
-      errorToast("Choose an option");
-      return;
-    }
+    if (inFlight.current) return;
+    // Missing-option errors are shown beside the attribute controls.
+    if (!isComplete) return;
     if (!selected) {
       errorToast("This combination is unavailable");
       return;
@@ -49,6 +49,7 @@ export function useAddToCart() {
       if (dest) router.push(dest);
       return;
     }
+    inFlight.current = true;
     try {
       setCartBusy(true);
       const selectedPrice = num(selected.price);
@@ -72,6 +73,7 @@ export function useAddToCart() {
     } catch (err) {
       errorToast(toCartErrorMessage(err));
     } finally {
+      inFlight.current = false;
       setCartBusy(false);
     }
   };

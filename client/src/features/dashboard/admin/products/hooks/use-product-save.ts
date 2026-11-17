@@ -82,6 +82,7 @@ function productBody(
     description: details.description || undefined,
     categoryId: details.categoryId,
     brandId: details.brandId ? details.brandId : null,
+    taxClassId: details.taxClassId || null,
     status,
     isFeatured: details.isFeatured,
     images,
@@ -151,6 +152,9 @@ function variantBody(row: VariantRow): CreateVariantBody {
   return {
     ...(sku && row.skuEdited ? { sku } : {}),
     price: Number(row.price),
+    ...(row.compareAtPrice?.trim()
+      ? { compareAtPrice: Number(row.compareAtPrice) }
+      : row.id ? { compareAtPrice: null } : {}),
     // Blank means unknown. For an existing variant null explicitly clears a
     // previously known buying cost; for a new variant the field is omitted.
     ...(cost

@@ -10,6 +10,7 @@ export const detailsSchema = z.object({
   slug: slugSchema,
   categoryId: z.string().min(1, "Category is required"),
   brandId: z.string(),
+  taxClassId: z.string().optional(),
   description: z.string(),
   imageUrls: z.array(z.string()).max(5),
   primaryImageUrl: z.string(),

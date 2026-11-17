@@ -1,3 +1,4 @@
+import { createSharedRequest } from "@/lib/shared-request";
 import { dashboardApi } from "@/lib/api/dashboard";
 import type {
   AddressPayload,
@@ -11,13 +12,15 @@ export { toAddressError } from "@/features/dashboard/customer/address/utils";
 
 const noStore = { cache: "no-store" as const };
 
-export async function fetchMyAddresses(): Promise<SavedAddress[]> {
+const addressRequest = createSharedRequest(async (): Promise<SavedAddress[]> => {
   const res = await dashboardApi.get<Envelope<SavedAddress[]>>(
     "/addresses",
     noStore,
   );
   return res.data ?? [];
-}
+});
+
+export const fetchMyAddresses = addressRequest.read;
 
 export async function createAddress(
   body: AddressPayload,
@@ -25,6 +28,7 @@ export async function createAddress(
   const res = await dashboardApi.post<Envelope<SavedAddress>>("/addresses", {
     body,
   });
+  addressRequest.invalidate();
   return res.data;
 }
 
@@ -36,9 +40,11 @@ export async function updateAddress(
     `/addresses/${id}`,
     { body },
   );
+  addressRequest.invalidate();
   return res.data;
 }
 
 export async function deleteAddress(id: string): Promise<void> {
   await dashboardApi.delete(`/addresses/${id}`);
+  addressRequest.invalidate();
 }

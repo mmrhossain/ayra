@@ -17,6 +17,7 @@ type PersistVariantInput = Omit<CreateVariantInput, "sku"> & {
 import {
   overrideMatchesCombination,
   validateCreateProductPayload,
+  validatePricing,
   validateNoDuplicateCombinations,
 } from "../utils/product-validation.ts";
 import { buildSuggestedSku, isBlankSku, type SkuAttributeInput } from "../utils/sku-generator.ts";
@@ -99,6 +100,7 @@ export const buildGeneratedVariantSpecs = async (
       spec.weight = input.variantDefaults.weight;
     }
     const overridden = applyOverride(spec, input.variantOverrides ?? []);
+    validatePricing(overridden, "variant");
     const attributes = combo.attributeValueIds.flatMap((id) => {
       const value = valueMap.get(id);
       if (!value) return [];

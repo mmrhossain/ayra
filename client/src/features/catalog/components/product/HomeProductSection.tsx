@@ -63,9 +63,9 @@ export default function HomeProductSection({
       {cursor ? (
         <div className="mt-6 flex flex-col items-center gap-3">
           {loading ? (
-            <p role="status" aria-live="polite" className="text-sm text-zinc-500">
-              Loading more products...
-            </p>
+            <div role="status" aria-label="Loading more products" className="flex w-full justify-center py-5">
+              <span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground motion-reduce:animate-none" />
+            </div>
           ) : null}
           {error ? (
             <div className="flex flex-col items-center gap-2">

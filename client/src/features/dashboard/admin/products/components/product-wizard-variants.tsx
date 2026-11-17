@@ -90,6 +90,7 @@ function buildVariantRows(
         lastSuggested: suggested,
         price: prev?.price || basePrice,
         costPrice: prev?.costPrice ?? "",
+        compareAtPrice: prev?.compareAtPrice ?? "",
         isDefault: true,
         attributeValueIds: [],
         label: "Default",
@@ -140,6 +141,7 @@ function buildVariantRows(
       lastSuggested: candidate,
       price: prev?.price || basePrice,
       costPrice: prev?.costPrice ?? "",
+        compareAtPrice: prev?.compareAtPrice ?? "",
       isDefault: previousDefault
         ? previousDefault.key === key || comboKey(previousDefault.attributeValueIds) === key
         : index === 0,
@@ -337,7 +339,8 @@ export function ProductWizardVariants({
                 <th className="p-3 font-medium">
                   Selling price <span className="text-destructive">*</span>
                 </th>
-                <th className="p-3 font-medium">Buying cost / unit</th>
+                <th className="p-3 font-medium">Compare-at price</th>
+                  <th className="p-3 font-medium">Buying cost / unit</th>
                 <th className="p-3 font-medium">Default</th>
               </tr>
             </thead>
@@ -394,6 +397,18 @@ export function ProductWizardVariants({
                     {row.priceError ? (
                       <p className="mt-1 text-sm leading-snug text-destructive">{row.priceError}</p>
                     ) : null}
+                  </td>
+                  <td className="p-3">
+                    <NumberInput
+                      decimal
+                      placeholder="Optional"
+                      value={row.compareAtPrice ? Number(row.compareAtPrice) : null}
+                      onChange={(value) => updateRow(row.key, { compareAtPrice: value === null ? "" : String(value), compareAtError: undefined })}
+                      aria-label={"Compare-at price for " + row.label}
+                      aria-invalid={Boolean(row.compareAtError)}
+                      className="w-36"
+                    />
+                    {row.compareAtError ? <p className="mt-1 text-sm text-destructive">{row.compareAtError}</p> : <p className="mt-1 text-xs text-muted-foreground">Original price before a sale. Leave blank for no sale.</p>}
                   </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">

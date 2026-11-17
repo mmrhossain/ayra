@@ -83,6 +83,8 @@ const PATH_PERMISSIONS: Record<string, AdminPermission> = {
   "attribute-values": "catalog",
   categories: "catalog",
   brands: "catalog",
+  collections: "catalog",
+  "tax-classes": "catalog",
   inventory: "inventory",
   warehouses: "inventory",
   orders: "orders",

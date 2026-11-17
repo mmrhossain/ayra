@@ -13,7 +13,7 @@ const PRODUCT_STATUSES: ProductStatus[] = ["DRAFT", "ACTIVE", "ARCHIVED"];
 
 type Priced = {
   price?: number | undefined;
-  compareAtPrice?: number | undefined;
+  compareAtPrice?: number | null | undefined;
   costPrice?: number | null | undefined;
   weight?: number | undefined;
 };
@@ -34,6 +34,7 @@ export const validatePricing = (input: Priced, path = "variant"): void => {
   }
   if (
     input.compareAtPrice !== undefined &&
+    input.compareAtPrice !== null &&
     input.price !== undefined &&
     input.compareAtPrice < input.price
   ) {

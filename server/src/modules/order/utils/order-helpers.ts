@@ -54,58 +54,6 @@ export const allocateMinor = (totalMinor: number, weights: number[]): number[] =
   return allocations;
 };
 
-export type LineMoneyInput = {
-  unitPrice: MoneyInput;
-  quantity: number;
-};
-
-export type LineMoneyAllocation = {
-  grossMinor: number;
-  discountMinor: number;
-  taxMinor: number;
-  /** Gross minus discount minus tax when prices include tax. */
-  netSalesMinor: number;
-};
-
-/**
- * Allocate product discounts and tax to order lines. Shipping is deliberately
- * excluded: free-shipping discounts are a shipping adjustment, not a product
- * discount.
- */
-export const allocateLineMoney = (
-  lines: LineMoneyInput[],
-  discountAmount: MoneyInput,
-  tax: { pricesIncludeTax: boolean; taxRatePercent: number },
-): LineMoneyAllocation[] => {
-  const gross = lines.map(
-    (line) => toMinor(line.unitPrice) * Math.max(0, Math.trunc(line.quantity)),
-  );
-  const grossTotal = gross.reduce((sum, value) => sum + value, 0);
-  const discountTotal = Math.min(Math.max(0, toMinor(discountAmount)), grossTotal);
-  const discount = allocateMinor(discountTotal, gross);
-  const net = gross.map((value, index) => value - (discount[index] ?? 0));
-  const netTotal = net.reduce((sum, value) => sum + value, 0);
-
-  const rate = Math.max(0, tax.taxRatePercent);
-  const taxTotal = tax.pricesIncludeTax
-    ? Math.round((netTotal * rate) / (100 + rate))
-    : Math.round((netTotal * rate) / 100);
-  const taxAllocations = allocateMinor(taxTotal, net);
-
-  return gross.map((grossMinor, index) => {
-    const taxMinor = taxAllocations[index] ?? 0;
-    return {
-      grossMinor,
-      discountMinor: discount[index] ?? 0,
-      taxMinor,
-      netSalesMinor:
-        grossMinor -
-        (discount[index] ?? 0) -
-        (tax.pricesIncludeTax ? taxMinor : 0),
-    };
-  });
-};
-
 const rangeShare = (
   totalMinor: number,
   totalQuantity: number,
@@ -501,39 +449,4 @@ export const saveCheckoutAddressIfNew = async (
       addressLine2: address.addressLine2 ?? null,
     },
   });
-};
-
-export const computeCheckoutTotals = (
-  subtotal: number,
-  discountAmount: number,
-  coupon: { discountType: string } | null,
-  shippingAmountQuoted: number,
-  tax: { pricesIncludeTax: boolean; taxRatePercent: number } = {
-    pricesIncludeTax: true,
-    taxRatePercent: 0,
-  },
-) => {
-  const subtotalMinor = toMinor(subtotal);
-  const discountMinor = Math.min(Math.max(0, toMinor(discountAmount)), subtotalMinor);
-  const taxableMinor = Math.max(0, subtotalMinor - discountMinor);
-  const rate = Math.max(0, tax.taxRatePercent);
-  // Tax-inclusive prices already contain the tax, so it is broken out for
-  // reporting but never added to grandTotal a second time.
-  const taxMinor = tax.pricesIncludeTax
-    ? Math.round((taxableMinor * rate) / (100 + rate))
-    : Math.round((taxableMinor * rate) / 100);
-  const shippingMinor =
-    coupon?.discountType === "FREE_SHIPPING" ? 0 : toMinor(shippingAmountQuoted);
-  const grandTotalMinor =
-    subtotalMinor -
-    discountMinor +
-    (tax.pricesIncludeTax ? 0 : taxMinor) +
-    shippingMinor;
-
-  return {
-    discountAmount: fromMinor(discountMinor),
-    taxAmount: fromMinor(taxMinor),
-    shippingAmount: fromMinor(shippingMinor),
-    grandTotal: fromMinor(grandTotalMinor),
-  };
 };

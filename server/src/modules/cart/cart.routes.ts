@@ -4,6 +4,7 @@ import { checkoutLimiter } from "../../common/middleware/rate-limit.middleware.t
 
 import {
   getCartHandler,
+  quoteGuestCartHandler,
   addItemHandler,
   updateItemHandler,
   removeItemHandler,
@@ -18,6 +19,8 @@ const router = Router();
 
 const customerOnly = [requireAuth, requireCustomer];
 
+router.use("/cart", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+router.post("/cart/guest/quote", quoteGuestCartHandler);
 router.get("/cart", ...customerOnly, getCartHandler);
 router.post("/cart/items", ...customerOnly, addItemHandler);
 router.put("/cart/items/:variantId", ...customerOnly, updateItemHandler);
