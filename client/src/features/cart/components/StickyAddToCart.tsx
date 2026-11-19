@@ -51,7 +51,7 @@ const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
     return (
         <div
             data-sticky-add-to-cart
-            className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-0 z-30 w-full max-w-full animate-in slide-in-from-bottom-4 duration-300 lg:hidden"
+            className="fixed bottom-[var(--bottom-nav-space)] left-0 z-30 w-full max-w-full animate-in slide-in-from-bottom-4 duration-300 lg:hidden"
         >
             <div className="bg-background/95 backdrop-blur-lg border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3">
                 <div className="flex items-center gap-3 max-w-lg mx-auto">

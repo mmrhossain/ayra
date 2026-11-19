@@ -2,14 +2,14 @@ import Skeleton from "react-loading-skeleton";
 
 const CartListSkeleton = () => {
   return (
-    <section className="container mx-auto min-w-0 max-w-6xl py-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:py-7 md:py-10 xl:max-w-7xl">
-      <div className="mb-4 sm:mb-5">
+    <section className="container storefront-page-start mx-auto min-w-0 max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]">
+      <div className="mb-3 sm:mb-4">
         <Skeleton height={16} width={140} />
       </div>
-      <div className="mb-6 md:mb-8">
+      <div className="mb-5 md:mb-6">
         <Skeleton height={36} width={220} />
       </div>
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.9fr)]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.9fr)] lg:items-start xl:gap-6 2xl:gap-8">
         <div className="rounded-[20px] border border-border-color px-4 sm:px-5 md:px-6">
           {[1, 2, 3].map((i) => (
             <div

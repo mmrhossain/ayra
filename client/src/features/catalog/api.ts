@@ -150,13 +150,14 @@ export const serializeCategoriesParam = (
 
 export async function fetchProductList(params: ProductListParams = {}): Promise<ProductListResult> {
   const res = await api.get<Envelope<ProductListResult>>("/products", {
-    next: { revalidate: 60, tags: ["products"] },
+    ...(params.collection ? { cache: "no-store" } : { next: { revalidate: 60, tags: ["products"] } }),
     params: {
       page: params.page,
       limit: params.limit ?? 20,
       cursor: params.cursor,
       search: params.search || undefined,
       category: params.category || undefined,
+      collection: params.collection,
       brand: params.brand || undefined,
       minPrice: params.minPrice,
       maxPrice: params.maxPrice,
@@ -175,9 +176,10 @@ export async function fetchProductFacets(
   params: ProductListParams = {},
 ): Promise<ProductFacets> {
   const res = await api.get<Envelope<ProductFacets>>("/products/facets", {
-    next: { revalidate: 60, tags: ["products", "categories"] },
+    ...(params.collection ? { cache: "no-store" } : { next: { revalidate: 60, tags: ["products", "categories"] } }),
     params: {
       category: params.category || undefined,
+      collection: params.collection,
       brand: params.brand || undefined,
       search: params.search || undefined,
       minPrice: params.minPrice,

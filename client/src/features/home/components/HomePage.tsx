@@ -11,7 +11,7 @@ export default function HomePage({
   storeName: string;
 }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-[var(--storefront-section-gap)]">
       <h1 className="sr-only">{storeName} — Modern online shopping in Bangladesh</h1>
       <section>
         {data.sliders.length ? (
@@ -38,7 +38,7 @@ export default function HomePage({
             title={section.title}
             products={section.products}
             initialCursor={section.nextCursor ?? null}
-            seeMorePath={section.href}
+            seeMorePath={section.href.replace(/^\/collections\//, "/shop?collection=")}
             seeMoreText="See All"
           />
         </section>

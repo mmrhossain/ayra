@@ -53,13 +53,13 @@ const CartList = () => {
   if (cartCount === 0) return <EmptyState text="cart" />;
 
   return (
-    <section className="container mx-auto min-w-0 max-w-6xl py-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:py-7 md:py-10 xl:max-w-7xl 2xl:max-w-[88rem]">
+    <section className="container storefront-page-start mx-auto min-w-0 max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]">
       <PageBreadcrumb
-        className="mb-4 sm:mb-5 md:mb-6"
+        className="mb-3 sm:mb-4"
         items={[{ label: "Home", href: "/" }, { label: "Cart" }]}
       />
 
-      <h1 className="mb-5 text-2xl leading-tight font-semibold tracking-tight text-foreground uppercase sm:mb-6 sm:text-2xl md:mb-8">
+      <h1 className="mb-5 text-2xl leading-tight font-semibold tracking-tight text-foreground uppercase md:mb-6">
         Your Cart
       </h1>
 

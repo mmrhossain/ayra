@@ -7,6 +7,7 @@ import {
 } from "../../src/template/email.ts";
 import { ORDER_CONFIRMATION_TEMPLATE } from "../../src/template/order-confirmation.ts";
 import { PAYMENT_CONFIRMATION_TEMPLATE } from "../../src/template/payment-confirmation.ts";
+import { buildLowStockTable } from "../../src/template/low-stock-alert.ts";
 import { SHIPMENT_UPDATE_TEMPLATE } from "../../src/template/shipment-update.ts";
 import {
   ORDER_STATUS_MESSAGES,
@@ -55,6 +56,17 @@ describe("Email layout", () => {
 
     expect(html).toContain("If you did not request this, ignore this email.");
   });
+
+  it("keeps embedded tables inside a fluid message container with a desktop Outlook fallback", () => {
+    const html = getBaseEmailTemplate({
+      title: "Order Confirmed",
+      message: '<table width="100%"><tr><td>Order details</td></tr></table>',
+    });
+    expect(html).toContain('width="100%" style="width: 100%; max-width: 600px');
+    expect(html).toContain('<!--[if mso]><table role="presentation" width="600"');
+    expect(html).toMatch(/<div style="margin: 0 0 25px 0;[^>]*>\s*<table/);
+    expect(html).toContain("@media screen and (max-width: 480px)");
+  });
 });
 
 describe("Order email tables", () => {
@@ -79,7 +91,20 @@ describe("Order email tables", () => {
     expect(html).toContain("Silk Panjabi");
     expect(html).toContain("Maroon / L");
     expect(html).toContain("BDT 3000.00");
+    expect(html).toContain('class="email-data-grid"');
+    expect(html).toMatch(/class="email-grid-label"[^>]*>Total: /);
     expect(html).not.toContain("2x ");
+  });
+
+  it("gives narrow inventory rows their own field labels", () => {
+    const html = buildLowStockTable([
+      { productName: "Silk Panjabi", sku: "PANJABI-XL", warehouseName: "Dhaka", quantityAvailable: 0 },
+    ]);
+    expect(html).toContain('class="email-data-grid"');
+    expect(html).toMatch(/class="email-grid-label"[^>]*>SKU: /);
+    expect(html).toMatch(/class="email-grid-label"[^>]*>Warehouse: /);
+    expect(html).toMatch(/class="email-grid-label"[^>]*>Available: /);
+    expect(html).toContain("Out of stock");
   });
 
   it("escapes product and variant names", () => {

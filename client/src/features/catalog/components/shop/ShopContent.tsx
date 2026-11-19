@@ -10,11 +10,13 @@ import ProductGrid from "@/features/catalog/components/product/ProductGrid";
 import CursorProductList from "@/features/catalog/components/shop/CursorProductList";
 import Pagination from "@/features/catalog/components/shop/Pagination";
 import { notFound } from "next/navigation";
+import { ApiError } from "@/lib/api/store-front";
 
 const SHOP_PAGE_SIZE = 12;
 
 interface ShopContentProps {
   slug?: string[];
+  collection?: string;
   sp: {
     page?: string;
     category?: string;
@@ -36,6 +38,7 @@ export default async function ShopContent({
   sort,
   minPrice,
   maxPrice,
+  collection,
 }: ShopContentProps) {
   const page =
     sp.page === undefined ? undefined : Math.max(1, Number(sp.page) || 1);
@@ -56,12 +59,16 @@ export default async function ShopContent({
       ...(page === undefined ? {} : { page }),
       limit: SHOP_PAGE_SIZE,
       category: categorySlug,
+      collection,
       search,
       sort,
       minPrice,
       maxPrice,
       attributes,
       categories: selectedCategories,
+    }).catch(error => {
+      if (collection && error instanceof ApiError && error.status === 404) notFound();
+      throw error;
     }),
     categoryDetailsPromise,
   ]);
@@ -78,6 +85,7 @@ export default async function ShopContent({
   const basePath = slug?.length ? `/shop/${slug.join("/")}` : "/shop";
 
   const filters = {
+    collection,
     category: categorySlug,
     sort: sort === "newest" ? undefined : sort,
     minPrice: minPrice != null ? String(minPrice) : undefined,
@@ -88,9 +96,9 @@ export default async function ShopContent({
   };
 
   return (
-    <div className="container mt-8">
+    <div className="container storefront-page-start">
       {search ? (
-        <div className="mb-6">
+        <div className="mb-5 sm:mb-6">
           <h1 className="text-2xl leading-tight font-semibold tracking-tight lg:text-3xl">
             Search Results for: <span className="italic">{search}</span>
           </h1>
@@ -104,7 +112,7 @@ export default async function ShopContent({
             {categoryDetails?.name ? `${categoryDetails.name} products` : "Shop products"}
           </h1>
           {categoryDetails?.description ? (
-            <p className="mb-6 max-w-2xl text-sm leading-relaxed text-zinc-500">
+            <p className="mb-5 max-w-2xl text-sm leading-relaxed text-zinc-500 sm:mb-6">
               {categoryDetails.description}
             </p>
           ) : null}
@@ -112,14 +120,16 @@ export default async function ShopContent({
       )}
 
       {hasProducts ? (
-        <div className="mt-6 md:mt-8">
+        <div>
           {page === undefined ? (
             <CursorProductList
+              key={JSON.stringify(filters)}
               initialItems={items}
               initialCursor={productResult.nextCursor ?? null}
               query={{
                 limit: SHOP_PAGE_SIZE,
                 category: categorySlug,
+                collection,
                 search,
                 sort,
                 minPrice,
@@ -129,13 +139,11 @@ export default async function ShopContent({
               }}
             />
           ) : (
-            <ProductGrid items={items} eagerFirstImage />
+            <ProductGrid items={items} eagerAboveFold />
           )}
         </div>
       ) : (
-        <div className="mt-8">
-          <ProductNotFound />
-        </div>
+        <ProductNotFound />
       )}
 
       {pagination && hasProducts && page !== undefined ? (

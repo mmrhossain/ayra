@@ -14,7 +14,7 @@ const TopFooter = () => {
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 py-12 lg:py-20 border-t border-slate-100">
+      <div className="grid grid-cols-1 gap-8 border-t border-slate-100 py-8 sm:grid-cols-2 sm:gap-10 md:py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
         {/* 1. Brand Section */}
         <div className="sm:col-span-2 lg:col-span-3 space-y-6">
           <div>

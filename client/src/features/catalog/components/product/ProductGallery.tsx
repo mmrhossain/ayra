@@ -8,6 +8,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import type { GalleryImage } from "@/features/catalog/types";
+import { productDetailsLayout } from "@/features/catalog/components/product/product-details-layout";
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
@@ -66,8 +67,8 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
 
   return (
     <div className="w-full min-w-0">
-      <div className="flex w-full min-w-0 flex-col-reverse gap-3 lg:flex-row lg:items-start lg:gap-4">
-        <div className="flex max-w-full gap-2.5 overflow-x-auto py-1 no-scrollbar sm:gap-3 lg:w-[72px] xl:w-[80px] lg:max-h-[450px] lg:flex-col lg:overflow-y-auto shrink-0">
+      <div className={productDetailsLayout.gallery}>
+        <div className={cn(productDetailsLayout.thumbnailRail, "scrollbar-hide overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto")}>
           {list.map((image, index) => (
             <button
               key={`thumb-${image.id ?? index}`}
@@ -76,10 +77,10 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
               aria-label={`View image ${index + 1}`}
               aria-current={selectedIndex === index}
               className={cn(
-                "relative flex-shrink-0 overflow-hidden rounded-md bg-gray-50 dark:bg-zinc-900 aspect-square w-16 lg:w-full cursor-pointer transition-all duration-200",
+                "relative aspect-square w-16 shrink-0 cursor-pointer overflow-hidden rounded-md bg-gray-50 outline-none after:pointer-events-none after:absolute after:inset-0 after:rounded-md after:ring-inset after:transition-shadow focus-visible:after:ring-2 focus-visible:after:ring-primary lg:w-full dark:bg-zinc-900",
                 selectedIndex === index
-                  ? "ring-2 ring-primary ring-offset-1"
-                  : "ring-1 ring-border hover:opacity-80"
+                  ? "after:ring-2 after:ring-primary"
+                  : "after:ring-1 after:ring-border hover:after:ring-2 hover:after:ring-primary"
               )}
             >
               <StoreImage
@@ -118,7 +119,7 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
                     onPointerLeave={() => setMagnifier(null)}
                     onPointerDown={() => setMagnifier(null)}
                     onPointerCancel={() => setMagnifier(null)}
-                    className="relative aspect-square max-h-[480px] w-full overflow-hidden rounded-lg bg-gray-50 dark:bg-zinc-900 shadow-sm mx-auto"
+                    className={cn(productDetailsLayout.galleryImage, "relative mx-auto overflow-hidden bg-gray-50 shadow-sm dark:bg-zinc-900")}
                   >
                     <StoreImage
                       src={resolveSrc(image)}

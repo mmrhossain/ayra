@@ -1,4 +1,4 @@
-import PaymentResult from "@/features/checkout/components/PaymentResult";
+import PaymentResult, { PaymentResultSkeleton } from "@/features/checkout/components/PaymentResult";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { Suspense } from "react";
 
@@ -12,7 +12,7 @@ const CheckoutConfirmationPage = async () => {
   await requireCustomer();
 
   return (
-    <Suspense>
+    <Suspense fallback={<PaymentResultSkeleton />}>
       <PaymentResult kind="confirmation" />
     </Suspense>
   );

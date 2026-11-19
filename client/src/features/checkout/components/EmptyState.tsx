@@ -5,7 +5,7 @@ import Link from "next/link";
 const EmptyState = () => {
 
     return (
-        <div className="container max-w-6xl px-4 py-12 sm:py-16 lg:px-10">
+        <div className="container storefront-page-start max-w-6xl">
             <div className="mx-auto max-w-2xl space-y-4 border border-border bg-white p-5 text-center sm:p-8">
                 <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                     <ShoppingCart />

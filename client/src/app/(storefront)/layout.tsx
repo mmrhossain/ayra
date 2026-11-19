@@ -9,9 +9,11 @@ import { CategoryListItem } from "@/features/catalog/types";
 import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import StorefrontDeferredWidgets from "@/features/content/components/chat/StorefrontDeferredWidgets";
 import { redirectStaffFromStorefront } from "@/lib/api/auth/server";
+import { normalizeRole } from "@/lib/api/auth/roles";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  await redirectStaffFromStorefront();
+  const session = await redirectStaffFromStorefront();
+  const initialIsCustomer = normalizeRole(session?.user?.role) === "CUSTOMER";
 
   const categoriesPromise = getCategories()
     .then((data) => (Array.isArray(data) ? data : []))
@@ -26,11 +28,11 @@ export default async function StorefrontLayout({ children }: { children: React.R
       <div className="min-w-0">
         <HeaderHeightObserver />
         <Header />
-        <Navbar categories={categories} />
+        <Navbar categories={categories} initialIsCustomer={initialIsCustomer} />
         <StorefrontDeferredWidgets />
         {children}
         <Footer />
-        <FooterNavigationMenu categories={categories} />
+        <FooterNavigationMenu categories={categories} initialIsCustomer={initialIsCustomer} />
       </div>
     </StorefrontProvider>
   );

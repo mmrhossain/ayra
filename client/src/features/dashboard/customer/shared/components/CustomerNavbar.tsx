@@ -6,5 +6,5 @@ import { useStorefrontCounts } from "@/hooks/useStorefrontCounts";
 
 export default function CustomerNavbar({ categories }: { categories: CategoryListItem[] }) {
   useStorefrontCounts();
-  return <Navbar categories={categories} />;
+  return <Navbar categories={categories} initialIsCustomer />;
 }

@@ -68,6 +68,12 @@ const onSaleVariantWhere: Prisma.ProductVariantWhereInput = {
   compareAtPrice: { gt: prisma.productVariant.fields.price },
 };
 
+export const hasPublishedCollectionItems = async (collectionId: string) =>
+  Boolean(await prisma.productCollectionItem.findFirst({
+    where: { collectionId, product: publishedWhere },
+    select: { productId: true },
+  }));
+
 export const collectionWindowWhere = (now: Date): Prisma.ProductCollectionWhereInput => ({
   AND: [
     { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
@@ -270,12 +276,8 @@ export const resolveProducts = async (
         cursor
       );
     case "FEATURED": {
-      if (!collection.id.startsWith("default-")) {
-        const curated = await prisma.productCollectionItem.findFirst({
-          where: { collectionId: collection.id, product: publishedWhere },
-          select: { productId: true },
-        });
-        if (curated) return loadManualPage(collection.id, take, cursor);
+      if (!collection.id.startsWith("default-") && await hasPublishedCollectionItems(collection.id)) {
+        return loadManualPage(collection.id, take, cursor);
       }
       return loadPublishedPage({ isFeatured: true }, "createdAt", take, cursor);
     }

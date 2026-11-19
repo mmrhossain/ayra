@@ -31,7 +31,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
   ];
 
   return (
-    <div className="container mx-auto mt-8 mb-10 max-w-6xl sm:mt-10 md:mt-14 md:mb-14 xl:max-w-7xl">
+    <div className="container storefront-section-start mx-auto max-w-6xl xl:max-w-7xl">
       <div className="relative flex items-stretch border-b border-border-color">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -53,7 +53,7 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
         })}
       </div>
 
-      <div className="mt-6 sm:mt-8 md:mt-10">
+      <div className="mt-5 md:mt-6">
         {activeTab === "description" && (
           <div className="space-y-6 animate-in fade-in duration-300 sm:space-y-8">
             <div>

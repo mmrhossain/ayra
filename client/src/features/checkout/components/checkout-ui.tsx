@@ -1,16 +1,11 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
+import { useId, useRef, useState } from "react";
 
 export const checkoutControlClass =
   "h-11 w-full min-w-0 rounded-[3px] border-border bg-white px-3.5 text-base shadow-none placeholder:text-muted-foreground focus-visible:border-neutral-500 focus-visible:ring-0 sm:h-12";
@@ -79,7 +74,7 @@ export function CheckoutSelect({
   onValueChange,
   disabled,
   error,
-  children,
+  options,
 }: {
   label: string;
   placeholder: string;
@@ -87,31 +82,73 @@ export function CheckoutSelect({
   onValueChange: (value: string) => void;
   disabled?: boolean;
   error?: string;
-  children: ReactNode;
+  options: readonly { value: string; label: string }[];
 }) {
+  const id = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const selected = options.find(option => option.value === value);
+  const expanded = open && !disabled && options.length > 0;
   return (
-    <div className="min-w-0">
-      <Select
-        value={value ?? ""}
-        onValueChange={onValueChange}
-        disabled={disabled}
-      >
-        <SelectTrigger
-          aria-label={label}
-          aria-invalid={Boolean(error)}
+    <div
+      className="min-w-0"
+      onBlur={event => {
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={event => {
+        if (event.key !== "Escape" || !expanded) return;
+        event.stopPropagation();
+        setOpen(false);
+        trigger.current?.focus();
+      }}
+    >
+        <button
+          ref={trigger}
+          type="button"
+          id={`${id}-trigger`}
+          disabled={disabled || options.length === 0}
+          aria-labelledby={`${id}-label ${id}-value`}
+          aria-expanded={expanded}
+          aria-controls={`${id}-options`}
+          data-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          onClick={() => setOpen(current => !current)}
           className={cn(
             checkoutControlClass,
-            "w-full max-w-full justify-between data-[size=default]:h-11 sm:data-[size=default]:h-12",
+            "flex items-center justify-between gap-2 border text-left focus-visible:outline focus-visible:outline-offset-2 data-[invalid=true]:border-danger disabled:cursor-not-allowed disabled:opacity-50",
+            !selected && "text-muted-foreground",
           )}
         >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent className="rounded-sm border border-border bg-white">
-          {children}
-        </SelectContent>
-      </Select>
+          <span id={`${id}-label`} className="sr-only">{label}</span>
+          <span id={`${id}-value`} className="truncate">{selected?.label ?? placeholder}</span>
+          <ChevronDown aria-hidden="true" className={cn("size-4 shrink-0 text-muted-foreground", expanded && "rotate-180")} />
+        </button>
+        <fieldset
+          id={`${id}-options`}
+          aria-labelledby={`${id}-label`}
+          hidden={!expanded}
+          className="mt-1 max-h-56 min-w-0 overflow-y-auto rounded-sm border border-border bg-white p-1"
+        >
+          {options.map(option => (
+            <label
+              key={option.value}
+              className="relative flex min-h-11 cursor-pointer items-center justify-between gap-2 px-2.5 text-sm has-[:checked]:bg-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 hover:bg-muted"
+            >
+              <input
+                type="radio"
+                name={`${id}-option`}
+                value={option.value}
+                checked={option.value === value}
+                onChange={() => onValueChange(option.value)}
+                className="sr-only"
+              />
+              <span>{option.label}</span>
+              {option.value === value ? <Check aria-hidden="true" className="size-4 shrink-0" /> : null}
+            </label>
+          ))}
+        </fieldset>
       {error ? (
-        <p role="alert" className="mt-1.5 text-sm leading-snug text-danger">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-sm leading-snug text-danger">
           {error}
         </p>
       ) : null}
@@ -151,7 +188,7 @@ export function CheckoutBack({
   onClick?: () => void;
 }) {
   const className =
-    "group mb-7 inline-flex items-center text-foreground transition-colors hover:text-black sm:mb-9";
+    "group inline-flex h-11 items-center justify-self-start text-foreground transition-colors hover:text-black";
   const inner = (
     <>
       <ArrowLeft size={18} strokeWidth={1.75} />
@@ -212,9 +249,9 @@ export function CheckoutSummaryRow({
   );
 }
 
-export function CheckoutStepActions({ children }: { children: ReactNode }) {
+export function CheckoutStepActions({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className="flex justify-end pt-6 max-lg:sticky max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] max-lg:z-10 max-lg:bg-background max-lg:py-3 sm:pt-8">
+    <div className={cn("flex min-w-0 justify-end pt-4 max-lg:sticky max-lg:bottom-[var(--bottom-nav-space)] max-lg:z-10 max-lg:bg-background max-lg:py-3", className)}>
       {children}
     </div>
   );

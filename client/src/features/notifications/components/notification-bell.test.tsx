@@ -20,13 +20,14 @@ const notifications: InAppNotification[] = [
   },
 ];
 
-let unreadCount = 1;
+let unreadCount: number | undefined = 1;
+let includeLink = true;
 
 vi.mock("@/features/notifications/hooks/use-notifications", () => ({
-  useUnreadCount: () => ({ data: unreadCount }),
+  useUnreadCount: () => ({ data: unreadCount, isLoading: unreadCount === undefined }),
   useNotifications: () => ({
-    items: notifications,
-    unreadCount,
+    items: includeLink ? notifications : notifications.map(item => ({ ...item, href: null })),
+    unreadCount: unreadCount ?? 0,
     query: { isLoading: false },
   }),
   useMarkNotificationRead: () => ({ mutate: markReadMutate, isPending: false }),
@@ -70,9 +71,43 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
   vi.clearAllMocks();
+  unreadCount = 1;
+  includeLink = true;
 });
 
 describe("NotificationBell", () => {
+  it("keeps the menu open when marking notifications read", async () => {
+    includeLink = false;
+    await act(async () => root.render(<NotificationBell />));
+    const trigger = container.querySelector("button")!;
+    await act(async () => {
+      trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    });
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const menuItem = (label: string) =>
+      Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+        .find(item => item.textContent?.includes(label));
+    await act(async () => menuItem("New order ORD-1")!.click());
+    expect(markReadMutate).toHaveBeenCalledWith("n1");
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    await act(async () => menuItem("Mark all read")!.click());
+    expect(markAllMutate).toHaveBeenCalledTimes(1);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  });
+  it("keeps the bell mounted while only its count badge loads", () => {
+    unreadCount = undefined;
+    act(() => root.render(<NotificationBell />));
+    const trigger = container.querySelector("button");
+    expect(trigger?.querySelector("svg")).not.toBeNull();
+    expect(trigger?.getAttribute("aria-label")).toBe("Notifications, loading unread count");
+    expect(trigger?.querySelector("span[aria-hidden]")).not.toBeNull();
+
+    unreadCount = 3;
+    act(() => root.render(<NotificationBell />));
+    expect(container.querySelector("button")).toBe(trigger);
+    expect(trigger?.getAttribute("aria-label")).toBe("Notifications, 3 unread");
+    expect(trigger?.textContent).toContain("3");
+  });
   it("shows the unread badge and an accessible label", () => {
     act(() => root.render(<NotificationBell />));
     const trigger = container.querySelector("button");

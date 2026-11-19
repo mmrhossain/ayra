@@ -8,7 +8,7 @@ const ProductNotFound = ({ slug }: { slug?: string }) => {
     const router = useRouter();
 
     return (
-        <div className="mt-14 flex flex-col justify-center items-center text-center h-[60vh] px-4">
+        <div className="flex min-h-64 flex-col items-center justify-center px-4 py-6 text-center sm:py-8">
             {/* Icon */}
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
                 <SearchX className="h-10 w-10 text-red-400" />

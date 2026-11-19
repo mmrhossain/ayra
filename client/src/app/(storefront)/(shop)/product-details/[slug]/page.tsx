@@ -181,10 +181,9 @@ export default async function Page({ params }: Props) {
       <ProductTab product={product} />
       <Suspense
         fallback={
-          <div className="container">
-            <div className="mt-6 p-4 sm:p-5 md:mt-8">
-              <ProductsSkeleton />
-            </div>
+          <div className="container storefront-section-start">
+            <div className="mb-4 h-7 md:mb-6" aria-hidden="true" />
+            <ProductsSkeleton contained={false} className="gap-3 sm:gap-5 lg:gap-7" />
           </div>
         }
       >

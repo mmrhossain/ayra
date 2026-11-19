@@ -1,8 +1,10 @@
 "use client";
 
-export function RouteErrorFallback({ reset }: { reset: () => void }) {
+import { cn } from "@/lib/utils";
+
+export function RouteErrorFallback({ reset, className }: { reset: () => void; className?: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center text-center">
+    <div className={cn("flex min-h-screen flex-col items-center justify-center text-center", className)}>
       <h2 className="text-2xl font-bold text-red-600">
         Something went wrong!
       </h2>

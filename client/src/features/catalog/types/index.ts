@@ -94,6 +94,7 @@ export type ProductSort = "newest" | "price_asc" | "price_desc" | "popular";
 export type AttributeFilterGroups = Record<string, string[]>;
 
 export type ProductListParams = {
+  collection?: string;
   page?: number;
   limit?: number;
   cursor?: string;

@@ -151,13 +151,11 @@ const CheckoutPayment = ({
 
       {children}
 
-      <div className="min-w-0 lg:col-start-1 lg:row-start-3">
-      <CheckoutStepActions>
+      <CheckoutStepActions className="lg:col-start-1 lg:row-start-3 lg:pt-0">
         <CheckoutCta type="submit" loading={loading || placing}>
           {paymentMethod === "SSLCOMMERZ" ? "Pay now" : "Place order"}
         </CheckoutCta>
       </CheckoutStepActions>
-      </div>
     </form>
   );
 };

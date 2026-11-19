@@ -18,6 +18,7 @@ import { Suspense } from "react";
 const SORTS = new Set<ProductSort>(["newest", "price_asc", "price_desc", "popular"]);
 
 type SearchParams = {
+  collection?: string;
   page?: string;
   category?: string;
   sort?: string;
@@ -37,6 +38,7 @@ const INDEXING_FILTERS = new Set([
   "search",
   "attrs",
   "categories",
+  "collection",
 ]);
 
 export async function generateMetadata({
@@ -80,17 +82,9 @@ export async function generateMetadata({
   };
 }
 
-function FilterBarSkeleton() {
-  return (
-    <div
-      className="h-14 border-b border-zinc-100 sm:h-16"
-      aria-hidden="true"
-    />
-  );
-}
-
-async function ShopFilterBar({
+function ShopFilterBar({
   category,
+  collection,
   search,
   minPrice,
   maxPrice,
@@ -98,20 +92,22 @@ async function ShopFilterBar({
   categories,
 }: {
   category?: string;
+  collection?: string;
   search?: string;
   minPrice?: number;
   maxPrice?: number;
   attrs?: string;
   categories?: string;
 }) {
-  const facets = await fetchProductFacets({
+  const facets = fetchProductFacets({
     category,
+    collection,
     search,
     minPrice,
     maxPrice,
     attributes: parseAttributesParam(attrs),
     categories: parseCategoriesParam(categories),
-  });
+  }).catch(() => null);
 
   return <DynamicFilterBar facets={facets} />;
 }
@@ -125,6 +121,7 @@ export default async function ShopPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
+  const collection = typeof sp.collection === "string" ? sp.collection.trim() || undefined : undefined;
 
   const routeCategoryPath = slug?.length ? slug.join("/") : undefined;
 
@@ -139,7 +136,7 @@ export default async function ShopPage({
 
   const hasProducts = directProductsCount > 0 || !categoryDetails;
 
-  const isPureCategoryHub = !hasProducts && hasChildren;
+  const isPureCategoryHub = !collection && !hasProducts && hasChildren;
 
   const parent_category = {
     id: categoryDetails?.id,
@@ -157,32 +154,32 @@ export default async function ShopPage({
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : undefined;
 
   return (
-    <div className="relative min-h-dvh min-w-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+    <div className="relative min-w-0">
       {isPureCategoryHub ? (
         <Suspense fallback={<SubcategoriesSkeleton />}>
           <Subcategories subCategories={children} parent_category={parent_category} />
         </Suspense>
       ) : (
         <>
-          <Suspense fallback={<FilterBarSkeleton />}>
-            <ShopFilterBar
-              category={routeCategoryPath}
-              search={sp.search}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              attrs={sp.attrs}
-              categories={sp.categories}
-            />
-          </Suspense>
+          <ShopFilterBar
+            category={routeCategoryPath || sp.category}
+            collection={collection}
+            search={sp.search}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            attrs={sp.attrs}
+            categories={sp.categories}
+          />
 
           <Suspense
             fallback={
-              <div className="container mt-8">
-                <ProductsSkeleton />
+              <div className="container storefront-page-start">
+                {sp.search ? <div className="mb-5 h-12 sm:mb-6" aria-hidden="true" /> : null}
+                <ProductsSkeleton contained={false} className="gap-3 sm:gap-5 lg:gap-7" />
               </div>
             }
           >
-            <ShopContent slug={slug} sp={sp} sort={sort} minPrice={minPrice} maxPrice={maxPrice} />
+            <ShopContent slug={slug} sp={sp} sort={sort} minPrice={minPrice} maxPrice={maxPrice} collection={collection} />
           </Suspense>
         </>
       )}

@@ -7,13 +7,15 @@ import { CategoryListItem } from "@/features/catalog/types";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles";
-import { useWishStore } from "@/stores/useWishStore";
+import { NavbarCountBadge } from "@/components/layout/NavbarCountBadge";
+import { useStorefrontCountBadge } from "@/hooks/useStorefrontCounts";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, LazyMotion, m, useReducedMotion } from "framer-motion";
 import { Heart, Home, LayoutGrid, Store, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type BottomNavbar = {
   label: string;
@@ -31,13 +33,12 @@ export const footerNavigationItems: BottomNavbar[] = [
 
 const loadMotionFeatures = () => import("@/lib/motion-features").then(module => module.default);
 
-const emptySubscribe = () => () => {};
-
 interface FooterNavigationMenuProps {
   categories?: CategoryListItem[];
+  initialIsCustomer?: boolean;
 }
 
-const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) => {
+const FooterNavigationMenu = ({ categories = [], initialIsCustomer }: FooterNavigationMenuProps) => {
   const { store } = usePublicSettings();
   const pathname = usePathname();
   const [categoriesDrawerOpen, setCategoriesDrawerOpen] = useState(false);
@@ -58,19 +59,13 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
     };
   }, [categoriesDrawerOpen]);
 
-  const isHydrated = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
-
   const { data } = authClient.useSession();
   const user = data?.user;
 
   const getUserDashboardUrl = (role?: string) =>
     staffDashboardPath(role) ?? "/customer/account";
 
-  const wishCount = useWishStore((state) => state.wishCount);
+  const wishBadge = useStorefrontCountBadge("wishlist", initialIsCustomer);
 
   const backdropVariants = {
     hidden: { opacity: 0 },
@@ -88,9 +83,9 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
     <>
       <nav
         aria-label="Bottom Navigation"
-        className="fixed bottom-0 left-0 z-40 w-full bg-white/90 pb-safe backdrop-blur-lg border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-safe shadow-[0_-4px_18px_rgba(0,0,0,0.05)] backdrop-blur-md lg:hidden"
       >
-        <ul className="grid grid-cols-5 items-center h-16 w-full max-w-md mx-auto md:max-w-2xl px-2">
+        <ul className="mx-auto grid h-16 w-full max-w-lg grid-cols-5 items-center gap-1 px-2 sm:px-4">
           {footerNavigationItems.map(({ label, path, icon }) => {
             let href = path ?? "/";
             if (label === "Account" && user) {
@@ -107,73 +102,49 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
                 ? pathname === "/"
                 : pathname?.startsWith(href);
 
-            const count = label === "Wishlist" ? wishCount : 0;
-            const shouldShowBadge = isHydrated && count > 0;
-
-            if (isCategories) {
-              return (
-                <li key={label} className="flex justify-center group">
-                  <button
-                    type="button"
-                    onClick={() => setCategoriesDrawerOpen((prev) => !prev)}
-                    className="w-full py-1 flex flex-col items-center justify-center focus:outline-none active:scale-95 transition-transform"
-                  >
-                    <div
-                      className={`p-2 rounded-xl transition-all duration-300 ${
-                        isActive
-                          ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105"
-                          : "text-slate-500 group-hover:text-primary"
-                      }`}
-                    >
-                      {icon}
-                    </div>
-
-                    <span
-                      className={`mt-1 max-w-[64px] truncate text-center text-xs font-normal uppercase tracking-wide transition-colors duration-300 ${
-                        isActive ? "text-primary" : "text-slate-400"
-                      }`}
-                    >
-                      {label}
-                    </span>
-                  </button>
-                </li>
-              );
-            }
+            const isWishlist = label === "Wishlist";
+            const itemClass = cn(
+              "flex min-h-14 w-full min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5",
+              "text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+              isActive && "font-semibold text-foreground",
+            );
+            const content = (
+              <>
+                <span className={cn(
+                  "relative flex h-7 w-11 items-center justify-center rounded-full transition-colors",
+                  isActive && "bg-muted text-foreground",
+                )}>
+                  <span aria-hidden="true">{icon}</span>
+                  {isWishlist && <NavbarCountBadge {...wishBadge} className="-top-0.5 right-0 ring-2 ring-background" />}
+                </span>
+                <span className="max-w-full truncate text-[11px] leading-4">{label}</span>
+              </>
+            );
 
             return (
-              <li key={label} className="flex justify-center group">
-                <Link prefetch={false}
-                  href={href}
-                  onClick={closeDrawer}
-                  aria-current={isActive ? "page" : undefined}
-                  className="w-full py-1 flex flex-col items-center justify-center focus:outline-none active:scale-95 transition-transform"
-                >
-                  <div className="relative">
-                    <div
-                      className={`p-2 rounded-xl transition-all duration-300 ${
-                        isActive
-                          ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105"
-                          : "text-slate-500 group-hover:text-primary"
-                      }`}
-                    >
-                      {icon}
-                    </div>
-
-                    {shouldShowBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-ink text-white text-xs font-bold flex items-center justify-center ring-2 ring-white">
-                        {count > 99 ? "99+" : count}
-                      </span>
-                    )}
-                  </div>
-
-                  <span
-                    className={`mt-1 max-w-[64px] truncate text-center text-xs font-normal uppercase tracking-wide transition-colors duration-300 ${
-                      isActive ? "text-primary" : "text-slate-400"
-                    }`}
+              <li key={label} className="min-w-0">
+                {isCategories ? (
+                  <button
+                    type="button"
+                    aria-expanded={categoriesDrawerOpen}
+                    aria-controls={categoriesDrawerOpen ? "mobile-category-navigation" : undefined}
+                    onClick={() => setCategoriesDrawerOpen(open => !open)}
+                    className={itemClass}
                   >
-                    {label}
-                  </span>
-                </Link>
+                    {content}
+                  </button>
+                ) : (
+                  <Link
+                    prefetch={false}
+                    href={href}
+                    onClick={closeDrawer}
+                    aria-current={isActive ? "page" : undefined}
+                    aria-label={isWishlist ? wishBadge.loading ? "Wishlist, loading item count" : `Wishlist, ${wishBadge.count} items` : undefined}
+                    className={itemClass}
+                  >
+                    {content}
+                  </Link>
+                )}
               </li>
             );
           })}
@@ -185,6 +156,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
         {categoriesDrawerOpen && (
           <LazyMotion features={loadMotionFeatures}>
           <div
+            id="mobile-category-navigation"
             className="fixed inset-0 z-[10000] h-dvh overscroll-contain"
             role="dialog"
             aria-modal="true"

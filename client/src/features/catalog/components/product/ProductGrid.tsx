@@ -2,14 +2,16 @@ import type { ProductListItem } from "@/features/catalog/api";
 import ProductCard from "@/features/catalog/components/product/ProductCard";
 import { cn } from "@/lib/utils";
 
+const EAGER_SHOP_IMAGE_COUNT = 8;
+
 export default function ProductGrid({
   items,
   className,
-  eagerFirstImage = false,
+  eagerAboveFold = false,
 }: {
   items: ProductListItem[];
   className?: string;
-  eagerFirstImage?: boolean;
+  eagerAboveFold?: boolean;
 }) {
   return (
     <div
@@ -19,7 +21,7 @@ export default function ProductGrid({
       )}
     >
       {items.map((item, index) => (
-        <ProductCard key={item.id} product={item} eagerImage={eagerFirstImage && index === 0} />
+        <ProductCard key={item.id} product={item} eagerImage={eagerAboveFold && index < EAGER_SHOP_IMAGE_COUNT} />
       ))}
     </div>
   );

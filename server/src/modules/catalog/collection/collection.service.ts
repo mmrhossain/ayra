@@ -4,7 +4,7 @@ import { AppError } from "../../../common/errors/AppError.ts";
 import { isPrismaCode } from "../../../common/utils/prisma-error.ts";
 import { decodeCursor } from "../../../common/utils/cursor.ts";
 import { invalidateHomeCache } from "../../home/cache.ts";
-import { DEFAULT_SECTIONS, homeCursorSchema, resolveProducts, toCard } from "./collection-products.service.ts";
+import { DEFAULT_SECTIONS, hasPublishedCollectionItems, homeCursorSchema, resolveProducts, toCard } from "./collection-products.service.ts";
 import type { CreateCollection, UpdateCollection } from "./collection.validators.ts";
 export function assertCollectionWindow(startsAt: Date | null, endsAt: Date | null) {
   if (startsAt && endsAt && endsAt <= startsAt) throw new AppError("End date must be after start date", 400);
@@ -148,13 +148,34 @@ export async function saveCollection(input: CreateCollection | UpdateCollection,
     throw error;
   }
 }
-export async function getCollectionPage(slug: string, cursorToken?: string) {
+async function resolveActiveCollection(slug: string) {
   const fallback = DEFAULT_SECTIONS.find(section => section.id === slug);
   const row = fallback ? null : await prisma.productCollection.findUnique({ where: { slug } });
   const now = new Date();
   if (row && (!row.isActive || row.startsAt && row.startsAt > now || row.endsAt && row.endsAt < now)) throw new AppError("Collection not found", 404);
   const collection = fallback ?? row ?? DEFAULT_SECTIONS.find(section => section.slug === slug);
   if (!collection) throw new AppError("Collection not found", 404);
+  return { collection, row };
+}
+
+export async function getCollectionProductScope(slug: string): Promise<Prisma.ProductWhereInput> {
+  const { collection } = await resolveActiveCollection(slug);
+  if (
+    collection.source === "MANUAL" ||
+    (collection.source === "FEATURED" && !collection.id.startsWith("default-") &&
+      await hasPublishedCollectionItems(collection.id))
+  ) {
+    return { collectionItems: { some: { collectionId: collection.id } } };
+  }
+  if (collection.source === "FEATURED") return { isFeatured: true };
+  if (collection.source === "DISCOUNT") {
+    return { variants: { some: { deletedAt: null, compareAtPrice: { gt: prisma.productVariant.fields.price } } } };
+  }
+  return {};
+}
+
+export async function getCollectionPage(slug: string, cursorToken?: string) {
+  const { collection, row } = await resolveActiveCollection(slug);
   const cursor = cursorToken ? decodeCursor(cursorToken, homeCursorSchema) : undefined;
   const page = await resolveProducts(collection, cursor);
   return {

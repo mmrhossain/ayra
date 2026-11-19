@@ -8,7 +8,12 @@ vi.mock("../../src/lib/prisma.ts", () => ({
   transaction: async (fn: (tx: typeof mocks.tx) => unknown) => fn(mocks.tx),
 }));
 vi.mock("../../src/modules/home/cache.ts", () => ({ invalidateHomeCache: mocks.invalidate }));
-import { getCollectionPage, saveCollection } from "../../src/modules/catalog/collection/collection.service.ts";
+import { getCollectionPage, getCollectionProductScope, saveCollection } from "../../src/modules/catalog/collection/collection.service.ts";
+import { buildProductWhere } from "../../src/modules/catalog/product/services/product-where.service.ts";
+import { listProductsQuerySchema } from "../../src/modules/catalog/product/validators/product.validators.ts";
+vi.mock("../../src/modules/catalog/category/services/category.service.ts", () => ({
+  resolveCategoryByPath: vi.fn(),
+}));
 import { createCollectionSchema, updateCollectionSchema } from "../../src/modules/catalog/collection/collection.validators.ts";
 const row = { id: "collection", name: "Eid", slug: "eid", description: null, source: "MANUAL", placement: "HOME", sortOrder: 0, limit: 8, isActive: true, startsAt: null, endsAt: null };
 const product = { id: "p1", name: "Panjabi", slug: "panjabi", status: "ACTIVE", images: [], variants: [{ id: "v1", price: 800, compareAtPrice: 1000, inventories: [{ quantityAvailable: 5 }] }] };
@@ -56,6 +61,31 @@ describe("collection management", () => {
   });
 });
 describe("public collections", () => {
+  it("intersects collection membership with the existing shop filters", async () => {
+    const where = await buildProductWhere(listProductsQuerySchema.parse({
+      collection: "eid", search: "Panjabi", minPrice: 100, attrs: "size:medium",
+    }));
+    expect(where).toMatchObject({
+      status: "ACTIVE",
+      OR: expect.arrayContaining([{ name: { contains: "Panjabi", mode: "insensitive" } }]),
+      variants: { some: { price: { gte: 100 } } },
+      AND: expect.arrayContaining([
+        { collectionItems: { some: { collectionId: "collection" } } },
+        { variants: { some: { deletedAt: null, attributes: { some: { attributeValue: {
+          attributeId: "size", id: { in: ["medium"] },
+        } } } } } },
+      ]),
+    });
+  });
+
+  it("uses the collection's sale predicate in shop queries and rejects inactive collections", async () => {
+    mocks.collection.mockResolvedValueOnce({ ...row, source: "DISCOUNT" });
+    await expect(getCollectionProductScope("eid")).resolves.toEqual({
+      variants: { some: { deletedAt: null, compareAtPrice: { gt: "variant-price-field" } } },
+    });
+    mocks.collection.mockResolvedValueOnce({ ...row, isActive: false });
+    await expect(getCollectionProductScope("eid")).rejects.toMatchObject({ statusCode: 404 });
+  });
   it("loads manual products in saved order and excludes unpublished products in the query", async () => {
     mocks.membership.mockResolvedValue([{ productId: "p1", sortOrder: 0, product }]);
     const result = await getCollectionPage("eid");

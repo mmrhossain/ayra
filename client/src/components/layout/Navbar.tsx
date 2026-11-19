@@ -7,9 +7,15 @@ import { NotificationBell } from "@/features/notifications/components/notificati
 import { authClient } from "@/lib/api/auth/auth-client";
 import { normalizeRole } from "@/lib/api/auth/roles";
 
-export default function Navbar({ categories }: { categories: CategoryListItem[] }) {
-  const { data } = authClient.useSession();
-  const actions = normalizeRole(data?.user?.role) === "CUSTOMER" ? (
+export default function Navbar({ categories, initialIsCustomer }: {
+  categories: CategoryListItem[];
+  initialIsCustomer: boolean;
+}) {
+  const { data, isPending } = authClient.useSession();
+  const isCustomer = data?.user
+    ? normalizeRole(data.user.role) === "CUSTOMER"
+    : isPending && initialIsCustomer;
+  const actions = isCustomer ? (
     <NotificationBell
       viewAllHref="/customer/notifications"
       badgeClassName="-right-0.5 -top-0.5 lg:right-0 lg:top-1"
@@ -20,7 +26,7 @@ export default function Navbar({ categories }: { categories: CategoryListItem[] 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm">
       <MobileNavbar actions={actions} />
-      <DeskTopNavbar categories={categories} actions={actions} />
+      <DeskTopNavbar categories={categories} actions={actions} initialIsCustomer={initialIsCustomer} />
     </nav>
   );
 }

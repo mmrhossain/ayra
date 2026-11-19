@@ -13,6 +13,7 @@ const INDEXING_FILTERS = new Set([
   "search",
   "attrs",
   "categories",
+  "collection",
 ]);
 
 export async function generateMetadata({

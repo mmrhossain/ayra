@@ -1,7 +1,6 @@
 "use client";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { SelectItem } from "@/components/ui/select";
 import {
   CheckoutCta,
   CheckoutSection,
@@ -111,13 +110,8 @@ const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
           }
           onValueChange={handleThanaChange}
           disabled={!formState.district}
-        >
-          {(upazilaList ?? []).map((upazila) => (
-            <SelectItem key={upazila.code} value={upazila.code}>
-              {upazila.name}
-            </SelectItem>
-          ))}
-        </CheckoutSelect>
+          options={(upazilaList ?? []).map(upazila => ({ value: upazila.code, label: upazila.name }))}
+        />
       </CheckoutSection>
 
       <CheckoutSection title="Delivery method">

@@ -73,7 +73,7 @@ const buildHomePayload = async (): Promise<HomePayload> => {
         type: "PRODUCT_GRID",
         title: collection.name,
         source: collection.source,
-        href: "/collections/" + encodeURIComponent(collection.id.startsWith("default-") ? collection.id : collection.slug),
+        href: "/shop?collection=" + encodeURIComponent(collection.id.startsWith("default-") ? collection.id : collection.slug),
         products,
         nextCursor: page?.nextCursor ?? null,
       },

@@ -2,15 +2,9 @@
 
 import PageBreadcrumb from "@/components/shared/page-breadcrumb";
 import QuantityStepper from "@/components/shared/quantity-stepper";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import StickyAddToCart from "@/features/cart/components/StickyAddToCart";
 import ProductGallery from "@/features/catalog/components/product/ProductGallery";
+import { productDetailsLayout } from "@/features/catalog/components/product/product-details-layout";
 import { useAddToCart } from "@/features/catalog/hooks/use-add-to-cart";
 import { useProductSelection } from "@/features/catalog/hooks/use-product-selection";
 import type { ProductDetail } from "@/features/catalog/types";
@@ -20,6 +14,7 @@ import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Heart, Share2 } from "lucide-react";
+import { Popover } from "radix-ui";
 import React, { useRef, useState } from "react";
 
 function excerptFromHtml(html: string | null | undefined, max = 220): string {
@@ -57,6 +52,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
   const { inWish, busy: wishBusy, toggleWishlist } = useWishlistToggle(selectedId);
   const hasAttributes = attributeGroups.length > 0;
   const [selectionAttempted, setSelectionAttempted] = useState(false);
+  const [openAttributeId, setOpenAttributeId] = useState<string | null>(null);
   const missingAttributes = attributeGroups.filter(group => !selectedValues[group.attributeId]);
   const sku = selected?.sku || product.sku || "";
   const brandName = product.brand?.name;
@@ -85,8 +81,8 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
     if (missingAttributes.length) {
       const group = document.getElementById("product-attribute-" + missingAttributes[0].attributeId);
       group?.scrollIntoView?.({ behavior: "smooth", block: "center" });
-      const controls = group?.querySelectorAll<HTMLElement>("select, button[role=combobox]");
-      Array.from(controls ?? []).find(control => control.getClientRects().length > 0)?.focus({ preventScroll: true });
+      setOpenAttributeId(missingAttributes[0].attributeId);
+      group?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
     }
     return addToCart({
       product, selected, isComplete, quantity,
@@ -105,9 +101,9 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
 
   return (
     <>
-      <div className="container z-0 mx-auto mt-4 min-w-0 max-w-6xl sm:mt-6 md:mt-8 xl:max-w-7xl">
+      <div className={productDetailsLayout.container}>
         <PageBreadcrumb
-          className="mb-5 hidden sm:mb-6 sm:flex md:mb-8"
+          className={productDetailsLayout.breadcrumb}
           items={[
             { label: "Home", href: "/" },
             { label: "Shop", href: "/shop" },
@@ -123,12 +119,12 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
           ]}
         />
 
-        <div className="grid min-w-0 grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 md:gap-10 lg:gap-12 xl:gap-16 2xl:gap-20">
+        <div className={productDetailsLayout.grid}>
           <div className="min-w-0">
             <ProductGallery images={galleryImages} />
           </div>
 
-          <div className="flex min-w-0 flex-col md:min-h-[480px]">
+          <div className={productDetailsLayout.details}>
             <h1 className="text-2xl leading-tight font-semibold break-words text-foreground lg:text-3xl">
               {product.name}
             </h1>
@@ -193,8 +189,8 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               </p>
             ) : null}
 
-            <div className="mt-5 grid grid-cols-1 gap-3 border-t border-border-color pt-4 sm:mt-6 sm:grid-cols-2 sm:gap-4 sm:pt-5 lg:flex lg:items-end lg:gap-4">
-              <div className="min-w-0 w-full sm:w-[160px] sm:shrink-0">
+            <div className={productDetailsLayout.controls}>
+              <div className={productDetailsLayout.quantity}>
                 <span className="mb-2 block h-5 text-sm font-semibold text-foreground">Quantity</span>
                 <QuantityStepper
                   value={quantity}
@@ -213,66 +209,64 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                   >
                     {group.name}
                   </span>
-                  <div className="relative md:hidden">
-                    <select
-                      aria-labelledby={`product-attribute-label-${group.attributeId}`}
-                      aria-invalid={selectionAttempted && !selectedValues[group.attributeId]}
-                      aria-describedby={selectionAttempted && !selectedValues[group.attributeId] ? "product-attribute-error-" + group.attributeId : undefined}
-                      value={selectedValues[group.attributeId] ?? ""}
-                      onChange={(event) =>
-                        setAttributeValue(group.attributeId, event.target.value)
-                      }
-                      className="h-12 min-h-12 w-full appearance-none rounded-none border border-border-color aria-invalid:border-danger bg-background px-3 pr-10 text-base text-foreground"
-                    >
-                      <option value="" disabled>
-                        Choose an option
-                      </option>
-                      {group.values.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.value}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      aria-hidden="true"
-                      className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                    />
-                  </div>
-                  <div className="hidden md:block">
-                    <Select
-                      value={selectedValues[group.attributeId] ?? ""}
-                      onValueChange={(value) => setAttributeValue(group.attributeId, value)}
-                    >
-                      <SelectTrigger
+                  <Popover.Root
+                    open={openAttributeId === group.attributeId}
+                    onOpenChange={open => setOpenAttributeId(current =>
+                      open ? group.attributeId : current === group.attributeId ? null : current,
+                    )}
+                  >
+                    <Popover.Trigger asChild>
+                      <button
+                        id={`product-attribute-trigger-${group.attributeId}`}
+                        type="button"
+                        aria-labelledby={`product-attribute-label-${group.attributeId} product-attribute-trigger-${group.attributeId}`}
+                        data-invalid={selectionAttempted && !selectedValues[group.attributeId]}
+                        aria-describedby={selectionAttempted && !selectedValues[group.attributeId] ? "product-attribute-error-" + group.attributeId : undefined}
+                        className="flex h-12 w-full items-center justify-between gap-2 border border-border-color bg-background px-3 text-left text-base text-foreground data-[invalid=true]:border-danger sm:h-[52px]"
+                      >
+                        <span className="truncate">
+                          {group.values.find(item => item.id === selectedValues[group.attributeId])?.value ?? "Choose an option"}
+                        </span>
+                        <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                      </button>
+                    </Popover.Trigger>
+                    <Popover.Portal>
+                      <Popover.Content
                         aria-labelledby={`product-attribute-label-${group.attributeId}`}
-                      aria-invalid={selectionAttempted && !selectedValues[group.attributeId]}
-                      aria-describedby={selectionAttempted && !selectedValues[group.attributeId] ? "product-attribute-error-" + group.attributeId : undefined}
-                        className="h-12 min-h-12 w-full overflow-hidden rounded-none border-border-color aria-invalid:border-danger bg-background text-base text-foreground shadow-none *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate sm:h-[52px] sm:min-h-[52px]"
+                        align="start"
+                        sideOffset={4}
+                        collisionPadding={12}
+                        onCloseAutoFocus={event => event.preventDefault()}
+                        onEscapeKeyDown={() => {
+                          document.getElementById(`product-attribute-trigger-${group.attributeId}`)?.focus({ preventScroll: true });
+                        }}
+                        className="z-[60] max-h-[min(15rem,var(--radix-popover-content-available-height))] w-[var(--radix-popover-trigger-width)] overflow-y-auto border border-border-color bg-background p-1 shadow-md"
                       >
-                        <SelectValue placeholder="Choose an option" />
-                      </SelectTrigger>
-                      <SelectContent
-                        position="popper"
-                        className="w-[var(--radix-select-trigger-width)]"
-                      >
-                        {group.values.map((item) => (
-                          <SelectItem key={item.id} value={item.id} className="min-h-11">
-                            <span className="flex min-h-5 items-center gap-2">
+                        <fieldset aria-labelledby={`product-attribute-label-${group.attributeId}`} className="min-w-0 space-y-1">
+                          {group.values.map(item => (
+                            <label key={item.id} className="relative flex min-h-11 cursor-pointer items-center gap-2 px-2 text-sm text-foreground has-[:checked]:bg-muted has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 hover:bg-muted">
+                              <input
+                                type="radio"
+                                name={`product-attribute-${group.attributeId}`}
+                                value={item.id}
+                                checked={selectedValues[group.attributeId] === item.id}
+                                onChange={() => setAttributeValue(group.attributeId, item.id)}
+                                className="sr-only"
+                              />
                               {groupKind(group.name) === "color" ? (
                                 <span
-                                  className="inline-block size-4 shrink-0 rounded-full border border-black/10"
-                                  style={{
-                                    backgroundColor: item.color ?? parseColor(item.value),
-                                  }}
+                                  aria-hidden="true"
+                                  className="size-4 shrink-0 rounded-full border border-black/10"
+                                  style={{ backgroundColor: item.color ?? parseColor(item.value) }}
                                 />
                               ) : null}
-                              <span className="truncate">{item.value}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                              <span className="break-words">{item.value}</span>
+                            </label>
+                          ))}
+                        </fieldset>
+                      </Popover.Content>
+                    </Popover.Portal>
+                  </Popover.Root>
                   {selectionAttempted && !selectedValues[group.attributeId] ? (
                     <p id={"product-attribute-error-" + group.attributeId} role="alert" className="mt-1 text-sm text-danger">
                       Please select {group.name.toLowerCase()}.
@@ -284,7 +278,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
 
             <div
               ref={ctaRef}
-              className="mt-4 flex w-full min-w-0 items-stretch gap-2.5 sm:mt-5 sm:gap-3"
+              className={productDetailsLayout.actions}
             >
               <button
                 type="button"

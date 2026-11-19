@@ -11,15 +11,6 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
 vi.mock("@/hooks/useWishlistToggle", () => ({ useWishlistToggle: () => ({ inWish: false, busy: false, toggleWishlist: vi.fn() }) }));
 vi.mock("@/components/shared/page-breadcrumb", () => ({ default: () => null }));
 vi.mock("./ProductGallery", () => ({ default: () => null }));
-vi.mock("@/components/ui/select", async () => {
-  const { createElement: element } = await import("react");
-  return {
-    Select: ({ children }: { children: React.ReactNode }) => element("div", null, children),
-    SelectTrigger: ({ children, ...props }: React.ComponentProps<"button">) => element("button", { ...props, type: "button", role: "combobox" }, children),
-    SelectValue: ({ placeholder }: { placeholder: string }) => element("span", null, placeholder),
-    SelectContent: () => null, SelectItem: () => null,
-  };
-});
 import ProductDetails from "./ProductDetails";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const attributes = [
@@ -47,7 +38,15 @@ describe("Add to Bag workflow", () => {
   async function render(value = product()) { await act(async () => { root.render(createElement(ProductDetails, { product: value })); }); }
   function buttons() { return Array.from(container.querySelectorAll<HTMLButtonElement>("button")).filter(button => ["Add to Bag", "Processing...", "Out of stock", "Unavailable"].includes(button.textContent?.trim() ?? "")); }
   async function select(index: number, value: string) {
-    await act(async () => { const input = container.querySelectorAll<HTMLSelectElement>("select")[index]!; input.value = value; input.dispatchEvent(new Event("change", { bubbles: true })); });
+    const trigger = container.querySelectorAll<HTMLButtonElement>('button[id^="product-attribute-trigger-"]')[index]!;
+    if (trigger.getAttribute("aria-expanded") === "false") await act(async () => trigger.click());
+    const options = document.getElementById(trigger.getAttribute("aria-controls")!)!;
+    expect(options?.closest("[data-radix-popper-content-wrapper]")).not.toBeNull();
+    const option = Array.from(options.querySelectorAll<HTMLInputElement>("input")).find(input => input.value === value)!;
+    await act(async () => option.click());
+    expect(option.checked).toBe(true);
+    expect(options.hidden).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
   }
   it.each([0, 1])("button %i validates missing attributes instead of disabling the Add to Bag action", async index => {
     await render();

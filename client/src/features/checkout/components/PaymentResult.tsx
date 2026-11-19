@@ -117,6 +117,20 @@ function firstParam(params: ReturnType<typeof useSearchParams>, keys: string[]):
   return null;
 }
 
+export function PaymentResultSkeleton() {
+  return (
+    <div className="container storefront-page-start" role="status" aria-label="Loading payment result">
+      <div className="mx-auto max-w-2xl space-y-4 border border-border bg-card p-5 sm:p-8" aria-hidden="true">
+        <div className="mx-auto size-14 rounded-full bg-muted" />
+        <div className="mx-auto h-7 w-2/3 rounded bg-muted" />
+        <div className="mx-auto h-4 w-5/6 rounded bg-muted" />
+        <div className="h-16 rounded bg-muted" />
+        <div className="mx-auto h-11 w-full rounded bg-muted sm:w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 export default function PaymentResult({ kind }: { kind: ResultKind }) {
   const params = useSearchParams();
   const meta = copy[kind];
@@ -131,7 +145,7 @@ export default function PaymentResult({ kind }: { kind: ResultKind }) {
   const tranId = firstParam(params, ["tran_id", "tranId", "transactionId"]);
 
   return (
-    <div className="container py-12 sm:py-16">
+    <div className="container storefront-page-start">
       <div className="mx-auto max-w-2xl space-y-4 border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8">
         {showSuccessAnimation ? (
           <SuccessAnimation key={`${kind}-${orderNumber ?? tranId ?? ""}`} />

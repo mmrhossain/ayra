@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +59,9 @@ export function NotificationBell({
   const unreadCount = open
     ? query.data?.unreadCount ?? countQuery.data ?? listUnreadCount
     : countQuery.data ?? listUnreadCount;
+  const loadingCount = countQuery.data === undefined &&
+    query.data === undefined &&
+    (open ? query.isLoading : countQuery.isLoading);
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
 
@@ -71,46 +75,67 @@ export function NotificationBell({
           variant="outline"
           size="icon-sm"
           aria-label={
-            unreadCount > 0
+            loadingCount
+              ? "Notifications, loading unread count"
+              : unreadCount > 0
               ? `Notifications, ${unreadCount} unread`
               : "Notifications"
           }
           className={cn("relative", className)}
         >
-          <Bell className="size-4" />
-          {unreadCount > 0 ? (
+          <Bell aria-hidden="true" className="size-4" />
+          {loadingCount ? (
+            <span aria-hidden="true" className={cn("absolute -right-1 -top-1 size-4 rounded-full bg-muted-foreground/25 motion-safe:animate-pulse", badgeClassName)} />
+          ) : unreadCount > 0 ? (
             <span className={cn("absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-xs font-semibold leading-4 text-destructive-foreground", badgeClassName)}>
               {badge}
             </span>
           ) : null}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 p-0 sm:w-96">
+      <DropdownMenuContent
+        side="bottom"
+        align="end"
+        sideOffset={8}
+        collisionPadding={12}
+        className="w-80 max-w-[calc(100vw-1.5rem)] p-0 sm:w-96"
+      >
         <div className="flex items-center justify-between gap-2 px-3 py-2.5">
           <DropdownMenuLabel className="p-0 text-sm font-semibold">
             Notifications
           </DropdownMenuLabel>
           {unreadCount > 0 ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className="gap-1 text-xs font-medium"
+            <DropdownMenuItem
+              className="min-h-7 gap-1 text-xs font-medium"
               disabled={markAll.isPending}
-              onClick={() => markAll.mutate()}
+              onSelect={event => {
+                event.preventDefault();
+                markAll.mutate();
+              }}
             >
               <CheckCheck className="size-3.5" />
               Mark all read
-            </Button>
+            </DropdownMenuItem>
           ) : null}
         </div>
         <DropdownMenuSeparator className="m-0" />
 
         <div className="max-h-[22rem] overflow-y-auto">
           {query.isLoading ? (
-            <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-              Loading notifications…
-            </p>
+            <div role="status" aria-label="Loading notifications">
+              <div aria-hidden="true" className="divide-y divide-border">
+                {[0, 1, 2].map(row => (
+                  <div key={row} className="flex items-start gap-2.5 px-3 py-3">
+                    <Skeleton className="mt-1 size-2 shrink-0 rounded-full motion-reduce:animate-none" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-3 w-2/3 motion-reduce:animate-none" />
+                      <Skeleton className="h-3 w-full motion-reduce:animate-none" />
+                      <Skeleton className="h-2 w-12 motion-reduce:animate-none" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : items.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted-foreground">
               You&apos;re all caught up.
@@ -152,9 +177,9 @@ export function NotificationBell({
                 <DropdownMenuItem
                   key={item.id}
                   className="items-start rounded-none px-3 py-2.5 focus:bg-muted/60"
-                  onSelect={() => {
+                  onSelect={event => {
+                    if (!item.href) event.preventDefault();
                     if (!item.read) markRead.mutate(item.id);
-                    setOpen(false);
                   }}
                   asChild={Boolean(item.href)}
                 >

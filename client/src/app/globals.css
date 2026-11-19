@@ -101,8 +101,10 @@
   --chart-5: #475569;
 
   /* Floating action stack (bottom nav + sticky cart + safe area). */
-  --bottom-nav-space: calc(4rem + env(safe-area-inset-bottom, 0px));
+  --bottom-nav-space: calc(4rem + 1px + env(safe-area-inset-bottom, 0px));
   --sticky-cart-space: 0px;
+  --storefront-page-start: clamp(1.25rem, 3vw, 2rem);
+  --storefront-section-gap: clamp(1.5rem, 4vw, 3rem);
   --floating-gap: 1rem;
 }
 .dark {
@@ -155,6 +157,14 @@
   body:has([data-sticky-add-to-cart]) {
     --sticky-cart-space: 5rem;
   }
+}
+
+@utility storefront-page-start {
+  padding-block-start: var(--storefront-page-start);
+}
+
+@utility storefront-section-start {
+  padding-block-start: var(--storefront-section-gap);
 }
 
 @utility container {

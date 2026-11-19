@@ -1,6 +1,7 @@
 import type { Prisma } from "../../../../generated/prisma/client.ts";
 import { prisma } from "../../../../lib/prisma.ts";
 import { resolveCategoryByPath } from "../../category/services/category.service.ts";
+import { getCollectionProductScope } from "../../collection/collection.service.ts";
 import type { ListProductsQuery } from "../types/product.types.ts";
 import {
   buildAttributeFilterConditions,
@@ -81,6 +82,7 @@ export const buildProductWhere = async (
   const attributeConditions = buildAttributeFilterConditions(
     parseAttributesParam(query.attrs),
   );
+  if (query.collection) attributeConditions.push(await getCollectionProductScope(query.collection));
   if (attributeConditions.length > 0) {
     where.AND = attributeConditions;
   }

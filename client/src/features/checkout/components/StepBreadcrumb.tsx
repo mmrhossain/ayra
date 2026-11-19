@@ -19,7 +19,7 @@ export const StepBreadcrumb = ({ current, onSelect }: StepBreadcrumbProps) => {
   const currentIndex = STEPS.findIndex((step) => step.id === current);
 
   return (
-    <nav aria-label="Checkout steps" className="mt-4 sm:mt-5">
+    <nav aria-label="Checkout steps">
       <ol className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-7">
         {STEPS.map((step, index) => {
           const isCurrent = step.id === current;

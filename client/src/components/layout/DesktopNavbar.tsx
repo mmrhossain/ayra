@@ -20,18 +20,21 @@ import dynamic from "next/dynamic";
 import { CategoryListItem } from "@/features/catalog/types";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { successToast } from "@/helpers";
-import { useHydratedStore } from "@/hooks/useHydratedStore";
+import { NavbarCountBadge } from "@/components/layout/NavbarCountBadge";
+import { useStorefrontCountBadge } from "@/hooks/useStorefrontCounts";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles";
-import { useCartStore } from "@/stores/useCartStore";
-import { useWishStore } from "@/stores/useWishStore";
 
 const CategoryMegaMenu = dynamic(() => import("@/features/catalog/components/category/CategoryMegaMenu"), { ssr: false });
 
-const DeskTopNavbar = ({ categories, actions }: { categories: CategoryListItem[]; actions?: ReactNode }) => {
+const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
+  categories: CategoryListItem[];
+  actions?: ReactNode;
+  initialIsCustomer: boolean;
+}) => {
   const { store } = usePublicSettings();
-  const cartCount = useHydratedStore(useCartStore, (s) => s.cartCount, 0);
-  const wishCount = useHydratedStore(useWishStore, (s) => s.wishCount, 0);
+  const cartBadge = useStorefrontCountBadge("cart");
+  const wishBadge = useStorefrontCountBadge("wishlist", initialIsCustomer);
   const router = useRouter();
 
   const [selectedCatName, setSelectedCatName] = useState("All Categories");
@@ -114,6 +117,7 @@ const DeskTopNavbar = ({ categories, actions }: { categories: CategoryListItem[]
         <Link prefetch={false}
           href={shoppingHref ?? "/customer/wish-list"}
           className="group relative flex items-center gap-2"
+          aria-label={wishBadge.loading ? "Wishlist, loading item count" : `Wishlist, ${wishBadge.count} items`}
         >
           <div className="relative p-2">
             <Heart
@@ -121,23 +125,20 @@ const DeskTopNavbar = ({ categories, actions }: { categories: CategoryListItem[]
               className="text-foreground transition-colors group-hover:text-primary"
             />
 
-            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-              {String(wishCount).padStart(1, "0")}
-            </span>
+            <NavbarCountBadge {...wishBadge} className="right-0 top-1" />
           </div>
         </Link>
 
         {/* Cart */}
-        <Link prefetch={false} href={shoppingHref ?? "/cart"} className="group flex items-center gap-3">
+        <Link prefetch={false} href={shoppingHref ?? "/cart"} className="group flex items-center gap-3"
+          aria-label={cartBadge.loading ? "Cart, loading item count" : `Cart, ${cartBadge.count} items`}>
           <div className="relative p-2">
             <ShoppingBag
               size={24}
               className="text-foreground transition-colors group-hover:text-primary"
             />
 
-            <span className="absolute right-0 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-              {String(cartCount).padStart(1, "0")}
-            </span>
+            <NavbarCountBadge {...cartBadge} className="right-0 top-1" />
           </div>
         </Link>
 

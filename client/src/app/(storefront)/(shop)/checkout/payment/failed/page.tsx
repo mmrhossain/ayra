@@ -1,4 +1,4 @@
-import PaymentResult from "@/features/checkout/components/PaymentResult";
+import PaymentResult, { PaymentResultSkeleton } from "@/features/checkout/components/PaymentResult";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { Suspense } from "react";
 
@@ -10,7 +10,7 @@ export const metadata = {
 const PaymentFailPage = async () => {
   await requireCustomer();
   return (
-    <Suspense>
+    <Suspense fallback={<PaymentResultSkeleton />}>
       <PaymentResult kind="fail" />
     </Suspense>
   );

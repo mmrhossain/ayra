@@ -29,8 +29,8 @@ const RelatedProduct = async ({
   if (items.length === 0) return null;
 
   return (
-    <div className="container">
-      <div className="mt-6 md:mt-8">
+    <div className="container storefront-section-start">
+      <div>
         <div className="flex items-center justify-between mb-4 md:mb-6 gap-3">
           <div className="flex items-center gap-2">
             <span className="bg-white p-1 rounded-md">

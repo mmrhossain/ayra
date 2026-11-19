@@ -2,8 +2,8 @@ import { features } from "@/constants/features";
 
 const Features = () => {
   return (
-    <div className="container mt-24 mb-16">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-4">
+    <div className="container storefront-section-start">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-4">
         {features.map((feature, index) => {
           const { id, title, description, icon } = feature;
           const Icon = icon;
@@ -14,7 +14,7 @@ const Features = () => {
               className="group relative flex flex-col items-start p-6 transition-all duration-500 hover:bg-slate-50 border"
             >
               {/* 1. Abstract Icon Presentation */}
-              <div className="relative mb-8 flex items-center justify-center">
+              <div className="relative mb-5 flex items-center justify-center">
                 {/* Decorative "Orbit" circle */}
                 <div className="absolute inset-0 w-14 h-14 border border-dashed border-primary/30 rounded-full group-hover:rotate-180 transition-transform duration-1000" />
 

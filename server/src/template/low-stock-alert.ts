@@ -1,4 +1,4 @@
-import { escapeHtml, getBaseEmailTemplate } from "./email.ts";
+import { EMAIL_GRID_STYLE, emailMobileLabel, escapeHtml, getBaseEmailTemplate } from "./email.ts";
 
 export const LOW_STOCK_ALERT_CODE = "LOW_STOCK_ALERT";
 
@@ -10,14 +10,14 @@ export type LowStockAlertItem = {
 };
 
 export const buildLowStockTable = (items: LowStockAlertItem[]): string => `
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-    style="border-collapse: collapse; margin: 8px 0 20px 0; font-size: 14px;">
+  <table role="presentation" class="email-data-grid" border="0" cellpadding="0" cellspacing="0" width="100%"
+    style="${EMAIL_GRID_STYLE}">
     <thead>
       <tr style="background-color: #f7f3ea;">
-        <th align="left" style="padding: 10px 8px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Product</th>
-        <th align="left" style="padding: 10px 8px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">SKU</th>
-        <th align="left" style="padding: 10px 8px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Warehouse</th>
-        <th align="right" style="padding: 10px 8px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Available</th>
+        <th width="30%" align="left" style="padding: 10px 6px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Product</th>
+        <th width="22%" align="left" style="padding: 10px 6px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">SKU</th>
+        <th width="25%" align="left" style="padding: 10px 6px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Warehouse</th>
+        <th width="23%" align="right" style="padding: 10px 6px; color: #3f3629; font-weight: 600; border-bottom: 1px solid #e8dfcb;">Available</th>
       </tr>
     </thead>
     <tbody>
@@ -28,12 +28,13 @@ export const buildLowStockTable = (items: LowStockAlertItem[]): string => `
           const badgeBackground = outOfStock ? "#fbe9e7" : "#fdf3df";
           return `
         <tr>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #f0e9da; color: #4b4438;">
+          <td style="padding: 10px 6px; border-bottom: 1px solid #f0e9da; color: #4b4438;">
             <strong style="color: #3f3629;">${escapeHtml(item.productName)}</strong>
           </td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #f0e9da; color: #6f675a;">${escapeHtml(item.sku)}</td>
-          <td style="padding: 10px 8px; border-bottom: 1px solid #f0e9da; color: #6f675a;">${escapeHtml(item.warehouseName)}</td>
-          <td align="right" style="padding: 10px 8px; border-bottom: 1px solid #f0e9da;">
+          <td style="padding: 10px 6px; border-bottom: 1px solid #f0e9da; color: #6f675a;">${emailMobileLabel("SKU")}${escapeHtml(item.sku)}</td>
+          <td style="padding: 10px 6px; border-bottom: 1px solid #f0e9da; color: #6f675a;">${emailMobileLabel("Warehouse")}${escapeHtml(item.warehouseName)}</td>
+          <td align="right" style="padding: 10px 6px; border-bottom: 1px solid #f0e9da;">
+            ${emailMobileLabel("Available")}
             <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: ${badgeColor}; background-color: ${badgeBackground};">
               ${outOfStock ? "Out of stock" : `${item.quantityAvailable} left`}
             </span>

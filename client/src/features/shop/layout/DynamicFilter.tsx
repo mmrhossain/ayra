@@ -16,11 +16,24 @@ import {
 import type { PriceBucket } from "@/features/catalog/types";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, startTransition, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FilterPanel from "./FilterPanel";
 
 interface DynamicFilterBarProps {
-  facets?: ProductFacets | null;
+  facets: Promise<ProductFacets | null>;
+}
+
+function ShopFilterOptions({
+  facets,
+  ...props
+}: DynamicFilterBarProps & Omit<React.ComponentProps<typeof FilterPanel>, "categories" | "attributes" | "priceBuckets">) {
+  const data = use(facets);
+  return (
+    <>
+      {!data && <p role="status" className="mb-3 text-sm text-muted-foreground">Filter options couldn’t load.</p>}
+      <FilterPanel {...props} categories={data?.categories} attributes={data?.attributes} priceBuckets={data?.price.buckets ?? []} />
+    </>
+  );
 }
 
 const SORT_LABEL: Record<string, string> = {
@@ -48,16 +61,14 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
     [searchParams]
   );
 
-  const priceBuckets = useMemo(() => facets?.price.buckets ?? [], [facets]);
-
   const selectedBucket = useMemo<PriceBucket | null>(() => {
     const rawMax = searchParams.get("maxPrice");
     if (rawMax === null) return null;
     const min = Number(searchParams.get("minPrice"));
     const max = Number(rawMax);
     if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
-    return priceBuckets.find((bucket) => bucket.from === min && bucket.to === max) ?? null;
-  }, [searchParams, priceBuckets]);
+    return { from: min, to: max };
+  }, [searchParams]);
 
   const [draftCategories, setDraftCategories] = useState(selectedCategories);
   const [draftAttributes, setDraftAttributes] = useState(selectedAttributes);
@@ -79,7 +90,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
   }, [selectedAttributes, selectedBucket, selectedCategories]);
 
   const pushParams = useCallback(
-    (newParams: Record<string, string | null>, debounceMs = 0) => {
+    (newParams: Record<string, string | null>, debounceMs = 0, scroll = true) => {
       const apply = (patch: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParamsRef.current.toString());
         Object.entries(patch).forEach(([key, value]) => {
@@ -92,7 +103,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
         params.set("page", "1");
         pendingParamsRef.current = {};
         startTransition(() => {
-          router.push(`${pathname}?${params.toString()}`);
+          router.push(`${pathname}?${params.toString()}`, { scroll });
         });
       };
 
@@ -165,10 +176,10 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
     });
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSortChange = (sort: string) => {
     pushParams({
-      sort: e.target.value === "newest" ? null : e.target.value,
-    });
+      sort: sort === "newest" ? null : sort,
+    }, 0, false);
   };
 
   const activeCount =
@@ -185,7 +196,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             onClick={() => setIsOpen(true)}
             aria-expanded={isOpen}
             aria-label={activeCount > 0 ? `Filters, ${activeCount} active` : "Filters"}
-            className="group flex min-h-11 shrink-0 items-center gap-2 rounded-md bg-zinc-900 px-3 py-2.5 text-white shadow-lg shadow-zinc-200 transition-all hover:bg-black active:scale-95 sm:gap-3 sm:px-4 lg:px-5"
+            className="group flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-zinc-200 bg-zinc-100 px-4 py-3 text-zinc-900 transition-all hover:bg-zinc-200 active:scale-95 sm:gap-3 sm:py-2.5 lg:px-5"
           >
             <SlidersHorizontal
               size={14}
@@ -195,7 +206,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
               Filters
             </span>
             {activeCount > 0 ? (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-zinc-900">
                 {activeCount}
               </span>
             ) : null}
@@ -205,27 +216,46 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             <div className="hidden items-center gap-2 text-zinc-400 md:flex">
               <span className="text-xs font-bold uppercase tracking-widest">Sort By:</span>
             </div>
-            <div className="group relative cursor-pointer">
-              <div className="flex items-center gap-1 border-b-2 border-zinc-900 pb-0.5">
+            <details
+              className="group relative min-w-0"
+              onBlur={event => {
+                if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
+                  event.currentTarget.open = false;
+                }
+              }}
+              onKeyDown={event => {
+                if (event.key !== "Escape" || !event.currentTarget.open) return;
+                event.stopPropagation();
+                event.currentTarget.open = false;
+                event.currentTarget.querySelector("summary")?.focus();
+              }}
+            >
+              <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden">
+                <span className="sr-only">Sort products</span>
                 <span className="max-w-[8rem] truncate text-xs font-semibold tracking-tight uppercase xs:max-w-[9.5rem] sm:max-w-none">
                   {SORT_LABEL[currentSort] ?? "Newest"}
                 </span>
                 <ChevronDown
+                  aria-hidden="true"
                   size={14}
-                  className="transition-transform group-hover:translate-y-0.5"
+                  className="shrink-0 transition-transform group-open:rotate-180"
                 />
-              </div>
-              <select
-                value={currentSort}
-                onChange={handleSortChange}
-                aria-label="Sort products"
-                className="absolute inset-0 h-full min-h-11 w-full cursor-pointer opacity-0"
-              >
-                <option value="newest">Newest</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="price_asc">Price: Low to High</option>
-              </select>
-            </div>
+              </summary>
+              <ul className="absolute right-0 top-full z-10 min-w-44 rounded-md border border-zinc-200 bg-white p-1 shadow-md">
+                {Object.entries(SORT_LABEL).map(([sort, label]) => (
+                  <li key={sort}>
+                    <button
+                      type="button"
+                      aria-pressed={currentSort === sort}
+                      onClick={() => handleSortChange(sort)}
+                      className="min-h-11 w-full whitespace-nowrap rounded px-3 text-left text-sm hover:bg-zinc-100 aria-pressed:bg-zinc-100 aria-pressed:font-semibold"
+                    >
+                      {label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </details>
           </div>
         </div>
       </div>
@@ -247,18 +277,18 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
           </DrawerHeader>
 
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
-            <FilterPanel
-              categories={facets?.categories}
-              selectedCategories={draftCategories}
-              onToggleCategory={handleToggleCategory}
-              attributes={facets?.attributes}
-              selectedAttributes={draftAttributes}
-              onAttributeChange={handleAttributeChange}
-              priceBuckets={priceBuckets}
-              selectedBucket={draftBucket}
-              onSelectBucket={handleSelectBucket}
-              onClearAll={handleClearAll}
-            />
+            <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading filter options…</p>}>
+              <ShopFilterOptions
+                facets={facets}
+                selectedCategories={draftCategories}
+                onToggleCategory={handleToggleCategory}
+                selectedAttributes={draftAttributes}
+                onAttributeChange={handleAttributeChange}
+                selectedBucket={draftBucket}
+                onSelectBucket={handleSelectBucket}
+                onClearAll={handleClearAll}
+              />
+            </Suspense>
           </div>
 
           <div className="shrink-0 border-t bg-white px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-8">

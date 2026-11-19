@@ -30,7 +30,7 @@ export default function CursorProductList({
 
   return (
     <>
-      <ProductGrid items={items} eagerFirstImage />
+      <ProductGrid items={items} eagerAboveFold />
       {cursor ? (
         <div className="mt-8 flex flex-col items-center gap-3">
           {loading ? (

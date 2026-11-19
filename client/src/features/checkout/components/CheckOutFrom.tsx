@@ -1,6 +1,5 @@
 "use client";
 
-import { SelectItem } from "@/components/ui/select";
 import {
   CheckoutCta,
   CheckoutField,
@@ -318,9 +317,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
           value={formState.country || "Bangladesh"}
           onValueChange={(value) => handleChange("country", value)}
           disabled={formBusy}
-        >
-          <SelectItem value="Bangladesh">Bangladesh</SelectItem>
-        </CheckoutSelect>
+          options={[{ value: "Bangladesh", label: "Bangladesh" }]}
+        />
 
         <CheckoutSelect
           label="State / Region"
@@ -333,13 +331,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
           onValueChange={handleDivisionChange}
           error={errors.division}
           disabled={formBusy}
-        >
-          {(divisionList ?? []).map((div) => (
-            <SelectItem key={div.code} value={div.code}>
-              {div.name}
-            </SelectItem>
-          ))}
-        </CheckoutSelect>
+          options={(divisionList ?? []).map(div => ({ value: div.code, label: div.name }))}
+        />
         {geoError ? (
           <p className="text-sm leading-snug text-danger" role="alert">
             {geoError}
@@ -373,13 +366,8 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
             onValueChange={handleDistrictChange}
             disabled={formBusy || !formState.division}
             error={errors.district}
-          >
-            {(districtList ?? []).map((dist) => (
-              <SelectItem key={dist.code} value={dist.code}>
-                {dist.name}
-              </SelectItem>
-            ))}
-          </CheckoutSelect>
+            options={(districtList ?? []).map(dist => ({ value: dist.code, label: dist.name }))}
+          />
           <CheckoutField
             id="checkout-postal"
             label="Postal code"

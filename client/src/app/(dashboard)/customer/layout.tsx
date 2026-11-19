@@ -30,24 +30,24 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <DashboardQueryProvider>
       <PublicSettingsProvider initialSettings={publicSettings}>
-        <div className="min-h-dvh w-full min-w-0 bg-bg-primary pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-20">
+        <div className="min-h-dvh w-full min-w-0 bg-bg-primary pb-[calc(var(--bottom-nav-space)+var(--storefront-section-gap))]">
           <HeaderHeightObserver />
           <Header />
           <CustomerNavbar categories={categories} />
           <TopHero />
 
-          <div className="container mt-6 md:mt-12">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start md:gap-8">
-              <aside className="w-full lg:sticky lg:top-24 lg:w-72">
+          <div className="container storefront-page-start">
+            <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:gap-8">
+              <aside className="w-full lg:sticky lg:top-[calc(var(--navbar-height,68px)+1rem)] lg:w-72 lg:shrink-0">
                 <Sidebar />
               </aside>
 
-              <main className="min-h-[420px] min-w-0 flex-1 overflow-x-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 md:min-h-[600px]">
-                <div className="p-4 sm:p-5 md:p-8 lg:p-10">{children}</div>
+              <main className="min-w-0 flex-1 overflow-x-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="p-4 sm:p-6 lg:p-8">{children}</div>
               </main>
             </div>
           </div>
-          <FooterNavigationMenu categories={categories} />
+          <FooterNavigationMenu categories={categories} initialIsCustomer />
         </div>
       </PublicSettingsProvider>
     </DashboardQueryProvider>

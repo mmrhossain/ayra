@@ -144,6 +144,7 @@ export const listProductsQuerySchema = paginationQuerySchema.extend({
   page: z.coerce.number().int().min(1).optional(),
   cursor: z.string().min(1).max(2048).optional(),
   category: z.string().optional(),
+  collection: z.string().trim().min(1).max(200).optional(),
   brand: z.string().optional(),
   search: z.string().optional(),
   minPrice: z.coerce.number().nonnegative().optional(),

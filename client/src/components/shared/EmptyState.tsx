@@ -3,10 +3,10 @@ import { ShoppingBag, ArrowRight } from "lucide-react";
 
 const EmptyState = ({ text, title }: { text: string; title?: string }) => {
     return (
-        <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="flex items-center justify-center px-4 py-8 sm:py-10">
             <div className="max-w-sm w-full text-center">
                 {/* Visual Icon Container */}
-                <div className="relative mx-auto w-24 h-24 mb-8">
+                <div className="relative mx-auto mb-5 h-24 w-24">
                     <div className="absolute inset-0 bg-primary/5 rounded-full animate-pulse" />
                     <div className="relative flex h-full w-full items-center justify-center rounded-full bg-white border border-slate-100 shadow-sm">
                         <ShoppingBag className="h-10 w-10 text-primary/40" strokeWidth={1.5} />
@@ -14,7 +14,7 @@ const EmptyState = ({ text, title }: { text: string; title?: string }) => {
                 </div>
 
                 {/* Text Content */}
-                <div className="space-y-3 mb-10">
+                <div className="mb-6 space-y-3">
                     <h2 className="text-2xl font-semibold tracking-tight text-slate-900 capitalize">
                         {title ?? `Your ${text} is empty`}
                     </h2>
@@ -33,7 +33,7 @@ const EmptyState = ({ text, title }: { text: string; title?: string }) => {
                 </Link>
 
                 {/* Secondary Hint */}
-                <p className="mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <p className="mt-5 text-xs font-bold text-slate-400 uppercase tracking-widest">
                     Handcrafted with heritage
                 </p>
             </div>

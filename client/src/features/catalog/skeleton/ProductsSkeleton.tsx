@@ -1,5 +1,5 @@
-import Skeleton from "react-loading-skeleton";
 import { cn } from "@/lib/utils";
+import Skeleton from "react-loading-skeleton";
 
 const ProductsSkeleton = ({
   contained = true,
@@ -14,8 +14,8 @@ const ProductsSkeleton = ({
       aria-label="Loading products"
       className={cn(
         "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-7",
-        contained && "mt-8 container mx-auto",
-        className,
+        contained && "mt-8",
+        className
       )}
     >
       {Array.from({ length: 8 }).map((_, index) => (

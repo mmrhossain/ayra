@@ -8,5 +8,5 @@ export default function Error({
   error: Error;
   reset: () => void;
 }) {
-  return <RouteErrorFallback reset={reset} />;
+  return <RouteErrorFallback reset={reset} className="container storefront-page-start min-h-64 pb-6" />;
 }

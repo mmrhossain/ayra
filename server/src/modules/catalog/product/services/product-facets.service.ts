@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { Prisma } from "../../../../generated/prisma/client.ts";
 import { prisma } from "../../../../lib/prisma.ts";
 import {
   CacheTtl,
@@ -79,8 +80,18 @@ const facetsCacheKey = (
 
 const resolveFacetCategories = async (
   query: ListProductsQuery,
+  productWhere: Prisma.ProductWhereInput,
 ): Promise<FacetCategory[]> => {
-  if (!query.category) return [];
+  if (!query.category) {
+    if (!query.collection) return [];
+    const { categoryId: _selectedCategories, ...categoryProductWhere } = productWhere;
+    const categories = await prisma.category.findMany({
+      where: { deletedAt: null, isActive: true, products: { some: categoryProductWhere } },
+      select: { id: true, slug: true, name: true },
+      orderBy: { name: "asc" },
+    });
+    return categories.map(category => ({ id: category.id, slug: category.slug, label: category.name }));
+  }
 
   const resolved = await resolveCategoryByPath(
     query.category,
@@ -108,9 +119,8 @@ const resolveFacetCategories = async (
 export const getProductFacets = async (
   query: ListProductsQuery,
 ): Promise<ProductFacets> => {
-  const generation = await getFacetsGeneration();
-  const cacheKey = facetsCacheKey(generation, query);
-  const cached = await cacheGet<ProductFacets>(cacheKey);
+  const cacheKey = query.collection ? null : facetsCacheKey(await getFacetsGeneration(), query);
+  const cached = cacheKey ? await cacheGet<ProductFacets>(cacheKey) : null;
   if (cached) return cached;
 
   const productWhere = await buildProductWhere(query);
@@ -136,7 +146,7 @@ export const getProductFacets = async (
         attribute: { select: { id: true, name: true } },
       },
     }),
-    resolveFacetCategories(query),
+    resolveFacetCategories(query, productWhere),
   ]);
 
   const min =
@@ -170,6 +180,6 @@ export const getProductFacets = async (
   };
   if (categories.length > 0) result.categories = categories;
 
-  await cacheSet(cacheKey, result, CacheTtl.category);
+  if (cacheKey) await cacheSet(cacheKey, result, CacheTtl.category);
   return result;
 };
