@@ -29,8 +29,8 @@ const QuantityStepper = ({
       className={cn(
         "flex shrink-0 items-center justify-between rounded-sm bg-bg-primary",
         compact
-          ? "h-9 min-w-[96px] px-1"
-          : "h-11 min-w-[120px] px-1.5 sm:h-12 sm:min-w-[140px] md:h-[42px] md:min-w-[160px]",
+          ? "h-11 min-w-[112px] px-1"
+          : "h-11 min-w-[120px] px-1.5 sm:h-12 sm:min-w-[140px] md:h-12 md:min-w-[160px]",
         className,
       )}
     >
@@ -40,7 +40,7 @@ const QuantityStepper = ({
         disabled={decreaseDisabled || loading}
         className={cn(
           "flex items-center justify-center rounded-full text-foreground transition-transform active:scale-90 disabled:opacity-40",
-          compact ? "h-8 w-8" : "h-9 w-9 sm:h-10 sm:w-10",
+          "h-11 w-11",
         )}
         aria-label="Decrease quantity"
       >
@@ -64,7 +64,7 @@ const QuantityStepper = ({
         disabled={increaseDisabled || loading}
         className={cn(
           "flex items-center justify-center rounded-full text-foreground transition-transform active:scale-90 disabled:opacity-40",
-          compact ? "h-8 w-8" : "h-9 w-9 sm:h-10 sm:w-10",
+          "h-11 w-11",
         )}
         aria-label="Increase quantity"
       >

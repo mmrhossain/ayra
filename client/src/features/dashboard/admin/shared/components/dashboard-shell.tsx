@@ -75,7 +75,7 @@ export function DashboardShell({
             </Suspense>
             <SidebarInset className="min-w-0">
               <DashboardTopbar />
-              <div className="min-w-0 flex-1 overflow-x-auto bg-background p-4 text-foreground sm:p-6">
+              <div className="min-w-0 flex-1 bg-background p-4 text-foreground sm:p-6">
                 <Suspense fallback={null}>
                   <StaffShoppingNotice />
                 </Suspense>

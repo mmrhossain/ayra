@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -14,11 +14,13 @@ import type { CheckoutPayload } from "@/features/checkout/types";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 
 type CheckoutPaymentProps = {
+  children?: ReactNode;
   paymentMethod: CheckoutPayload["paymentMethod"];
   onPaymentMethodChange: (method: CheckoutPayload["paymentMethod"]) => void;
 };
 
 const CheckoutPayment = ({
+  children,
   paymentMethod,
   onPaymentMethodChange,
 }: CheckoutPaymentProps) => {
@@ -42,12 +44,13 @@ const CheckoutPayment = ({
 
   return (
     <form
-      className="space-y-7 sm:space-y-8"
+      className="contents"
       onSubmit={(e) => {
         e.preventDefault();
         void placeOrder();
       }}
     >
+      <div className="min-w-0 space-y-7 sm:space-y-8 lg:col-start-1 lg:row-start-2">
       <CheckoutSection title="Payment method">
         <RadioGroup
           value={paymentMethod}
@@ -144,11 +147,17 @@ const CheckoutPayment = ({
         </CheckoutSection>
       ) : null}
 
+      </div>
+
+      {children}
+
+      <div className="min-w-0 lg:col-start-1 lg:row-start-3">
       <CheckoutStepActions>
         <CheckoutCta type="submit" loading={loading || placing}>
           {paymentMethod === "SSLCOMMERZ" ? "Pay now" : "Place order"}
         </CheckoutCta>
       </CheckoutStepActions>
+      </div>
     </form>
   );
 };

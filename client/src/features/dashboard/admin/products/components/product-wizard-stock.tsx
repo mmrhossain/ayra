@@ -58,7 +58,7 @@ export function ProductWizardStock({ rows, onRowsChange }: Props) {
         </p>
       ) : (
       <div className="overflow-x-auto rounded-xl border">
-        <table className="w-full min-w-[32rem] text-sm">
+        <table className="responsive-editor-table w-full md:min-w-[32rem] text-sm">
           <thead>
             <tr className="border-b text-left">
               <th className="p-3 font-medium">Variant</th>
@@ -69,9 +69,9 @@ export function ProductWizardStock({ rows, onRowsChange }: Props) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.key} className="border-b last:border-0">
-                <td className="p-3">{row.label}</td>
-                <td className="p-3 text-muted-foreground">{row.sku || "—"}</td>
-                <td className="p-3">
+                <td data-label="Variant" className="p-3">{row.label}</td>
+                <td data-label="SKU" className="p-3 text-muted-foreground">{row.sku || "—"}</td>
+                <td data-label="Stock (MAIN)" className="p-3">
                   <div className="max-w-40">
                     <NumberInput
                       placeholder="Qty"

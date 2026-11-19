@@ -69,7 +69,7 @@ const TopFooter = () => {
           <ul className="grid grid-cols-2 sm:grid-cols-1 gap-y-4 gap-x-2">
             {["About", "Contact", "Blogs", "Shop", "Privacy Policy", "Terms", "FAQ"].map((item) => (
               <li key={item}>
-                <Link
+                <Link prefetch={false}
                   href={`/${item.toLowerCase().replace(" ", "-")}`}
                   className="text-slate-500 text-sm hover:text-primary transition-all duration-300 flex items-center gap-2 group"
                 >
@@ -96,6 +96,7 @@ const TopFooter = () => {
               <Image
                 width={140}
                 height={140}
+                loading="eager"
                 src={
                   "https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791365873/qr_code_qwkeqc.png"
                 }

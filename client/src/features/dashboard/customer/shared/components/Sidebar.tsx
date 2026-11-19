@@ -4,10 +4,10 @@ import { ChangePasswordDialog } from "@/components/shared/change-password-dialog
 import { authClient } from "@/lib/api/auth/auth-client";
 import { successToast } from "@/helpers";
 import clsx from "clsx";
-import { Heart, KeyRound, LogOut, MapPin, Package, User } from "lucide-react";
+import { ChevronDown, Heart, KeyRound, LogOut, MapPin, Package, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 const sidebarItems = [
   { label: "Account Details", href: "/customer/account", icon: User },
@@ -20,6 +20,9 @@ const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
+  const activeItem = sidebarItems.find(item => pathname === item.href || pathname.startsWith(item.href + "/"));
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -33,24 +36,39 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-full md:w-72 bg-card rounded-xl border border-border overflow-hidden shadow-sm h-fit">
-      {/* User Header (Optional but recommended) */}
-      <div className="p-4 sm:p-6 border-b border-border bg-muted">
+    <aside className="w-full lg:w-72 bg-card rounded-xl border border-border overflow-hidden shadow-sm h-fit">
+      <button
+        type="button"
+        aria-label="Toggle account navigation"
+        aria-expanded={menuOpen}
+        aria-controls={menuId}
+        onClick={() => setMenuOpen(open => !open)}
+        className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary lg:hidden"
+      >
+        <span className="min-w-0">
+          <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">Manage account</span>
+          <span className="mt-1 block truncate text-sm font-semibold">{activeItem?.label ?? "Account menu"}</span>
+        </span>
+        <ChevronDown aria-hidden className={clsx("size-4 shrink-0 transition-transform", menuOpen && "rotate-180")} />
+      </button>
+      <div className="hidden border-b border-border bg-muted p-6 lg:block">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Manage Account
         </p>
       </div>
 
-      <nav className="p-2 sm:p-3">
+      <nav id={menuId} aria-label="Customer account" className={clsx("p-2 sm:p-3", !menuOpen && "hidden lg:block")}>
         <ul className="space-y-1">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = activeItem === item;
 
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setMenuOpen(false)}
                   className={clsx(
                     "flex items-center gap-3 px-3.5 sm:px-4 py-3 min-h-11 text-sm font-semibold rounded-xl transition-all duration-300 group relative",
                     isActive

@@ -361,7 +361,7 @@ export const formatOrderNumber = (reference: bigint, now = new Date()) => {
     throw new RangeError("Order reference sequence is out of range");
   }
   const date = now.toISOString().slice(2, 10).replace(/-/g, "");
-  return `AYR-${date}-${reference.toString(36).toUpperCase().padStart(6, "0")}`;
+  return `AYR-${date}-${reference.toString().padStart(3, "0")}`;
 };
 
 export const generateOrderNumber = async (

@@ -37,3 +37,16 @@ export const saveTaxClass = async (input: { [K in keyof TaxClassInput]?: TaxClas
     throw error;
   }
 };
+
+export const deleteTaxClass = async (id: string): Promise<void> => {
+  try {
+    await prisma.taxClass.delete({ where: { id } });
+  } catch (error) {
+    if (isPrismaCode(error, "P2003")) {
+      throw new AppError("This tax class is assigned to products. Reassign those products before deleting it.", 409);
+    }
+    if (isPrismaCode(error, "P2025")) throw new AppError("Tax class not found", 404);
+    throw error;
+  }
+  await cacheDel(CACHE_KEY);
+};

@@ -46,7 +46,7 @@ export type VariantRow = {
   skuEdited?: boolean;
   lastSuggested?: string;
   price: string;
-  costPrice: string;
+  costPrice?: string | undefined;
   compareAtPrice?: string;
   compareAtError?: string;
   isDefault: boolean;

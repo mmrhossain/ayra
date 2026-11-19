@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { profileImageUrl } from "@/lib/profile-image";
 import {
   Select,
   SelectContent,
@@ -111,7 +112,7 @@ export function AccountEditDialog({
                       deferUpload
                       mode="single"
                       folder="profiles"
-                      value={field.value ?? ""}
+                      value={profileImageUrl(field.value ?? "", 768)}
                       onChange={field.onChange}
                     />
                   </FormControl>

@@ -53,7 +53,7 @@ const CartList = () => {
   if (cartCount === 0) return <EmptyState text="cart" />;
 
   return (
-    <section className="container mx-auto min-w-0 max-w-6xl py-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:py-7 md:py-10 xl:max-w-7xl">
+    <section className="container mx-auto min-w-0 max-w-6xl py-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:py-7 md:py-10 xl:max-w-7xl 2xl:max-w-[88rem]">
       <PageBreadcrumb
         className="mb-4 sm:mb-5 md:mb-6"
         items={[{ label: "Home", href: "/" }, { label: "Cart" }]}

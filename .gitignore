@@ -16,3 +16,6 @@ coverage/
 
 # Local SQL drafts
 /server/prisma/sql/*.local.sql
+# Generated local performance reports
+/client/reports/lighthouse/
+/docs

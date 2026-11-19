@@ -10,17 +10,20 @@ import {
 import type { SliderListItem } from "@/features/dashboard/admin/sliders/api/slider";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
-import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
 
 interface HeroSliderProps {
   sliders: SliderListItem[];
   className?: string;
+  showContent?: boolean;
+  showControls?: boolean;
+  variant?: "hero" | "banner";
 }
 
-const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
+const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className, showContent = true, showControls = true, variant = "hero" }) => {
+  const isBanner = variant === "banner";
   const autoplay = useMemo(
     () =>
       Autoplay({
@@ -31,7 +34,6 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
     []
   );
 
-  const shouldReduceMotion = useReducedMotion();
 
   const [api, setApi] = useState<CarouselApi>();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -56,9 +58,11 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
 
   return (
     <section
-      id="hero"
+      id={isBanner ? undefined : "hero"}
+      aria-label={isBanner ? "Customer dashboard banners" : undefined}
       className={cn(
-        "relative w-full overflow-hidden h-[70svh] min-h-[70svh] sm:h-[calc(100dvh-var(--header-height,120px))] sm:min-h-[500px]",
+        "@container relative w-full overflow-hidden",
+        isBanner ? "aspect-[16/5] sm:aspect-[1920/480]" : "md:landscape:h-[calc(100svh-var(--header-height,112px))]",
         className
       )}
     >
@@ -69,80 +73,83 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
           align: "start",
         }}
         setApi={setApi}
-        className="w-full h-full [&>div]:h-full"
+        className={cn("w-full", isBanner ? "h-full [&>div]:h-full" : "md:landscape:h-full md:landscape:[&>div]:h-full")}
       >
-        <CarouselContent className="ml-0 flex h-full">
+        <CarouselContent className={cn("ml-0 flex items-start", isBanner ? "h-full" : "md:landscape:h-full")}>
           {sliders.map((slider, index) => {
             const isActive = activeIndex === index;
+            const mobileImage = getImageProps({
+              src: slider.mobileImageUrl || slider.imageUrl || "",
+              alt: slider.title || "Hero Banner",
+              width: 1080, height: 1350, sizes: "100vw",
+              loading: index === 0 ? "eager" : "lazy",
+              fetchPriority: index === 0 ? "high" : "auto",
+            }).props;
+            const desktopImage = getImageProps({
+              src: slider.imageUrl || "", alt: slider.title || "Hero Banner",
+              width: 1920, height: 720, sizes: "100vw",
+            }).props;
 
             return (
               <CarouselItem
                 key={slider.id || index}
-                className="relative min-w-full h-full pl-0 basis-full"
+                className={cn("relative min-w-full pl-0 basis-full", isBanner ? "h-full" : "md:landscape:h-full")}
               >
                 {/* Hero Container */}
-                <div className="relative w-full h-full">
-                  {/* Mobile Image */}
-                  <Image
-                    src={slider.mobileImageUrl || ""}
-                    alt={slider.title || "Hero Banner"}
-                    priority={index === 0}
-                    loading="eager"
-                    fill
-                    sizes="(max-width: 960px) 100vw, 960px"
-                    className="object-cover md:hidden"
-                  />
-
-                  {/* Desktop Image */}
-                  <Image
-                    src={slider.imageUrl || ""}
-                    alt={slider.title || "Hero Banner"}
-                    priority={index === 0}
-                    loading="eager"
-                    fill
-                    sizes="(max-width: 1920px) 100vw, 1920px"
-                    className="object-cover hidden md:block"
-                  />
+                <div className={cn("relative w-full", isBanner ? "h-full" : "md:landscape:h-full")}>
+                  {isBanner ? (
+                    <Image
+                      src={slider.imageUrl || ""}
+                      alt={slider.title || "Hero Banner"}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      width={1920} height={720} sizes="100vw"
+                      className="block h-full w-full object-cover object-top"
+                    />
+                  ) : (
+                    <picture className="block md:landscape:h-full">
+                      <source
+                        media="(min-width: 768px) and (orientation: landscape)"
+                        srcSet={desktopImage.srcSet} sizes={desktopImage.sizes}
+                      />
+                      {/* getImageProps supplies Next.js optimized responsive sources. */}
+                      <img
+                        {...mobileImage}
+                        alt={mobileImage.alt}
+                        className="block aspect-[4/5] h-auto w-full object-cover object-top md:landscape:aspect-auto md:landscape:h-full"
+                      />
+                    </picture>
+                  )}
                 </div>
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 z-20 pointer-events-none">
-                  <div className="mx-auto flex h-full max-w-7xl items-end px-4 pb-12 sm:px-12 sm:pb-16 lg:px-20 lg:pb-20">
-                    <div className="max-w-xl text-left text-white">
+                {showContent && <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-black/30 via-black/5 to-transparent">
+                  <div className="container flex h-full min-w-0 items-end py-[clamp(1rem,4cqw,4rem)] md:items-center">
+                    <div className="min-w-0 w-full max-w-lg text-left text-white md:w-[44%] md:max-w-lg md:translate-y-[clamp(2.5rem,9svh,5rem)]">
                       {isActive && (
                         <>
-                          <motion.h2
+                          <h2
                             key={`title-${index}`}
-                            initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.6,
-                              delay: 0.25,
-                            }}
-                            className="
-                              mb-3
-                              break-words
+                            className="hero-title-enter
+                              mb-[clamp(0.75rem,1.5cqw,1.5rem)]
+                              max-w-[16ch]
+                              whitespace-normal
+                              text-balance
+                              [overflow-wrap:anywhere]
                               font-serif
-                              text-xl
+                              text-[clamp(1.5rem,6cqw,2.75rem)]
+                              leading-[1.12]
                               font-medium
-                              tracking-wide
-                              sm:mb-6
-                              sm:text-5xl
-                              lg:text-6xl
+                              tracking-normal
+                              md:text-[clamp(1.5rem,3cqw,3.5rem)]
                             "
                           >
                             {slider.title || "Timeless Ethnic Elegance"}
-                          </motion.h2>
+                          </h2>
 
-                          <motion.div
+                          <div
                             key={`cta-${index}`}
-                            initial={shouldReduceMotion ? {} : { opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.5,
-                              delay: 0.4,
-                            }}
-                            className="pointer-events-auto flex items-center gap-4"
+                            className="hero-cta-enter pointer-events-auto flex min-w-0 items-center"
                           >
                             <CustomButton
                               ctaText="Explore Collection"
@@ -151,11 +158,11 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
                               }
                               path={slider.redirectUrl || "/shop"}
                               className={cn(
-                                "group flex items-center gap-2",
+                                "group flex h-auto min-h-11 max-w-full items-center gap-2 whitespace-normal text-center",
                                 "border border-white/80",
                                 "bg-white/10",
-                                "px-5 py-2.5 sm:px-7 sm:py-3.5",
-                                "text-xs font-medium uppercase tracking-[0.2em]",
+                                "px-[clamp(0.875rem,1.5cqw,1.75rem)] py-2.5",
+                                "text-[clamp(0.625rem,1cqw,0.875rem)] font-medium uppercase tracking-[0.12em]",
                                 "text-white backdrop-blur-md",
                                 "transition-all duration-300",
                                 "hover:border-white",
@@ -163,12 +170,12 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
                                 "hover:text-neutral-950"
                               )}
                             />
-                          </motion.div>
+                          </div>
                         </>
                       )}
                     </div>
                   </div>
-                </div>
+                </div>}
               </CarouselItem>
             );
           })}
@@ -176,7 +183,7 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
       </Carousel>
 
       {/* Indicators: anchored to the hero section, desktop only */}
-      <div className="pointer-events-auto absolute bottom-10 left-1/2 z-30 hidden -translate-x-1/2 items-center gap-2 md:flex">
+      {showControls && <div className={cn("pointer-events-auto absolute left-1/2 z-30 hidden -translate-x-1/2 items-center gap-2 md:flex", isBanner ? "bottom-3 sm:bottom-4" : "bottom-[clamp(0.75rem,2cqw,2.5rem)]")}>
         {sliders.map((_, i) => (
           <button
             key={i}
@@ -189,7 +196,7 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className }) => {
             )}
           />
         ))}
-      </div>
+      </div>}
     </section>
   );
 };

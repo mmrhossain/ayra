@@ -1,58 +1,67 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { toCartErrorMessage } from "@/features/cart/api";
+import { fetchAvailableCartCoupons, toCartErrorMessage } from "@/features/cart/api";
 import { errorToast, formatPrice, successToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { formatPriceWithDecimals } from "@/lib/format";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { useCartStore } from "@/stores/useCartStore";
-import { ArrowRight, Tag } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, Check, ChevronRight, LoaderCircle, Tag, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const Subtotal = () => {
   const { checkout } = usePublicSettings();
-  const { totalAmount, discountAmount, vatAmount, taxRates, payableAmount, couponCode, applyCoupon, removeCoupon } =
+  const { cart, totalAmount, discountAmount, vatAmount, taxRates, payableAmount, couponCode, applyCoupon, removeCoupon } =
     useCartStore();
   const { data } = authClient.useSession();
   const isLogin = Boolean(data?.user);
   const router = useRouter();
-  const [code, setCode] = useState("");
-  const [couponBusy, setCouponBusy] = useState(false);
+  const [pendingCouponCode, setPendingCouponCode] = useState<string | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const availableCoupons = useQuery({
+    queryKey: ["available-cart-coupons", data?.user?.id, cart?.map(item => [item.variantId, item.quantity, item.unitPrice])],
+    queryFn: ({ signal }) => fetchAvailableCartCoupons(signal),
+    enabled: isLogin && Boolean(cart?.length),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
+
+  const couponCards = (availableCoupons.data ?? []).map(coupon => ({
+    code: coupon.code,
+    name: coupon.name,
+    benefit: coupon.discountType === "FREE_SHIPPING" ? "Free shipping" : `Save ${formatPriceWithDecimals(coupon.discountAmount)}`,
+  }));
+  if (couponCode && !couponCards.some(coupon => coupon.code === couponCode)) {
+    couponCards.unshift({ code: couponCode, name: couponCode, benefit: "" });
+  }
+  const couponListFailed = isLogin && availableCoupons.isError && !availableCoupons.data;
 
   const subtotal = Number(totalAmount);
   const discount = Number(discountAmount);
   const discountPct = subtotal > 0 && discount > 0 ? Math.round((discount / subtotal) * 100) : 0;
 
-  const handleApply = async () => {
-    const trimmed = code.trim();
-    if (!trimmed) {
-      setCouponError("Enter a promo code");
-      return;
-    }
-    if (!isLogin) {
-      router.push("/login?redirect=/cart");
-      return;
-    }
-    setCouponBusy(true);
+  const handleApply = async (code: string) => {
+    if (!isLogin || pendingCouponCode !== null) return;
+    setPendingCouponCode(code);
     setCouponError(null);
     try {
-      const res = await applyCoupon(trimmed);
-      setCode("");
+      const res = await applyCoupon(code);
       successToast(res.message);
     } catch (err) {
       const message = toCartErrorMessage(err);
       setCouponError(message);
       errorToast(message);
     } finally {
-      setCouponBusy(false);
+      setPendingCouponCode(null);
     }
   };
 
   const handleRemove = async () => {
-    setCouponBusy(true);
+    if (pendingCouponCode !== null || !couponCode) return;
+    setPendingCouponCode(couponCode);
     setCouponError(null);
     try {
       const res = await removeCoupon();
@@ -62,7 +71,7 @@ const Subtotal = () => {
       setCouponError(message);
       errorToast(message);
     } finally {
-      setCouponBusy(false);
+      setPendingCouponCode(null);
     }
   };
 
@@ -90,7 +99,7 @@ const Subtotal = () => {
         {checkout.taxEnabled ? (
           <div className="flex items-center justify-between text-sm sm:text-base">
             <span className="text-sky-color">Tax/VAT{taxRates.length ? " (" + taxRates.map(rate => rate + "%").join(", ") + ")" : ""}</span>
-            <span className="font-semibold tabular-nums">{formatPrice(Number(vatAmount))}</span>
+            <span className="font-semibold tabular-nums">{formatPriceWithDecimals(vatAmount)}</span>
           </div>
         ) : null}
         <div className="flex items-center justify-between border-t border-border-color pt-3 text-base sm:pt-4">
@@ -105,52 +114,76 @@ const Subtotal = () => {
         Shipping is calculated at checkout after you select your delivery location.
       </p>
 
-      <div className="mt-4 sm:mt-5">
-        {couponCode ? (
-          <div className="flex items-center justify-between gap-3 rounded-full bg-bg-primary px-4 py-2.5">
-            <p className="truncate text-sm font-semibold text-foreground">{couponCode}</p>
-            <button
-              type="button"
-              onClick={handleRemove}
-              disabled={couponBusy}
-              className="shrink-0 text-sm font-medium text-danger hover:underline disabled:opacity-50"
-            >
-              {couponBusy ? "Removing..." : "Remove"}
+      <div
+        hidden={!couponCards.length && !couponListFailed && !couponError}
+        className="mt-4 space-y-3 border-t border-border-color pt-4 sm:mt-5"
+      >
+        {couponCards.length > 0 ? (
+          <section aria-label="Coupons" className="space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">Coupons</h3>
+            <ul className="grid gap-2">
+              {couponCards.map(coupon => {
+                const applied = coupon.code === couponCode;
+                const busy = pendingCouponCode === coupon.code;
+                const details = (
+                  <>
+                    <span className={`flex size-9 shrink-0 items-center justify-center rounded-md ${applied ? "bg-emerald-100 text-emerald-800" : "bg-bg-primary text-foreground"}`}>
+                      {applied ? <Check aria-hidden="true" size={18} /> : <Tag aria-hidden="true" size={17} />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block break-words text-sm font-semibold text-foreground">{coupon.benefit || coupon.name}</span>
+                      {coupon.benefit && coupon.benefit !== coupon.name ? (
+                        <span className="block break-words text-xs text-muted-foreground">{coupon.name}</span>
+                      ) : null}
+                    </span>
+                  </>
+                );
+
+                return (
+                  <li key={coupon.code} className={`min-w-0 rounded-lg border ${applied ? "flex items-center gap-2 border-emerald-300 bg-emerald-50 p-2.5" : "border-dashed border-border-color"}`}>
+                    {applied ? (
+                      <>
+                        {details}
+                        <span className="shrink-0 text-xs font-semibold text-emerald-800">Applied</span>
+                        <button
+                          type="button"
+                          aria-label={`Remove coupon ${coupon.name}`}
+                          disabled={pendingCouponCode !== null}
+                          onClick={handleRemove}
+                          className="flex size-10 shrink-0 items-center justify-center rounded-md text-emerald-900 hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                        >
+                          {busy ? <LoaderCircle aria-hidden="true" size={17} className="animate-spin" /> : <X aria-hidden="true" size={17} />}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={`Apply coupon ${coupon.name}`}
+                        disabled={pendingCouponCode !== null}
+                        onClick={() => void handleApply(coupon.code)}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg p-2.5 text-left transition-colors hover:bg-bg-primary focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:cursor-default disabled:opacity-60"
+                      >
+                        {details}
+                        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-foreground">
+                          {busy ? "Applying…" : "Apply"}
+                          {busy ? <LoaderCircle aria-hidden="true" size={14} className="animate-spin" /> : <ChevronRight aria-hidden="true" size={15} />}
+                        </span>
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+        {couponListFailed ? (
+          <p className="text-xs text-muted-foreground">
+            Couldn’t load available coupons.{" "}
+            <button type="button" className="underline underline-offset-2" onClick={() => void availableCoupons.refetch()}>
+              Retry
             </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative min-w-0 flex-1">
-              <Tag
-                size={16}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sky-color"
-              />
-              <Input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void handleApply();
-                  }
-                }}
-                placeholder="Add promo code"
-                aria-label="Promo code"
-                autoCapitalize="characters"
-                className="h-11 rounded-md border-0 bg-bg-primary pl-10 pr-4 shadow-none focus-visible:ring-0 sm:h-12"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleApply}
-              disabled={couponBusy}
-              className="h-11 shrink-0 cursor-pointer rounded-md bg-ink px-5 text-sm font-medium text-white transition-colors hover:bg-primary disabled:opacity-50 sm:h-12 sm:px-7"
-            >
-              {couponBusy ? "Applying..." : "Apply"}
-            </button>
-          </div>
-        )}
+          </p>
+        ) : null}
         {couponError ? (
           <p role="alert" className="mt-2 text-sm leading-snug text-danger">
             {couponError}

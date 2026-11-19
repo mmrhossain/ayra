@@ -16,9 +16,10 @@ import {
 
 const POLL_INTERVAL_MS = 60_000;
 
-export function useNotifications(limit = 10, initialData?: NotificationListResult) {
+export function useNotifications(limit = 10, initialData?: NotificationListResult, enabled = true) {
   const query = useQuery({
     queryKey: ["notifications", limit],
+    enabled,
     queryFn: () => fetchNotifications({ page: 1, limit }),
     initialData: initialData
       ? { ...initialData, items: initialData.items.slice(0, limit) }

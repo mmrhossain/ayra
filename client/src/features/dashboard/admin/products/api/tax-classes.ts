@@ -10,3 +10,6 @@ export async function saveTaxClass(input: Omit<TaxClass, "id">, id?: string) {
     ? dashboardApi.put<Envelope<TaxClass>>("/admin/tax-classes/" + encodeURIComponent(id), { body: input })
     : dashboardApi.post<Envelope<TaxClass>>("/admin/tax-classes", { body: input });
 }
+export async function deleteTaxClass(id: string) {
+  await dashboardApi.delete("/admin/tax-classes/" + encodeURIComponent(id));
+}

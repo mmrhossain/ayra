@@ -2,7 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
-const MOBILE_BREAKPOINT = 768;
+// Keep the sidebar drawer active on tablets as well as phones.
+const MOBILE_BREAKPOINT = 1024;
 const QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 
 // 1. Subscribe to window matchMedia changes

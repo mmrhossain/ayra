@@ -22,9 +22,16 @@ export default function HeaderHeightObserver() {
       );
     };
 
+    const observer = new ResizeObserver(updateHeight);
+    for (const element of document.querySelectorAll("header, nav")) {
+      observer.observe(element);
+    }
     updateHeight();
     window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
   }, []);
 
   return null;

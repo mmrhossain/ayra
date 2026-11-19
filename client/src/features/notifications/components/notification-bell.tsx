@@ -17,6 +17,7 @@ import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
+  useUnreadCount,
 } from "@/features/notifications/hooks/use-notifications";
 import type { NotificationLevel } from "@/features/notifications/types";
 import { cn } from "@/lib/utils";
@@ -44,15 +45,21 @@ function timeAgo(value: string): string {
 
 export function NotificationBell({
   className,
+  badgeClassName,
   viewAllHref = "/customer/notifications",
 }: {
   className?: string;
+  badgeClassName?: string;
   viewAllHref?: string;
 }) {
-  const { items, unreadCount, query } = useNotifications(10);
+  const [open, setOpen] = React.useState(false);
+  const { items, unreadCount: listUnreadCount, query } = useNotifications(10, undefined, open);
+  const countQuery = useUnreadCount(!open);
+  const unreadCount = open
+    ? query.data?.unreadCount ?? countQuery.data ?? listUnreadCount
+    : countQuery.data ?? listUnreadCount;
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
-  const [open, setOpen] = React.useState(false);
 
   const badge = unreadCount > 9 ? "9+" : String(unreadCount);
 
@@ -72,7 +79,7 @@ export function NotificationBell({
         >
           <Bell className="size-4" />
           {unreadCount > 0 ? (
-            <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-xs font-semibold leading-4 text-destructive-foreground">
+            <span className={cn("absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-xs font-semibold leading-4 text-destructive-foreground", badgeClassName)}>
               {badge}
             </span>
           ) : null}

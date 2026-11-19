@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "../../src/lib/prisma.ts";
 import { checkout } from "../../src/modules/order/services/order.service.ts";
-import { addItem, applyCoupon, getCart } from "../../src/modules/cart/cart.service.ts";
+import { addItem, applyCoupon, getAvailableCartCoupons, getCart } from "../../src/modules/cart/cart.service.ts";
 import {
   createCoupon,
   deleteCoupon,
@@ -232,6 +232,32 @@ describe("Coupon redemption", () => {
         productCategoryIds: [catalog.category.id],
       })
     ).resolves.toMatchObject({ coupon: { id: coupon.id } });
+  });
+
+  it("lists and applies a parent-category coupon to items in a nested subcategory", async () => {
+    const catalog = await createTestProduct(tracker, { stock: 5, price: 100 });
+    const parent = await prisma.category.create({
+      data: { name: "Women", slug: `women-${randomUUID()}` },
+    });
+    tracker.categoryIds.push(parent.id);
+    const child = await prisma.category.create({
+      data: { name: "Clothing", slug: `clothing-${randomUUID()}`, parentId: parent.id },
+    });
+    tracker.categoryIds.push(child.id);
+    await prisma.category.update({
+      where: { id: catalog.category.id },
+      data: { parentId: child.id },
+    });
+    const coupon = await createTestCoupon(tracker, { categoryIds: [parent.id], discountValue: 10 });
+    const user = await createTestUser(tracker, { suffix: `parent-${Date.now()}` });
+    await createActiveCartWithItem(tracker, user.customerProfileId, catalog.variant, catalog.product.name, 1);
+
+    await expect(getAvailableCartCoupons(user.customerProfileId)).resolves.toContainEqual(
+      expect.objectContaining({ code: coupon.code, discountAmount: 10 }),
+    );
+    await expect(applyCoupon(user.customerProfileId, coupon.code)).resolves.toMatchObject({
+      discountAmount: 10,
+    });
   });
 
   it("rejects category-restricted coupon when cart category is not in CouponCategory", async () => {

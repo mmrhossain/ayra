@@ -46,7 +46,7 @@ export const OrderStatusPreview = ({
 
   return (
     <section
-      className="print:hidden space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6"
+      className="@container min-w-0 print:hidden space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6"
       aria-label="Order status"
     >
       <div className="space-y-1">
@@ -58,7 +58,7 @@ export const OrderStatusPreview = ({
         </p>
       </div>
 
-      <ol className="flex items-start overflow-x-auto pb-1">
+      <ol className="flex flex-col @[56rem]:flex-row @[56rem]:items-start">
         {preview.steps.map((step, index) => {
           const reached = index <= preview.currentIndex;
           const current = index === preview.currentIndex && !preview.exception;
@@ -66,12 +66,21 @@ export const OrderStatusPreview = ({
           return (
             <li
               key={step.status}
-              className="flex min-w-[4.5rem] flex-1 flex-col items-center gap-2"
+              className="relative flex min-w-0 gap-3 pb-4 last:pb-0 @[56rem]:flex-1 @[56rem]:flex-col @[56rem]:items-center @[56rem]:gap-2 @[56rem]:pb-0"
             >
-              <div className="flex w-full items-center">
+              {!last && (
+                <span
+                  aria-hidden
+                  className={clsx(
+                    "absolute bottom-0 left-[15px] top-8 w-0.5 @[56rem]:hidden",
+                    index < preview.currentIndex ? "bg-primary" : "bg-muted",
+                  )}
+                />
+              )}
+              <div className="flex w-8 shrink-0 items-center @[56rem]:w-full">
                 <span
                   className={clsx(
-                    "h-0.5 flex-1",
+                    "hidden h-0.5 flex-1 @[56rem]:block",
                     index === 0
                       ? "bg-transparent"
                       : reached
@@ -94,7 +103,7 @@ export const OrderStatusPreview = ({
                 </span>
                 <span
                   className={clsx(
-                    "h-0.5 flex-1",
+                    "hidden h-0.5 flex-1 @[56rem]:block",
                     last
                       ? "bg-transparent"
                       : index < preview.currentIndex
@@ -106,7 +115,7 @@ export const OrderStatusPreview = ({
               </div>
               <span
                 className={clsx(
-                  "text-center text-xs font-bold uppercase tracking-wider",
+                  "flex min-h-8 min-w-0 items-center break-words text-xs font-bold uppercase tracking-wider @[56rem]:block @[56rem]:w-full @[56rem]:px-2 @[56rem]:text-center",
                   reached ? "text-foreground" : "text-muted-foreground",
                 )}
               >

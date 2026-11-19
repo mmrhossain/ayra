@@ -28,4 +28,32 @@ describe("coupon tax allocation eligibility", () => {
     expect(result).toEqual({ discountAmount: 20, discountEligible: [true, false] });
     expect(query).toHaveBeenCalledTimes(1);
   });
+
+  it("discounts items matching either scope and counts overlapping matches once", async () => {
+    const lines = [
+      { productId: "bag", categoryId: "accessories", subtotal: 100 },
+      { productId: "dress", categoryId: "dresses", subtotal: 200 },
+      { productId: "featured", categoryId: "dresses", subtotal: 300 },
+      { productId: "shoes", categoryId: "footwear", subtotal: 400 },
+    ];
+    const mixedCart = {
+      subtotal: 1000,
+      productIds: lines.map(line => line.productId),
+      productCategoryIds: lines.map(line => line.categoryId),
+      lines,
+    };
+    const restrictions = [
+      { kind: "product", id: "bag" },
+      { kind: "product", id: "featured" },
+      { kind: "category", id: "dresses" },
+    ];
+    const query = vi.fn().mockResolvedValueOnce([coupon]).mockResolvedValue(restrictions);
+    const expected = { discountAmount: 120, discountEligible: [true, true, true, false] };
+
+    await expect(applyCouponAtomic(coupon.code, "customer", mixedCart, {
+      $queryRaw: query,
+    } as unknown as TransactionClient)).resolves.toMatchObject(expected);
+    await expect(calculateCouponPricingForRecord({ $queryRaw: query }, coupon, mixedCart))
+      .resolves.toEqual(expected);
+  });
 });

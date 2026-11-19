@@ -46,7 +46,8 @@ const CheckOut = () => {
     <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-6 sm:pt-8 md:pb-16 md:pt-10 lg:pt-12">
       <div className="container min-w-0 max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:items-start lg:gap-10 xl:gap-16 2xl:gap-20">
-          <div className="min-w-0">
+          <div className={step === "payment" ? "contents" : "min-w-0"}>
+            <div className={step === "payment" ? "min-w-0 lg:col-start-1 lg:row-start-1" : "contents"}>
             {step === "information" ? (
               <CheckoutBack href="/cart" />
             ) : (
@@ -57,20 +58,23 @@ const CheckOut = () => {
               Checkout
             </h1>
             <StepBreadcrumb current={step} onSelect={setStep} />
+            </div>
 
-            <div className="mt-8 sm:mt-10">
+            <div className={step === "payment" ? "contents" : "mt-8 sm:mt-10"}>
               {step === "information" && <CheckOutForm onContinue={setStep} />}
               {step === "shipping" && <CheckoutShipping onContinue={setStep} />}
               {step === "payment" && (
                 <CheckoutPayment
                   paymentMethod={paymentMethod}
                   onPaymentMethodChange={setPaymentMethod}
-                />
+                >
+                  <OrderReview paymentMethod={paymentMethod} className="lg:col-start-2 lg:row-start-1 lg:row-span-3" />
+                </CheckoutPayment>
               )}
             </div>
           </div>
 
-          <OrderReview paymentMethod={paymentMethod} />
+          {step !== "payment" ? <OrderReview paymentMethod={paymentMethod} /> : null}
         </div>
       </div>
     </div>

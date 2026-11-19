@@ -15,6 +15,7 @@ import {
   updateAuthCartItem,
 } from "@/features/dashboard/customer/cart/api/cart";
 import type {
+  AvailableCartCoupon,
   CartItemSnapshot,
   CartLine,
   CartSnapshot,
@@ -27,6 +28,14 @@ import {
 } from "@/features/cart/guest-storage";
 
 export type { CartItemSnapshot, CartLine, CartSnapshot } from "@/features/cart/types";
+
+export async function fetchAvailableCartCoupons(signal?: AbortSignal) {
+  const response = await api.get<Envelope<AvailableCartCoupon[]>>("/cart/coupons", {
+    cache: "no-store",
+    signal,
+  });
+  return response.data;
+}
 
 function num(value: unknown): number {
   const n = Number(value);

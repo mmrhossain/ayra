@@ -145,7 +145,7 @@ function matchCreatedVariants(
 
 function variantBody(row: VariantRow): CreateVariantBody {
   const sku = row.sku.trim();
-  const cost = row.costPrice.trim();
+  const cost = row.costPrice?.trim();
   // Auto-suggested SKUs are brand+category+attributes only, so two products
   // can share a candidate. Omit them so the server allocates a unique suffix.
   // A typed SKU is sent as-is and still 409s on a real collision.
@@ -154,12 +154,12 @@ function variantBody(row: VariantRow): CreateVariantBody {
     price: Number(row.price),
     ...(row.compareAtPrice?.trim()
       ? { compareAtPrice: Number(row.compareAtPrice) }
-      : row.id ? { compareAtPrice: null } : {}),
-    // Blank means unknown. For an existing variant null explicitly clears a
-    // previously known buying cost; for a new variant the field is omitted.
+      : row.id && row.compareAtPrice !== undefined ? { compareAtPrice: null } : {}),
+    // Omitted values can come from an incomplete detail response. Only an
+    // explicit blank clears the saved value.
     ...(cost
       ? { costPrice: Number(cost) }
-      : row.id
+      : row.id && cost !== undefined
         ? { costPrice: null }
         : {}),
     isDefault: row.isDefault,

@@ -310,6 +310,10 @@ export function CouponFormFields({
         )}
       />
 
+      <p className="text-sm text-muted-foreground">
+        The coupon applies to selected products and products in selected categories or their subcategories.
+        Leave both fields empty to apply it to all products.
+      </p>
       <FormField
         control={form.control}
         name="applicableProductIds"

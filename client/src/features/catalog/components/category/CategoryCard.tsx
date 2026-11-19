@@ -1,7 +1,4 @@
-"use client";
-
 import { Card } from "@/components/ui/card";
-import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { CategoryListItem } from "../../types";
@@ -16,40 +13,25 @@ function categoryImage(src?: string | null): string {
 }
 
 const CategoryCard = ({ category }: { category: CategoryListItem }) => {
-  const shouldReduceMotion = useReducedMotion();
   const targetHref = categoryShopHref(category);
 
   return (
-    <motion.div
-      whileHover={shouldReduceMotion ? undefined : "hover"}
-      initial="initial"
-      className="group relative w-full"
-    >
-      <Link href={targetHref} className="block w-full">
+    <div className="group relative w-full">
+      <Link prefetch={false} href={targetHref} className="block w-full">
         <Card className="flex w-full flex-col gap-0 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-md">
           {/* Image */}
           <div className="relative overflow-hidden">
-            <motion.div
-              variants={{
-                initial: { scale: 1 },
-                hover: { scale: 1.08 },
-              }}
-              transition={{
-                duration: 0.6,
-                ease: [0.33, 1, 0.68, 1],
-              }}
-              className="relative  aspect-square"
-            >
+            <div className="relative aspect-square transition-transform duration-[600ms] ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-[1.08] motion-reduce:transform-none motion-reduce:transition-none">
               {/* card view */}
               <Image
                 src={categoryImage(category?.mobileImage)}
                 alt={category?.name ?? "Category image"}
                 fill
-                loading="eager"
-                sizes="(max-width: 768px) 100vw, 800px"
+                loading="lazy"
+                sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
                 className="w-full h-auto object-cover aspect-square"
               />
-            </motion.div>
+            </div>
 
             {/* Explore Overlay */}
             <div className="absolute inset-x-0 bottom-0 hidden h-12 items-center justify-center overflow-hidden bg-white/80 backdrop-blur-sm transition-transform duration-500 md:flex md:translate-y-full md:group-hover:translate-y-0">
@@ -66,24 +48,12 @@ const CategoryCard = ({ category }: { category: CategoryListItem }) => {
             </h3>
 
             <div className="flex justify-center">
-              <motion.div
-                variants={{
-                  initial: {
-                    width: 0,
-                    opacity: 0,
-                  },
-                  hover: {
-                    width: 24,
-                    opacity: 1,
-                  },
-                }}
-                className="h-[1.5px] bg-primary"
-              />
+              <div className="h-[1.5px] w-0 bg-primary opacity-0 transition-all group-hover:w-6 group-hover:opacity-100 motion-reduce:transition-none" />
             </div>
           </div>
         </Card>
       </Link>
-    </motion.div>
+    </div>
   );
 };
 

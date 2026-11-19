@@ -2,12 +2,13 @@
 
 import MobileCategoryItem from "@/features/catalog/components/category/MobileCategory";
 import { SITE_LOGO } from "@/config/site";
+import { isCloudinaryUrl } from "@/helpers/cloudinary";
 import { CategoryListItem } from "@/features/catalog/types";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { useWishStore } from "@/stores/useWishStore";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LazyMotion, m, useReducedMotion } from "framer-motion";
 import { Heart, Home, LayoutGrid, Store, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +28,8 @@ export const footerNavigationItems: BottomNavbar[] = [
   { label: "Wishlist", path: "/customer/wish-list", icon: <Heart size={20} /> },
   { label: "Account", path: "/customer/account", icon: <User size={20} /> },
 ];
+
+const loadMotionFeatures = () => import("@/lib/motion-features").then(module => module.default);
 
 const emptySubscribe = () => () => {};
 
@@ -87,7 +90,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
         aria-label="Bottom Navigation"
         className="fixed bottom-0 left-0 z-40 w-full bg-white/90 pb-safe backdrop-blur-lg border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)] lg:hidden"
       >
-        <ul className="grid grid-cols-5 items-center h-16 w-full max-w-md mx-auto px-2">
+        <ul className="grid grid-cols-5 items-center h-16 w-full max-w-md mx-auto md:max-w-2xl px-2">
           {footerNavigationItems.map(({ label, path, icon }) => {
             let href = path ?? "/";
             if (label === "Account" && user) {
@@ -139,7 +142,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
 
             return (
               <li key={label} className="flex justify-center group">
-                <Link
+                <Link prefetch={false}
                   href={href}
                   onClick={closeDrawer}
                   aria-current={isActive ? "page" : undefined}
@@ -180,6 +183,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
       {/* Category Left Sidebar Drawer */}
       <AnimatePresence>
         {categoriesDrawerOpen && (
+          <LazyMotion features={loadMotionFeatures}>
           <div
             className="fixed inset-0 z-[10000] h-dvh overscroll-contain"
             role="dialog"
@@ -192,7 +196,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
             }}
           >
             {/* Backdrop */}
-            <motion.div
+            <m.div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               initial="hidden"
               animate="visible"
@@ -205,7 +209,7 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
             />
 
             {/* Sidebar Content Container */}
-            <motion.div
+            <m.div
               className="absolute left-0 top-0 flex h-dvh max-h-dvh w-[min(88%,24rem)] max-w-sm flex-col bg-white shadow-2xl"
               initial="hidden"
               animate="visible"
@@ -224,11 +228,11 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
               {/* Header */}
               <div className="flex items-center justify-between border-b border-gray-100 p-5">
                 <div className="flex h-8 w-[120px] items-center overflow-hidden">
-                  <Link href="/" onClick={closeDrawer} className="relative block h-8 w-full">
+                  <Link prefetch={false} href="/" onClick={closeDrawer} className="relative block h-8 w-full">
                     <Image
                       src={store.logoUrl || SITE_LOGO}
                       alt={store.name}
-                      unoptimized
+                      unoptimized={Boolean(store.logoUrl && !isCloudinaryUrl(store.logoUrl))}
                       fill
                       sizes="120px"
                       priority
@@ -263,8 +267,9 @@ const FooterNavigationMenu = ({ categories = [] }: FooterNavigationMenuProps) =>
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </m.div>
           </div>
+          </LazyMotion>
         )}
       </AnimatePresence>
     </>

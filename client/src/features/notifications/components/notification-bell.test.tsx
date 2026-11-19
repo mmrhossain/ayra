@@ -23,6 +23,7 @@ const notifications: InAppNotification[] = [
 let unreadCount = 1;
 
 vi.mock("@/features/notifications/hooks/use-notifications", () => ({
+  useUnreadCount: () => ({ data: unreadCount }),
   useNotifications: () => ({
     items: notifications,
     unreadCount,

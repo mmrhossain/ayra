@@ -89,8 +89,8 @@ function buildVariantRows(
         skuEdited: keep ? Boolean(prev?.skuEdited) : false,
         lastSuggested: suggested,
         price: prev?.price || basePrice,
-        costPrice: prev?.costPrice ?? "",
-        compareAtPrice: prev?.compareAtPrice ?? "",
+        costPrice: prev ? prev.costPrice : "",
+        ...(prev?.compareAtPrice !== undefined && { compareAtPrice: prev.compareAtPrice }),
         isDefault: true,
         attributeValueIds: [],
         label: "Default",
@@ -140,8 +140,8 @@ function buildVariantRows(
       skuEdited: keep ? Boolean(prev?.skuEdited) : false,
       lastSuggested: candidate,
       price: prev?.price || basePrice,
-      costPrice: prev?.costPrice ?? "",
-        compareAtPrice: prev?.compareAtPrice ?? "",
+      costPrice: prev ? prev.costPrice : "",
+      ...(prev?.compareAtPrice !== undefined && { compareAtPrice: prev.compareAtPrice }),
       isDefault: previousDefault
         ? previousDefault.key === key || comboKey(previousDefault.attributeValueIds) === key
         : index === 0,
@@ -173,30 +173,46 @@ export function ProductWizardVariants({
   onRowsChange,
 }: Props) {
   const selectedIds = useMemo(() => new Set(selected.map((s) => s.attributeId)), [selected]);
+  const previousSkuContext = useRef<string | null>(null);
   const skuContext = `${brandName ?? ""}|${categoryName}`;
-  const previousSkuContext = useRef("");
+  const valuesById = useMemo(() => new Map(attributes.flatMap(attribute =>
+    attribute.values.map(value => [value.id, {
+      id: value.id,
+      value: value.value,
+      attributeId: attribute.id,
+      attributeName: attribute.name,
+    }] as const),
+  )), [attributes]);
+  const hasUnresolvedValues = selected.some(attribute =>
+    attribute.valueIds.some(id => !valuesById.has(id)),
+  );
 
   useEffect(() => {
-    if (previousSkuContext.current === skuContext) return;
+    if (previousSkuContext.current === skuContext || !categoryName || hasUnresolvedValues) return;
     previousSkuContext.current = skuContext;
-    onRowsChange(
-      buildVariantRows(
-        selected,
-        attributes,
-        rows,
-        categoryName,
+    const taken = new Set(rows.filter(row => row.skuEdited).map(row => row.sku.toLowerCase()));
+    const next = rows.map(row => {
+      if (row.skuEdited) return row;
+      const values = row.attributeValueIds.map(id => valuesById.get(id));
+      if (values.some(value => value === undefined)) return row;
+      const suggested = buildSuggestedSku({
         brandName,
-        defaultPriceOf(rows, basePrice),
-      ),
-    );
-    // Rebuild only when the SKU context changes; including the row/attribute
-    // props here would overwrite edits after every parent render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skuContext]);
+        categoryName,
+        attributes: skuAttributesForCombo(values.filter(value => value !== undefined)),
+      });
+      const sku = shouldKeepSku(row, suggested) ? row.sku : ensureUniqueSku(suggested, taken);
+      if (sku) taken.add(sku.toLowerCase());
+      return sku === row.sku && suggested === row.lastSuggested
+        ? row
+        : { ...row, sku, lastSuggested: suggested };
+    });
+    if (next.some((row, index) => row !== rows[index])) onRowsChange(next);
+  }, [skuContext, categoryName, brandName, hasUnresolvedValues, valuesById, rows, onRowsChange]);
 
   // Helper function to sync and update parent state easily
   const updateAndSyncRows = (nextSelected: SelectedAttribute[]) => {
     onSelectedChange(nextSelected);
+    if (nextSelected.some(attribute => attribute.valueIds.some(id => !valuesById.has(id)))) return;
     const newRows = buildVariantRows(
       nextSelected,
       attributes,
@@ -317,7 +333,7 @@ export function ProductWizardVariants({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="outline" onClick={generate}>
+        <Button type="button" variant="outline" onClick={generate} disabled={hasUnresolvedValues}>
           {noOptions ? "Use simple product" : "Refresh combinations"}
         </Button>
         <p className="text-sm text-muted-foreground">
@@ -329,7 +345,7 @@ export function ProductWizardVariants({
 
       {rows.length > 0 ? (
         <div className="overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[44rem] text-sm">
+          <table className="responsive-editor-table w-full md:min-w-[44rem] text-sm">
             <thead>
               <tr className="border-b text-left">
                 <th className="p-3 font-medium">Variant</th>
@@ -347,7 +363,7 @@ export function ProductWizardVariants({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.key} className="border-b last:border-0">
-                  <td className="p-3">
+                  <td data-label="Variant" className="p-3">
                     {row.label}
                     {row.attrError ? (
                       <p className="mt-1 text-sm leading-snug text-destructive" data-invalid="true">
@@ -355,7 +371,7 @@ export function ProductWizardVariants({
                       </p>
                     ) : null}
                   </td>
-                  <td className="p-3">
+                  <td data-label="SKU" className="p-3">
                     <Input
                       value={row.sku}
                       onChange={(e) =>
@@ -376,7 +392,7 @@ export function ProductWizardVariants({
                       <p className="mt-1 text-xs text-muted-foreground">Must be unique.</p>
                     )}
                   </td>
-                  <td className="p-3">
+                  <td data-label="Selling price" className="p-3">
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">BDT</span>
                       <NumberInput
@@ -398,7 +414,7 @@ export function ProductWizardVariants({
                       <p className="mt-1 text-sm leading-snug text-destructive">{row.priceError}</p>
                     ) : null}
                   </td>
-                  <td className="p-3">
+                  <td data-label="Compare-at price" className="p-3">
                     <NumberInput
                       decimal
                       placeholder="Optional"
@@ -410,14 +426,14 @@ export function ProductWizardVariants({
                     />
                     {row.compareAtError ? <p className="mt-1 text-sm text-destructive">{row.compareAtError}</p> : <p className="mt-1 text-xs text-muted-foreground">Original price before a sale. Leave blank for no sale.</p>}
                   </td>
-                  <td className="p-3">
+                  <td data-label="Buying cost / unit" className="p-3">
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">BDT</span>
                       <NumberInput
                         decimal
                         placeholder="Optional"
                         value={
-                          row.costPrice === "" ? null : Number(row.costPrice)
+                          row.costPrice ? Number(row.costPrice) : null
                         }
                         onChange={(value) =>
                           updateRow(row.key, {
@@ -434,7 +450,7 @@ export function ProductWizardVariants({
                       <p className="mt-1 text-sm leading-snug text-destructive">
                         {row.costError}
                       </p>
-                    ) : row.costPrice.trim() &&
+                    ) : row.costPrice?.trim() &&
                       row.price.trim() &&
                       Number(row.costPrice) > Number(row.price) ? (
                       <p className="mt-1 text-xs text-amber-600">
@@ -446,7 +462,7 @@ export function ProductWizardVariants({
                       </p>
                     )}
                   </td>
-                  <td className="p-3">
+                  <td data-label="Default" className="p-3">
                     <Label className="inline-flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"

@@ -19,6 +19,7 @@ import {
     clearCart,
     mergeGuestCart,
     applyCoupon,
+    getAvailableCartCoupons,
     removeCoupon,
 } from "./cart.service.ts";
 
@@ -91,6 +92,13 @@ export const mergeGuestCartHandler = asyncHandler(
         successResponse(res, cart, "Guest cart merged");
     }
 );
+
+export const getAvailableCartCouponsHandler = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.auth) throw new AppError("Unauthorized", 401);
+
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    successResponse(res, await getAvailableCartCoupons(customerProfile.id), "Available coupons fetched");
+});
 
 export const applyCouponHandler = asyncHandler(
     async (req: Request, res: Response) => {

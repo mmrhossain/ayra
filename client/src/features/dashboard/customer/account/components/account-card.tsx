@@ -38,6 +38,7 @@ export function AccountCard({
         <div className="flex min-w-0 items-center gap-4 sm:gap-5">
           <UserAvatar
             src={displayImage}
+            sizes="(min-width: 640px) 80px, 64px"
             name={name}
             className="h-16 w-16 border-2 border-white shadow-md sm:h-20 sm:w-20"
             iconSize={32}

@@ -28,7 +28,7 @@ const Header: React.FC = () => {
           <div className="hidden sm:flex">
             <RxDividerVertical size={28} />
 
-            <Link
+            <Link prefetch={false}
               href="/customer/orders"
               className="flex items-center gap-1.5 hover:underline text-light-color hover:text-white"
             >

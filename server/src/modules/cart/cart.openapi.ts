@@ -96,6 +96,23 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/api/v1/cart/coupons",
+  tags: [TAG],
+  summary: "List available coupons for the customer's cart",
+  security: bearerAuth,
+  responses: {
+    200: successResponse("Available coupons fetched", z.array(z.object({
+      code: z.string(),
+      name: z.string(),
+      discountType: z.enum(["PERCENTAGE", "FIXED_AMOUNT", "FREE_SHIPPING"]),
+      discountAmount: z.number(),
+    }))),
+    ...errorResponses(401, 403),
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/api/v1/cart/coupon",
   tags: [TAG],

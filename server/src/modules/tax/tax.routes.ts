@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "../../common/middleware/auth.middlewar
 import { asyncHandler } from "../../common/utils/asyncHandler.ts";
 import { requireParam } from "../../common/utils/requireParam.ts";
 import { successResponse } from "../../common/utils/response.ts";
-import { getTaxClasses, saveTaxClass } from "./tax.service.ts";
+import { deleteTaxClass, getTaxClasses, saveTaxClass } from "./tax.service.ts";
 
 const router = Router();
 const schema = z.object({
@@ -23,8 +23,8 @@ router.post("/admin/tax-classes", ...admin, asyncHandler(async (req, res) => {
 router.put("/admin/tax-classes/:id", ...admin, asyncHandler(async (req, res) => {
   successResponse(res, await saveTaxClass(schema.partial().parse(req.body), requireParam(req.params.id, "id")), "Tax class updated");
 }));
-// Deactivate classes instead of deleting reference data assigned to products.
 router.delete("/admin/tax-classes/:id", ...admin, asyncHandler(async (req, res) => {
-  successResponse(res, await saveTaxClass({ isActive: false }, requireParam(req.params.id, "id")), "Tax class deactivated");
+  await deleteTaxClass(requireParam(req.params.id, "id"));
+  successResponse(res, null, "Tax class deleted");
 }));
 export default router;

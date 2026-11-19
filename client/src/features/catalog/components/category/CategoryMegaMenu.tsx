@@ -62,7 +62,7 @@ function CategoryTree({ categories, allCategories, onSelect, level = 0 }: Catego
 
         return (
           <div key={category?.id}>
-            <Link
+            <Link prefetch={false}
               href={categoryHref(allCategories, category)}
               onClick={() => onSelect(category?.name)}
               className="flex items-center justify-between gap-2 rounded-sm px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary"
@@ -120,7 +120,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
   }, [categories, activeId]);
 
   return (
-    <div className="absolute top-full left-0 z-40 pt-2 opacity-0 invisible translate-y-1 transition-all duration-200 ease-out group-hover/cat:opacity-100 group-hover/cat:visible group-hover/cat:translate-y-0">
+    <div className="absolute top-full left-0 z-40 pt-2 opacity-0 invisible translate-y-1 transition-all duration-200 ease-out group-hover/cat:opacity-100 group-hover/cat:visible group-hover/cat:translate-y-0 group-focus-within/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:translate-y-0">
       <div className="flex min-h-[300px] w-[620px] overflow-hidden rounded-md border border-slate-100 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.18)]">
         {/* Left Categories Column with Scrollbar */}
         <div className="w-[230px] shrink-0 border-r border-slate-100 bg-slate-50/80 py-3 max-h-[420px] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
@@ -128,7 +128,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
             Collections
           </p>
 
-          <Link
+          <Link prefetch={false}
             href="/shop"
             onClick={() => onSelect("All Categories")}
             className="mx-2 mb-1 flex items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-white"
@@ -140,7 +140,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
             const isActive = cat.id === active?.id;
 
             return (
-              <Link
+              <Link prefetch={false}
                 key={cat.id}
                 href={categoryHref(categories, cat)}
                 onMouseEnter={() => setActiveId(cat.id)}
@@ -198,7 +198,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
                   </h3>
                 </div>
 
-                <Link
+                <Link prefetch={false}
                   href={categoryHref(categories, active)}
                   onClick={() => onSelect(active.name)}
                   className="text-xs font-bold uppercase tracking-wider text-primary hover:underline shrink-0"

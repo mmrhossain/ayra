@@ -8,6 +8,13 @@ export type { Envelope } from "@/lib/api/http";
 export type CartLine = AuthCartLine;
 export type CartSnapshot = AuthCartSnapshot;
 
+export type AvailableCartCoupon = {
+  code: string;
+  name: string;
+  discountType: "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING";
+  discountAmount: number;
+};
+
 export type CartItemAttribute = {
   name: string;
   value: string;

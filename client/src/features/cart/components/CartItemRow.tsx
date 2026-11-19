@@ -3,19 +3,14 @@
 import QuantityStepper from "@/components/shared/quantity-stepper";
 import StoreImage from "@/components/shared/store-image";
 import { variantMetaFromSku } from "@/features/cart/lib/variant-meta";
+import { CartItem } from "@/features/cart/types";
 import { formatPrice } from "@/helpers";
 import { cn } from "@/lib/utils";
-import { CartItem } from "@/features/cart/types";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 
 function imageSrc(src?: string | null): string {
-  if (
-    src &&
-    (src.startsWith("http://") ||
-      src.startsWith("https://") ||
-      src.startsWith("/"))
-  ) {
+  if (src && (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/"))) {
     return src;
   }
   return "/images/placeholder/product_placeholder.jpg";
@@ -50,10 +45,7 @@ const CartItemRow = ({
 
   return (
     <article
-      className={cn(
-        "flex min-w-0 items-start gap-2.5 py-4 sm:gap-4 sm:py-5 md:gap-5",
-        className,
-      )}
+      className={cn("flex min-w-0 items-start gap-2.5 py-4 sm:gap-4 sm:py-5 md:gap-5", className)}
     >
       <Link
         href={href}
@@ -63,6 +55,7 @@ const CartItemRow = ({
           src={imageSrc(item.productImage)}
           alt={item.productName || ""}
           fill
+          loading="eager"
           sizes="(max-width: 400px) 64px, (max-width: 640px) 80px, (max-width: 768px) 110px, 124px"
           className="object-contain"
         />
@@ -89,28 +82,22 @@ const CartItemRow = ({
             ) : (
               <>
                 {meta.size ? (
-                  <p className="mt-0.5 text-xs text-sky-color sm:text-sm">
-                    Size: {meta.size}
-                  </p>
+                  <p className="mt-0.5 text-xs text-sky-color sm:text-sm">Size: {meta.size}</p>
                 ) : null}
                 {meta.color ? (
-                  <p className="text-xs text-sky-color sm:text-sm">
-                    Color: {meta.color}
-                  </p>
+                  <p className="text-xs text-sky-color sm:text-sm">Color: {meta.color}</p>
                 ) : null}
               </>
             )}
             {item.sku ? (
-              <p className="mt-0.5 text-xs text-sky-color sm:text-sm">
-                SKU: {item.sku}
-              </p>
+              <p className="mt-0.5 break-all text-xs text-sky-color sm:text-sm">SKU: {item.sku}</p>
             ) : null}
           </div>
           <button
             type="button"
             onClick={onRemove}
             aria-label={`Remove ${item.productName || "item"}`}
-            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-danger transition-colors hover:bg-danger/10 sm:h-9 sm:w-9"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-danger transition-colors hover:bg-danger/10"
           >
             <Trash2 size={16} />
           </button>

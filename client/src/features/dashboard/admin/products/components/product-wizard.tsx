@@ -85,7 +85,7 @@ function validateVariants(rows: VariantRow[], selected: SelectedAttribute[]): Va
       const compare = Number(row.compareAtPrice);
       if (!Number.isFinite(compare) || compare < price) next.compareAtError = "Compare-at price cannot be below selling price";
     }
-    if (row.costPrice.trim()) {
+    if (row.costPrice?.trim()) {
       const cost = Number(row.costPrice);
       if (!Number.isFinite(cost) || cost < 0) {
         next.costError = "Buying cost must be zero or greater";

@@ -44,7 +44,7 @@ export default function ProductCard({
 
   return (
     <div className={productCardShell}>
-      <Link href={href} className="relative block h-full w-full">
+      <Link prefetch={false} href={href} className="relative block h-full w-full">
         <div className={productCardMedia}>
           <StoreImage
             src={imageSrc(product)}

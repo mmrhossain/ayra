@@ -66,8 +66,8 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
+        <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Select
             value={status || "__all__"}
             onValueChange={(v) => {
@@ -76,7 +76,7 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
             }}
           >
             <SelectTrigger
-              className="w-full sm:w-52"
+              className="w-full min-w-0"
               aria-label="Filter by status"
             >
               <SelectValue placeholder="All statuses" />
@@ -98,7 +98,7 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
             }}
           >
             <SelectTrigger
-              className="w-full sm:w-44"
+              className="w-full min-w-0"
               aria-label="Filter by method"
             >
               <SelectValue placeholder="All methods" />
@@ -120,7 +120,7 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
               setPage(1);
             }}
             aria-label="From date"
-            className="w-full sm:w-40"
+            className="w-full min-w-0"
           />
           <Input
             type="date"
@@ -130,7 +130,7 @@ export function PaymentTable({ initialData }: PaymentTableProps) {
               setPage(1);
             }}
             aria-label="To date"
-            className="w-full sm:w-40"
+            className="w-full min-w-0"
           />
         </div>
         <p className="text-sm text-muted-foreground">

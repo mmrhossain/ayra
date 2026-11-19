@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { profileImageUrl } from "@/lib/profile-image";
 import { UserRound } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -11,6 +12,7 @@ type UserAvatarProps = {
   className?: string;
   iconSize?: number;
   showInitials?: boolean;
+  sizes?: string;
 };
 
 function getInitials(name?: string | null): string {
@@ -27,6 +29,7 @@ export function UserAvatar({
   className,
   iconSize = 22,
   showInitials = false,
+  sizes = "40px",
 }: UserAvatarProps) {
   const [imageError, setImageError] = useState(false);
 
@@ -45,13 +48,14 @@ export function UserAvatar({
     >
       {hasValidImage ? (
         <Image
-          src={src as string}
+          src={profileImageUrl(src as string, 256)}
           alt={name || "User avatar"}
-          fill
+          width={80}
+          height={80}
           loading="eager"
-          sizes="(max-width: 768px) 40px, 80px"
+          sizes={sizes}
           onError={() => setImageError(true)}
-          className="object-cover"
+          className="h-full w-full object-cover"
         />
       ) : initials ? (
         <span className="font-semibold text-slate-600 text-xs tracking-wider">{initials}</span>

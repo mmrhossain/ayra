@@ -164,6 +164,7 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
                     <TableCell data-label="Image">
                       <UserAvatar
                         src={user.image}
+                        sizes="(min-width: 640px) 48px, 40px"
                         name={user.name}
                         showInitials
                         iconSize={18}

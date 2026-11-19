@@ -20,7 +20,7 @@ export function HeadlineSkeleton() {
   return (
     <div className="space-y-3" aria-busy="true">
       <Skeleton className="h-3.5 w-full max-w-2xl" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         {Array.from({ length: 5 }).map((_, index) => (
           <SkeletonCard key={index} className="py-6">
             <div className="space-y-3 px-6">

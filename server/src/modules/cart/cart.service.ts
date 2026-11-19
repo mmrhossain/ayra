@@ -2,7 +2,8 @@ import { AppError } from "../../common/errors/AppError.ts";
 import { Prisma } from "../../generated/prisma/client.ts";
 import { prisma, transaction, type TransactionClient } from "../../lib/prisma.ts";
 import { getDefaultWarehouse } from "../catalog/inventory/services/inventory.service.ts";
-import { applyCouponAtomic, calculateCouponPricingForRecord } from "../coupon/coupon.service.ts";
+import { applyCouponAtomic, calculateCouponPricingForRecord, listAvailableCoupons } from "../coupon/coupon.service.ts";
+import type { CouponContext } from "../coupon/types.ts";
 import { fromMinor, toMinor } from "../order/utils/order-helpers.ts";
 import { calculateTaxTotals } from "../tax/tax-calculation.ts";
 import { getTaxClasses } from "../tax/tax.service.ts";
@@ -389,37 +390,52 @@ export const clearCart = async (customerProfileId: string) => {
   });
 };
 
+const couponCartInclude = {
+  items: {
+    include: {
+      variant: {
+        select: { price: true, product: { select: { categoryId: true } } },
+      },
+    },
+  },
+} as const;
+
+const getCouponContext = (items: Prisma.CartGetPayload<{ include: typeof couponCartInclude }>["items"]): CouponContext => {
+  const lines = items.map(item => ({
+    productId: item.productId,
+    categoryId: item.variant.product.categoryId,
+    subtotal: Number(item.variant.price) * item.quantity,
+  }));
+  return {
+    subtotal: lines.reduce((sum, line) => sum + line.subtotal, 0),
+    productIds: lines.map(line => line.productId),
+    productCategoryIds: lines.map(line => line.categoryId),
+    lines,
+  };
+};
+
+export const getAvailableCartCoupons = async (customerProfileId: string) => {
+  const cart = await prisma.cart.findFirst({
+    where: { customerProfileId, status: "ACTIVE" },
+    include: couponCartInclude,
+  });
+  return cart?.items.length ? listAvailableCoupons(customerProfileId, getCouponContext(cart.items)) : [];
+};
+
 export const applyCoupon = async (customerProfileId: string, code: string) => {
   return transaction(async (tx) => {
     const locked = await lockActiveCart(tx, customerProfileId);
     if (!locked) throw new AppError("Cart is empty", 400);
     const cart = await tx.cart.findUniqueOrThrow({
       where: { id: locked.id },
-      include: {
-        items: {
-          include: {
-            variant: {
-              select: { price: true, product: { select: { categoryId: true } } },
-            },
-          },
-        },
-      },
+      include: couponCartInclude,
     });
     if (cart.items.length === 0) throw new AppError("Cart is empty", 400);
-
-    const productIds = cart.items.map((i) => i.productId);
-    const productCategoryIds = cart.items.map((item) => item.variant.product.categoryId);
-    const subtotal = cart.items.reduce((s, i) => s + Number(i.variant.price) * i.quantity, 0);
-    const lines = cart.items.map((item) => ({
-      productId: item.productId,
-      categoryId: item.variant.product.categoryId,
-      subtotal: Number(item.variant.price) * item.quantity,
-    }));
 
     const { coupon, discountAmount } = await applyCouponAtomic(
       code,
       customerProfileId,
-      { subtotal, productIds, productCategoryIds, lines },
+      getCouponContext(cart.items),
       tx
     );
 

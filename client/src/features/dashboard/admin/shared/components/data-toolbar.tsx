@@ -45,20 +45,20 @@ export function DataToolbar({
   }, [debounced]);
 
   return (
-    <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
+    <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
       <Input
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
         aria-label={searchLabel}
-        className="w-full lg:max-w-sm"
+        className="w-full xl:w-auto xl:min-w-48 xl:flex-1 xl:max-w-sm"
       />
       {filters ? (
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {filters}
         </div>
       ) : null}
-      <div className="flex flex-wrap items-center gap-3 lg:ml-auto">
+      <div className="flex flex-wrap items-center gap-3 xl:ml-auto">
         {countLabel ? (
           <p className="text-sm text-muted-foreground">{countLabel}</p>
         ) : null}

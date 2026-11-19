@@ -76,7 +76,8 @@ export default function StorefrontChat() {
 
   return (
     <div
-      className={`fixed right-4 z-[9999] md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_5rem)] lg:bottom-24 transition-all duration-500 ${
+      data-storefront-chat
+      className={`fixed right-4 z-40 md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_5rem)] lg:bottom-24 transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
       }`}
     >
@@ -85,7 +86,7 @@ export default function StorefrontChat() {
           role="dialog"
           aria-modal="false"
           aria-labelledby={titleId}
-          className="mb-3 flex h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),24rem)] flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
+          className="mb-3 flex h-[min(28rem,calc(100dvh-var(--bottom-nav-space)-var(--sticky-cart-space)-10rem))] w-[min(calc(100vw-2rem),24rem)] flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
         >
           <div className="flex items-center justify-between gap-3 border-b border-border bg-slate-900 px-4 py-3 text-white">
             <p id={titleId} className="text-sm font-semibold">

@@ -105,7 +105,7 @@ export function KpiGrid({
         . Sales use delivery date; returns use approval date; cash uses payment
         and refund dates. Timezone: {data.timezone}. Data as of {generatedAt}.
       </p>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         {kpis.map((kpi) => {
           const delta = percentChange(kpi.value, kpi.previous);
           const good =

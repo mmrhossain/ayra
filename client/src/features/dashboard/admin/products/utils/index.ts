@@ -172,11 +172,12 @@ export function variantsFromProduct(product?: ProductDetail): VariantRow[] {
       skuEdited: true,
       lastSuggested: variant.sku,
       price: String(variant.price ?? ""),
-      compareAtPrice: variant.compareAtPrice == null ? "" : String(variant.compareAtPrice),
-      costPrice:
-        variant.costPrice === null || variant.costPrice === undefined
-          ? ""
-          : String(variant.costPrice),
+      ...(variant.compareAtPrice !== undefined && {
+        compareAtPrice: variant.compareAtPrice === null ? "" : String(variant.compareAtPrice),
+      }),
+      ...(variant.costPrice !== undefined && {
+        costPrice: variant.costPrice === null ? "" : String(variant.costPrice),
+      }),
       isDefault: Boolean(variant.isDefault),
       attributeValueIds: ids,
       label,

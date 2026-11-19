@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
-import ProductCard from "@/features/catalog/components/product/ProductCard";
 import type { ProductListItem } from "@/features/catalog/api";
+import ProductCard from "@/features/catalog/components/product/ProductCard";
+import { cn } from "@/lib/utils";
 
 export default function ProductGrid({
   items,
@@ -19,11 +19,7 @@ export default function ProductGrid({
       )}
     >
       {items.map((item, index) => (
-        <ProductCard
-          key={item.id}
-          product={item}
-          eagerImage={eagerFirstImage && index === 0}
-        />
+        <ProductCard key={item.id} product={item} eagerImage={eagerFirstImage && index === 0} />
       ))}
     </div>
   );

@@ -45,13 +45,13 @@ const About = () => {
       </section>
 
       <section className="py-16 md:py-24 lg:py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16 lg:gap-24 items-center">
+        <div className="grid min-w-0 grid-cols-1 items-center gap-10 md:gap-16 lg:grid-cols-12 lg:gap-10 xl:gap-16">
           <motion.div
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
             viewport={{ once: true }}
-            className="lg:col-span-5 order-2 lg:order-1"
+            className="order-2 min-w-0 lg:order-1 lg:col-span-5"
           >
             <div className="space-y-6 md:space-y-8">
               <Theater className="text-primary w-10 h-10 md:w-12 md:h-12 stroke-[1px]" />
@@ -71,7 +71,7 @@ const About = () => {
             </div>
           </motion.div>
 
-          <div className="lg:col-span-7 order-1 lg:order-2">
+          <div className="order-1 min-w-0 lg:order-2 lg:col-span-7">
             <div className="relative aspect-[16/10] bg-bg-primary rounded-md overflow-hidden group shadow-2xl">
               <div className="absolute inset-0 bg-teal-900/10 group-hover:bg-transparent transition-colors duration-700" />
               <div className="absolute inset-0 flex items-center justify-center">

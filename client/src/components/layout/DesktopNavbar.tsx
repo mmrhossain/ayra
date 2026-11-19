@@ -4,7 +4,7 @@ import { ChevronDown, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import SearchBox from "@/components/shared/SearchBox";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -15,7 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SITE_LOGO } from "@/config/site";
-import CategoryMegaMenu from "@/features/catalog/components/category/CategoryMegaMenu";
+import { isCloudinaryUrl } from "@/helpers/cloudinary";
+import dynamic from "next/dynamic";
 import { CategoryListItem } from "@/features/catalog/types";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { successToast } from "@/helpers";
@@ -25,13 +26,16 @@ import { staffDashboardPath, staffShoppingRedirect } from "@/lib/api/auth/roles"
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
 
-const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
+const CategoryMegaMenu = dynamic(() => import("@/features/catalog/components/category/CategoryMegaMenu"), { ssr: false });
+
+const DeskTopNavbar = ({ categories, actions }: { categories: CategoryListItem[]; actions?: ReactNode }) => {
   const { store } = usePublicSettings();
   const cartCount = useHydratedStore(useCartStore, (s) => s.cartCount, 0);
   const wishCount = useHydratedStore(useWishStore, (s) => s.wishCount, 0);
   const router = useRouter();
 
   const [selectedCatName, setSelectedCatName] = useState("All Categories");
+  const [categoryMenuReady, setCategoryMenuReady] = useState(false);
 
   const { data, isPending } = authClient.useSession();
   const user = data?.user;
@@ -56,7 +60,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
     <div className="container hidden min-w-0 items-center gap-4 py-2 lg:flex xl:gap-6">
       {/* 1. Logo */}
       <div className="flex h-9 w-[120px] shrink-0 items-center xl:w-[130px]">
-        <Link
+        <Link prefetch={false}
           href="/"
           className="relative block h-9 w-full"
           aria-label={`${store.name} Home`}
@@ -64,7 +68,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
           <Image
             src={store.logoUrl || SITE_LOGO}
             alt={store.name}
-            unoptimized
+            unoptimized={Boolean(store.logoUrl && !isCloudinaryUrl(store.logoUrl))}
             fill
             priority
             sizes="120px"
@@ -77,7 +81,11 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
       <div className="min-w-0 flex-1">
         <div className="flex h-12 items-center rounded-sm border border-gray-200">
           {/* Category Selector */}
-          <div className="group/cat relative h-full w-[140px] min-w-0 shrink-0 border-r border-gray-200 bg-white xl:w-[180px]">
+          <div
+            onPointerEnter={() => setCategoryMenuReady(true)}
+            onFocusCapture={() => setCategoryMenuReady(true)}
+            className="group/cat relative h-full w-[140px] min-w-0 shrink-0 border-r border-gray-200 bg-white xl:w-[180px]"
+          >
             <button
               type="button"
               className="flex h-full w-full items-center justify-between px-4 text-sm font-medium text-foreground"
@@ -90,7 +98,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
               />
             </button>
 
-            <CategoryMegaMenu categories={categories ?? []} onSelect={setSelectedCatName} />
+            {categoryMenuReady && <CategoryMegaMenu categories={categories ?? []} onSelect={setSelectedCatName} />}
           </div>
 
           {/* Search Input */}
@@ -103,7 +111,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
       {/* 3. Right Icons & Actions */}
       <div className="flex shrink-0 items-center gap-2 xl:gap-4">
         {/* Wishlist */}
-        <Link
+        <Link prefetch={false}
           href={shoppingHref ?? "/customer/wish-list"}
           className="group relative flex items-center gap-2"
         >
@@ -120,7 +128,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
         </Link>
 
         {/* Cart */}
-        <Link href={shoppingHref ?? "/cart"} className="group flex items-center gap-3">
+        <Link prefetch={false} href={shoppingHref ?? "/cart"} className="group flex items-center gap-3">
           <div className="relative p-2">
             <ShoppingBag
               size={24}
@@ -132,6 +140,8 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
             </span>
           </div>
         </Link>
+
+        {actions}
 
         {/* Account */}
         <div className="group min-w-0 shrink-0 cursor-pointer xl:w-[200px] xl:border-r xl:border-gray-100 xl:pr-6">
@@ -168,7 +178,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
                   asChild
                   className="cursor-pointer hover:bg-primary hover:text-white"
                 >
-                  <Link href={getAccountHref()}>
+                  <Link prefetch={false} href={getAccountHref()}>
                     {staffDashboardPath(user?.role) ? "Dashboard" : "My Account"}
                   </Link>
                 </DropdownMenuItem>
@@ -182,7 +192,7 @@ const DeskTopNavbar = ({ categories }: { categories: CategoryListItem[] }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link href="/login" className="flex w-full shrink-0 items-center gap-3">
+            <Link prefetch={false} href="/login" className="flex w-full shrink-0 items-center gap-3">
               <UserAvatar className="h-10 w-10 shrink-0" iconSize={22} />
 
               <div className="hidden min-w-0 flex-col items-start truncate text-left xl:flex">

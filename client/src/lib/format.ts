@@ -2,6 +2,10 @@ export function formatPrice(value: number): string {
   return `Tk ${Math.floor(value)}`;
 }
 
+export function formatPriceWithDecimals(value: number): string {
+  return `Tk ${value.toFixed(2)}`;
+}
+
 export function formatMoney(
   value: number | string | null | undefined,
 ): string {

@@ -5,6 +5,7 @@ import { fromMinor, toMinor } from "../order/utils/order-helpers.ts";
 import { Prisma } from "../../generated/prisma/client.ts";
 import type {
   CouponContext,
+  CouponLine,
   CouponRecord,
   CouponSnapshot,
   CreateCouponInput,
@@ -49,13 +50,22 @@ const loadCouponRestrictions = async (
   couponId: string,
 ): Promise<CouponRestrictions> => {
   const rows = await db.$queryRaw<Array<{ kind: string; id: string }>>`
+    WITH RECURSIVE eligible_categories(id) AS (
+      SELECT "categoryId"
+      FROM "coupon_category"
+      WHERE "couponId" = ${couponId}
+      UNION
+      SELECT child.id
+      FROM "category" AS child
+      JOIN eligible_categories AS parent ON child."parentId" = parent.id
+      WHERE child."deletedAt" IS NULL
+    )
     SELECT 'product' AS kind, "productId" AS id
     FROM "coupon_product"
     WHERE "couponId" = ${couponId}
     UNION ALL
-    SELECT 'category', "categoryId"
-    FROM "coupon_category"
-    WHERE "couponId" = ${couponId}
+    SELECT 'category', id
+    FROM eligible_categories
   `;
   const productIds = new Set<string>();
   const categoryIds = new Set<string>();
@@ -66,44 +76,37 @@ const loadCouponRestrictions = async (
   return { productIds, categoryIds };
 };
 
+const isRestricted = ({ productIds, categoryIds }: CouponRestrictions) =>
+  productIds.size > 0 || categoryIds.size > 0;
+
+const isEligibleLine = (restrictions: CouponRestrictions, line: CouponLine) =>
+  !isRestricted(restrictions) ||
+  restrictions.productIds.has(line.productId) ||
+  restrictions.categoryIds.has(line.categoryId);
+
 const assertCouponApplicable = (
   restrictions: CouponRestrictions,
   ctx: CouponContext,
 ) => {
-  if (restrictions.productIds.size > 0) {
-    const match = ctx.productIds.some((id) => restrictions.productIds.has(id));
-    if (!match) {
-      throw new AppError("Coupon is not applicable to the items in the cart", 400);
-    }
-  }
-  if (restrictions.categoryIds.size > 0) {
-    const match = ctx.productCategoryIds.some((id) => restrictions.categoryIds.has(id));
-    if (!match) {
-      throw new AppError("Coupon is not applicable to the items in the cart", 400);
-    }
-  }
+  if (!isRestricted(restrictions)) return;
+  const match = ctx.lines
+    ? ctx.lines.some(line => isEligibleLine(restrictions, line))
+    : ctx.productIds.some(id => restrictions.productIds.has(id)) ||
+      ctx.productCategoryIds.some(id => restrictions.categoryIds.has(id));
+  if (!match) throw new AppError("Coupon is not applicable to the items in the cart", 400);
 };
 
 const eligibleSubtotalMinorFromRestrictions = (
   restrictions: CouponRestrictions,
   ctx: CouponContext,
 ) => {
-  const restricted =
-    restrictions.productIds.size > 0 || restrictions.categoryIds.size > 0;
-  if (!restricted) {
+  if (!isRestricted(restrictions)) {
     return toMinor(ctx.subtotal);
   }
-  if (!ctx.lines || ctx.lines.length === 0) {
-    return 0;
-  }
-
-  return ctx.lines.reduce((sum, line) => {
-    const productMatch =
-      restrictions.productIds.size === 0 || restrictions.productIds.has(line.productId);
-    const categoryMatch =
-      restrictions.categoryIds.size === 0 || restrictions.categoryIds.has(line.categoryId);
-    return productMatch && categoryMatch ? sum + toMinor(line.subtotal) : sum;
-  }, 0);
+  return (ctx.lines ?? []).reduce(
+    (sum, line) => sum + (isEligibleLine(restrictions, line) ? toMinor(line.subtotal) : 0),
+    0,
+  );
 };
 
 const calculateDiscount = (
@@ -132,10 +135,7 @@ const calculateDiscount = (
 };
 
 const discountEligibility = (restrictions: CouponRestrictions, ctx: CouponContext) =>
-  (ctx.lines ?? []).map(line =>
-    (restrictions.productIds.size === 0 || restrictions.productIds.has(line.productId)) &&
-    (restrictions.categoryIds.size === 0 || restrictions.categoryIds.has(line.categoryId)),
-  );
+  (ctx.lines ?? []).map(line => isEligibleLine(restrictions, line));
 
 export const calculateCouponPricingForRecord = async (
   db: Pick<TransactionClient, "$queryRaw">, coupon: CouponRecord, ctx: CouponContext,
@@ -282,6 +282,33 @@ export const validateCouponCode = async (
   );
 
   return { coupon, discountAmount };
+};
+
+export const listAvailableCoupons = async (customerProfileId: string, ctx: CouponContext) => {
+  const now = new Date();
+  const coupons = await prisma.coupon.findMany({
+    where: {
+      deletedAt: null,
+      isActive: true,
+      status: "ACTIVE",
+      startsAt: { lte: now },
+      expiresAt: { gte: now },
+    },
+    orderBy: [{ expiresAt: "asc" }, { code: "asc" }],
+  });
+
+  const offers = [];
+  for (const coupon of coupons) {
+    try {
+      const discountAmount = await validateCouponRow(toCouponSnapshot(coupon), customerProfileId, ctx);
+      if (discountAmount > 0 || coupon.discountType === "FREE_SHIPPING") {
+        offers.push({ code: coupon.code, name: coupon.name, discountType: coupon.discountType, discountAmount });
+      }
+    } catch (error) {
+      if (!(error instanceof AppError && error.statusCode === 400)) throw error;
+    }
+  }
+  return offers;
 };
 
 export const applyCouponAtomic = async (

@@ -2,48 +2,32 @@
 
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 export const ScrollToTop: React.FC = () => {
-    const [show, setShow] = useState<boolean>(false);
-    const shouldReduceMotion = useReducedMotion();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => setShow(window.scrollY > 200);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    const scrollToTop = (): void => {
-        window.scrollTo({ top: 0, behavior: shouldReduceMotion ? "auto" : "smooth" });
-    };
-
-    useEffect(() => {
-        const handleScroll = (): void => {
-            setShow(window.scrollY > 200); // show after 200px scroll
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    return (
-        <AnimatePresence>
-            {show && (
-                <motion.button
-                    key="scroll-btn"
-                    initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
-                    transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: "easeInOut" }}
-                    onClick={scrollToTop}
-                    aria-label="Scroll to top"
-                    className="
-            fixed right-4 md:right-6
-            bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_9rem)] lg:bottom-40
-            rounded-full h-11 w-11 bg-gray-800 text-white shadow-lg
-            flex items-center justify-center
-            z-[9998] hover:bg-gray-700
-            transition-all duration-300 active:scale-95
-          "
-                >
-                    <ArrowUp className="w-5 h-5 md:w-6 md:h-6" />
-                </motion.button>
-            )}
-        </AnimatePresence>
-    );
+  return (
+    <button
+      type="button"
+      aria-label="Scroll to top"
+      aria-hidden={!show}
+      tabIndex={show ? 0 : -1}
+      disabled={!show}
+      onClick={() => window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      })}
+      className={
+        "fixed right-4 md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_9rem)] lg:bottom-40 rounded-full h-11 w-11 bg-gray-800 text-white shadow-lg flex items-center justify-center z-[9998] hover:bg-gray-700 transition-all duration-[250ms] ease-in-out active:scale-95 motion-reduce:transition-none motion-reduce:transform-none " +
+        (show ? "visible translate-y-0 opacity-100" : "invisible translate-y-[60px] opacity-0 pointer-events-none")
+      }
+    >
+      <ArrowUp className="w-5 h-5 md:w-6 md:h-6" />
+    </button>
+  );
 };

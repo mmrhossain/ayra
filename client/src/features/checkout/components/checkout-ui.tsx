@@ -92,7 +92,7 @@ export function CheckoutSelect({
   return (
     <div className="min-w-0">
       <Select
-        value={value || undefined}
+        value={value ?? ""}
         onValueChange={onValueChange}
         disabled={disabled}
       >

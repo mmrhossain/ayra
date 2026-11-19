@@ -347,7 +347,7 @@ html body[data-scroll-locked][style] {
   color: var(--muted-foreground);
 }
 
-@media (max-width: 47.5rem) {
+@media (width < 48rem) {
   .responsive-table thead {
     position: absolute;
     width: 1px;
@@ -540,4 +540,49 @@ html body[data-scroll-locked][style] {
     display: none;
     animation: none;
   }
+}
+
+/* Keep editor inputs and their validation together when tables stack on phones. */
+@media (width < 48rem) {
+  .responsive-editor-table { display: block; }
+  .responsive-editor-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .responsive-editor-table tbody { display: block; padding: 0.75rem; }
+  .responsive-editor-table tbody tr {
+    display: block;
+    padding-block: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+  .responsive-editor-table tbody td { display: block; padding: 0.5rem 0; }
+  .responsive-editor-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.375rem;
+    font-weight: 500;
+  }
+  .responsive-editor-table tbody input:not([type="radio"]) { width: 100%; min-width: 0; }
+  .responsive-editor-table tbody label { min-height: 2.75rem; }
+  .responsive-editor-table tfoot { display: table; width: 100%; }
+}
+
+/* Floating storefront widgets must remain behind open dialogs and drawers. */
+body:has([data-slot="dialog-overlay"][data-state="open"], [data-slot="sheet-overlay"][data-state="open"]) [data-storefront-chat] {
+  visibility: hidden;
+}
+
+/* Hero entrances start before JavaScript hydration. */
+@keyframes hero-content-enter {
+  from { opacity: 0; transform: translateY(var(--hero-enter-y, 20px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-title-enter { animation: hero-content-enter 0.6s ease-out 0.25s both; }
+.hero-cta-enter { --hero-enter-y: 15px; animation: hero-content-enter 0.5s ease-out 0.4s both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-enter, .hero-cta-enter { animation: none; }
 }

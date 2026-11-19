@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-
 import { OrdersStatusBreakdown } from "@/features/dashboard/admin/orders/components/orders-status";
 import { fetchOrderList } from "@/features/dashboard/admin/orders/api/orders";
 import {
@@ -16,12 +14,6 @@ import { DetailedMetrics } from "@/features/dashboard/admin/overview/components/
 import { KpiGrid } from "@/features/dashboard/admin/overview/components/kpi-grid";
 import { OverviewRangeFilter } from "@/features/dashboard/admin/overview/components/overview-range-filter";
 import {
-  ChartSkeleton,
-  DetailedMetricsSkeleton,
-  HeadlineSkeleton,
-  OrdersStatusSkeleton,
-  RecentOrdersSkeleton,
-  TopProductsSkeleton,
   OverviewError,
 } from "@/features/dashboard/admin/overview/components/overview-states";
 import { RecentOrders } from "@/features/dashboard/admin/overview/components/recent-orders";
@@ -85,11 +77,10 @@ async function HeadlineSection({
     return <OverviewError message={toErrorMessage(err)} />;
   }
 
+  const kpis = await PreviousHeadlineKpis({ query, data });
   return (
     <>
-      <Suspense fallback={<KpiGrid data={data} previous={null} />}>
-        <PreviousHeadlineKpis query={query} data={data} />
-      </Suspense>
+      {kpis}
       <AttentionStrip data={data} access={access} />
     </>
   );
@@ -179,6 +170,14 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
   const session = await requireAdminPageAccess("/admin", redirectQuery);
   const access = toAdminAccess(session.user);
   const overview = fetchOverview(query);
+  const [headline, sales, recentOrders, ordersStatus, topProducts, detailed] = await Promise.all([
+    HeadlineSection({ query, overview, access }),
+    SalesSection({ query, range }),
+    RecentOrdersSection(),
+    OrdersStatusSection({ query }),
+    TopProductsSection({ query }),
+    DetailedSection({ overview }),
+  ]);
 
   return (
     <section className="min-w-0 space-y-6">
@@ -188,33 +187,21 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
         actions={<OverviewRangeFilter />}
       />
 
-      <Suspense fallback={<HeadlineSkeleton />}>
-        <HeadlineSection query={query} overview={overview} access={access} />
-      </Suspense>
+      {headline}
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
-        <Suspense fallback={<ChartSkeleton />}>
-          <SalesSection query={query} range={range} />
-        </Suspense>
+        {sales}
 
-        <Suspense fallback={<RecentOrdersSkeleton />}>
-          <RecentOrdersSection />
-        </Suspense>
+        {recentOrders}
       </div>
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
-        <Suspense fallback={<OrdersStatusSkeleton />}>
-          <OrdersStatusSection query={query} />
-        </Suspense>
+        {ordersStatus}
 
-        <Suspense fallback={<TopProductsSkeleton />}>
-          <TopProductsSection query={query} />
-        </Suspense>
+        {topProducts}
       </div>
 
-      <Suspense fallback={<DetailedMetricsSkeleton />}>
-        <DetailedSection overview={overview} />
-      </Suspense>
+      {detailed}
     </section>
   );
 }

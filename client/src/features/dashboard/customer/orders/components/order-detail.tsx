@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  formatCheckoutAddress,
-  pickOrderAddress,
-} from "@/features/dashboard/customer/orders/api/orders";
+import { OrderInvoice } from "./order-invoice";
 import { CancelOrderDialog } from "@/features/dashboard/customer/orders/components/cancel-order-dialog";
 import { OrderStatusPreview } from "@/features/dashboard/customer/orders/components/order-status-preview";
 import { OrderDetailSkeleton } from "@/features/dashboard/customer/orders/components/order-detail-skeleton";
@@ -18,7 +15,6 @@ import { toCustomerApiError } from "@/features/dashboard/customer/orders/utils";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { errorToast, statusColor } from "@/helpers";
 import { formatPrice } from "@/lib/format";
-import clsx from "clsx";
 import {
   ChevronLeft,
   CreditCard,
@@ -63,16 +59,6 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
   }
 
   const items = currentOrder.items || [];
-  const subtotal = Number(currentOrder.subtotal ?? 0);
-  const shipping = Number(currentOrder.shippingAmount ?? 0);
-  const vat = Number(currentOrder.taxAmount ?? 0);
-  const grandTotal = Number(currentOrder.grandTotal ?? 0);
-  const shippingAddress = formatCheckoutAddress(
-    pickOrderAddress(currentOrder, "SHIPPING"),
-  );
-  const billingAddress = formatCheckoutAddress(
-    pickOrderAddress(currentOrder, "BILLING"),
-  );
   const canCancel = CANCELLABLE.has(currentOrder.status);
   const canReturn =
     currentOrder.canRequestReturn ?? currentOrder.status === "DELIVERED";
@@ -112,33 +98,6 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
 
   return (
     <>
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #printable-invoice,
-          #printable-invoice * {
-            visibility: visible;
-          }
-          #printable-invoice {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-          }
-          @page {
-            margin: 15mm;
-          }
-          body {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-      `}</style>
-
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
           <button
@@ -208,141 +167,7 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
           shipments={currentOrder.shipments}
         />
 
-        <div id="printable-invoice" className="bg-card p-2 space-y-8">
-          <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:pb-8">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground lg:text-3xl">
-                {store.name.toUpperCase()}
-              </h1>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Order Number:{" "}
-                  <span className="font-bold text-foreground">
-                    #{currentOrder.orderNumber}
-                  </span>
-                </p>
-                <p>
-                  Invoice Number:{" "}
-                  <span className="font-bold text-foreground">
-                    #{currentOrder.invoiceNumber ?? currentOrder.orderNumber}
-                  </span>
-                </p>
-                <p>
-                  Date: {new Date(currentOrder.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <div className="sm:text-right">
-              <span
-                className={clsx(
-                  "px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide",
-                  statusColor(currentOrder.status),
-                )}
-              >
-                {currentOrder.status}
-              </span>
-            </div>
-          </div>
-
-          <div className="w-full space-y-4 overflow-x-auto">
-            <table className="w-full min-w-[28rem] text-sm">
-              <thead>
-                <tr className="text-muted-foreground text-xs font-semibold uppercase tracking-wide border-b border-border">
-                  <th className="text-left py-4">Item Details</th>
-                  <th className="text-right py-4">Price</th>
-                  <th className="text-right py-4">Qty</th>
-                  <th className="text-right py-4">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="py-5">
-                      <p className="font-bold text-foreground">
-                        {item.productName}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {item.sku}
-                      </p>
-                    </td>
-                    <td className="text-right py-5 text-muted-foreground">
-                      {formatPrice(Number(item.unitPrice))}
-                    </td>
-                    <td className="text-right py-5 font-medium">
-                      {item.quantity}
-                    </td>
-                    <td className="text-right py-5 font-bold text-foreground">
-                      {formatPrice(Number(item.subtotal))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="grid gap-8 border-t border-border pt-8 sm:grid-cols-2 sm:gap-10">
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wide mb-1">
-                  Payment Info
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Status: {currentOrder.paymentStatus || "PENDING"}
-                </p>
-              </div>
-              {shippingAddress ? (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wide mb-1">
-                    Shipping
-                  </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {shippingAddress}
-                  </p>
-                </div>
-              ) : null}
-              {billingAddress && billingAddress !== shippingAddress ? (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wide mb-1">
-                    Billing
-                  </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {billingAddress}
-                  </p>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold tabular-nums">{formatPrice(subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  Shipping
-                  {currentOrder.shippingMethodName
-                    ? ` (${currentOrder.shippingMethodName})`
-                    : ""}
-                </span>
-                <span className="font-semibold tabular-nums">{formatPrice(shipping)}</span>
-              </div>
-              {vat > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">VAT</span>
-                  <span className="font-semibold tabular-nums">{formatPrice(vat)}</span>
-                </div>
-              )}
-              <div className="pt-3 border-t border-primary flex justify-between items-center">
-                <span className="font-semibold text-xs uppercase tracking-tight">
-                  Amount Due
-                </span>
-                <span className="text-xl font-semibold tabular-nums text-foreground sm:text-2xl">
-                  {formatPrice(grandTotal)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OrderInvoice order={currentOrder} store={store} />
 
         {returnRequests.length > 0 ? (
           <div className="print:hidden rounded-xl border border-border p-4 sm:p-6 space-y-3">
