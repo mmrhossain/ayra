@@ -8,6 +8,7 @@ export const paymentMethodSchema = z.enum(["COD", "SSLCOMMERZ"]);
 
 export const initiatePaymentSchema = z.object({
   method: paymentMethodSchema,
+  retry: z.boolean().optional().default(false),
 });
 
 export const refundSchema = z.object({

@@ -1,5 +1,6 @@
+import { logger } from "../../../common/looger/logger.ts";
 import type { Request, Response } from "express";
-import { getSettingValue } from "../../settings/settings.service.ts";
+import { getPaymentFrontendUrl } from "../services/sslcommerz-config.service.ts";
 import { asyncHandler } from "../../../common/utils/asyncHandler.ts";
 import { requireParam } from "../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../common/utils/response.ts";
@@ -36,14 +37,15 @@ export const initiatePaymentHandler = asyncHandler(
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
         const input = initiatePaymentSchema.parse(req.body);
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
         successResponse(
             res,
             await initiatePayment(
                 customerProfile.id,
                 requireParam(req.params.orderId, "orderId"),
-                input.method
+                input.method,
+                input.retry,
             ),
             "Payment initiated",
             201
@@ -115,7 +117,7 @@ export const sslcommerzSuccessHandler = asyncHandler(
         const rawData = getRequestData(req);
         const input = sslcommerzSuccessSchema.parse(rawData);
 
-        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
+        const frontendUrl = await getPaymentFrontendUrl();
 
         try {
             const result = await handleSslcommerzSuccess(input);
@@ -124,7 +126,13 @@ export const sslcommerzSuccessHandler = asyncHandler(
             return res.redirect(
                 `${frontendUrl}/checkout/payment/success?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
             );
-        } catch {
+        } catch (error) {
+            logger.error({
+                message: "SSLCommerz success callback could not be verified or settled",
+                providerReference: input.tran_id,
+                code: error instanceof AppError ? error.code : undefined,
+                reason: error instanceof AppError ? error.message : "Unexpected payment processing error",
+            });
             return res.redirect(
                 `${frontendUrl}/checkout/payment/failed?tran_id=${encodeURIComponent(input.tran_id)}`
             );
@@ -138,7 +146,7 @@ export const sslcommerzFailHandler = asyncHandler(
         const input = sslcommerzFailCancelSchema.parse(rawData);
 
         const result = await handleSslcommerzFail(input);
-        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
+        const frontendUrl = await getPaymentFrontendUrl();
 
         return res.redirect(
             `${frontendUrl}/checkout/payment/failed?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`
@@ -152,7 +160,7 @@ export const sslcommerzCancelHandler = asyncHandler(
         const input = sslcommerzFailCancelSchema.parse(rawData);
 
         const result = await handleSslcommerzCancel(input);
-        const frontendUrl = await getSettingValue<string>("store.frontendUrl");
+        const frontendUrl = await getPaymentFrontendUrl();
 
         return res.redirect(
             `${frontendUrl}/checkout/payment/cancelled?orderId=${result.payment.orderId}&tran_id=${input.tran_id}`

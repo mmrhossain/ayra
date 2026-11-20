@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { OrderDetail } from "@/features/dashboard/customer/orders/components/order-detail";
 import {
@@ -12,14 +13,14 @@ type Props = {
 };
 
 export default async function CustomerOrderDetailPage({ params }: Props) {
-  await requireCustomer();
   const { id } = await params;
   let initial;
   let error: string | null = null;
 
   try {
-    initial = await fetchMyOrder(id);
+    [, initial] = await Promise.all([requireCustomer(), fetchMyOrder(id)]);
   } catch (err) {
+    unstable_rethrow(err);
     error = toCustomerApiError(err);
   }
 

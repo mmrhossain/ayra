@@ -27,7 +27,7 @@ export const createReviewHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = createReviewSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -62,7 +62,7 @@ export const updateReviewHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = updateReviewSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -86,7 +86,7 @@ export const deleteReviewHandler = asyncHandler(
     let ownerId = "";
 
     if (!isAdmin) {
-      const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+      const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
       ownerId = customerProfile.id;
     }
 

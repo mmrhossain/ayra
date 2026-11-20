@@ -69,6 +69,9 @@ export const listInAppNotifications = async (input: {
     ...(input.unreadOnly ? { readAt: null } : {}),
   };
 
+  const unreadCount = Promise.resolve(prisma.notification.count({
+    where: { ...inAppWhere(input.userId), readAt: null },
+  }));
   const [items, total, unread] = await Promise.all([
     prisma.notification.findMany({
       where,
@@ -84,10 +87,8 @@ export const listInAppNotifications = async (input: {
         createdAt: true,
       },
     }),
-    prisma.notification.count({ where }),
-    prisma.notification.count({
-      where: { ...inAppWhere(input.userId), readAt: null },
-    }),
+    input.unreadOnly ? unreadCount : prisma.notification.count({ where }),
+    unreadCount,
   ]);
 
   return {

@@ -22,7 +22,7 @@ import {
  */
 const resolveCustomerProfile = async (req: Request) => {
   if (!req.auth) throw new AppError("Unauthorized", 401);
-  return getOrCreateCustomerProfile(req.auth.user.id);
+  return getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 };
 
 export const getWishlistHandler = asyncHandler(async (req: Request, res: Response) => {

@@ -72,14 +72,16 @@ export const listSliders = async (query: ListSlidersQuery) => {
     ...(query.isActive !== undefined && { isActive: query.isActive }),
   };
 
-  const items = await prisma.slider.findMany({
-    where,
-    select: sliderSelect,
-    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
-    skip: (query.page - 1) * query.limit,
-    take: query.limit,
-  });
-  const total = await prisma.slider.count({ where });
+  const [items, total] = await Promise.all([
+    prisma.slider.findMany({
+      where,
+      select: sliderSelect,
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    }),
+    prisma.slider.count({ where }),
+  ]);
 
   return {
     items,

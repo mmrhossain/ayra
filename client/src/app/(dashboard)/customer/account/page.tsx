@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { AccountCard } from "@/features/dashboard/customer/account/components/account-card";
 import {
@@ -9,17 +10,18 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CustomerAccountPage() {
-  await requireCustomer();
   let initial;
   let preferences;
   let error: string | null = null;
 
   try {
-    [initial, preferences] = await Promise.all([
+    [, initial, preferences] = await Promise.all([
+      requireCustomer(),
       fetchCustomerProfile(),
       fetchNotificationPreferences(),
     ]);
   } catch (err) {
+    unstable_rethrow(err);
     error = toProfileError(err);
   }
 

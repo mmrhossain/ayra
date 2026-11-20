@@ -1,3 +1,4 @@
+import { env } from "../../../config/env.ts";
 import { AppError } from "../../../common/errors/AppError.ts";
 import { getSettingValue } from "../../settings/settings.service.ts";
 import type { GatewayUrls } from "../types.ts";
@@ -11,7 +12,7 @@ export type SslcommerzRuntimeConfig = {
   callbackBaseUrl: string;
 };
 
-const trimUrl = (value: string) => value.replace(/\/+$/, "");
+const trimUrl = (value: string) => value.trim().replace(/\/+$/, "");
 
 export const getSslcommerzRuntimeConfig =
   async (): Promise<SslcommerzRuntimeConfig> => {
@@ -22,7 +23,9 @@ export const getSslcommerzRuntimeConfig =
         getSettingValue<string>("payment.sslcommerz.sandboxStorePassword"),
         getSettingValue<string>("payment.sslcommerz.liveStoreId"),
         getSettingValue<string>("payment.sslcommerz.liveStorePassword"),
-        getSettingValue<string>("payment.callbackBaseUrl"),
+        env.isDevelopment
+          ? Promise.resolve(env.PAYMENT_CALLBACK_BASE_URL || `http://localhost:${env.PORT}`)
+          : getSettingValue<string>("payment.callbackBaseUrl"),
       ]);
 
     const storeId = mode === "sandbox" ? sandboxStoreId : liveStoreId;
@@ -55,3 +58,8 @@ export const getSslcommerzCallbackUrls = async (): Promise<GatewayUrls> => {
     ipnUrl: `${base}/ipn`,
   };
 };
+
+// Shared production settings must not redirect local payment returns to production.
+export const getPaymentFrontendUrl = async (): Promise<string> => trimUrl(
+  env.isDevelopment ? env.FRONTEND_URL : await getSettingValue<string>("store.frontendUrl"),
+);

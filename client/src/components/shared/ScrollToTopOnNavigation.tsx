@@ -1,11 +1,10 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 const ScrollToTopOnNavigation = () => {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
 
     useEffect(() => {
         window.scrollTo({
@@ -13,7 +12,7 @@ const ScrollToTopOnNavigation = () => {
             left: 0,
             behavior: "smooth",
         });
-    }, [pathname, searchParams]); // triggers on route + query change
+    }, [pathname]);
 
     return null;
 };

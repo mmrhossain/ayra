@@ -135,7 +135,35 @@ const buildAdminGroup = async (group: string): Promise<AdminSettingGroup> => {
 export const getAdminSettings = async (): Promise<AdminSettingGroup[]> =>
   Promise.all(SETTING_GROUPS.map((group) => buildAdminGroup(group.key)));
 
+// Populate the existing per-key cache in one read on a cold storefront request.
+// Keep the same parsing, defaults, TTL, and update invalidation as individual reads.
+const loadPublicSettings = async () => {
+  const keys = [
+    "store.name", "store.supportEmail", "store.supportPhone", "store.address",
+    "store.logoUrl", "store.ogImageUrl", "store.currency",
+    "payment.enabledMethods", "checkout.taxEnabled",
+  ];
+  const now = Date.now();
+  const missing = keys.filter((key) => {
+    const hit = cache.get(key);
+    return !hit || hit.expiresAt <= now;
+  });
+  if (!missing.length) return;
+  const rows = await withDbRetry(() => prisma.platformSetting.findMany({
+    where: { key: { in: missing } },
+    select: { key: true, value: true },
+  }));
+  const rowByKey = new Map(rows.map((row) => [row.key, row]));
+  for (const key of missing) {
+    const definition = SETTING_DEFINITIONS.get(key)!;
+    const row = rowByKey.get(key);
+    const raw = row ? decodeRowValue(definition, row.value) : resolveDefault(definition);
+    cache.set(key, { value: parseValue(definition, raw), expiresAt: Date.now() + CACHE_TTL_MS });
+  }
+};
+
 export const getPublicSettings = async (): Promise<PublicSettings> => {
+  await loadPublicSettings();
   const [
     name,
     supportEmail,

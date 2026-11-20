@@ -82,7 +82,7 @@ export function OrderDetail({ initialData }: OrderDetailProps) {
     if (retryingPayment) return;
     setRetryingPayment(true);
     try {
-      const result = await initiatePayment(currentOrder.id, "SSLCOMMERZ");
+      const result = await initiatePayment(currentOrder.id, "SSLCOMMERZ", { retry: true });
       const gatewayUrl = pickGatewayUrl(result);
       if (!gatewayUrl) {
         errorToast("Online payment could not be started. Please try again.");

@@ -19,15 +19,17 @@ export default async function AdminAreaLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireRole("ADMIN");
+  const [session, cookieStore, publicSettings] = await Promise.all([
+    requireRole("ADMIN"),
+    cookies(),
+    fetchPublicSettingsOrDefault(),
+  ]);
   const access = toAdminAccess(session.user);
 
-  const cookieStore = await cookies();
   const defaultOpen = parseSidebarOpen(
     cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
   );
   const homeHref = getFirstPermittedAdminHref(access) ?? "/unauthorized";
-  const publicSettings = await fetchPublicSettingsOrDefault();
 
   return (
     <DashboardShell

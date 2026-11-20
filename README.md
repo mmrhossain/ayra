@@ -87,7 +87,6 @@ Use `curl.exe` on PowerShell. Protected calls use the Better Auth session cookie
 ## Checks
 
 ```bash
-npm run test:client
 npm --prefix client run lint
 npm --prefix client run type-check
 npm --prefix server run lint

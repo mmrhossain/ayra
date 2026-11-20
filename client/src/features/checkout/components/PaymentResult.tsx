@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CircleAlert, CircleX } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleAlert, CircleX, FileText, LifeBuoy, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
@@ -14,6 +14,8 @@ const copy: Record<
     description: string;
     icon: typeof CheckCircle2;
     tone: string;
+    accent: string;
+    note?: string;
   }
 > = {
   confirmation: {
@@ -21,6 +23,7 @@ const copy: Record<
     description: "Your cash-on-delivery order has been placed. You will pay when it arrives.",
     icon: CheckCircle2,
     tone: "bg-primary/10 text-primary",
+    accent: "bg-primary",
   },
   success: {
     title: "Payment submitted",
@@ -28,20 +31,24 @@ const copy: Record<
       "Your payment was verified and the order is confirmed. A confirmation email is on its way.",
     icon: CheckCircle2,
     tone: "bg-primary/10 text-primary",
+    accent: "bg-primary",
   },
   fail: {
     title: "Payment failed",
     description:
-      "The online payment could not be verified. You can retry from the order details while the order is active. If money left your account, contact support with the transaction ID below.",
+      "We couldn't verify this payment. You can try again from your order details while the order is active.",
+    note: "If money was deducted, contact support with your transaction reference before paying again.",
     icon: CircleX,
     tone: "bg-red-50 text-red-600",
+    accent: "bg-red-400",
   },
   cancel: {
     title: "Payment cancelled",
     description:
-      "You cancelled the online payment. You can retry from the order details while the order is active; our records update from the payment gateway IPN.",
+      "You cancelled this payment. You can try again from your order details while the order is active. Check your order for the latest payment status.",
     icon: CircleAlert,
     tone: "bg-amber-50 text-amber-700",
+    accent: "bg-amber-400",
   },
 };
 
@@ -117,15 +124,25 @@ function firstParam(params: ReturnType<typeof useSearchParams>, keys: string[]):
   return null;
 }
 
+const resultContainerClass = "container flex min-h-[calc(100svh-var(--header-height,112px)-var(--bottom-nav-space,0px))] min-w-0 items-center justify-center py-8 sm:py-12";
+const resultCardClass = "w-full min-w-0 max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-[0_12px_48px_-24px_rgba(15,23,42,0.2)]";
+
 export function PaymentResultSkeleton() {
   return (
-    <div className="container storefront-page-start" role="status" aria-label="Loading payment result">
-      <div className="mx-auto max-w-2xl space-y-4 border border-border bg-card p-5 sm:p-8" aria-hidden="true">
-        <div className="mx-auto size-14 rounded-full bg-muted" />
-        <div className="mx-auto h-7 w-2/3 rounded bg-muted" />
-        <div className="mx-auto h-4 w-5/6 rounded bg-muted" />
-        <div className="h-16 rounded bg-muted" />
-        <div className="mx-auto h-11 w-full rounded bg-muted sm:w-1/2" />
+    <div className={resultContainerClass} role="status" aria-label="Loading payment result">
+      <div className={resultCardClass} aria-hidden="true">
+        <div className="h-1 bg-muted" />
+        <div className="space-y-5 p-5 sm:p-8">
+          <div className="mx-auto size-20 animate-pulse rounded-full bg-muted motion-reduce:animate-none" />
+          <div className="mx-auto h-3 w-24 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+          <div className="mx-auto h-8 w-2/3 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+          <div className="mx-auto h-14 w-full animate-pulse rounded bg-muted motion-reduce:animate-none" />
+          <div className="h-24 animate-pulse rounded-xl bg-muted motion-reduce:animate-none" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="h-12 animate-pulse rounded-lg bg-muted motion-reduce:animate-none" />
+            <div className="h-12 animate-pulse rounded-lg bg-muted motion-reduce:animate-none" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -145,77 +162,87 @@ export default function PaymentResult({ kind }: { kind: ResultKind }) {
   const tranId = firstParam(params, ["tran_id", "tranId", "transactionId"]);
 
   return (
-    <div className="container storefront-page-start">
-      <div className="mx-auto max-w-2xl space-y-4 border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8">
-        {showSuccessAnimation ? (
-          <SuccessAnimation key={`${kind}-${orderNumber ?? tranId ?? ""}`} />
-        ) : (
-          <div
-            className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${meta.tone}`}
-          >
-            <Icon aria-hidden="true" />
-          </div>
-        )}
-
-        <h1 className="text-2xl font-semibold leading-tight tracking-tight text-slate-900 lg:text-3xl">
-          {meta.title}
-        </h1>
-
-        <p className="text-foreground">{meta.description}</p>
-
-        <dl className="space-y-2 border border-gray-100 bg-gray-50 p-4 text-left text-sm">
-          {orderNumber && (
-            <div className="flex justify-between gap-4">
-              <dt className="shrink-0 text-foreground">Order number</dt>
-
-              <dd className="min-w-0 break-all text-right font-medium text-slate-900">
-                {orderNumber}
-              </dd>
+    <div className={resultContainerClass}>
+      <section className={resultCardClass} aria-labelledby="payment-result-title">
+        <div aria-hidden="true" className={"h-1 " + meta.accent} />
+        <div className="bg-gradient-to-b from-muted/30 to-transparent px-5 pb-6 pt-7 text-center sm:px-8 sm:pt-9">
+          {showSuccessAnimation ? (
+            <SuccessAnimation key={`${kind}-${orderNumber ?? tranId ?? ""}`} />
+          ) : (
+            <div className={"relative mx-auto mb-6 grid size-20 place-items-center rounded-full ring-8 ring-muted/40 sm:size-24 " + meta.tone}>
+              <Icon aria-hidden="true" className="size-9 sm:size-10" strokeWidth={1.5} />
             </div>
           )}
-
-          {tranId && (
-            <div className="flex justify-between gap-4">
-              <dt className="shrink-0 text-foreground">Transaction</dt>
-
-              <dd className="min-w-0 break-all text-right font-medium text-slate-900">{tranId}</dd>
-            </div>
-          )}
-
-          {status && (
-            <div className="flex justify-between gap-4">
-              <dt className="shrink-0 text-foreground">Reported status</dt>
-
-              <dd className="min-w-0 break-all text-right font-medium uppercase text-slate-900">
-                {status}
-              </dd>
-            </div>
-          )}
-
-          {!orderNumber && !tranId && !status && (
-            <div>
-              <dt className="sr-only">Payment details</dt>
-              <dd className="text-foreground">No payment details were included in the URL.</dd>
-            </div>
-          )}
-        </dl>
-
-        <div className="flex flex-col items-center justify-center gap-3 pt-2 sm:flex-row">
-          <Link
-            href="/customer/orders"
-            className="inline-flex min-h-11 w-full items-center justify-center bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-black sm:w-auto"
-          >
-            View orders
-          </Link>
-
-          <Link
-            href="/shop"
-            className="inline-flex min-h-11 w-full items-center justify-center border border-gray-200 px-5 py-3 text-sm font-semibold transition-colors hover:bg-gray-100 sm:w-auto"
-          >
-            Continue shopping
-          </Link>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {kind === "confirmation" ? "Order update" : "Payment update"}
+          </p>
+          <h1 id="payment-result-title" className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
+            {meta.title}
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+            {meta.description}
+          </p>
         </div>
-      </div>
+
+        <div className="space-y-5 px-5 pb-6 sm:px-8 sm:pb-8">
+          <div className="overflow-hidden rounded-xl border border-border bg-muted/20">
+            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <FileText aria-hidden="true" className="size-4 shrink-0 text-primary" />
+              <h2 className="text-xs font-semibold text-foreground">Payment details</h2>
+            </div>
+            <dl className="divide-y divide-border px-4 text-sm">
+              {orderNumber && (
+                <div className="grid min-w-0 gap-1.5 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline sm:gap-4">
+                  <dt className="text-xs text-muted-foreground">Order number</dt>
+                  <dd className="min-w-0 font-medium text-foreground [overflow-wrap:anywhere] sm:text-right">{orderNumber}</dd>
+                </div>
+              )}
+              {tranId && (
+                <div className="grid min-w-0 gap-1.5 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline sm:gap-4">
+                  <dt className="text-xs text-muted-foreground">Transaction reference</dt>
+                  <dd className="min-w-0 break-all font-mono text-xs leading-relaxed text-foreground sm:text-right">{tranId}</dd>
+                </div>
+              )}
+              {status && (
+                <div className="grid min-w-0 gap-1.5 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline sm:gap-4">
+                  <dt className="text-xs text-muted-foreground">Reported status</dt>
+                  <dd className="min-w-0 text-xs font-medium uppercase text-foreground [overflow-wrap:anywhere] sm:text-right">{status}</dd>
+                </div>
+              )}
+              {!orderNumber && !tranId && !status && (
+                <div className="py-4">
+                  <dt className="sr-only">Payment details</dt>
+                  <dd className="text-xs leading-relaxed text-muted-foreground">No payment details were included in the URL.</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {meta.note ? (
+            <div className="flex items-start gap-2.5 rounded-lg bg-amber-50 px-3.5 py-3 text-amber-900">
+              <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <p className="min-w-0 text-xs leading-relaxed">{meta.note}</p>
+            </div>
+          ) : null}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link href="/customer/orders" className="group inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+              <span>View orders</span>
+              <ArrowRight aria-hidden="true" className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none" />
+            </Link>
+            <Link href="/shop" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+              <ShoppingBag aria-hidden="true" className="size-4 shrink-0" />
+              <span>Continue shopping</span>
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 border-t border-border pt-4 text-xs text-muted-foreground">
+            <LifeBuoy aria-hidden="true" className="size-3.5 shrink-0" />
+            <span>Need a hand?</span>
+            <Link href="/contact" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary">Contact support</Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -96,7 +96,7 @@ export function NotificationBell({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="bottom"
-        align="end"
+        align="start"
         sideOffset={8}
         collisionPadding={12}
         className="w-80 max-w-[calc(100vw-1.5rem)] p-0 sm:w-96"

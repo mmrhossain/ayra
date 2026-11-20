@@ -12,7 +12,7 @@ import {
 import { AttentionStrip } from "@/features/dashboard/admin/overview/components/attention-strip";
 import { DetailedMetrics } from "@/features/dashboard/admin/overview/components/detailed-metrics";
 import { KpiGrid } from "@/features/dashboard/admin/overview/components/kpi-grid";
-import { OverviewRangeFilter } from "@/features/dashboard/admin/overview/components/overview-range-filter";
+import { OverviewHeader } from "@/features/dashboard/admin/overview/components/overview-header";
 import {
   OverviewError,
 } from "@/features/dashboard/admin/overview/components/overview-states";
@@ -24,7 +24,6 @@ import {
   RANGE_KEYS,
   type RangeKey,
 } from "@/features/dashboard/admin/overview/utils/range";
-import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 import { requireAdminPageAccess, toAdminAccess } from "@/lib/api/auth/server";
 
 function isRangeKey(value: string): value is RangeKey {
@@ -181,11 +180,7 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
 
   return (
     <section className="min-w-0 space-y-6">
-      <PageHeader
-        title="Overview"
-        description="Sales and growth for the selected period, with current operational queues."
-        actions={<OverviewRangeFilter />}
-      />
+      <OverviewHeader />
 
       {headline}
 

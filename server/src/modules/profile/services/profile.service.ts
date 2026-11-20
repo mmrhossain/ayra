@@ -29,8 +29,8 @@ const customerProfileSelect = {
   },
 } as const;
 
-export const getCustomerProfile = async (userId: string) => {
-  const profile = await getOrCreateCustomerProfile(userId);
+export const getCustomerProfile = async (userId: string, verifiedUser?: Parameters<typeof getOrCreateCustomerProfile>[1]) => {
+  const profile = await getOrCreateCustomerProfile(userId, verifiedUser);
 
   return prisma.customerProfile.findUniqueOrThrow({
     where: { id: profile.id },
@@ -38,8 +38,8 @@ export const getCustomerProfile = async (userId: string) => {
   });
 };
 
-export const saveCustomerProfile = async (userId: string, input: UpdateCustomerProfileInput) => {
-  const profile = await getOrCreateCustomerProfile(userId);
+export const saveCustomerProfile = async (userId: string, input: UpdateCustomerProfileInput, verifiedUser?: Parameters<typeof getOrCreateCustomerProfile>[1]) => {
+  const profile = await getOrCreateCustomerProfile(userId, verifiedUser);
 
   return prisma.customerProfile.update({
     where: { id: profile.id },

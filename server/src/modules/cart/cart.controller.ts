@@ -26,7 +26,7 @@ import {
 export const getCartHandler = asyncHandler(async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
     successResponse(res, await getCart(customerProfile.id), "Cart fetched");
 });
 
@@ -34,7 +34,7 @@ export const addItemHandler = asyncHandler(async (req: Request, res: Response) =
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = addItemSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
     successResponse(
         res,
         await addItem(customerProfile.id, input.variantId, input.quantity),
@@ -47,7 +47,7 @@ export const updateItemHandler = asyncHandler(
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
         const input = updateItemSchema.parse(req.body);
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         successResponse(
             res,
             await updateItemQuantity(
@@ -64,7 +64,7 @@ export const removeItemHandler = asyncHandler(
     async (req: Request, res: Response) => {
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         successResponse(
             res,
             await removeItem(customerProfile.id, requireParam(req.params.variantId, "variantId")),
@@ -77,7 +77,7 @@ export const clearCartHandler = asyncHandler(
     async (req: Request, res: Response) => {
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         successResponse(res, await clearCart(customerProfile.id), "Cart cleared");
     }
 );
@@ -87,7 +87,7 @@ export const mergeGuestCartHandler = asyncHandler(
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
         const input = mergeGuestCartSchema.parse(req.body ?? {});
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         const cart = await mergeGuestCart(customerProfile.id, input.items);
         successResponse(res, cart, "Guest cart merged");
     }
@@ -96,7 +96,7 @@ export const mergeGuestCartHandler = asyncHandler(
 export const getAvailableCartCouponsHandler = asyncHandler(async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
     successResponse(res, await getAvailableCartCoupons(customerProfile.id), "Available coupons fetched");
 });
 
@@ -105,7 +105,7 @@ export const applyCouponHandler = asyncHandler(
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
         const input = applyCouponSchema.parse(req.body);
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         successResponse(
             res,
             await applyCoupon(customerProfile.id, input.code),
@@ -118,7 +118,7 @@ export const removeCouponHandler = asyncHandler(
     async (req: Request, res: Response) => {
         if (!req.auth) throw new AppError("Unauthorized", 401);
 
-        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+        const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
         successResponse(res, await removeCoupon(customerProfile.id), "Coupon removed");
     }
 );

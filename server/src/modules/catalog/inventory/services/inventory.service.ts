@@ -348,25 +348,27 @@ export const listInventory = async (query: ListInventoryQuery) => {
       }
     }
 
-    const items = await prisma.inventory.findMany({
-      where,
-      include: {
-        warehouse: { select: { id: true, name: true, code: true } },
-        variant: {
-          select: {
-            id: true,
-            sku: true,
-            product: { select: { id: true, name: true, slug: true } },
-            attributes: {
-              select: { attributeValue: { select: { value: true } } },
+    const [items, total] = await Promise.all([
+      prisma.inventory.findMany({
+        where,
+        include: {
+          warehouse: { select: { id: true, name: true, code: true } },
+          variant: {
+            select: {
+              id: true,
+              sku: true,
+              product: { select: { id: true, name: true, slug: true } },
+              attributes: {
+                select: { attributeValue: { select: { value: true } } },
+              },
             },
           },
         },
-      },
-      skip: (query.page - 1) * query.limit,
-      take: query.limit,
-    });
-    const total = await prisma.inventory.count({ where });
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+      }),
+      prisma.inventory.count({ where }),
+    ]);
 
     // Resolve the last updater's display name in one query for the whole page.
     const updaterIds = [

@@ -115,7 +115,8 @@ const toCustomerPayment = (payment: {
 export const initiatePayment = async (
   customerProfileId: string,
   orderId: string,
-  method: PaymentMethod
+  method: PaymentMethod,
+  retry = false,
 ) => {
   const order = await prisma.order.findFirst({
     where: { id: orderId, customerProfileId, deletedAt: null },
@@ -147,7 +148,11 @@ export const initiatePayment = async (
     orderBy: { createdAt: "desc" },
   });
 
-  if (reusable?.checkoutUrl) {
+  // Only an authenticated, explicit online-payment retry retires the old URL.
+  const retryPaymentId = retry && method === "SSLCOMMERZ" && reusable?.checkoutUrl
+    ? reusable.id
+    : null;
+  if (reusable?.checkoutUrl && !retryPaymentId) {
     return {
       payment: toCustomerPayment(reusable),
       checkoutUrl: reusable.checkoutUrl,
@@ -182,6 +187,16 @@ export const initiatePayment = async (
     }
     if (lockedOrder.paymentStatus === "PAID") {
       throw new AppError("Order is already paid", 409);
+    }
+
+    if (retryPaymentId) {
+      // Retire only the attempt observed before contacting the gateway. A new
+      // attempt created concurrently must remain reusable. Keep its reference
+      // and status so late, verified callbacks can still be settled safely.
+      await tx.payment.updateMany({
+        where: { id: retryPaymentId, status: { in: ["PENDING", "INITIATED"] } },
+        data: { expiresAt: new Date() },
+      });
     }
 
     const raced = await tx.payment.findFirst({

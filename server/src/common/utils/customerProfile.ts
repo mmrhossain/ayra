@@ -18,8 +18,13 @@ const generateCustomerCode = async () => {
   return formatCustomerCode(row.reference);
 };
 
-export const getOrCreateCustomerProfile = async (userId: string) => {
-  const userExists = await prisma.user.findUnique({ where: { id: userId } });
+export const getOrCreateCustomerProfile = async (
+  userId: string,
+  verifiedUser?: { id: string; role?: string | null | undefined },
+) => {
+  const userExists = verifiedUser?.id === userId
+    ? verifiedUser
+    : await prisma.user.findUnique({ where: { id: userId } });
   if (!userExists) {
     throw new AppError("User account not found in database", 404);
   }

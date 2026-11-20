@@ -122,8 +122,10 @@ const envSchema = z.object({
   URL_ENCODED: z.string().default("true"),
 
   // Rate Limit
-  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000),
-  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(100),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
+  RATE_LIMIT_READ_WINDOW_MS: z.coerce.number().int().positive().default(60000),
+  RATE_LIMIT_READ_MAX_REQUESTS: z.coerce.number().int().positive().default(300),
 
   // Reverse-proxy hop count for Express `trust proxy` / req.ip.
   // Cloudflare in front of Render/ALB/Nginx is typically 2.

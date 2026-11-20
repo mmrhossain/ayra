@@ -25,7 +25,7 @@ export const checkoutHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = checkoutSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
     const order = await checkout(customerProfile.id, input);
 
     successResponse(res, order, "Order created", 201);
@@ -37,7 +37,7 @@ export const listMyOrdersHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const query = listOrdersQuerySchema.parse(req.query);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -51,7 +51,7 @@ export const getMyOrderHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -69,7 +69,7 @@ export const cancelOrderHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = cancelOrderSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,

@@ -6,10 +6,11 @@ import { NotificationsPage } from "@/features/notifications/components/notificat
 export const dynamic = "force-dynamic";
 
 export default async function CustomerNotificationsPage() {
-  await requireCustomer();
-  const initialData = await fetchNotifications({ page: 1, limit: 50 }).catch(
-    () => undefined,
-  );
+
+  const [, initialData] = await Promise.all([
+    requireCustomer(),
+    fetchNotifications({ page: 1, limit: 50 }).catch(() => undefined),
+  ]);
 
   return <NotificationsPage initialData={initialData} />;
 }

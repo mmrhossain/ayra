@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { AddressPage } from "@/features/dashboard/customer/address/components/address-page";
 import {
@@ -8,13 +9,13 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CustomerAddressPage() {
-  await requireCustomer();
   let initial;
   let error: string | null = null;
 
   try {
-    initial = await fetchMyAddresses();
+    [, initial] = await Promise.all([requireCustomer(), fetchMyAddresses()]);
   } catch (err) {
+    unstable_rethrow(err);
     error = toAddressError(err);
   }
 

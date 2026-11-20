@@ -19,7 +19,7 @@ export const getCustomerProfileHandler = asyncHandler(
 
     successResponse(
       res,
-      await getCustomerProfile(req.auth.user.id),
+      await getCustomerProfile(req.auth.user.id, req.auth.user),
       "Customer profile fetched"
     );
   }
@@ -33,7 +33,7 @@ export const saveCustomerProfileHandler = asyncHandler(
 
     successResponse(
       res,
-      await saveCustomerProfile(req.auth.user.id, input),
+      await saveCustomerProfile(req.auth.user.id, input, req.auth.user),
       "Customer profile saved"
     );
   }

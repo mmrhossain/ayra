@@ -20,7 +20,7 @@ export const createReturnRequestHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = createReturnRequestSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,

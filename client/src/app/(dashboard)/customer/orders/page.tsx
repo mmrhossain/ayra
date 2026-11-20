@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { requireCustomer } from "@/lib/api/auth/server";
 import { OrderTable } from "@/features/dashboard/customer/orders/components/order-table";
 import {
@@ -8,13 +9,13 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CustomerOrdersPage() {
-  await requireCustomer();
   let initial;
   let error: string | null = null;
 
   try {
-    initial = await fetchMyOrders({ page: 1, limit: 20 });
+    [, initial] = await Promise.all([requireCustomer(), fetchMyOrders({ page: 1, limit: 20 })]);
   } catch (err) {
+    unstable_rethrow(err);
     error = toCustomerApiError(err);
   }
 

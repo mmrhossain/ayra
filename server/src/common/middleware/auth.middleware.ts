@@ -1,3 +1,4 @@
+import { authenticatedDomainLimiter } from "./rate-limit.middleware.ts";
 import type { NextFunction, Request, Response } from "express";
 import type { IncomingHttpHeaders } from "node:http";
 import { auth } from "../../lib/auth.ts";
@@ -104,7 +105,7 @@ const assertUserAllowed = (user: {
 };
 
 export const requireAuth = asyncHandler(
-  async (req: Request, _res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const session = await auth.api.getSession({
       headers: toHeaders(req.headers),
     });
@@ -127,12 +128,12 @@ export const requireAuth = asyncHandler(
         ...fresh,
       },
     };
-    next();
+    await authenticatedDomainLimiter(req, res, next);
   },
 );
 
 export const optionalAuth = asyncHandler(
-  async (req: Request, _res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const session = await auth.api.getSession({
       headers: toHeaders(req.headers),
     });
@@ -147,13 +148,13 @@ export const optionalAuth = asyncHandler(
             ...fresh,
           },
         };
-        next();
+        await authenticatedDomainLimiter(req, res, next);
         return;
       }
     }
 
     req.auth = null;
-    next();
+    await authenticatedDomainLimiter(req, res, next);
   },
 );
 

@@ -79,7 +79,7 @@ const OrderReview = ({
   return (
     <aside
       aria-busy={cartStatus === "loading"}
-      className={cn("relative h-fit min-w-0 rounded-md border border-border bg-card px-4 py-5 sm:px-5 sm:py-6 lg:sticky lg:top-[calc(var(--navbar-height,68px)+1rem)] xl:px-6 xl:py-7", className)}
+      className={cn("relative h-fit min-w-0 rounded-md border border-border bg-card px-4 py-5 sm:px-5 sm:py-6 lg:mt-8 lg:sticky lg:top-[calc(var(--navbar-height,68px)+1rem)] xl:px-6 xl:py-7", className)}
     >
       {cartStatus === "success" ? (
         <span className="absolute right-4 top-5 text-xs text-muted-foreground sm:right-5 sm:top-6 xl:right-6">

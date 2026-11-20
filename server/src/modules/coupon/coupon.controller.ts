@@ -25,7 +25,7 @@ export const validateCoupon = asyncHandler(async (req: Request, res: Response) =
 
   const input = validateCouponSchema.parse({ code: req.query.code ?? req.body.code });
 
-  const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+  const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
   const cart = await getActiveCart(customerProfile.id);
   if (!cart || cart.items.length === 0) {
     throw new AppError("Cart is empty", 400);

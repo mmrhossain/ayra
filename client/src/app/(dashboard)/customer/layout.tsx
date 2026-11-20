@@ -19,8 +19,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Layout({ children }: { children: ReactNode }) {
-  await requireCustomer();
-  const [publicSettings, categories] = await Promise.all([
+  const [, publicSettings, categories] = await Promise.all([
+    requireCustomer(),
     fetchPublicSettingsOrDefault(),
     getCategories()
       .then(data => Array.isArray(data) ? data : [])

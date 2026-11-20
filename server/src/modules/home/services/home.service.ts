@@ -53,15 +53,15 @@ const loadHomeCategories = async (): Promise<HomeCategoryCard[]> => {
 
 const buildHomePayload = async (): Promise<HomePayload> => {
   const now = new Date();
-  const [sliders, categories, collections] = await Promise.all([
+  const collectionsWithPages = loadHomeCollections(now).then(async (collections) => ({
+    collections,
+    sectionPages: await Promise.all(collections.map((collection) => resolveProducts(collection))),
+  }));
+  const [sliders, categories, { collections, sectionPages }] = await Promise.all([
     listActiveSliders(),
     loadHomeCategories(),
-    loadHomeCollections(now),
+    collectionsWithPages,
   ]);
-
-  const sectionPages = await Promise.all(
-    collections.map((collection) => resolveProducts(collection))
-  );
 
   const sections: HomeSection[] = collections.flatMap((collection, index) => {
     const page = sectionPages[index];

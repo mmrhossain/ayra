@@ -37,14 +37,16 @@ export const listWarehouses = async (query: ListWarehousesQuery) => {
     }),
   };
 
-  const items = await prisma.warehouse.findMany({
-    where,
-    orderBy: { createdAt: "asc" },
-    skip: (query.page - 1) * query.limit,
-    take: query.limit,
-    select: warehouseSelect,
-  });
-  const total = await prisma.warehouse.count({ where });
+  const [items, total] = await Promise.all([
+    prisma.warehouse.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      select: warehouseSelect,
+    }),
+    prisma.warehouse.count({ where }),
+  ]);
 
   return {
     items,

@@ -1,3 +1,5 @@
+import { fetchActiveSliders } from "@/features/slider/api";
+import { unstable_rethrow } from "next/navigation";
 import { fetchHome } from "@/features/home/api";
 import HomePage from "@/features/home/components/HomePage";
 import HomePageSkeleton from "@/features/home/skeleton/HomePageSkeleton";
@@ -20,16 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function HomeContent() {
-  const [data, settings] = await Promise.all([
-    fetchHome().catch(() => null),
-    fetchPublicSettingsOrDefault(),
-  ]);
-
-  if (!data) {
-    return (
-      <div className="container py-24 text-center text-gray-400">Home is unavailable right now</div>
-    );
-  }
+  const data = fetchHome().catch(error => {
+    unstable_rethrow(error);
+    return null;
+  });
+  const sliders = fetchActiveSliders().catch(error => {
+    unstable_rethrow(error);
+    return null;
+  });
+  const settings = await fetchPublicSettingsOrDefault();
 
   const storeName = settings.store.name || SITE_NAME;
   const organization = PUBLIC_SITE_URL
@@ -72,7 +73,7 @@ async function HomeContent() {
           }}
         />
       ) : null}
-      <HomePage data={data} storeName={storeName} />
+      <HomePage data={data} sliders={sliders} storeName={storeName} />
     </>
   );
 }

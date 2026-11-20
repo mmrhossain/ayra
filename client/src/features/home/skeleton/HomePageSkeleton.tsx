@@ -1,9 +1,11 @@
 import { heroFrameClass } from "@/features/slider/components/hero-layout";
 
-const HomePageSkeleton = () => (
-  <div role="status" aria-label="Loading store" className="space-y-[var(--storefront-section-gap)]">
-    <div aria-hidden="true" className={heroFrameClass + " w-full animate-pulse bg-muted motion-reduce:animate-none"} />
-    <div aria-hidden="true" className="container">
+export const HomeHeroSkeleton = () => (
+  <div aria-hidden="true" className={heroFrameClass + " w-full animate-pulse bg-muted motion-reduce:animate-none"} />
+);
+
+export const HomeCategoriesSkeleton = () => (
+  <div aria-hidden="true" className="container">
       <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 8 }, (_, index) => (
           <div key={index} className="min-w-0 pb-2">
@@ -14,6 +16,12 @@ const HomePageSkeleton = () => (
         ))}
       </div>
     </div>
+);
+
+const HomePageSkeleton = () => (
+  <div role="status" aria-label="Loading store" className="space-y-[var(--storefront-section-gap)]">
+    <HomeHeroSkeleton />
+    <HomeCategoriesSkeleton />
   </div>
 );
 

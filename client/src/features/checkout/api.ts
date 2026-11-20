@@ -68,10 +68,11 @@ export function pickGatewayUrl(
 export async function initiatePayment(
   orderId: string,
   method: CheckoutPayload["paymentMethod"],
+  options?: { retry?: boolean },
 ): Promise<InitiatePaymentResult> {
   const res = await dashboardApi.post<Envelope<InitiatePaymentResult>>(
     `/payments/${orderId}/initiate`,
-    { body: { method } },
+    { body: { method, ...(options?.retry ? { retry: true } : {}) } },
   );
   return res.data;
 }

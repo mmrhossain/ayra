@@ -1,15 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
-import { ipKeyGenerator, rateLimit } from "express-rate-limit";
-import { createHash } from "node:crypto";
+import { ipKeyGenerator, MemoryStore, rateLimit } from "express-rate-limit";
+import { AppError } from "../errors/AppError.ts";
+import { logger } from "../looger/logger.ts";
 import { RedisStore, type RedisReply } from "rate-limit-redis";
 import { env } from "../../config/env.ts";
 import { redis } from "../../lib/redis.ts";
 
 const skipInTest = () => env.NODE_ENV === "test";
-
-const SESSION_COOKIES = ["ayra.session_token", "__Secure-ayra.session_token"] as const;
-
-const hashToken = (token: string) => createHash("sha256").update(token).digest("hex").slice(0, 32);
 
 const redisStore = (prefix: string) => {
   if (!redis) {
@@ -28,16 +25,17 @@ export const clientIp = (req: Request) => {
   return ipKeyGenerator(req.ip ?? "unknown");
 };
 
-export const identityKey = (req: Request) => {
-  if (req.auth?.user.id) return req.auth.user.id;
-  for (const name of SESSION_COOKIES) {
-    const token = req.cookies?.[name];
-    if (typeof token === "string" && token.length > 0) {
-      return `sid:${hashToken(token)}`;
-    }
-  }
-  return clientIp(req);
-};
+export const identityKey = (req: Request) => req.auth?.user.id ?? clientIp(req);
+
+const normalizePath = (req: Request) =>
+  ((req.originalUrl ?? req.path).split("?")[0] ?? "").replace(/\/+$/, "") || "/";
+
+const isRead = (req: Request) => ["GET", "HEAD"].includes(req.method.toUpperCase());
+const isQuote = (req: Request) => req.method === "POST" &&
+  ["/api/v1/cart/guest/quote", "/api/v1/shipping/quote"].includes(normalizePath(req));
+const isGatewayCallback = (req: Request) =>
+  ["GET", "POST"].includes(req.method) &&
+  /^\/api\/v1\/payments\/sslcommerz\/(success|failed|cancelled|ipn)$/.test(normalizePath(req));
 
 const isHealthCheck = (req: Request) => req.path === "/health" || req.path === "/ready";
 
@@ -54,7 +52,8 @@ type CreateLimiterOptions = {
   message: string;
   skip?: (req: Request) => boolean;
   keyGenerator?: (req: Request) => string;
-  passOnStoreError?: boolean;
+  readFallback?: boolean;
+  skipSuccessfulRequests?: boolean;
 };
 
 const createLimiter = ({
@@ -64,27 +63,51 @@ const createLimiter = ({
   message,
   skip,
   keyGenerator,
-  passOnStoreError,
+  readFallback = false,
+  skipSuccessfulRequests = false,
 }: CreateLimiterOptions) => {
   const store = redisStore(prefix);
 
-  return rateLimit({
+  const options = {
     windowMs,
     max,
     standardHeaders: true,
     legacyHeaders: false,
     skip: skip ?? skipInTest,
-    passOnStoreError: passOnStoreError ?? false,
+    skipSuccessfulRequests,
+    passOnStoreError: false,
     keyGenerator: keyGenerator ?? clientIp,
     ...(store ? { store } : {}),
-    handler: (_req, res, _next, options) => {
-      const retryAfterSeconds = Math.ceil(options.windowMs / 1000);
-      res.setHeader("Retry-After", String(retryAfterSeconds));
+    handler: (_req: Request, res: Response, _next: NextFunction, options: { windowMs: number; statusCode: number }) => {
+      // express-rate-limit already supplies the seconds remaining until reset.
+      if (!res.hasHeader("Retry-After")) res.setHeader("Retry-After", String(Math.ceil(options.windowMs / 1000)));
       res.status(options.statusCode).json({
         success: false,
         message,
       });
     },
+  };
+  const primary = rateLimit(options);
+  const fallback = store && readFallback
+    ? rateLimit({ ...options, store: new MemoryStore() })
+    : null;
+  let outageLogged = false;
+  return (req: Request, res: Response, next: NextFunction) => primary(req, res, (error?: unknown) => {
+    if (!error) {
+      outageLogged = false;
+      next();
+      return;
+    }
+    if (!outageLogged) {
+      logger.warn({ message: "Rate limit store unavailable", prefix });
+      outageLogged = true;
+    }
+    if (fallback) {
+      void Promise.resolve(fallback(req, res, next)).catch(next);
+      return;
+    }
+    res.setHeader("Retry-After", "5");
+    next(new AppError("Request protection is temporarily unavailable. Please retry shortly.", 503, "RATE_LIMIT_UNAVAILABLE"));
   });
 };
 
@@ -93,7 +116,8 @@ export const perEndpointLimiter = (
   max: number,
   label: string,
   prefix: string,
-  keyGenerator: (req: Request) => string = identityKey
+  keyGenerator: (req: Request) => string = identityKey,
+  readFallback = false,
 ) =>
   createLimiter({
     windowMs,
@@ -101,27 +125,47 @@ export const perEndpointLimiter = (
     prefix,
     message: `Too many ${label} requests. Please try again later.`,
     keyGenerator,
-    passOnStoreError: false,
+    readFallback,
   });
 
-export const limiter = createLimiter({
+export const readLimiter = createLimiter({
+  windowMs: env.RATE_LIMIT_READ_WINDOW_MS,
+  max: env.RATE_LIMIT_READ_MAX_REQUESTS,
+  prefix: "read:rl:",
+  message: "Too many read requests. Please try again shortly.",
+  readFallback: true,
+});
+const writeLimiter = createLimiter({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX_REQUESTS,
   prefix: "global:rl:",
   message: "Too many requests. Please try again later.",
-  skip: (req) => skipInTest() || isHealthCheck(req),
-  keyGenerator: clientIp,
-  passOnStoreError: false,
 });
+const gatewayLimiter = createLimiter({
+  windowMs: 60_000,
+  max: 240,
+  prefix: "gateway:rl:",
+  message: "Too many gateway callbacks. Please retry shortly.",
+  readFallback: true,
+});
+export const limiter = (req: Request, res: Response, next: NextFunction) => {
+  if (skipInTest() || isHealthCheck(req)) {
+    return next();
+  }
+  if (isGatewayCallback(req)) {
+    return gatewayLimiter(req, res, next);
+  }
+  return (isRead(req) || isQuote(req) ? readLimiter : writeLimiter)(req, res, next);
+};
 
 export const authLimiter = createLimiter({
   windowMs: 15 * 60 * 1000,
   max: 20,
   prefix: "auth:rl:",
+  skipSuccessfulRequests: true,
   message: "Too many authentication requests. Please try again later.",
   skip: (req) => skipInTest() || isAuthSessionPoll(req),
   keyGenerator: clientIp,
-  passOnStoreError: false,
 });
 
 export const checkoutLimiter = perEndpointLimiter(
@@ -157,7 +201,6 @@ export const uploadLimiter = createLimiter({
   prefix: "upload:rl:",
   message: "Too many upload requests. Please try again later.",
   keyGenerator: identityKey,
-  passOnStoreError: false,
 });
 
 export const aiChatLimiter = createLimiter({
@@ -167,112 +210,65 @@ export const aiChatLimiter = createLimiter({
   message: "Too many AI requests. Please try again later.",
   skip: skipInTest,
   keyGenerator: identityKey,
-  passOnStoreError: false,
 });
 
-export const searchLimiter = perEndpointLimiter(60 * 1000, 40, "search", "search:rl:", clientIp);
+export const searchLimiter = perEndpointLimiter(60 * 1000, 40, "search", "search:rl:", clientIp, true);
 
-export const listingLimiter = perEndpointLimiter(
-  60 * 1000,
-  120,
-  "catalog",
-  "listing:rl:",
-  clientIp
-);
+export const cartLimiter = perEndpointLimiter(15 * 60 * 1000, 80, "cart changes", "cart:rl:");
+export const cartReadLimiter = perEndpointLimiter(60_000, 120, "cart reads", "cart:read:rl:", identityKey, true);
+export const orderLimiter = perEndpointLimiter(15 * 60 * 1000, 40, "order changes", "order:rl:");
+export const orderReadLimiter = perEndpointLimiter(60_000, 120, "order reads", "order:read:rl:", identityKey, true);
+export const adminLimiter = perEndpointLimiter(15 * 60 * 1000, 120, "admin changes", "admin:rl:");
+export const adminReadLimiter = perEndpointLimiter(60_000, 120, "admin reads", "admin:read:rl:", identityKey, true);
+const guestQuoteLimiter = createLimiter({ windowMs: 60_000, max: 60, prefix: "guest:quote:rl:", message: "Too many cart quotes. Please retry shortly.", readFallback: true });
 
-export const cartLimiter = perEndpointLimiter(15 * 60 * 1000, 80, "cart", "cart:rl:");
-
-export const orderLimiter = perEndpointLimiter(15 * 60 * 1000, 40, "order", "order:rl:");
-
-export const adminLimiter = perEndpointLimiter(15 * 60 * 1000, 120, "admin", "admin:rl:");
-
-const normalizePath = (req: Request) => {
-  const raw = (req.originalUrl ?? req.path).split("?")[0] ?? "";
-  return raw.replace(/\/+$/, "") || "/";
-};
-
+// Only public policies run here. Authenticated policies run after existing auth.
 export const domainLimiter = (req: Request, res: Response, next: NextFunction) => {
   if (skipInTest()) {
-    next();
-    return;
+    return next();
   }
+  const path = normalizePath(req);
+  if (req.method === "POST" && path === "/api/v1/cart/guest/quote") {
+    return guestQuoteLimiter(req, res, next);
+  }
+  if (req.method === "GET" && path === "/api/v1/products" && req.query.search) {
+    return searchLimiter(req, res, next);
+  }
+  next();
+};
 
+export const authenticatedDomainLimiter = (req: Request, res: Response, next: NextFunction) => {
+  if (skipInTest()) {
+    return next();
+  }
   const path = normalizePath(req);
   const method = req.method.toUpperCase();
-
+  if (!req.auth && path !== "/api/v1/ai/chat") {
+    return next();
+  }
   if (method === "POST" && /^\/api\/v1\/payments\/[^/]+\/initiate$/.test(path)) {
-    paymentLimiter(req, res, next);
-    return;
+    return paymentLimiter(req, res, next);
   }
-
-  if (
-    (method === "GET" && path === "/api/v1/coupons/validate") ||
-    (method === "POST" && path === "/api/v1/cart/coupon")
-  ) {
-    couponLimiter(req, res, next);
-    return;
+  if ((method === "GET" && path === "/api/v1/coupons/validate") || (method === "POST" && path === "/api/v1/cart/coupon")) {
+    return couponLimiter(req, res, next);
   }
-
-  if (
-    (method === "POST" && /^\/api\/v1\/products\/[^/]+\/reviews$/.test(path)) ||
-    (method === "PATCH" && /^\/api\/v1\/reviews\/[^/]+$/.test(path)) ||
-    (method === "DELETE" && /^\/api\/v1\/reviews\/[^/]+$/.test(path))
-  ) {
-    reviewLimiter(req, res, next);
-    return;
+  if ((method === "POST" && /^\/api\/v1\/products\/[^/]+\/reviews$/.test(path)) || (["PATCH", "DELETE"].includes(method) && /^\/api\/v1\/reviews\/[^/]+$/.test(path))) {
+    return reviewLimiter(req, res, next);
   }
-
-  if (method === "POST" && (path === "/api/v1/media/upload" || path === "/api/v1/media/uploads")) {
-    uploadLimiter(req, res, next);
-    return;
+  if (method === "POST" && ["/api/v1/media/upload", "/api/v1/media/uploads"].includes(path)) {
+    return uploadLimiter(req, res, next);
   }
-
   if (method === "POST" && path === "/api/v1/ai/chat") {
-    aiChatLimiter(req, res, next);
-    return;
+    return aiChatLimiter(req, res, next);
   }
-
-  if (method === "GET" && path === "/api/v1/products" && req.query.search) {
-    searchLimiter(req, res, next);
-    return;
-  }
-
-  if (
-    method === "GET" &&
-    (path === "/api/v1/products" ||
-      path === "/api/v1/categories" ||
-      path === "/api/v1/brands" ||
-      path === "/api/v1/home" ||
-      path === "/api/v1/sliders/active" ||
-      path === "/api/v1/blogs" ||
-      /^\/api\/v1\/blogs\/[^/]+$/.test(path) ||
-      /^\/api\/v1\/products\/[^/]+$/.test(path) ||
-      /^\/api\/v1\/categories\/[^/]+$/.test(path) ||
-      /^\/api\/v1\/products\/[^/]+\/reviews$/.test(path))
-  ) {
-    listingLimiter(req, res, next);
-    return;
-  }
-
   if (path === "/api/v1/cart" || path.startsWith("/api/v1/cart/")) {
-    cartLimiter(req, res, next);
-    return;
+    return (isRead(req) ? cartReadLimiter : cartLimiter)(req, res, next);
   }
-
-  if (
-    (method === "GET" && (path === "/api/v1/orders" || /^\/api\/v1\/orders\/[^/]+$/.test(path))) ||
-    (method === "POST" &&
-      (/^\/api\/v1\/orders\/[^/]+\/cancel$/.test(path) ||
-        /^\/api\/v1\/orders\/[^/]+\/return-request$/.test(path)))
-  ) {
-    orderLimiter(req, res, next);
-    return;
+  if (path === "/api/v1/orders" || path.startsWith("/api/v1/orders/")) {
+    return (isRead(req) ? orderReadLimiter : orderLimiter)(req, res, next);
   }
-
   if (path.startsWith("/api/v1/admin/")) {
-    adminLimiter(req, res, next);
-    return;
+    return (isRead(req) ? adminReadLimiter : adminLimiter)(req, res, next);
   }
-
   next();
 };

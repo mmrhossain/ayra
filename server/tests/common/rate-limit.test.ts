@@ -1,6 +1,8 @@
+// Isolate limiter counters from the configured development Redis.
+vi.mock("../../src/lib/redis.ts", () => ({ redis: null }));
 import express from "express";
 import request from "supertest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { env } from "../../src/config/env.ts";
 import { checkoutLimiter } from "../../src/common/middleware/rate-limit.middleware.ts";
 

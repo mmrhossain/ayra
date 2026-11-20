@@ -171,11 +171,11 @@ function Stat({
       <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="truncate text-lg font-semibold tabular-nums tracking-tight sm:text-xl">
+      <dd className="text-lg leading-snug font-semibold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-xl">
         {value}
       </dd>
       {hint ? (
-        <p className="truncate text-xs text-muted-foreground">{hint}</p>
+        <p className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{hint}</p>
       ) : null}
     </div>
   );
@@ -271,7 +271,7 @@ export function SalesChart({
 
   return (
     <Card className="h-full min-w-0 overflow-hidden">
-      <CardHeader className="gap-4 pb-2">
+      <CardHeader className="min-w-0 gap-4 px-4 pb-2 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-1.5">
             <CardTitle className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export function SalesChart({
           </div>
         </div>
 
-        <dl className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/30 px-4 py-3">
+        <dl className="grid min-w-0 grid-cols-1 gap-4 rounded-xl border bg-muted/30 px-3 py-3 sm:grid-cols-3 sm:gap-3 sm:px-4">
           <Stat
             label="Net sales"
             value={money.format(stats.totalSales)}
@@ -311,7 +311,7 @@ export function SalesChart({
         </dl>
       </CardHeader>
 
-      <CardContent className="min-w-0 space-y-3">
+      <CardContent className="min-w-0 space-y-3 px-4 sm:px-6">
         {query.isError ? (
           <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {toErrorMessage(query.error)}
@@ -478,11 +478,11 @@ export function SalesChart({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 border-t pt-3">
+        <div className="flex min-w-0 flex-col items-start gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
           <p className="text-xs text-muted-foreground">
             Dashed line marks the average for the period.
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex max-w-full flex-wrap items-center gap-1">
             <Button
               type="button"
               variant="ghost"

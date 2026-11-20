@@ -21,7 +21,7 @@ export const createAddressHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = createAddressSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -36,7 +36,7 @@ export const listAddressesHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -50,7 +50,7 @@ export const getAddressHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -68,7 +68,7 @@ export const updateAddressHandler = asyncHandler(
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
     const input = updateAddressSchema.parse(req.body);
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,
@@ -86,7 +86,7 @@ export const deleteAddressHandler = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.auth) throw new AppError("Unauthorized", 401);
 
-    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id);
+    const customerProfile = await getOrCreateCustomerProfile(req.auth.user.id, req.auth.user);
 
     successResponse(
       res,

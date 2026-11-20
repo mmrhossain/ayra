@@ -1,3 +1,4 @@
+import { OverviewHeader } from "./overview-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,15 +44,15 @@ export function HeadlineSkeleton() {
 export function ChartSkeleton() {
   return (
     <SkeletonCard className="flex h-full flex-col gap-6 overflow-hidden py-6">
-      <div className="space-y-4 px-6 pb-2">
+      <div className="min-w-0 space-y-4 px-4 pb-2 sm:px-6">
         <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-2">
             <Skeleton className="h-5 w-36" />
             <Skeleton className="h-4 w-56 max-w-full" />
-            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-3 w-40 max-w-full" />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/30 px-4 py-3">
+        <div className="grid min-w-0 grid-cols-1 gap-4 rounded-xl border bg-muted/30 px-3 py-3 sm:grid-cols-3 sm:gap-3 sm:px-4">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="min-w-0 space-y-1.5">
               <Skeleton className="h-3 w-16 max-w-full" />
@@ -62,16 +63,16 @@ export function ChartSkeleton() {
         </div>
       </div>
 
-      <div className="min-w-0 space-y-3 px-6">
-        <div className="flex gap-2">
+      <div className="min-w-0 space-y-3 px-4 sm:px-6">
+        <div className="flex min-w-0 flex-wrap gap-2">
           <Skeleton className="h-7 w-24 rounded-full" />
           <Skeleton className="h-7 w-20 rounded-full" />
         </div>
-        <div className="flex h-[260px] items-end justify-between gap-2 pt-4 sm:h-[300px] sm:gap-3">
+        <div className="flex h-[260px] min-w-0 items-end justify-between gap-2 pt-4 sm:h-[300px] sm:gap-3">
           {Array.from({ length: 12 }).map((_, index) => (
             <div
               key={index}
-              className="flex h-full flex-1 flex-col items-center justify-end gap-2"
+              className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2"
             >
               <Skeleton
                 className="w-full rounded-t-sm"
@@ -79,13 +80,13 @@ export function ChartSkeleton() {
                   height: `${[40, 65, 30, 85, 50, 75, 60, 90, 45, 70, 55, 80][index]}%`,
                 }}
               />
-              <Skeleton className="h-3 w-7" />
+              <Skeleton className="h-3 w-full max-w-7" />
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between gap-2 border-t pt-3">
+        <div className="flex min-w-0 flex-col items-start gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
           <Skeleton className="h-3 w-48 max-w-full" />
-          <div className="flex gap-1">
+          <div className="flex max-w-full flex-wrap gap-1">
             <Skeleton className="h-8 w-20" />
             <Skeleton className="h-8 w-16" />
           </div>
@@ -215,10 +216,7 @@ export function OverviewPageSkeleton() {
   return (
     <section className="min-w-0 space-y-6" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading admin overview</span>
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-96 max-w-full" />
-      </div>
+      <OverviewHeader loading />
       <HeadlineSkeleton />
       <AttentionStripSkeleton />
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
