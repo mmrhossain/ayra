@@ -1,32 +1,39 @@
 "use client";
 
-import { toWishlistErrorMessage } from "@/features/dashboard/customer/wishlist/api/wishlist";
-import { errorToast, successToast } from "@/helpers/index";
+import {
+  toWishlistErrorMessage } from "@/features/dashboard/customer/wishlist/api/wishlist";
+import { errorToast,
+  successToast } from "@/helpers/index";
 import { authClient } from "@/lib/api/auth/auth-client";
-import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE, staffShoppingRedirect } from "@/lib/api/auth/roles";
+import { isStaffRole,
+  STAFF_CANNOT_SHOP_MESSAGE,
+  staffShoppingRedirect } from "@/lib/api/auth/roles";
 import { DashboardApiError } from "@/lib/api/dashboard";
 import { useWishStore } from "@/stores/useWishStore";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useStorefrontOwner } from "@/hooks/useStorefrontCounts";
+import { usePathname,
+  useRouter } from "next/navigation";
+
 
 export function useWishlistToggle(variantId: string | null | undefined) {
   const { data: session } = authClient.useSession();
+  const { ownerReady } = useStorefrontOwner();
   const router = useRouter();
   const pathname = usePathname();
   const isLoggedIn = Boolean(session?.user);
-  const wishes = useWishStore((s) => s.wishes);
+  const isInWishlist = useWishStore(s => Boolean(variantId && s.wishes?.some(item => item.variantId === variantId)));
   const addToWish = useWishStore((s) => s.addToWish);
   const removeFromWishList = useWishStore((s) => s.removeFromWishList);
-  const wishLoading = useWishStore((s) => s.wishLoading);
+  const variantLoading = useWishStore(s => Boolean(variantId && s.wishLoading[variantId]));
   const setWishLoading = useWishStore((s) => s.setWishLoading);
   // The storefront provider loads the shared wishlist once for all cards.
 
   const inWish = Boolean(
-    variantId && wishes?.some((item) => item.variantId === variantId),
+    ownerReady && isLoggedIn && variantId && isInWishlist,
   );
-  const busy = Boolean(variantId && wishLoading[variantId]);
+  const busy = Boolean(variantId && ((isLoggedIn && !ownerReady) || variantLoading));
 
-  const toggleWishlist = useCallback(async () => {
+  const toggleWishlist = async () => {
     if (!variantId) {
       errorToast("Select a variant");
       return;
@@ -61,18 +68,7 @@ export function useWishlistToggle(variantId: string | null | undefined) {
     } finally {
       setWishLoading(variantId, false);
     }
-  }, [
-    addToWish,
-    busy,
-    inWish,
-    isLoggedIn,
-    pathname,
-    removeFromWishList,
-    router,
-    session?.user?.role,
-    setWishLoading,
-    variantId,
-  ]);
+  };
 
   return { inWish, busy, isLoggedIn, toggleWishlist };
 }

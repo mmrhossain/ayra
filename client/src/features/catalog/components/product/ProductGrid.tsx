@@ -1,8 +1,10 @@
 import type { ProductListItem } from "@/features/catalog/api";
+import { productGridClass } from "./product-card.styles";
 import ProductCard from "@/features/catalog/components/product/ProductCard";
 import { cn } from "@/lib/utils";
 
-const EAGER_SHOP_IMAGE_COUNT = 8;
+// Prioritize the first desktop row; native lazy loading handles other visible rows.
+const EAGER_SHOP_IMAGE_COUNT = 4;
 
 export default function ProductGrid({
   items,
@@ -16,7 +18,7 @@ export default function ProductGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-7 xl:grid-cols-4",
+        productGridClass,
         className
       )}
     >

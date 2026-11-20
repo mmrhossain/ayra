@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/analytics";
+import { Skeleton } from "@/components/ui/skeleton";
 import { canAccessAdminPath } from "@/lib/admin-navigation";
 import type { AdminAccess } from "@/lib/admin-permissions";
 
@@ -34,6 +35,35 @@ const ITEMS = [
   },
 ];
 
+const QUEUE_CARD = "flex min-w-0 items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2.5";
+const QUEUE_LABEL = "flex min-w-0 items-center gap-2.5";
+const QUEUE_COUNT = "size-6 shrink-0 rounded-full";
+
+function queueGrid(count: number) {
+  const columns = count >= 3
+    ? "sm:grid-cols-2 xl:grid-cols-3"
+    : count === 2
+      ? "sm:grid-cols-2"
+      : "grid-cols-1";
+  return `grid gap-2.5 ${columns}`;
+}
+
+export function AttentionStripSkeleton() {
+  return (
+    <div aria-hidden="true" className={queueGrid(2)}>
+      {[1, 2].map((item) => (
+        <div key={item} className={QUEUE_CARD}>
+          <div className={QUEUE_LABEL}>
+            <Skeleton className="size-4 shrink-0" />
+            <Skeleton className="h-4 w-28 max-w-full" />
+          </div>
+          <Skeleton className={QUEUE_COUNT} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AttentionStrip({
   data,
   access,
@@ -58,30 +88,23 @@ export function AttentionStrip({
     );
   }
 
-  const columns =
-    actionable.length >= 3
-      ? "sm:grid-cols-2 xl:grid-cols-3"
-      : actionable.length === 2
-        ? "sm:grid-cols-2"
-        : "grid-cols-1";
-
   return (
     <div
       role="group"
       aria-label="Operational queues with open items"
-      className={`grid gap-2.5 ${columns}`}
+      className={queueGrid(actionable.length)}
     >
       {actionable.map((item) => (
         <Link
           key={item.href}
           href={item.href}
-          className="flex min-w-0 items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:bg-accent"
+          className={`${QUEUE_CARD} transition-colors hover:bg-accent`}
         >
-          <span className="flex min-w-0 items-center gap-2.5">
+          <span className={QUEUE_LABEL}>
             <item.icon className={`size-4 shrink-0 ${item.tone}`} />
             <span className="truncate text-sm font-medium">{item.label}</span>
           </span>
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold tabular-nums">
+          <span className={`grid ${QUEUE_COUNT} place-items-center bg-muted text-xs font-semibold tabular-nums`}>
             {data[item.key]}
           </span>
         </Link>

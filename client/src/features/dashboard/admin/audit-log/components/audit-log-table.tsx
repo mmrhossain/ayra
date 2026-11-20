@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,7 +44,6 @@ import type {
   AuditLogOutcome,
   AuditLogSource,
 } from "@/features/dashboard/admin/audit-log/types/models";
-import { useDebouncedValue } from "@/features/dashboard/admin/shared/hooks/use-debounced-value";
 import { dateToIsoEnd, dateToIsoStart } from "@/lib/format";
 
 const METHODS: AuditLogMethod[] = ["POST", "PUT", "PATCH", "DELETE"];
@@ -78,35 +77,22 @@ export function AuditLogTable({
   const [selected, setSelected] = useState<AdminAuditLogItem | null>(null);
   const [isExporting, setExporting] = useState(false);
 
-  const debouncedSearch = useDebouncedValue(search.trim(), 300);
-  const debouncedActor = useDebouncedValue(actorEmail.trim(), 300);
-  const debouncedAction = useDebouncedValue(action.trim(), 300);
-  const debouncedEntity = useDebouncedValue(entityType.trim(), 300);
+  const deferredSearch = useDeferredValue(search.trim());
+  const deferredActor = useDeferredValue(actorEmail.trim());
+  const deferredAction = useDeferredValue(action.trim());
+  const deferredEntity = useDeferredValue(entityType.trim());
 
-  const filters = useMemo<AuditLogFilters>(
-    () => ({
-      search: debouncedSearch,
-      actorEmail: debouncedActor,
-      action: debouncedAction,
-      entityType: debouncedEntity,
+  const filters = ({
+      search: deferredSearch,
+      actorEmail: deferredActor,
+      action: deferredAction,
+      entityType: deferredEntity,
       method,
       source,
       outcome,
       from: dateToIsoStart(fromDate) ?? "",
       to: dateToIsoEnd(toDate) ?? "",
-    }),
-    [
-      debouncedSearch,
-      debouncedActor,
-      debouncedAction,
-      debouncedEntity,
-      method,
-      source,
-      outcome,
-      fromDate,
-      toDate,
-    ],
-  );
+    }) satisfies AuditLogFilters;
 
   const filterKey = JSON.stringify(filters);
   const page = pageState.key === filterKey ? pageState.page : 1;

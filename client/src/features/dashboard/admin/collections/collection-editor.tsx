@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,16 +48,12 @@ export function CollectionEditor({
     name: item.product.name + (item.product.deletedAt ? " (unavailable)" : item.product.status !== "ACTIVE" ? " (not published)" : "")
   })));
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const deferredSearch = useDeferredValue(search.trim());
   const manual = form.source === "MANUAL" || form.source === "FEATURED";
   const products = useQuery({
-    queryKey: ["admin-products", "collection-picker", debouncedSearch],
+    queryKey: ["admin-products", "collection-picker", deferredSearch],
     queryFn: () => fetchProductList({
-      search: debouncedSearch,
+      search: deferredSearch,
       page: 1,
       limit: 20,
       includeInactive: true

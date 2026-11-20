@@ -3,7 +3,7 @@
   "info": {
     "title": "Ayra API",
     "version": "1.0.0",
-    "description": "HTTP API for the Ayra e-commerce backend. Authenticate with a Better Auth bearer token unless a route is public or webhook-signed."
+    "description": "HTTP API for the Ayra e-commerce backend. Protected operations use a Better Auth session cookie. Browser clients should sign in on the same origin before trying protected operations."
   },
   "servers": [
     {
@@ -13,11 +13,11 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Better Auth session bearer token"
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ayra.session_token",
+        "description": "Better Auth session cookie. HTTPS deployments can use __Secure-ayra.session_token."
       }
     },
     "schemas": {
@@ -31,6 +31,18 @@
             ]
           },
           "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "details": {
+            "nullable": true
+          },
+          "requestId": {
             "type": "string"
           }
         },
@@ -60,6 +72,35 @@
           "limit",
           "total",
           "totalPages"
+        ]
+      },
+      "TaxClass": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "rate",
+          "isActive"
         ]
       },
       "GeoEntity": {
@@ -113,16 +154,20 @@
     "parameters": {}
   },
   "paths": {
-    "/api/v1/auth/sign-up/email": {
-      "post": {
+    "/api/v1/session/access": {
+      "get": {
         "tags": [
           "Auth"
         ],
-        "summary": "Sign up with email and password (Better Auth)",
-        "security": [],
+        "summary": "Get the current user's fresh access permissions",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Signed up",
+            "description": "Session access fetched",
             "content": {
               "application/json": {
                 "schema": {
@@ -138,12 +183,156 @@
                       "type": "string"
                     },
                     "data": {
-                      "nullable": true
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "staffStatus": {
+                          "type": "string"
+                        },
+                        "banned": {
+                          "type": "boolean",
+                          "nullable": true
+                        },
+                        "isSuperAdmin": {
+                          "type": "boolean"
+                        },
+                        "adminPermissions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "role",
+                        "staffStatus",
+                        "banned",
+                        "isSuperAdmin",
+                        "adminPermissions"
+                      ]
                     }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sign-up/email": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign up with email and password (Better Auth)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  },
+                  "callbackURL": {
+                    "type": "string"
+                  },
+                  "rememberMe": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "email",
+                  "name",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "name",
+                        "emailVerified"
+                      ],
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "user"
                   ]
                 }
               }
@@ -179,6 +368,35 @@
         ],
         "summary": "Sign in with email and password (Better Auth)",
         "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "callbackURL": {
+                    "type": "string"
+                  },
+                  "rememberMe": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Signed in",
@@ -187,22 +405,47 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
+                    "redirect": {
+                      "type": "boolean"
                     },
-                    "message": {
+                    "token": {
                       "type": "string"
                     },
-                    "data": {
-                      "nullable": true
+                    "url": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "name",
+                        "emailVerified"
+                      ],
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "redirect",
+                    "token",
+                    "user"
                   ]
                 }
               }
@@ -220,6 +463,16 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -247,6 +500,11 @@
           "Auth"
         ],
         "summary": "Sign out the current session (Better Auth)",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Signed out",
@@ -260,28 +518,11 @@
                       "enum": [
                         true
                       ]
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "success"
                   ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -297,39 +538,59 @@
         "summary": "Get the current Better Auth session",
         "responses": {
           "200": {
-            "description": "Session fetched",
+            "description": "Better Auth session and user, or null when signed out",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "nullable": true,
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ],
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "name",
+                        "emailVerified"
+                      ],
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "session",
+                    "user"
                   ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -344,6 +605,28 @@
         ],
         "summary": "Request a password-reset email (Better Auth)",
         "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "redirectTo": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Password reset requested",
@@ -352,21 +635,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
+                    "status": {
+                      "type": "boolean"
                     },
                     "message": {
                       "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
                     }
                   },
                   "required": [
-                    "success",
+                    "status",
                     "message"
                   ]
                 }
@@ -396,37 +673,116 @@
         }
       }
     },
-    "/api/v1/auth/forget-password": {
+    "/api/v1/auth/reset-password/{token}": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Open a password-reset link",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "callbackURL",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the reset page with a token or an error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/change-password": {
       "post": {
         "tags": [
           "Auth"
         ],
-        "summary": "Request a password-reset email alias (Better Auth)",
-        "security": [],
+        "summary": "Change the signed-in user's password",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "revokeOtherSessions": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Password reset requested",
+            "description": "Password changed",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
+                    "token": {
+                      "type": "string",
                       "nullable": true
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "emailVerified": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "name",
+                        "emailVerified"
+                      ],
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "token",
+                    "user"
                   ]
                 }
               }
@@ -434,6 +790,16 @@
           },
           "400": {
             "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
@@ -462,6 +828,37 @@
         ],
         "summary": "Reset password with a token (Better Auth)",
         "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "token",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Password reset",
@@ -470,22 +867,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
+                    "status": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "status"
                   ]
                 }
               }
@@ -521,30 +908,42 @@
         ],
         "summary": "Send email verification (Better Auth)",
         "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "callbackURL": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Verification email sent",
+            "description": "Verification requested",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
+                    "status": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "status"
                   ]
                 }
               }
@@ -580,6 +979,24 @@
         ],
         "summary": "Verify email with a token (Better Auth)",
         "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "callbackURL",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Email verified",
@@ -588,26 +1005,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
+                    "status": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
-                  ]
+                    "status"
+                  ],
+                  "additionalProperties": {
+                    "nullable": true
+                  }
                 }
               }
             }
+          },
+          "302": {
+            "description": "Redirect to the callback URL"
           },
           "400": {
             "description": "Validation failed",
@@ -629,6 +1042,39 @@
         ],
         "summary": "Start social sign-in (Better Auth, Google when configured)",
         "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "google"
+                    ]
+                  },
+                  "callbackURL": {
+                    "type": "string"
+                  },
+                  "errorCallbackURL": {
+                    "type": "string"
+                  },
+                  "newUserCallbackURL": {
+                    "type": "string"
+                  },
+                  "disableRedirect": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "provider"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Social sign-in started",
@@ -637,22 +1083,16 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
-                    },
-                    "message": {
+                    "url": {
                       "type": "string"
                     },
-                    "data": {
-                      "nullable": true
+                    "redirect": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "success",
-                    "message"
+                    "url",
+                    "redirect"
                   ]
                 }
               }
@@ -711,25 +1151,44 @@
           "Auth"
         ],
         "summary": "Delete the current user account (Better Auth)",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callbackURL": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "User deleted",
+            "description": "User deleted or verification requested",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean",
-                      "enum": [
-                        true
-                      ]
+                      "type": "boolean"
                     },
                     "message": {
                       "type": "string"
-                    },
-                    "data": {
-                      "nullable": true
                     }
                   },
                   "required": [
@@ -761,7 +1220,7 @@
         "summary": "List users (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -984,7 +1443,7 @@
         "summary": "Get user by id (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1068,7 +1527,7 @@
         "summary": "Ban a user (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1182,7 +1641,7 @@
         "summary": "Unban a user (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1312,7 +1771,7 @@
           "Categories"
         ],
         "summary": "Get category by slug or nested path",
-        "description": "Resolve a category by slug (`/categories/saree`) or nested path (`/categories/saree/jamdani`). Nested paths must match parent then child.",
+        "description": "The slug parameter represents the wildcard category path. Use a single slug (`/categories/saree`) or slash-separated parent and child slugs (`/categories/saree/jamdani`).",
         "parameters": [
           {
             "schema": {
@@ -1374,7 +1833,7 @@
         "summary": "List categories (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1467,7 +1926,7 @@
         "description": "Create a category from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=category. The response variants array is [desktop 1920x820, mobile 960x1200]; use variants[0] / imageUrl as image and variants[1] / mobileImageUrl as mobileImage.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -1603,7 +2062,7 @@
         "summary": "Update category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1755,7 +2214,7 @@
         "summary": "Delete category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1877,7 +2336,7 @@
         "summary": "List brands (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -1969,7 +2428,7 @@
         "summary": "Create brand (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -2094,7 +2553,7 @@
         "summary": "Update brand (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -2235,7 +2694,7 @@
         "summary": "Delete brand (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -2407,7 +2866,7 @@
         "summary": "List collections",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -2500,7 +2959,7 @@
         "summary": "Create collection",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -2672,7 +3131,7 @@
         "summary": "Get collection with ordered product membership",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -2754,7 +3213,7 @@
         "summary": "Update collection and optionally replace ordered membership",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -2932,7 +3391,7 @@
         "summary": "Deactivate a collection without deleting products",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -3014,7 +3473,7 @@
           "Products"
         ],
         "summary": "List products",
-        "description": "Public catalog of ACTIVE products with cursor pagination by default; page-based pagination remains available when page is supplied. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
+        "description": "Public catalog of ACTIVE products with cursor pagination by default; page-based pagination remains available when page is supplied. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. includeInactive and status are applied only for active staff with catalog access.",
         "parameters": [
           {
             "schema": {
@@ -3052,6 +3511,16 @@
             },
             "required": false,
             "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "collection",
             "in": "query"
           },
           {
@@ -3230,7 +3699,7 @@
           "Products"
         ],
         "summary": "Get product filter facets",
-        "description": "Public facet counts for the same filters as GET /products (category, brand, price, attributes). featured and onSale apply the same catalog scope.",
+        "description": "Public facet counts for the same filters as GET /products. includeInactive and status are applied only for active staff with catalog access.",
         "parameters": [
           {
             "schema": {
@@ -3268,6 +3737,16 @@
             },
             "required": false,
             "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "collection",
             "in": "query"
           },
           {
@@ -3507,7 +3986,7 @@
         "summary": "Get product by id including draft and archived (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -3589,7 +4068,7 @@
         "summary": "Update product (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -3949,7 +4428,7 @@
         "summary": "Delete product (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -4033,7 +4512,7 @@
         "summary": "Create product (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -4376,7 +4855,7 @@
         "description": "Apply one action (set-status, set-featured, set-category, delete) to up to 100 products. Returns requested/affected counts and the ids that could not be resolved.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -4583,7 +5062,7 @@
         "summary": "Create product variant (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -4730,7 +5209,7 @@
         "summary": "Update variant (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -4885,7 +5364,7 @@
         "summary": "Delete variant (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -4969,7 +5448,7 @@
         "summary": "List inventory (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5100,7 +5579,7 @@
         "description": "Idempotent bulk set of target quantities (not deltas). Applied auto-approved with an audit row.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -5224,7 +5703,7 @@
         "summary": "List inventory adjustments (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5308,7 +5787,7 @@
         "summary": "Create inventory adjustment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -5414,7 +5893,7 @@
         "summary": "Approve or reject inventory adjustment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5528,7 +6007,7 @@
         "summary": "List inventory transfers (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5612,7 +6091,7 @@
         "summary": "Create inventory transfer (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -5734,7 +6213,7 @@
         "summary": "Complete inventory transfer (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5818,7 +6297,7 @@
         "summary": "List warehouses (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -5919,7 +6398,7 @@
         "summary": "Create warehouse (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -6060,7 +6539,7 @@
         "summary": "Get warehouse by id (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -6142,7 +6621,7 @@
         "summary": "Update warehouse (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -6295,7 +6774,7 @@
         "summary": "Delete warehouse (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -6379,7 +6858,7 @@
         "summary": "List available shipping options for an address",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -6473,7 +6952,7 @@
         "summary": "Calculate shipping for a selected method and address",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -6630,7 +7109,7 @@
         "summary": "List shipping zones (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -6691,7 +7170,7 @@
         "summary": "Create shipping zone (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -6824,7 +7303,7 @@
         "summary": "Get shipping zone (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -6906,7 +7385,7 @@
         "summary": "Update shipping zone (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7054,7 +7533,7 @@
         "summary": "Delete shipping zone (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7138,7 +7617,7 @@
         "summary": "List shipping methods (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -7199,7 +7678,7 @@
         "summary": "Create shipping method (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -7312,7 +7791,7 @@
         "summary": "Get shipping method (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7394,7 +7873,7 @@
         "summary": "Update shipping method (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7524,7 +8003,7 @@
         "summary": "List shipping rates (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -7585,7 +8064,7 @@
         "summary": "Create shipping rate (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -7718,7 +8197,7 @@
         "summary": "Get shipping rate (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7800,7 +8279,7 @@
         "summary": "Update shipping rate (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -7936,7 +8415,7 @@
         "summary": "Delete shipping rate (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8117,7 +8596,7 @@
         "summary": "Create attribute (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -8219,7 +8698,7 @@
         "summary": "Update attribute (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8337,7 +8816,7 @@
         "summary": "Delete attribute (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8431,7 +8910,7 @@
         "summary": "Create attribute value (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8558,7 +9037,7 @@
         "summary": "Bulk create attribute values (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8698,7 +9177,7 @@
         "summary": "Update attribute value (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8820,7 +9299,7 @@
         "summary": "Delete attribute value (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -8906,6 +9385,158 @@
         }
       }
     },
+    "/api/v1/cart/guest/quote": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Estimate guest cart totals",
+        "description": "Uses current prices and tax for active variants. Unavailable variants are omitted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "variantId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 999
+                        }
+                      },
+                      "required": [
+                        "variantId",
+                        "quantity"
+                      ]
+                    },
+                    "maxItems": 100,
+                    "default": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart estimated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "variantId": {
+                                "type": "string"
+                              },
+                              "quantity": {
+                                "type": "integer"
+                              },
+                              "unitPrice": {
+                                "type": "number"
+                              },
+                              "subtotal": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "variantId",
+                              "quantity",
+                              "unitPrice",
+                              "subtotal"
+                            ]
+                          }
+                        },
+                        "subtotal": {
+                          "type": "number"
+                        },
+                        "discountAmount": {
+                          "type": "number"
+                        },
+                        "taxAmount": {
+                          "type": "number"
+                        },
+                        "shippingAmount": {
+                          "type": "number"
+                        },
+                        "grandTotal": {
+                          "type": "number"
+                        },
+                        "taxRates": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "subtotal",
+                        "discountAmount",
+                        "taxAmount",
+                        "shippingAmount",
+                        "grandTotal"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cart": {
       "get": {
         "tags": [
@@ -8914,7 +9545,7 @@
         "summary": "Get authenticated cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -8965,7 +9596,7 @@
         "summary": "Clear cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -9018,7 +9649,7 @@
         "summary": "Add item to cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -9115,7 +9746,7 @@
         "summary": "Update cart item quantity",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -9216,7 +9847,7 @@
         "summary": "Remove cart item",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -9290,7 +9921,7 @@
         "summary": "Merge local guest cart items into authenticated cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -9379,6 +10010,98 @@
         }
       }
     },
+    "/api/v1/cart/coupons": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "List available coupons for the customer's cart",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available coupons fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "discountType": {
+                            "type": "string",
+                            "enum": [
+                              "PERCENTAGE",
+                              "FIXED_AMOUNT",
+                              "FREE_SHIPPING"
+                            ]
+                          },
+                          "discountAmount": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "name",
+                          "discountType",
+                          "discountAmount"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cart/coupon": {
       "post": {
         "tags": [
@@ -9387,7 +10110,7 @@
         "summary": "Apply coupon to cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -9477,7 +10200,7 @@
         "summary": "Remove coupon from cart",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -9522,186 +10245,21 @@
         }
       }
     },
-    "/api/v1/cart/checkout": {
-      "post": {
+    "/api/v1/admin/tax-classes": {
+      "get": {
         "tags": [
-          "Cart"
+          "Tax"
         ],
-        "summary": "Checkout authenticated cart",
+        "summary": "List tax classes",
+        "description": "Requires admin catalog access.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "paymentMethod": {
-                    "type": "string",
-                    "enum": [
-                      "COD",
-                      "SSLCOMMERZ"
-                    ]
-                  },
-                  "billingAddress": {
-                    "type": "object",
-                    "properties": {
-                      "fullName": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "phone": {
-                        "type": "string",
-                        "pattern": "^01[3-9]\\d{8}$"
-                      },
-                      "email": {
-                        "type": "string",
-                        "format": "email"
-                      },
-                      "country": {
-                        "type": "string",
-                        "minLength": 1,
-                        "default": "Bangladesh"
-                      },
-                      "division": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "district": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "thana": {
-                        "type": "string"
-                      },
-                      "divisionCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "districtCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "upazilaCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "postalCode": {
-                        "type": "string"
-                      },
-                      "addressLine1": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "addressLine2": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "fullName",
-                      "phone",
-                      "division",
-                      "district",
-                      "addressLine1"
-                    ]
-                  },
-                  "shippingAddress": {
-                    "type": "object",
-                    "properties": {
-                      "fullName": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "phone": {
-                        "type": "string",
-                        "pattern": "^01[3-9]\\d{8}$"
-                      },
-                      "email": {
-                        "type": "string",
-                        "format": "email"
-                      },
-                      "country": {
-                        "type": "string",
-                        "minLength": 1,
-                        "default": "Bangladesh"
-                      },
-                      "division": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "district": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "thana": {
-                        "type": "string"
-                      },
-                      "divisionCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "districtCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "upazilaCode": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9-]{1,32}$"
-                      },
-                      "postalCode": {
-                        "type": "string"
-                      },
-                      "addressLine1": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "addressLine2": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "fullName",
-                      "phone",
-                      "division",
-                      "district",
-                      "addressLine1"
-                    ]
-                  },
-                  "shippingMethodCode": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "couponCode": {
-                    "type": "string"
-                  },
-                  "notes": {
-                    "type": "string"
-                  },
-                  "expectedSubtotal": {
-                    "type": "number",
-                    "nullable": true,
-                    "minimum": 0,
-                    "maximum": 1000000
-                  },
-                  "acceptPriceChange": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "paymentMethod",
-                  "billingAddress",
-                  "shippingMethodCode"
-                ]
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
-            "description": "Order created",
+          "200": {
+            "description": "Tax classes fetched",
             "content": {
               "application/json": {
                 "schema": {
@@ -9717,12 +10275,115 @@
                       "type": "string"
                     },
                     "data": {
-                      "nullable": true
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TaxClass"
+                      }
                     }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Create a tax class",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "code",
+                  "rate"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tax class created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TaxClass"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -9748,8 +10409,248 @@
               }
             }
           },
-          "429": {
-            "description": "Too many requests",
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tax-classes/{id}": {
+      "put": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Update a tax class",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tax class updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TaxClass"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Delete a tax class",
+        "description": "Reassign products that use the tax class before deleting it.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tax class deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -9767,12 +10668,25 @@
           "Orders"
         ],
         "summary": "Create order from cart",
+        "description": "Send the same Idempotency-Key and payload when retrying checkout to replay the original response.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "Idempotency-Key",
+            "in": "header"
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -9979,6 +10893,36 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -10008,7 +10952,7 @@
         "summary": "List my orders",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10142,7 +11086,7 @@
         "summary": "Get my order",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10216,7 +11160,7 @@
         "summary": "Cancel my order",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10315,7 +11259,7 @@
         "summary": "Create a return request for a delivered order",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10457,7 +11401,7 @@
         "summary": "List all orders (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10601,7 +11545,7 @@
         "summary": "Get order by id (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10685,7 +11629,7 @@
         "summary": "Update order status (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10814,7 +11758,7 @@
         "summary": "List return requests (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -10932,7 +11876,7 @@
         "summary": "Approve or reject a return request (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -11072,7 +12016,7 @@
         "summary": "Initiate payment for an order",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -11188,6 +12132,28 @@
         "security": [],
         "requestBody": {
           "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "val_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "tran_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "val_id",
+                  "tran_id"
+                ],
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            },
             "application/json": {
               "schema": {
                 "type": "object",
@@ -11280,6 +12246,23 @@
         "security": [],
         "requestBody": {
           "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tran_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tran_id"
+                ],
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            },
             "application/json": {
               "schema": {
                 "type": "object",
@@ -11358,6 +12341,23 @@
         "security": [],
         "requestBody": {
           "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tran_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "tran_id"
+                ],
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            },
             "application/json": {
               "schema": {
                 "type": "object",
@@ -11432,10 +12432,45 @@
         "tags": [
           "Payments"
         ],
-        "summary": "SSLCommerz IPN webhook (signature-based, no bearer auth)",
+        "summary": "SSLCommerz IPN webhook",
         "security": [],
         "requestBody": {
           "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "tran_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "val_id": {
+                    "type": "string"
+                  },
+                  "verify_sign": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "verify_key": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "status",
+                  "tran_id",
+                  "verify_sign",
+                  "verify_key"
+                ],
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            },
             "application/json": {
               "schema": {
                 "type": "object",
@@ -11523,7 +12558,7 @@
         "summary": "List payments (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -11668,7 +12703,7 @@
         "summary": "List refunds (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -11831,7 +12866,7 @@
         "summary": "Update refund status (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -11962,7 +12997,7 @@
         "summary": "Get payment by id including gatewayResponse (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12046,7 +13081,7 @@
         "summary": "Collect COD payment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12130,7 +13165,7 @@
         "summary": "Refund a payment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12368,7 +13403,7 @@
         "summary": "List admin settings grouped by section",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -12529,7 +13564,7 @@
         "summary": "List platform setting audit entries",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12615,7 +13650,7 @@
         "summary": "Update one settings group",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12814,7 +13849,7 @@
         "summary": "Validate a coupon code",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -12917,7 +13952,7 @@
         "summary": "List coupons (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13019,7 +14054,7 @@
         "summary": "Create coupon (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -13200,7 +14235,7 @@
         "summary": "Update coupon (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13390,7 +14425,7 @@
         "summary": "Delete coupon (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13474,7 +14509,7 @@
         "summary": "Get wishlist",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -13525,7 +14560,7 @@
         "summary": "Clear wishlist",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -13578,7 +14613,7 @@
         "summary": "List wishlist items",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13662,7 +14697,7 @@
         "summary": "Add item to wishlist",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -13763,7 +14798,7 @@
         "summary": "Check if variant is in wishlist",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13825,7 +14860,7 @@
         "summary": "Remove item from wishlist",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -13977,7 +15012,7 @@
         "summary": "Create product review",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14098,7 +15133,7 @@
         "summary": "Update own review",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14200,7 +15235,7 @@
         "summary": "Delete review (owner or admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14284,7 +15319,7 @@
         "summary": "List reviews (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14393,7 +15428,7 @@
         "summary": "Approve review (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14477,7 +15512,7 @@
         "summary": "Reject review (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14663,7 +15698,7 @@
         "summary": "List sliders (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -14775,7 +15810,7 @@
         "description": "Create a slider from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=slider. The response variants array is [desktop 1920x720, mobile 1080x1350]; use variants[0] as imageUrl and variants[1] as mobileImageUrl.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -14918,7 +15953,7 @@
         "summary": "Get slider (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -15010,7 +16045,7 @@
         "summary": "Update slider (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -15168,7 +16203,7 @@
         "summary": "Delete slider (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -15380,7 +16415,7 @@
         "summary": "Chat with store assistant (optional auth)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -15539,7 +16574,7 @@
         "summary": "List legal documents (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -15645,7 +16680,7 @@
         "summary": "Create legal document draft (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -15771,7 +16806,7 @@
         "summary": "Update legal document draft (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -15905,7 +16940,7 @@
         "summary": "Publish legal document (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -16047,7 +17082,7 @@
         "summary": "List FAQ categories (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -16108,7 +17143,7 @@
         "summary": "Create FAQ category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -16227,7 +17262,7 @@
         "summary": "Update FAQ category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -16359,7 +17394,7 @@
         "summary": "Delete FAQ category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -16463,7 +17498,7 @@
         "summary": "List FAQ items (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -16555,7 +17590,7 @@
         "summary": "Create FAQ item (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -16678,7 +17713,7 @@
         "summary": "Update FAQ item (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -16803,7 +17838,7 @@
         "summary": "Delete FAQ item (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17050,7 +18085,7 @@
         "summary": "List blog categories (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -17111,7 +18146,7 @@
         "summary": "Create blog category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -17220,7 +18255,7 @@
         "summary": "Update blog category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17344,7 +18379,7 @@
         "summary": "Delete blog category (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17448,7 +18483,7 @@
         "summary": "List blog posts (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17573,7 +18608,7 @@
         "summary": "Create blog post draft (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -17731,7 +18766,7 @@
         "summary": "Update blog post (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17905,7 +18940,7 @@
         "summary": "Soft-delete blog post (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -17999,7 +19034,7 @@
         "summary": "Publish blog post (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18203,7 +19238,7 @@
         "summary": "List contact messages (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18312,7 +19347,7 @@
         "summary": "Update contact message status (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18428,7 +19463,7 @@
         "summary": "Admin dashboard overview metrics",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18557,7 +19592,7 @@
         "summary": "Sales trend time-series",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18689,7 +19724,7 @@
         "summary": "Top products by revenue or quantity",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18829,7 +19864,7 @@
         "summary": "Order count breakdown by status",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -18947,7 +19982,7 @@
         "summary": "Create address",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -19088,7 +20123,7 @@
         "summary": "List my addresses",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -19141,7 +20176,7 @@
         "summary": "Get address by id",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -19213,7 +20248,7 @@
         "summary": "Update address",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -19368,7 +20403,7 @@
         "summary": "Delete address",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -19718,7 +20753,7 @@
         "summary": "Get or create customer profile",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -19769,7 +20804,7 @@
         "summary": "Create or update customer profile",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -19856,7 +20891,7 @@
         "summary": "Get customer notification preferences",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -19907,7 +20942,7 @@
         "summary": "Update customer notification preferences",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -19992,7 +21027,7 @@
         "description": "Returns Cloudinary CDN images of one type for the admin gallery. Images remain on Cloudinary; this lists unique public ids already uploaded. Excludes SOFT_DELETED. Newest first. Role-gated by type, same as upload.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -20209,7 +21244,7 @@
         "description": "Streams one image from disk after magic-byte validation. Role-gated by type: store logo and Open Graph images require the settings permission; product/category/slider/blog require their matching admin permission; customer_avatar requires CUSTOMER or ADMIN. Product bulk uploads must use /media/uploads. Delivery URLs are generated on the fly (f_auto, q_auto). Cloudinary failures return 502 or 504 with { success: false, message }.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -20407,7 +21442,7 @@
         "description": "Uploads 1–5 product images after magic-byte validation. ADMIN only. Other image types are rejected.",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -20783,7 +21818,7 @@
         "summary": "List staff (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -20902,7 +21937,7 @@
         "summary": "List staff invitations (super admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21010,7 +22045,7 @@
         "summary": "Invite staff (super admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -21143,7 +22178,7 @@
         "summary": "Resend a staff invitation (super admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21237,7 +22272,7 @@
         "summary": "Revoke a staff invitation (super admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21331,7 +22366,7 @@
         "summary": "Update staff permissions (super admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21494,7 +22529,7 @@
         "summary": "Suspend a staff member (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21588,7 +22623,7 @@
         "summary": "Reactivate a suspended staff member (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21682,7 +22717,7 @@
         "summary": "Offboard a staff member (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21847,7 +22882,7 @@
         "summary": "List shipments (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -21998,7 +23033,7 @@
         "summary": "Create shipment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "requestBody": {
@@ -22172,7 +23207,7 @@
         "summary": "Get shipment order context by order id or number (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -22257,7 +23292,7 @@
         "summary": "Get shipment by id (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -22341,7 +23376,7 @@
         "summary": "Update shipment status (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -22488,7 +23523,7 @@
         "summary": "Book a courier for a shipment (admin)",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -22589,7 +23624,7 @@
         "tags": [
           "Couriers"
         ],
-        "summary": "Courier status webhook (HMAC or shared-secret, no bearer auth)",
+        "summary": "Courier status webhook (HMAC or shared secret)",
         "description": "provider is PATHAO or STEADFAST (case-insensitive). Sign the raw JSON body with HMAC-SHA256 in X-PATHAO-SIGNATURE / X-STEADFAST-SIGNATURE, or send the shared secret in X-WEBHOOK-SECRET.",
         "security": [],
         "parameters": [
@@ -22678,7 +23713,7 @@
         "summary": "List admin audit logs",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -22890,7 +23925,7 @@
         "summary": "Export admin audit logs",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -23081,7 +24116,7 @@
         "summary": "Get an admin audit log by id",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -23165,7 +24200,7 @@
         "summary": "List in-app notifications",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -23263,7 +24298,7 @@
         "summary": "Get unread in-app notification count",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -23316,7 +24351,7 @@
         "summary": "Mark all in-app notifications as read",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "responses": {
@@ -23369,7 +24404,7 @@
         "summary": "Mark one in-app notification as read",
         "security": [
           {
-            "bearerAuth": []
+            "sessionCookie": []
           }
         ],
         "parameters": [
@@ -23428,6 +24463,106 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Check HTTP server liveness",
+        "responses": {
+          "200": {
+            "description": "Server is running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Check PostgreSQL and Redis readiness",
+        "responses": {
+          "200": {
+            "description": "Ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
                 }
               }
             }

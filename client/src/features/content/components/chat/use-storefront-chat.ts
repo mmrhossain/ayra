@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/api/auth/auth-client";
 import {
   CHAT_FALLBACK_MESSAGE,
@@ -42,7 +42,7 @@ export function useStorefrontChat() {
     conversationIdRef.current = getConversationId();
   }, []);
 
-  const send = useCallback(async () => {
+  const send = async () => {
     const text = draft.trim().slice(0, CHAT_MAX_MESSAGE);
     if (!text || sending) return;
 
@@ -89,7 +89,7 @@ export function useStorefrontChat() {
     } finally {
       setSending(false);
     }
-  }, [draft, sending, isLoggedIn]);
+  };
 
   return { messages, draft, setDraft, sending, send };
 }

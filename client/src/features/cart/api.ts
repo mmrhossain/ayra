@@ -18,6 +18,7 @@ import type {
   AvailableCartCoupon,
   CartItemSnapshot,
   CartLine,
+  CartMutationResult,
   CartSnapshot,
   GuestCartLine,
 } from "@/features/cart/types";
@@ -101,7 +102,9 @@ export async function fetchGuestCartSnapshot(): Promise<CartSnapshot> {
   };
 }
 
-export async function fetchCartSnapshot(): Promise<CartSnapshot> {
+export async function fetchCartSnapshot(owner?: "guest" | "customer"): Promise<CartSnapshot> {
+  if (owner === "guest") return fetchGuestCartSnapshot();
+  if (owner === "customer") return fetchAuthCartSnapshot();
   try {
     return await fetchAuthCartSnapshot();
   } catch (err) {
@@ -114,11 +117,14 @@ export async function addCartItem(
   variantId: string,
   quantity: number,
   snapshot: CartItemSnapshot = {},
-): Promise<{ message: string }> {
-  try {
-    return await addAuthCartItem(variantId, quantity);
-  } catch (err) {
-    if (!isCartUnauthorized(err)) throw err;
+  owner?: "guest" | "customer",
+): Promise<CartMutationResult> {
+  if (owner !== "guest") {
+    try {
+      return await addAuthCartItem(variantId, quantity);
+    } catch (err) {
+      if (owner === "customer" || !isCartUnauthorized(err)) throw err;
+    }
   }
 
   const items = readGuestCart();
@@ -155,11 +161,14 @@ export async function addCartItem(
 export async function updateCartItem(
   variantId: string,
   quantity: number,
-): Promise<{ message: string }> {
-  try {
-    return await updateAuthCartItem(variantId, quantity);
-  } catch (err) {
-    if (!isCartUnauthorized(err)) throw err;
+  owner?: "guest" | "customer",
+): Promise<CartMutationResult> {
+  if (owner !== "guest") {
+    try {
+      return await updateAuthCartItem(variantId, quantity);
+    } catch (err) {
+      if (owner === "customer" || !isCartUnauthorized(err)) throw err;
+    }
   }
 
   const items = readGuestCart();
@@ -172,11 +181,14 @@ export async function updateCartItem(
 
 export async function removeCartItem(
   variantId: string,
-): Promise<{ message: string }> {
-  try {
-    return await removeAuthCartItem(variantId);
-  } catch (err) {
-    if (!isCartUnauthorized(err)) throw err;
+  owner?: "guest" | "customer",
+): Promise<CartMutationResult> {
+  if (owner !== "guest") {
+    try {
+      return await removeAuthCartItem(variantId);
+    } catch (err) {
+      if (owner === "customer" || !isCartUnauthorized(err)) throw err;
+    }
   }
 
   writeGuestCart(readGuestCart().filter((item) => item.variantId !== variantId));
@@ -185,11 +197,11 @@ export async function removeCartItem(
 
 export async function applyCartCoupon(
   code: string,
-): Promise<{ message: string }> {
+): Promise<CartMutationResult> {
   return applyAuthCartCoupon(code);
 }
 
-export async function removeCartCoupon(): Promise<{ message: string }> {
+export async function removeCartCoupon(): Promise<CartMutationResult> {
   return removeAuthCartCoupon();
 }
 

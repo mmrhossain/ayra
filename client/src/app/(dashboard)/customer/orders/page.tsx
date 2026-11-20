@@ -1,3 +1,4 @@
+import { requireCustomer } from "@/lib/api/auth/server";
 import { OrderTable } from "@/features/dashboard/customer/orders/components/order-table";
 import {
   fetchMyOrders,
@@ -7,6 +8,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CustomerOrdersPage() {
+  await requireCustomer();
   let initial;
   let error: string | null = null;
 

@@ -64,6 +64,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={jost.variable} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+      </head>
       <body className={`${jost.className} antialiased`} suppressHydrationWarning>
         <ThemeColorManager />
         <Suspense fallback={null}>

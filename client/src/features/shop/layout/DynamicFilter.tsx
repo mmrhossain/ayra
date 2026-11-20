@@ -8,32 +8,22 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import {
+  fetchProductFacets,
   parseAttributesParam,
   parseCategoriesParam,
   serializeAttributesParam,
-  type ProductFacets,
+  type ProductListParams,
 } from "@/features/catalog/api";
 import type { PriceBucket } from "@/features/catalog/types";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, startTransition, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import FilterPanel from "./FilterPanel";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DynamicFilterBarProps {
-  facets: Promise<ProductFacets | null>;
-}
-
-function ShopFilterOptions({
-  facets,
-  ...props
-}: DynamicFilterBarProps & Omit<React.ComponentProps<typeof FilterPanel>, "categories" | "attributes" | "priceBuckets">) {
-  const data = use(facets);
-  return (
-    <>
-      {!data && <p role="status" className="mb-3 text-sm text-muted-foreground">Filter options couldn’t load.</p>}
-      <FilterPanel {...props} categories={data?.categories} attributes={data?.attributes} priceBuckets={data?.price.buckets ?? []} />
-    </>
-  );
+  facetParams: ProductListParams;
 }
 
 const SORT_LABEL: Record<string, string> = {
@@ -42,103 +32,77 @@ const SORT_LABEL: Record<string, string> = {
   price_asc: "Price: Low to High",
 };
 
-export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
+export default function DynamicFilterBar({ facetParams }: DynamicFilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [isOpen, setIsOpen] = useState(false);
+  const facetsQuery = useQuery({
+    queryKey: ["product-facets", facetParams],
+    queryFn: () => fetchProductFacets(facetParams),
+    placeholderData: keepPreviousData,
+    enabled: isOpen,
+    staleTime: 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
   const currentSort = searchParams.get("sort") || "newest";
 
-  const selectedAttributes = useMemo(
-    () => parseAttributesParam(searchParams.get("attrs")),
-    [searchParams]
-  );
+  const selectedAttributes = parseAttributesParam(searchParams.get("attrs"));
 
-  const selectedCategories = useMemo(
-    () => parseCategoriesParam(searchParams.get("categories")),
-    [searchParams]
-  );
+  const selectedCategories = parseCategoriesParam(searchParams.get("categories"));
 
-  const selectedBucket = useMemo<PriceBucket | null>(() => {
+  const selectedBucket = (() => {
     const rawMax = searchParams.get("maxPrice");
     if (rawMax === null) return null;
     const min = Number(searchParams.get("minPrice"));
     const max = Number(rawMax);
     if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
     return { from: min, to: max };
-  }, [searchParams]);
+  })() satisfies PriceBucket | null;
 
   const [draftCategories, setDraftCategories] = useState(selectedCategories);
   const [draftAttributes, setDraftAttributes] = useState(selectedAttributes);
   const [draftBucket, setDraftBucket] = useState<PriceBucket | null>(selectedBucket);
 
-  const searchParamsRef = useRef(searchParams);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingParamsRef = useRef<Record<string, string | null>>({});
+  const [isNavigating, startTransition] = useTransition();
+  const pendingSearch = useRef(searchParams.toString());
+  const [syncedSearchParams, setSyncedSearchParams] = useState(searchParams);
 
-  useEffect(() => {
-    searchParamsRef.current = searchParams;
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (debounceRef.current) return;
+  if (!isNavigating && syncedSearchParams !== searchParams) {
+    setSyncedSearchParams(searchParams);
     setDraftCategories(selectedCategories);
     setDraftAttributes(selectedAttributes);
     setDraftBucket(selectedBucket);
-  }, [selectedAttributes, selectedBucket, selectedCategories]);
-
-  const pushParams = useCallback(
-    (newParams: Record<string, string | null>, debounceMs = 0, scroll = true) => {
-      const apply = (patch: Record<string, string | null>) => {
-        const params = new URLSearchParams(searchParamsRef.current.toString());
-        Object.entries(patch).forEach(([key, value]) => {
-          if (value === null || value === "") {
-            params.delete(key);
-          } else {
-            params.set(key, value);
-          }
-        });
-        params.set("page", "1");
-        pendingParamsRef.current = {};
-        startTransition(() => {
-          router.push(`${pathname}?${params.toString()}`, { scroll });
-        });
-      };
-
-      if (debounceMs <= 0) {
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-          debounceRef.current = null;
-        }
-        const patch = { ...pendingParamsRef.current, ...newParams };
-        apply(patch);
-        return;
-      }
-
-      pendingParamsRef.current = { ...pendingParamsRef.current, ...newParams };
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        debounceRef.current = null;
-        apply(pendingParamsRef.current);
-      }, debounceMs);
-    },
-    [pathname, router]
-  );
+  }
 
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+    if (!isNavigating) pendingSearch.current = searchParams.toString();
+  }, [isNavigating, searchParams]);
+
+  const pushParams = (patch: Record<string, string | null>, scroll = true) => {
+    const current = pendingSearch.current;
+    const params = new URLSearchParams(current);
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value === null || value === "") params.delete(key);
+      else params.set(key, value);
+    });
+    if (params.toString() === current) return;
+    params.set("page", "1");
+    pendingSearch.current = params.toString();
+    startTransition(() => {
+      router.push(pathname + "?" + pendingSearch.current, { scroll });
+    });
+  };
 
   const handleToggleCategory = (slug: string) => {
     const next = draftCategories.includes(slug)
       ? draftCategories.filter((item) => item !== slug)
       : [...draftCategories, slug];
     setDraftCategories(next);
-    pushParams({ categories: next.length > 0 ? next.join(",") : null }, 400);
+    pushParams({ categories: next.length > 0 ? next.join(",") : null });
   };
 
   const handleAttributeChange = (attributeId: string, valueIds: string[]) => {
@@ -146,22 +110,19 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
     if (valueIds.length > 0) next[attributeId] = valueIds;
     else delete next[attributeId];
     setDraftAttributes(next);
-    pushParams({ attrs: serializeAttributesParam(next) ?? null }, 400);
+    pushParams({ attrs: serializeAttributesParam(next) ?? null });
   };
 
   const handleSelectBucket = (bucket: PriceBucket | null) => {
     setDraftBucket(bucket);
     if (!bucket) {
-      pushParams({ minPrice: null, maxPrice: null }, 400);
+      pushParams({ minPrice: null, maxPrice: null });
       return;
     }
-    pushParams(
-      {
-        minPrice: String(bucket.from),
-        maxPrice: String(bucket.to),
-      },
-      400
-    );
+    pushParams({
+      minPrice: String(bucket.from),
+      maxPrice: String(bucket.to),
+    });
   };
 
   const handleClearAll = () => {
@@ -177,9 +138,12 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
   };
 
   const handleSortChange = (sort: string) => {
-    pushParams({
-      sort: sort === "newest" ? null : sort,
-    }, 0, false);
+    pushParams(
+      {
+        sort: sort === "newest" ? null : sort,
+      },
+      false
+    );
   };
 
   const activeCount =
@@ -206,7 +170,10 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
               Filters
             </span>
             {activeCount > 0 ? (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-zinc-900">
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-md
+               bg-white text-xs font-semibold text-zinc-900"
+              >
                 {activeCount}
               </span>
             ) : null}
@@ -218,12 +185,12 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
             </div>
             <details
               className="group relative min-w-0"
-              onBlur={event => {
+              onBlur={(event) => {
                 if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
                   event.currentTarget.open = false;
                 }
               }}
-              onKeyDown={event => {
+              onKeyDown={(event) => {
                 if (event.key !== "Escape" || !event.currentTarget.open) return;
                 event.stopPropagation();
                 event.currentTarget.open = false;
@@ -247,7 +214,14 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
                     <button
                       type="button"
                       aria-pressed={currentSort === sort}
-                      onClick={() => handleSortChange(sort)}
+                      onClick={event => {
+                        const menu = event.currentTarget.closest("details");
+                        if (menu) {
+                          menu.open = false;
+                          menu.querySelector("summary")?.focus();
+                        }
+                        handleSortChange(sort);
+                      }}
                       className="min-h-11 w-full whitespace-nowrap rounded px-3 text-left text-sm hover:bg-zinc-100 aria-pressed:bg-zinc-100 aria-pressed:font-semibold"
                     >
                       {label}
@@ -269,7 +243,7 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
               </DrawerTitle>
               <DrawerClose
                 aria-label="Close filters"
-                className="rounded-full p-3 transition-all hover:bg-zinc-100"
+                className="rounded-md p-3 transition-all hover:bg-zinc-100"
               >
                 <X size={20} />
               </DrawerClose>
@@ -277,25 +251,56 @@ export default function DynamicFilterBar({ facets }: DynamicFilterBarProps) {
           </DrawerHeader>
 
           <div className="no-scrollbar flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
-            <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading filter options…</p>}>
-              <ShopFilterOptions
-                facets={facets}
-                selectedCategories={draftCategories}
-                onToggleCategory={handleToggleCategory}
-                selectedAttributes={draftAttributes}
-                onAttributeChange={handleAttributeChange}
-                selectedBucket={draftBucket}
-                onSelectBucket={handleSelectBucket}
-                onClearAll={handleClearAll}
-              />
-            </Suspense>
+            {facetsQuery.isPending ? (
+              <div role="status" aria-label="Loading filter options" className="space-y-4">
+                <div aria-hidden="true" className="space-y-4">
+                  <div className="flex h-11 items-center justify-between">
+                    <Skeleton className="h-5 w-20 bg-zinc-100 motion-reduce:animate-none" />
+                    <Skeleton className="h-4 w-12 bg-zinc-100 motion-reduce:animate-none" />
+                  </div>
+                  {[0, 1, 2].map(group => (
+                    <div key={group} className="space-y-2 rounded-md border border-gray-200 p-4">
+                      <Skeleton className="h-4 w-20 bg-zinc-100 motion-reduce:animate-none" />
+                      {[0, 1, 2].map(row => (
+                        <div key={row} className="flex min-h-9 items-center gap-2">
+                          <Skeleton className="size-4 shrink-0 rounded-sm bg-zinc-100 motion-reduce:animate-none" />
+                          <Skeleton className={
+                            "h-3.5 bg-zinc-100 motion-reduce:animate-none " + (row === 1 ? "w-24" : "w-32 max-w-full")
+                          } />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                {!facetsQuery.data && (
+                  <p role="status" className="mb-3 text-sm text-muted-foreground">
+                    Filter options couldn?t load.
+                  </p>
+                )}
+                <FilterPanel
+                  categories={facetsQuery.data?.categories}
+                  attributes={facetsQuery.data?.attributes}
+                  priceBuckets={facetsQuery.data?.price.buckets ?? []}
+                  selectedCategories={draftCategories}
+                  onToggleCategory={handleToggleCategory}
+                  selectedAttributes={draftAttributes}
+                  onAttributeChange={handleAttributeChange}
+                  selectedBucket={draftBucket}
+                  onSelectBucket={handleSelectBucket}
+                  onClearAll={handleClearAll}
+                />
+              </>
+            )}
           </div>
 
           <div className="shrink-0 border-t bg-white px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-8">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="flex min-h-11 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-black"
+              className="flex min-h-11 w-full items-center justify-center rounded-md bg-zinc-900 px-6 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-black"
             >
               View results
             </button>

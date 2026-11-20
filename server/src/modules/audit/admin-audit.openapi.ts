@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   successResponse,
@@ -17,7 +17,7 @@ registry.registerPath({
   path: "/api/v1/admin/audit-log",
   tags: [TAG],
   summary: "List admin audit logs",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listAdminAuditLogsQuerySchema },
   responses: {
     200: successResponse("Audit logs fetched"),
@@ -30,7 +30,7 @@ registry.registerPath({
   path: "/api/v1/admin/audit-log/export",
   tags: [TAG],
   summary: "Export admin audit logs",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: exportAdminAuditLogsQuerySchema },
   responses: {
     200: successResponse("Audit logs exported"),
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/admin/audit-log/{id}",
   tags: [TAG],
   summary: "Get an admin audit log by id",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Audit log fetched"),

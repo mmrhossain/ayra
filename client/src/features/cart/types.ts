@@ -56,7 +56,8 @@ export type CartState = {
   couponCode: string | null;
   cartLoading: Record<string, boolean>;
   setCartLoading: (id: string, loading: boolean) => void;
-  fetchCart: () => Promise<void>;
+  fetchCart: (owner?: "guest" | "customer") => Promise<void>;
+  addToCart: (variantId: string, quantity: number, snapshot?: CartItemSnapshot) => Promise<{ message: string }>;
   updateCart: (
     variantId: string,
     quantity: number,
@@ -66,3 +67,4 @@ export type CartState = {
   removeCoupon: () => Promise<{ message: string }>;
   clearCart: () => void;
 };
+export type CartMutationResult = { message: string; snapshot?: CartSnapshot };

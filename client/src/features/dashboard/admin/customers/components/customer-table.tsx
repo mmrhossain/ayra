@@ -63,7 +63,6 @@ export function UserTable({ initialData, initialRole, initialStatus }: Props) {
     initialStatus,
   });
 
-  // React Compiler অটোমেটিক মেমোরাইজ করবে (useMemo ছাড়া)
   const q = search.trim().toLowerCase();
   const items = q
     ? listItems.filter(

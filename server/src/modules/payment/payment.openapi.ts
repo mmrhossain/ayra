@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -18,13 +18,19 @@ import {
 } from "./validators/payment.validators.ts";
 
 const TAG = "Payments";
+const gatewayBody = (schema: z.ZodTypeAny) => ({
+  content: {
+    "application/x-www-form-urlencoded": { schema },
+    "application/json": { schema },
+  },
+});
 
 registry.registerPath({
   method: "post",
   path: "/api/v1/payments/{orderId}/initiate",
   tags: [TAG],
   summary: "Initiate payment for an order",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ orderId: z.string().min(1) }),
     body: jsonBody(initiatePaymentSchema),
@@ -41,7 +47,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "SSLCommerz success callback (POST body or GET query; redirects to storefront)",
   security: [],
-  request: { body: jsonBody(sslcommerzSuccessSchema) },
+  request: { body: gatewayBody(sslcommerzSuccessSchema) },
   responses: {
     302: { description: "Redirect to storefront payment success or failed page" },
     ...errorResponses(400),
@@ -67,7 +73,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "SSLCommerz failed callback (POST body or GET query; redirects to storefront)",
   security: [],
-  request: { body: jsonBody(sslcommerzFailCancelSchema) },
+  request: { body: gatewayBody(sslcommerzFailCancelSchema) },
   responses: {
     302: { description: "Redirect to storefront payment failed page" },
     ...errorResponses(400),
@@ -93,7 +99,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "SSLCommerz cancelled callback (POST body or GET query; redirects to storefront)",
   security: [],
-  request: { body: jsonBody(sslcommerzFailCancelSchema) },
+  request: { body: gatewayBody(sslcommerzFailCancelSchema) },
   responses: {
     302: { description: "Redirect to storefront payment cancelled page" },
     ...errorResponses(400),
@@ -117,9 +123,9 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/payments/sslcommerz/ipn",
   tags: [TAG],
-  summary: "SSLCommerz IPN webhook (signature-based, no bearer auth)",
+  summary: "SSLCommerz IPN webhook",
   security: [],
-  request: { body: jsonBody(sslcommerzIpnSchema) },
+  request: { body: gatewayBody(sslcommerzIpnSchema) },
   responses: {
     200: successResponse("IPN processed"),
     ...errorResponses(400),
@@ -131,7 +137,7 @@ registry.registerPath({
   path: "/api/v1/admin/payments",
   tags: [TAG],
   summary: "List payments (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listPaymentsQuerySchema },
   responses: {
     200: successResponse("Payments fetched"),
@@ -144,7 +150,7 @@ registry.registerPath({
   path: "/api/v1/admin/refunds",
   tags: [TAG],
   summary: "List refunds (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listRefundsQuerySchema },
   responses: {
     200: successResponse("Refunds fetched"),
@@ -157,7 +163,7 @@ registry.registerPath({
   path: "/api/v1/admin/refunds/{refundId}",
   tags: [TAG],
   summary: "Update refund status (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ refundId: z.string().min(1) }),
     body: jsonBody(refundStatusSchema),
@@ -173,7 +179,7 @@ registry.registerPath({
   path: "/api/v1/admin/payments/{id}",
   tags: [TAG],
   summary: "Get payment by id including gatewayResponse (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Payment fetched"),
@@ -186,7 +192,7 @@ registry.registerPath({
   path: "/api/v1/admin/payments/cod/{paymentId}/collect",
   tags: [TAG],
   summary: "Collect COD payment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ paymentId: z.string().min(1) }) },
   responses: {
     200: successResponse("Payment collected"),
@@ -199,7 +205,7 @@ registry.registerPath({
   path: "/api/v1/admin/payments/{paymentId}/refund",
   tags: [TAG],
   summary: "Refund a payment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ paymentId: z.string().min(1) }),
     body: jsonBody(refundSchema),

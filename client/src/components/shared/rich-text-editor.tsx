@@ -306,6 +306,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         aria-describedby={ariaDescribedBy}
         className={cn(
           "rounded-md border border-input bg-transparent shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:ring-destructive/40",
+          variant === "slim" ? "min-h-[155px]" : "min-h-[235px]",
           disabled && "pointer-events-none opacity-50",
           className,
         )}

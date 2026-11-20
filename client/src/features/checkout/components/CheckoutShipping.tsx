@@ -21,14 +21,9 @@ type CheckoutShippingProps = {
 };
 
 const CheckoutShipping = ({ onContinue }: CheckoutShippingProps) => {
-  const { formState, handleChange, fetchUpazilaList, districtList, upazilaList } = locationStore();
+  const { formState, handleChange, fetchUpazilaList, upazilaList } = locationStore();
 
-  const districtCode =
-    formState.districtCode ||
-    districtList?.find((district) => district.name === formState.district)?.code ||
-    "";
-
-  const { optionsQuery, shippingOptions } = useCheckoutShipping(formState.district, districtCode);
+  const { optionsQuery, shippingOptions, districtCode } = useCheckoutShipping();
 
   useEffect(() => {
     if (!formState.district) {

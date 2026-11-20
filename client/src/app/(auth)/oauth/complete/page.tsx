@@ -5,8 +5,6 @@ import { safeRedirectPath } from "@/features/auth/lib/oauth";
 import { mergeGuestCartOnLogin, toCartErrorMessage } from "@/features/cart/api";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { isStaffRole, staffDashboardPath } from "@/lib/api/auth/roles";
-import { useCartStore } from "@/stores/useCartStore";
-import { useWishStore } from "@/stores/useWishStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
@@ -18,35 +16,26 @@ function OAuthComplete() {
   useEffect(() => {
     let cancelled = false;
 
-    const syncCustomerData = async () => {
-      try {
-        await mergeGuestCartOnLogin();
-        await Promise.all([
-          useCartStore.getState().fetchCart(),
-          useWishStore.getState().fetchWishList(),
-        ]);
-      } catch (syncErr) {
-        console.error(toCartErrorMessage(syncErr));
-      }
-    };
-
     const finish = async () => {
       let role: string | null | undefined;
-      let sessionLoaded = false;
+      let signedIn = false;
       try {
         const { data: session } = await authClient.getSession();
         role = session?.user?.role;
-        sessionLoaded = true;
+        signedIn = Boolean(session?.user);
       } catch (sessionErr) {
         console.error(toCartErrorMessage(sessionErr));
       }
 
-      const dashboard = staffDashboardPath(role);
-      if (!cancelled) router.replace(dashboard ?? redirect);
-
-      if (sessionLoaded && !isStaffRole(role)) {
-        void syncCustomerData();
+      if (cancelled) return;
+      if (signedIn && !isStaffRole(role)) {
+        try {
+          await mergeGuestCartOnLogin();
+        } catch (syncErr) {
+          console.error(toCartErrorMessage(syncErr));
+        }
       }
+      if (!cancelled) router.replace(staffDashboardPath(role) ?? redirect);
     };
 
     void finish();

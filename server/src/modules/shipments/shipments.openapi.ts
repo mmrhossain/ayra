@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -35,7 +35,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments",
   tags: [TAG],
   summary: "List shipments (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listShipmentsQuerySchema },
   responses: {
     200: successResponse("Shipments fetched"),
@@ -48,7 +48,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments/order-context/{reference}",
   tags: [TAG],
   summary: "Get shipment order context by order id or number (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ reference: z.string().trim().min(1).max(100) }),
   },
@@ -63,7 +63,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments/{id}",
   tags: [TAG],
   summary: "Get shipment by id (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipment fetched"),
@@ -76,7 +76,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments",
   tags: [TAG],
   summary: "Create shipment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createShipmentSchema) },
   responses: {
     201: successResponse("Shipment created"),
@@ -89,7 +89,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments/{id}/status",
   tags: [TAG],
   summary: "Update shipment status (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: idParam,
     body: jsonBody(updateShipmentStatusSchema),

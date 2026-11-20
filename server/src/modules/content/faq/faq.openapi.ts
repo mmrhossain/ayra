@@ -1,5 +1,5 @@
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -31,7 +31,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-categories",
   tags: [TAG],
   summary: "List FAQ categories (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("FAQ categories fetched"),
     ...errorResponses(401, 403),
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-categories",
   tags: [TAG],
   summary: "Create FAQ category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createFaqCategorySchema) },
   responses: {
     201: successResponse("FAQ category created"),
@@ -56,7 +56,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-categories/{id}",
   tags: [TAG],
   summary: "Update FAQ category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: faqIdParamSchema,
     body: jsonBody(updateFaqCategorySchema),
@@ -72,7 +72,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-categories/{id}",
   tags: [TAG],
   summary: "Delete FAQ category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: faqIdParamSchema },
   responses: {
     200: successResponse("FAQ category deleted"),
@@ -85,7 +85,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-items",
   tags: [TAG],
   summary: "List FAQ items (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listFaqItemsQuerySchema },
   responses: {
     200: successResponse("FAQ items fetched"),
@@ -98,7 +98,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-items",
   tags: [TAG],
   summary: "Create FAQ item (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createFaqItemSchema) },
   responses: {
     201: successResponse("FAQ item created"),
@@ -111,7 +111,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-items/{id}",
   tags: [TAG],
   summary: "Update FAQ item (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: faqIdParamSchema,
     body: jsonBody(updateFaqItemSchema),
@@ -127,7 +127,7 @@ registry.registerPath({
   path: "/api/v1/admin/faq-items/{id}",
   tags: [TAG],
   summary: "Delete FAQ item (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: faqIdParamSchema },
   responses: {
     200: successResponse("FAQ item deleted"),

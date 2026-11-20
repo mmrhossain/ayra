@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -25,7 +25,7 @@ registry.registerPath({
   path: "/api/v1/shipping/options",
   tags: [TAG],
   summary: "List available shipping options for an address",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: shippingOptionsQuerySchema },
   responses: {
     200: successResponse("Shipping options fetched"),
@@ -38,7 +38,7 @@ registry.registerPath({
   path: "/api/v1/shipping/quote",
   tags: [TAG],
   summary: "Calculate shipping for a selected method and address",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(shippingQuoteSchema) },
   responses: {
     200: successResponse("Shipping quote calculated"),
@@ -51,7 +51,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/zones",
   tags: [TAG],
   summary: "List shipping zones (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Shipping zones fetched"),
     ...errorResponses(401, 403),
@@ -63,7 +63,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/zones",
   tags: [TAG],
   summary: "Create shipping zone (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createShippingZoneSchema) },
   responses: {
     201: successResponse("Shipping zone created"),
@@ -76,7 +76,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/zones/{id}",
   tags: [TAG],
   summary: "Get shipping zone (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipping zone fetched"),
@@ -89,7 +89,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/zones/{id}",
   tags: [TAG],
   summary: "Update shipping zone (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam, body: jsonBody(updateShippingZoneSchema) },
   responses: {
     200: successResponse("Shipping zone updated"),
@@ -102,7 +102,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/zones/{id}",
   tags: [TAG],
   summary: "Delete shipping zone (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipping zone deleted"),
@@ -115,7 +115,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/methods",
   tags: [TAG],
   summary: "List shipping methods (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Shipping methods fetched"),
     ...errorResponses(401, 403),
@@ -127,7 +127,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/methods",
   tags: [TAG],
   summary: "Create shipping method (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createShippingMethodSchema) },
   responses: {
     201: successResponse("Shipping method created"),
@@ -140,7 +140,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/methods/{id}",
   tags: [TAG],
   summary: "Get shipping method (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipping method fetched"),
@@ -153,7 +153,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/methods/{id}",
   tags: [TAG],
   summary: "Update shipping method (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam, body: jsonBody(updateShippingMethodSchema) },
   responses: {
     200: successResponse("Shipping method updated"),
@@ -166,7 +166,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/rates",
   tags: [TAG],
   summary: "List shipping rates (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Shipping rates fetched"),
     ...errorResponses(401, 403),
@@ -178,7 +178,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/rates",
   tags: [TAG],
   summary: "Create shipping rate (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createShippingRateSchema) },
   responses: {
     201: successResponse("Shipping rate created"),
@@ -191,7 +191,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/rates/{id}",
   tags: [TAG],
   summary: "Get shipping rate (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipping rate fetched"),
@@ -204,7 +204,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/rates/{id}",
   tags: [TAG],
   summary: "Update shipping rate (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam, body: jsonBody(updateShippingRateSchema) },
   responses: {
     200: successResponse("Shipping rate updated"),
@@ -217,7 +217,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipping/rates/{id}",
   tags: [TAG],
   summary: "Delete shipping rate (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Shipping rate deleted"),

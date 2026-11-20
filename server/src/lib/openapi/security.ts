@@ -1,10 +1,10 @@
 import { registry } from "./registry.ts";
 
-registry.registerComponent("securitySchemes", "bearerAuth", {
-  type: "http",
-  scheme: "bearer",
-  bearerFormat: "JWT",
-  description: "Better Auth session bearer token",
+registry.registerComponent("securitySchemes", "sessionCookie", {
+  type: "apiKey",
+  in: "cookie",
+  name: "ayra.session_token",
+  description: "Better Auth session cookie. HTTPS deployments can use __Secure-ayra.session_token.",
 });
 
-export const bearerAuth = [{ bearerAuth: [] }];
+export const sessionAuth = [{ sessionCookie: [] }];

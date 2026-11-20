@@ -6,6 +6,10 @@ export const ErrorResponseSchema = registry.register(
   z.object({
     success: z.literal(false),
     message: z.string(),
+    code: z.string().optional(),
+    errors: z.unknown().optional(),
+    details: z.unknown().optional(),
+    requestId: z.string().optional(),
   })
 );
 

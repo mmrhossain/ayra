@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/deferred-rich-text-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

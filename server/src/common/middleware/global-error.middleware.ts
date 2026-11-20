@@ -6,6 +6,7 @@ import { AppError } from "../errors/AppError.ts";
 import { logger } from "../looger/logger.ts";
 import { isPrismaKnownRequestError } from "../utils/prisma-error.ts";
 import { mapPrismaError } from "../utils/error-response.ts";
+import { isTransientDbError } from "../utils/db-retry.ts";
 import { MAX_IMAGE_BYTES } from "./upload.middleware.ts";
 
 // Multer writes uploads to disk before the handler runs. On any downstream
@@ -87,6 +88,16 @@ export const globalErrorHandler = (
       statusCode = 404;
       message = "Record not found";
     }
+  }
+
+  const transientDatabaseFailure = statusCode >= 500 && isTransientDbError(err);
+  if (transientDatabaseFailure) {
+    if (statusCode === 500) {
+      statusCode = 503;
+      message = "The store is temporarily unavailable. Please try again in a moment.";
+    }
+    res.setHeader("Cache-Control", "no-store");
+    if (req.method === "GET") res.setHeader("Retry-After", "1");
   }
 
   // Log error (important for production debugging)

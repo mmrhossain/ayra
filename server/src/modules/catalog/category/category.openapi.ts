@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -30,7 +30,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "Get category by slug or nested path",
   description:
-    "Resolve a category by slug (`/categories/saree`) or nested path (`/categories/saree/jamdani`). Nested paths must match parent then child.",
+    "The slug parameter represents the wildcard category path. Use a single slug (`/categories/saree`) or slash-separated parent and child slugs (`/categories/saree/jamdani`).",
   request: { params: z.object({ slug: z.string().min(1) }) },
   responses: {
     200: successResponse("Category fetched"),
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/admin/categories",
   tags: [TAG],
   summary: "List categories (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listAdminCategoriesQuerySchema },
   responses: {
     200: successResponse("Admin categories fetched"),
@@ -58,7 +58,7 @@ registry.registerPath({
   summary: "Create category (admin)",
   description:
     "Create a category from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=category. The response variants array is [desktop 1920x820, mobile 960x1200]; use variants[0] / imageUrl as image and variants[1] / mobileImageUrl as mobileImage.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createCategorySchema) },
   responses: {
     201: successResponse("Category created"),
@@ -71,7 +71,7 @@ registry.registerPath({
   path: "/api/v1/admin/categories/{id}",
   tags: [TAG],
   summary: "Update category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateCategorySchema),
@@ -87,7 +87,7 @@ registry.registerPath({
   path: "/api/v1/admin/categories/{id}",
   tags: [TAG],
   summary: "Delete category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Category deleted"),

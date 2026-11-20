@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../../../common/utils/asyncHandler.ts";
+import { withDbRetry } from "../../../../common/utils/db-retry.ts";
 import { requireParam } from "../../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../../common/utils/response.ts";
 import {
@@ -18,7 +19,7 @@ import {
 
 export const getCategories = asyncHandler(
   async (_req: Request, res: Response) => {
-    successResponse(res, await listCategories(false), "Categories fetched");
+    successResponse(res, await withDbRetry(() => listCategories(false), 2), "Categories fetched");
   },
 );
 
@@ -56,9 +57,10 @@ const categoryPathFromParam = (value: unknown): string => {
 };
 
 export const getCategory = asyncHandler(async (req: Request, res: Response) => {
+  const slug = categoryPathFromParam(req.params.slug);
   successResponse(
     res,
-    await getCategoryBySlug(categoryPathFromParam(req.params.slug)),
+    await withDbRetry(() => getCategoryBySlug(slug), 2),
     "Category fetched",
   );
 });

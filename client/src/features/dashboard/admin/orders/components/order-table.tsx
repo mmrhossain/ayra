@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +60,9 @@ export function OrderTable({ initialData, initialSearch = "" }: Props) {
   const [page, setPage] = useState(initialData.pagination.page);
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [searchInput, setSearchInput] = useState(initialSearch);
-  const [search, setSearch] = useState(initialSearch);
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [detailOpen, setDetailOpen] = useState(false);
@@ -69,18 +71,10 @@ export function OrderTable({ initialData, initialSearch = "" }: Props) {
   const from = dateToIsoStart(fromDate);
   const to = dateToIsoEnd(toDate);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
   const { query, items, pagination } = useOrderList({
     initialData,
     initialSearch,
-    page,
+    page: queryPage,
     status,
     from,
     to,
@@ -98,7 +92,10 @@ export function OrderTable({ initialData, initialSearch = "" }: Props) {
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <Input
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
             placeholder="Order #, customer, phone"
             aria-label="Search orders"
             className="w-full sm:w-64"

@@ -9,7 +9,11 @@ import {
 } from "@/features/dashboard/admin/settings/api/settings";
 import { SettingsTabs } from "@/features/dashboard/admin/settings/components/settings-tabs";
 
-export function SettingsPageContent({ initialData }: { initialData: AdminSettingGroup[] }) {
+export function SettingsPageContent({ initialData, canWrite, canEditPayment }: {
+  initialData: AdminSettingGroup[];
+  canWrite?: boolean;
+  canEditPayment?: boolean;
+}) {
   const query = useQuery({
     queryKey: ADMIN_SETTINGS_QUERY_KEY,
     queryFn: fetchAdminSettings,
@@ -33,5 +37,5 @@ export function SettingsPageContent({ initialData }: { initialData: AdminSetting
     );
   }
 
-  return <SettingsTabs groups={query.data} />;
+  return <SettingsTabs groups={query.data} canWrite={canWrite} canEditPayment={canEditPayment} />;
 }

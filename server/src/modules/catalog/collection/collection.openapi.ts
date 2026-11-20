@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import { errorResponses, jsonBody, successResponse } from "../../../lib/openapi/common-schemas.ts";
 import { collectionCursorSchema, createCollectionSchema, listCollectionsSchema, updateCollectionSchema } from "./collection.validators.ts";
 const id = z.object({
@@ -27,7 +27,7 @@ registry.registerPath({
   path: "/api/v1/admin/collections",
   tags: ["Collections"],
   summary: "List collections",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     query: listCollectionsSchema
   },
@@ -41,7 +41,7 @@ registry.registerPath({
   path: "/api/v1/admin/collections/{id}",
   tags: ["Collections"],
   summary: "Get collection with ordered product membership",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: id
   },
@@ -55,7 +55,7 @@ registry.registerPath({
   path: "/api/v1/admin/collections",
   tags: ["Collections"],
   summary: "Create collection",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     body: jsonBody(createCollectionSchema)
   },
@@ -69,7 +69,7 @@ registry.registerPath({
   path: "/api/v1/admin/collections/{id}",
   tags: ["Collections"],
   summary: "Update collection and optionally replace ordered membership",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: id,
     body: jsonBody(updateCollectionSchema)
@@ -84,7 +84,7 @@ registry.registerPath({
   path: "/api/v1/admin/collections/{id}",
   tags: ["Collections"],
   summary: "Deactivate a collection without deleting products",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: id
   },

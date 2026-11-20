@@ -26,6 +26,7 @@ export function useProductReviews(productId: string) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [formNotice, setFormNotice] = useState<"idle" | "pending" | "duplicate">("idle");
   const [writeOpen, setWriteOpen] = useState(false);
@@ -42,6 +43,7 @@ export function useProductReviews(productId: string) {
 
     try {
       const result = await fetchProductReviews(productId, nextPage, PAGE_SIZE);
+      setLoadError(false);
 
       setReviews((prev) => {
         if (!append) return result.items;
@@ -55,7 +57,8 @@ export function useProductReviews(productId: string) {
       setTotalPages(Math.max(1, result.pagination.totalPages));
       setFormNotice("idle");
     } catch (err) {
-      errorToast(toProductReviewError(err));
+      if (!append) setLoadError(true);
+      else errorToast(toProductReviewError(err));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -79,12 +82,13 @@ export function useProductReviews(productId: string) {
       try {
         const result = await fetchProductReviews(productId, 1, PAGE_SIZE);
         if (!ignore) {
+          setLoadError(false);
           setReviews(result.items);
           setPage(result.pagination.page);
           setTotalPages(Math.max(1, result.pagination.totalPages));
         }
-      } catch (err) {
-        if (!ignore) errorToast(toProductReviewError(err));
+      } catch {
+        if (!ignore) setLoadError(true);
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -148,6 +152,11 @@ export function useProductReviews(productId: string) {
     sort,
     setSort,
     loading,
+    loadError,
+    retryReviews: () => {
+      setLoading(true);
+      void loadReviews(1);
+    },
     loadingMore,
     hasMore,
     page,

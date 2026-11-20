@@ -1,158 +1,107 @@
-# Ayra
+# AYRA Shop
 
-Ayra is a production-oriented single-store commerce platform: a Next.js storefront
-and admin dashboard backed by an Express/Prisma API.
+AYRA Shop is a single-store e-commerce application with a customer storefront, a staff dashboard, and an Express API. It supports browsing and guest carts, customer checkout and order history, and day-to-day store operations from catalog management through fulfillment.
 
-## Features
+## What’s included
 
-- Storefront catalog, search, cart, checkout, and customer accounts
-- Admin dashboard for products, variants, inventory, orders, returns, coupons,
-  reviews, FAQs, shipping zones, media, payments, refunds, and platform settings
-- COD and SSLCommerz payments with verified settlement and idempotent webhooks
-- Inventory reservation with row locking, refunds, and order status history
-- Better Auth email/password and optional Google sign-in
+| Area | Features |
+| --- | --- |
+| Storefront | Collections, category browsing, search and filters, product variants, reviews, wishlist, guest cart, coupons, and checkout |
+| Customer account | Profile, saved addresses, orders, returns, and notifications |
+| Admin dashboard | Products, inventory, tax classes, shipping zones, orders, payments, refunds, content, and staff access |
+| Integrations | Cash on delivery, SSLCommerz, optional Google sign-in, Cloudinary media, email, and courier integrations |
 
-## Stack
+## Architecture
 
-- Client: Next.js 16, React 19, TypeScript, Tailwind CSS 4
-- API: Node 22, Express 5, TypeScript, Prisma 7
-- Data: PostgreSQL 16, Redis 7
-- Payments: SSLCommerz (COD built in)
-- Media: Cloudinary, Resend/SMTP email
+- `client/` contains the Next.js App Router storefront and dashboard, built with React, TypeScript, Tailwind CSS, and TanStack Query.
+- `server/` contains the Express API, Better Auth configuration, Prisma schema and migrations, OpenAPI definitions, and integration tests.
+- `docs/` contains repository-specific performance and responsive-layout audits. CI is defined in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-## Requirements
+Browser API requests go through the Next.js `/backend-proxy` rewrite. Server-rendered pages call Express through `BACKEND_ORIGIN`. Better Auth uses session cookies. Express enforces customer ownership, staff scopes, and action permissions. PostgreSQL stores application data, and Redis supports the API’s session and infrastructure services.
 
-- Node.js >= 22 and npm
-- PostgreSQL >= 16
-- Redis >= 7
-- Docker with Compose v2 (recommended path)
+## Run locally
 
-## Quick start with Docker
+Use Node.js 22+, npm, PostgreSQL 16+, and Redis 7+. Start PostgreSQL and Redis before running the API. Run the commands below from the repository root.
 
 ```bash
-cp server/.env.example server/.env
-# edit server/.env: set BETTER_AUTH_SECRET and a strong ADMIN_PASSWORD
-docker compose up -d --build
-```
-
-- Storefront: http://localhost:3000
-- API: http://localhost:5000/api/v1
-- API docs (non-production): http://localhost:5000/api-docs
-
-The server container runs `prisma migrate deploy` on start. Create the first admin:
-
-```bash
-docker compose exec server npm run seed:admin
-```
-
-The Compose Postgres password (`ayra-local-only`) is for local development only.
-Change it before exposing the stack to any network.
-
-## Manual setup
-
-```bash
-npm run install:all
 cp server/.env.example server/.env
 cp client/.env.example client/.env
-# edit both files
+npm run install:all
+```
 
+On PowerShell, use `Copy-Item server/.env.example server/.env` and `Copy-Item client/.env.example client/.env` for the copy steps. Edit the local environment files before continuing. Set working PostgreSQL and Redis URLs, a generated `BETTER_AUTH_SECRET`, and your bootstrap admin credentials.
+
+```bash
 cd server
-npx prisma migrate deploy
+npx prisma generate
+cd ..
+npm run migrate
 npm run seed:admin
-npm run dev
 ```
 
-In a second terminal:
+`seed:admin` uses `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_ROLE=ADMIN` to bootstrap a super admin. If the email already exists, the script updates access and keeps the existing password. For a fresh checkout setup, configure the warehouse, inventory, and shipping in the dashboard. The [optional server seed](server/prisma/seed.ts) also installs default warehouse, shipping, and email-template records. It expects `SEED_ADMIN_PASSWORD` and either `SEED_ADMIN_EMAIL` or `ADMIN_EMAIL`.
+
+Start each development process in a separate terminal.
 
 ```bash
-cd client
-npm run dev
+npm run dev:server
+npm run dev:client
 ```
 
-## Environment
+| Service | Local URL |
+| --- | --- |
+| Storefront | [localhost:3000](http://localhost:3000) |
+| Admin dashboard | [localhost:3000/admin](http://localhost:3000/admin) |
+| API base | [localhost:5000/api/v1](http://localhost:5000/api/v1) |
+| Swagger UI | [localhost:5000/api-docs](http://localhost:5000/api-docs) |
+| OpenAPI JSON | [localhost:5000/api-docs.json](http://localhost:5000/api-docs.json) |
+| API health and dependency readiness | [`/health`](http://localhost:5000/health) · [`/ready`](http://localhost:5000/ready) |
 
-See `server/.env.example` and `client/.env.example`.
+## Configuration
 
-Required server values:
+Start with the [server environment template](server/.env.example) and the [client environment template](client/.env.example). Keep real environment files and credentials out of version control.
 
-- `NODE_ENV`, `PORT`, `FRONTEND_URL`
-- `DATABASE_URL`, `DIRECT_URL`
-- `REDIS_URL` (required outside `NODE_ENV=test`)
-- `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
-- `ACCESS_TOKEN_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`
-- `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRES_IN`
-- `RESEND_FROM`
+| Setting | Purpose |
+| --- | --- |
+| `DATABASE_URL`, `DIRECT_URL`, `REDIS_URL` | API database, Prisma migration connection, and Redis |
+| `FRONTEND_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET` | Trusted storefront origin, Better Auth base origin, and session secret |
+| `BACKEND_ORIGIN` | Client-side project configuration for the Next.js server’s Express upstream |
+| `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_SUPPORT_EMAIL` | Public branding and site metadata. Rebuild the client after changing build-time public values. |
+| `ENABLE_API_DOCS` | Swagger is enabled outside production. Set this to `true` to enable it in a production-mode environment. |
+| `SETTINGS_ENCRYPTION_KEY` | Optional dedicated key for encrypted platform settings. Keep it stable after storing payment credentials. |
 
-`ACCESS_TOKEN_*` and `REFRESH_TOKEN_*` are reserved and currently unused, but the
-environment schema still requires them.
+The server template includes the required reserved token settings. Google OAuth, media uploads, email delivery, online payments, and automated courier booking require their respective provider configuration. Use SSLCommerz sandbox credentials and a gateway-reachable callback URL when testing online payments.
 
-Optional: `SETTINGS_ENCRYPTION_KEY` uses a dedicated key for platform-setting
-secrets. When unset, the key is derived from `BETTER_AUTH_SECRET`. Set it before
-storing payment secrets; changing it makes stored secrets undecryptable.
+## Working on the API
 
-Client values:
-
-- `BACKEND_ORIGIN` (server-side proxy target)
-- `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL`
-- `NEXT_PUBLIC_BETTER_AUTH_URL`, `NEXT_PUBLIC_CALLBACK_URL`
-
-`NEXT_PUBLIC_*` values are inlined at build time. Rebuild the client after changing
-them.
-
-## Database
-
-- `npx prisma migrate deploy` applies all migrations, including live constraints
-  and trigram search indexes.
-- `npm run db:constraints` and `npm run db:search-indexes` are legacy fallbacks for
-  databases created before migration `20261019090000_live_constraints`.
-- `npm run seed` creates demo data; `npm run seed:admin` creates the first admin.
-- Seeded admins are email-verified by default. Set `ADMIN_EMAIL_VERIFIED=false` only
-  when testing the verification flow.
-
-## Payments
-
-COD is always available. Configure SSLCommerz with `SSLCOMMERZ_STORE_ID`,
-`SSLCOMMERZ_STORE_PASSWORD`, and `SSLCOMMERZ_SANDBOX`. Production credentials can
-also be managed in Admin > Settings.
-
-`BKASH`, `NAGAD`, `STRIPE`, `PAYPAL`, and `BANK_TRANSFER` exist in the database
-enum but are not implemented.
-
-## Testing
+OpenAPI definitions live alongside the Express modules. Update the relevant `*.openapi.ts` when changing a request, response, route, or access rule. Refresh [the checked-in OpenAPI snapshot](client/openapi-dashboard.json) from the local API, then regenerate both client type files.
 
 ```bash
-cd server && SKIP_DB_SETUP=1 ./node_modules/.bin/vitest run tests/settings/settings.registry.test.ts tests/settings/settings.crypto.test.ts
-cd server && ./node_modules/.bin/tsc --noEmit
-cd client && npm test
-cd client && npm run type-check
+curl -fsS http://localhost:5000/api-docs.json -o client/openapi-dashboard.json
+npm --prefix client run generate:api
+npm --prefix client run generate:dashboard-api
 ```
 
-Client tests cover redirect safety and HTML sanitization. GitHub Actions runs both
-jobs on push and pull request (`.github/workflows/ci.yml`).
+Use `curl.exe` on PowerShell. Protected calls use the Better Auth session cookie. To try them in Swagger, sign in on the same host first. Checkout uses `POST /api/v1/checkout`. Reuse the same `Idempotency-Key` with the same payload when retrying an order submission.
 
-`npm test` runs the client suite. `npm run test:server` runs the full API suite and
-requires a test database.
+## Checks
 
-Database-backed suites refuse to run unless the database name contains `test`.
-Set `ALLOW_NON_TEST_DB=1` only for a disposable database.
+```bash
+npm run test:client
+npm --prefix client run lint
+npm --prefix client run type-check
+npm --prefix server run lint
+npm run build
+```
 
-## Project structure
+For a server type check without writing build output, run `npx tsc --noEmit` from `server/`.
 
-- `client/` Next.js storefront and dashboard
-- `server/` Express API, Prisma schema, migrations, tests
-- `docs/` deployment, upgrade, and design documents
-
-## Demo content
-
-The About and Vision pages contain sample marketing copy. Replace them before
-launch. Support email, social links, site name, and site URL are configured
-through `client/.env`.
+Run `npm run test:server` against a disposable database whose name contains `test`. Point both database URLs at that database and apply the migrations first. For an individual database-free suite, run it from `server/` with `SKIP_DB_SETUP=1` set. [CI](.github/workflows/ci.yml) lists the database-free suites used in automated checks.
 
 ## Deployment
 
-See `docs/DEPLOYMENT.md` for Docker Compose, Render/Vercel, HTTPS, and backup
-guidance. See `docs/UPGRADING.md` for upgrades of existing installations.
+The [Compose file](docker-compose.yml) defines the storefront, API, PostgreSQL, and Redis. The [API image](server/Dockerfile) applies migrations at startup, and the [client image](client/Dockerfile) runs Next.js standalone output. Compose uses local database credentials and localhost origins. Set deployment-specific secrets, HTTPS origins, provider callbacks, and database backups before using it outside local development.
 
 ## License
 
-MIT. See `LICENSE`. MIT permits commercial use, modification, and redistribution.
+[MIT](LICENSE)

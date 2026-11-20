@@ -175,10 +175,10 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 <dd
                   className={cn(
                     "mt-0.5 min-h-5 font-medium",
-                    stock > 0 ? "text-foreground" : "text-danger"
+                    !isComplete || stock > 0 ? "text-foreground" : "text-danger"
                   )}
                 >
-                  {stock > 0 ? "In stock" : "Out of stock"}
+                  {!isComplete ? "Choose options" : !selected ? "Unavailable" : stock > 0 ? "In stock" : "Out of stock"}
                 </dd>
               </div>
             </dl>
@@ -197,6 +197,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                   onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
                   onIncrease={() => setQuantity((q) => Math.min(Math.max(stock || 1, 1), q + 1))}
                   decreaseDisabled={quantity <= 1}
+                  increaseDisabled={!canAddToCart || quantity >= stock}
                   className="h-12 w-full min-h-12 rounded-none border border-border-color bg-background sm:h-[52px] sm:min-h-[52px] md:h-[52px] lg:min-w-0"
                 />
               </div>
@@ -301,12 +302,17 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                  type="button"
                  onClick={() => void toggleWishlist()}
                  disabled={!selectedId || wishBusy || !selected}
+                 aria-busy={wishBusy}
                  aria-pressed={inWish}
                  aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
                  title={inWish ? "Remove from wishlist" : "Add to wishlist"}
                  className="flex h-12 min-h-12 w-12 shrink-0 cursor-pointer items-center justify-center border border-ink text-foreground transition-colors hover:bg-bg-primary disabled:cursor-not-allowed disabled:opacity-40 sm:h-[52px] sm:min-h-[52px] sm:w-[52px]"
                >
-                <Heart size={20} className={cn(inWish && "fill-current")} />
+                {wishBusy ? (
+                  <span aria-hidden="true" className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <Heart size={20} className={cn(inWish && "fill-current")} />
+                )}
               </button>
 
                <button

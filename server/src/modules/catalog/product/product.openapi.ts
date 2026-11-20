@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -24,7 +24,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "List products",
   description:
-    "Public catalog of ACTIVE products with cursor pagination by default; page-based pagination remains available when page is supplied. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. Admin may pass includeInactive=true or status=DRAFT|ACTIVE|ARCHIVED.",
+    "Public catalog of ACTIVE products with cursor pagination by default; page-based pagination remains available when page is supplied. featured=true returns only featured products. onSale=true returns products with at least one variant where compareAtPrice > price. includeInactive and status are applied only for active staff with catalog access.",
   request: { query: listProductsQuerySchema },
   responses: {
     200: successResponse("Products fetched"),
@@ -38,7 +38,7 @@ registry.registerPath({
   tags: [TAG],
   summary: "Get product filter facets",
   description:
-    "Public facet counts for the same filters as GET /products (category, brand, price, attributes). featured and onSale apply the same catalog scope.",
+    "Public facet counts for the same filters as GET /products. includeInactive and status are applied only for active staff with catalog access.",
   request: { query: productFacetsQuerySchema },
   responses: {
     200: successResponse("Product facets fetched"),
@@ -63,7 +63,7 @@ registry.registerPath({
   path: "/api/v1/admin/products/{id}",
   tags: [TAG],
   summary: "Get product by id including draft and archived (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Product fetched"),
@@ -76,7 +76,7 @@ registry.registerPath({
   path: "/api/v1/admin/products",
   tags: [TAG],
   summary: "Create product (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createProductSchema) },
   responses: {
     201: successResponse("Product created"),
@@ -89,7 +89,7 @@ registry.registerPath({
   path: "/api/v1/admin/products/{id}",
   tags: [TAG],
   summary: "Update product (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateProductSchema),
@@ -105,7 +105,7 @@ registry.registerPath({
   path: "/api/v1/admin/products/{id}",
   tags: [TAG],
   summary: "Delete product (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Product deleted"),
@@ -120,7 +120,7 @@ registry.registerPath({
   summary: "Bulk update products (admin)",
   description:
     "Apply one action (set-status, set-featured, set-category, delete) to up to 100 products. Returns requested/affected counts and the ids that could not be resolved.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(bulkProductActionSchema) },
   responses: {
     200: successResponse("Products updated"),
@@ -133,7 +133,7 @@ registry.registerPath({
   path: "/api/v1/admin/products/{productId}/variants",
   tags: [TAG],
   summary: "Create product variant (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ productId: z.string().min(1) }),
     body: jsonBody(createVariantSchema),
@@ -149,7 +149,7 @@ registry.registerPath({
   path: "/api/v1/admin/variants/{id}",
   tags: [TAG],
   summary: "Update variant (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateVariantSchema),
@@ -165,7 +165,7 @@ registry.registerPath({
   path: "/api/v1/admin/variants/{id}",
   tags: [TAG],
   summary: "Delete variant (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Variant deleted"),

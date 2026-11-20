@@ -76,6 +76,22 @@ afterEach(() => {
 });
 
 describe("NotificationBell", () => {
+  it("opens without locking page scroll or hiding the navbar", async () => {
+    await act(async () => root.render(<NotificationBell />));
+    const trigger = container.querySelector("button")!;
+    await act(async () => {
+      trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    });
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(document.body.hasAttribute("data-scroll-locked")).toBe(false);
+    expect(document.body.style.pointerEvents).not.toBe("none");
+    expect(container.getAttribute("aria-hidden")).not.toBe("true");
+    await act(async () => {
+      document.querySelector('[role="menu"]')!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("keeps the menu open when marking notifications read", async () => {
     includeLink = false;
     await act(async () => root.render(<NotificationBell />));

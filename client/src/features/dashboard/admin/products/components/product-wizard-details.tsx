@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchTaxClasses, taxClassesKey } from "../api/tax-classes";
 import type { UseFormReturn } from "react-hook-form";
 
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/deferred-rich-text-editor";
 import {
   Form,
   FormControl,
@@ -80,7 +80,7 @@ export function ProductWizardDetails({
                   </Link>
                 </p>
               ) : (
-                <Select onValueChange={field.onChange} value={field.value || undefined}>
+                <Select onValueChange={field.onChange} value={field.value ?? ""}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select category" />

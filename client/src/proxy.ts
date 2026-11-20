@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE } from "./config/public";
+import { AUTH_RETURN_PATH_HEADER, SESSION_COOKIE } from "./config/public";
 
 function hasSessionCookie(request: NextRequest): boolean {
   const session =
@@ -10,6 +10,9 @@ function hasSessionCookie(request: NextRequest): boolean {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const returnUrl = request.nextUrl.clone();
+  returnUrl.searchParams.delete("_rsc");
+  const returnPath = pathname + returnUrl.search;
   const isLoggedIn = hasSessionCookie(request);
 
   const isAuthPage =
@@ -21,14 +24,16 @@ export function proxy(request: NextRequest) {
   if (!isLoggedIn && !isAuthPage) {
     const loginUrl = new URL("/login", request.url);
 
-    loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("redirect", returnPath);
 
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  const headers = new Headers(request.headers);
+  headers.set(AUTH_RETURN_PATH_HEADER, returnPath);
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/admin/:path*", "/customer/:path*", "/checkout"],
+  matcher: ["/login", "/register", "/admin/:path*", "/customer/:path*", "/checkout/:path*"],
 };

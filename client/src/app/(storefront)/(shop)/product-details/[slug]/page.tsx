@@ -8,7 +8,9 @@ import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import { PUBLIC_SITE_URL, SITE_NAME } from "@/config/site";
 import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
 import { Metadata } from "next";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
+
+const loadProduct = cache(fetchProduct);
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -25,7 +27,7 @@ function firstImageUrl(product: {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const [product, settings] = await Promise.all([
-    fetchProduct(slug),
+    loadProduct(slug),
     fetchPublicSettingsOrDefault(),
   ]);
   const siteName = settings.store.name || SITE_NAME;
@@ -75,11 +77,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  const product = await fetchProduct(slug);
+  const [product, settings] = await Promise.all([
+    loadProduct(slug),
+    fetchPublicSettingsOrDefault(),
+  ]);
 
   if (!product) return <ProductNotFound />;
 
-  const settings = await fetchPublicSettingsOrDefault();
   const description = (product.description || "").replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim();
   const images = (product.images ?? [])
     .map((image) => image.imageUrl)

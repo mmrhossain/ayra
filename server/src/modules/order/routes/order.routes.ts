@@ -3,7 +3,7 @@ import {
   requireAuth,
   requireCustomer,
 } from "../../../common/middleware/auth.middleware.ts";
-import { idempotency } from "../../../common/middleware/idempotency.middleware.ts";
+import { checkoutIdempotency } from "../../../common/middleware/idempotency.middleware.ts";
 import { checkoutLimiter } from "../../../common/middleware/rate-limit.middleware.ts";
 
 import {
@@ -22,7 +22,7 @@ router.post(
   "/checkout",
   ...customerOnly,
   checkoutLimiter,
-  idempotency("checkout"),
+  checkoutIdempotency,
   checkoutHandler,
 );
 router.get("/orders", ...customerOnly, listMyOrdersHandler);

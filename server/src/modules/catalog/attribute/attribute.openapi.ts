@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/admin/attributes",
   tags: [TAG],
   summary: "Create attribute (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createAttributeSchema) },
   responses: {
     201: successResponse("Attribute created"),
@@ -56,7 +56,7 @@ registry.registerPath({
   path: "/api/v1/admin/attributes/{id}",
   tags: [TAG],
   summary: "Update attribute (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateAttributeSchema),
@@ -72,7 +72,7 @@ registry.registerPath({
   path: "/api/v1/admin/attributes/{id}",
   tags: [TAG],
   summary: "Delete attribute (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Attribute deleted"),
@@ -85,7 +85,7 @@ registry.registerPath({
   path: "/api/v1/admin/attributes/{attributeId}/values",
   tags: [TAG],
   summary: "Create attribute value (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ attributeId: z.string().min(1) }),
     body: jsonBody(createAttributeValueSchema),
@@ -101,7 +101,7 @@ registry.registerPath({
   path: "/api/v1/admin/attributes/{attributeId}/values/bulk",
   tags: [TAG],
   summary: "Bulk create attribute values (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ attributeId: z.string().min(1) }),
     body: jsonBody(createAttributeValuesSchema),
@@ -117,7 +117,7 @@ registry.registerPath({
   path: "/api/v1/admin/attribute-values/{id}",
   tags: [TAG],
   summary: "Update attribute value (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateAttributeValueSchema),
@@ -133,7 +133,7 @@ registry.registerPath({
   path: "/api/v1/admin/attribute-values/{id}",
   tags: [TAG],
   summary: "Delete attribute value (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Attribute value deleted"),

@@ -148,9 +148,10 @@ export const serializeCategoriesParam = (
 ): string | undefined =>
   categories && categories.length > 0 ? categories.join(",") : undefined;
 
-export async function fetchProductList(params: ProductListParams = {}): Promise<ProductListResult> {
+export async function fetchProductList(params: ProductListParams = {}, signal?: AbortSignal): Promise<ProductListResult> {
   const res = await api.get<Envelope<ProductListResult>>("/products", {
     ...(params.collection ? { cache: "no-store" } : { next: { revalidate: 60, tags: ["products"] } }),
+    signal,
     params: {
       page: params.page,
       limit: params.limit ?? 20,

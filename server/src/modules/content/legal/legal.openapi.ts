@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -32,7 +32,7 @@ registry.registerPath({
   path: "/api/v1/admin/legal",
   tags: [TAG],
   summary: "List legal documents (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listLegalQuerySchema },
   responses: {
     200: successResponse("Legal documents fetched"),
@@ -45,7 +45,7 @@ registry.registerPath({
   path: "/api/v1/admin/legal",
   tags: [TAG],
   summary: "Create legal document draft (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createLegalDocumentSchema) },
   responses: {
     201: successResponse("Legal document created"),
@@ -58,7 +58,7 @@ registry.registerPath({
   path: "/api/v1/admin/legal/{id}",
   tags: [TAG],
   summary: "Update legal document draft (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateLegalDocumentSchema),
@@ -74,7 +74,7 @@ registry.registerPath({
   path: "/api/v1/admin/legal/{id}/publish",
   tags: [TAG],
   summary: "Publish legal document (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Legal document published"),

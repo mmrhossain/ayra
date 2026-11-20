@@ -50,20 +50,7 @@ export const productCardIconBtn = cva(
   }
 );
 
-export const productCardCta = cva(
-  "flex h-11 w-full items-center justify-center gap-2 text-sm font-medium tracking-wider uppercase transition-all duration-300 active:scale-[0.98] sm:h-12",
-  {
-    variants: {
-      state: {
-        default: "bg-slate-900 text-white hover:bg-primary hover:shadow-xl hover:shadow-primary/30",
-        disabled: "cursor-not-allowed bg-slate-100 text-slate-400",
-      },
-    },
-    defaultVariants: {
-      state: "default",
-    },
-  }
-);
-
 export const seeMoreButtonClass =
   "group h-11 rounded-full border-2 border-slate-900 bg-white px-6 text-xs font-semibold tracking-wider uppercase text-slate-900 shadow-xl transition-all duration-300 hover:bg-slate-900 hover:text-white hover:shadow-slate-900/20 sm:h-14 sm:px-10";
+
+export const productGridClass = "grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-7 xl:grid-cols-4";

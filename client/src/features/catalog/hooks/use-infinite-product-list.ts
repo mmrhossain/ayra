@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toCatalogErrorMessage } from "@/features/catalog/api";
 
 type CursorPage<T> = {
@@ -24,7 +24,7 @@ export function useInfiniteProductList<T extends { id: string }>({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
 
-  const loadMore = useCallback(async () => {
+  const loadMore = async () => {
     if (!cursor || loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
@@ -47,7 +47,12 @@ export function useInfiniteProductList<T extends { id: string }>({
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [cursor, loadPage]);
+  };
+
+  const loadMoreRef = useRef(loadMore);
+  useEffect(() => {
+    loadMoreRef.current = loadMore;
+  });
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -56,14 +61,14 @@ export function useInfiniteProductList<T extends { id: string }>({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          void loadMore();
+          void loadMoreRef.current();
         }
       },
       { rootMargin: "400px 0px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [cursor, enabled, error, loading, loadMore]);
+  }, [cursor, enabled, error, loading]);
 
   return { items, cursor, loading, error, sentinelRef, loadMore };
 }

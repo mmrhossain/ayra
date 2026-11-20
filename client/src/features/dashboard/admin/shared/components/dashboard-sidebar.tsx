@@ -1,28 +1,9 @@
 "use client";
 
-import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import {
-  fetchBlogCategories,
-  fetchBlogList,
-} from "@/features/dashboard/admin/blogs/api/blogs";
-import {
-  fetchFaqCategories,
-  fetchFaqItems,
-} from "@/features/dashboard/admin/faqs/api/faqs";
-import { fetchLegalList } from "@/features/dashboard/admin/legal/api/legal";
-import {
-  fetchShippingMethods,
-  fetchShippingRates,
-  fetchShippingZones,
-} from "@/features/dashboard/admin/shipping/api/shipping";
-import {
-  ADMIN_SETTINGS_QUERY_KEY,
-  fetchAdminSettings,
-} from "@/features/dashboard/admin/settings/api/settings";
 import {
   Sidebar,
   SidebarContent,
@@ -42,74 +23,6 @@ import {
 } from "@/lib/admin-navigation";
 import type { AdminAccess } from "@/lib/admin-permissions";
 
-const TAB_PREFETCH_STALE_TIME = 30_000;
-
-function prefetchAdminTabData(queryClient: QueryClient, href: string) {
-  switch (href) {
-    case "/admin/blogs":
-      void Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: ["admin-blogs", 1, "", "", ""],
-          queryFn: () => fetchBlogList({ page: 1, limit: 20 }),
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["admin-blog-categories"],
-          queryFn: fetchBlogCategories,
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-      ]);
-      break;
-    case "/admin/shipping":
-      void Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: ["admin-shipping-zones"],
-          queryFn: fetchShippingZones,
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["admin-shipping-methods"],
-          queryFn: fetchShippingMethods,
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["admin-shipping-rates"],
-          queryFn: fetchShippingRates,
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-      ]);
-      break;
-    case "/admin/legal":
-      void queryClient.prefetchQuery({
-        queryKey: ["admin-legal", 1, ""],
-        queryFn: () => fetchLegalList({ page: 1, limit: 20 }),
-        staleTime: TAB_PREFETCH_STALE_TIME,
-      });
-      break;
-    case "/admin/faqs":
-      void Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: ["admin-faq-categories"],
-          queryFn: fetchFaqCategories,
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["admin-faq-items", ""],
-          queryFn: () => fetchFaqItems(),
-          staleTime: TAB_PREFETCH_STALE_TIME,
-        }),
-      ]);
-      break;
-    case "/admin/settings":
-      void queryClient.prefetchQuery({
-        queryKey: ADMIN_SETTINGS_QUERY_KEY,
-        queryFn: fetchAdminSettings,
-        staleTime: TAB_PREFETCH_STALE_TIME,
-      });
-      break;
-  }
-}
-
 const NO_ACCESS: AdminAccess = {
   role: "ADMIN",
   isSuperAdmin: false,
@@ -128,20 +41,17 @@ export function DashboardSidebar({
   const { store } = usePublicSettings();
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
-  const queryClient = useQueryClient();
   const groups = getVisibleAdminNavGroups(access);
   const [prefetchIntentHref, setPrefetchIntentHref] = useState<string | null>(
     null,
   );
 
-  const handleNavigate = (href?: string) => {
+  const handleNavigate = () => {
     setOpenMobile(false);
-    if (href) prefetchAdminTabData(queryClient, href);
   };
 
   const handlePrefetchIntent = (href: string) => {
     setPrefetchIntentHref(href);
-    prefetchAdminTabData(queryClient, href);
   };
 
   return (
@@ -180,11 +90,11 @@ export function DashboardSidebar({
                         <Link
                           href={item.href}
                           prefetch={
-                            prefetchIntentHref === item.href ? true : "auto"
+                            prefetchIntentHref === item.href
                           }
                           onMouseEnter={() => handlePrefetchIntent(item.href)}
                           onFocus={() => handlePrefetchIntent(item.href)}
-                          onClick={() => handleNavigate(item.href)}
+                          onClick={handleNavigate}
                           aria-current={active ? "page" : undefined}
                         >
                           <item.icon />

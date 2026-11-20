@@ -96,7 +96,8 @@ const TopFooter = () => {
               <Image
                 width={140}
                 height={140}
-                loading="eager"
+                loading="lazy"
+                sizes="140px"
                 src={
                   "https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791365873/qr_code_qwkeqc.png"
                 }

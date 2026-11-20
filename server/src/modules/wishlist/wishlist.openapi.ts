@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -18,7 +18,7 @@ registry.registerPath({
   path: "/api/v1/wishlist",
   tags: [TAG],
   summary: "Get wishlist",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Wishlist fetched"),
     ...errorResponses(401),
@@ -30,7 +30,7 @@ registry.registerPath({
   path: "/api/v1/wishlist/items",
   tags: [TAG],
   summary: "List wishlist items",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listWishlistQuerySchema },
   responses: {
     200: successResponse("Wishlist items fetched"),
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/wishlist/items/{variantId}",
   tags: [TAG],
   summary: "Check if variant is in wishlist",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ variantId: z.string().min(1) }) },
   responses: {
     200: successResponse("Wishlist status fetched"),
@@ -56,7 +56,7 @@ registry.registerPath({
   path: "/api/v1/wishlist/items",
   tags: [TAG],
   summary: "Add item to wishlist",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(addWishlistItemSchema) },
   responses: {
     201: successResponse("Item added to wishlist"),
@@ -69,7 +69,7 @@ registry.registerPath({
   path: "/api/v1/wishlist/items/{variantId}",
   tags: [TAG],
   summary: "Remove item from wishlist",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ variantId: z.string().min(1) }) },
   responses: {
     200: successResponse("Item removed from wishlist"),
@@ -82,7 +82,7 @@ registry.registerPath({
   path: "/api/v1/wishlist",
   tags: [TAG],
   summary: "Clear wishlist",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Wishlist cleared"),
     ...errorResponses(401),

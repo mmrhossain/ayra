@@ -1,3 +1,4 @@
+import { categoryPathWhere } from "./category-path.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public-id.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
@@ -71,28 +72,9 @@ export const parseCategoryPath = (value: string): string[] =>
     .filter(Boolean);
 
 export const resolveCategoryByPath = async (path: string, includeInactive = false) => {
-  const segments = parseCategoryPath(path);
-  if (!segments.length) return null;
-
-  let parentId: string | null = null;
-  let current: { id: string } | null = null;
-
-  for (const segment of segments) {
-    current = await prisma.category.findFirst({
-      where: {
-        slug: segment,
-        parentId,
-        deletedAt: null,
-        ...(includeInactive ? {} : { isActive: true }),
-      },
-      select: { id: true },
-    });
-
-    if (!current) return null;
-    parentId = current.id;
-  }
-
-  return current;
+  const where = categoryPathWhere(parseCategoryPath(path), includeInactive);
+  if (!where) return null;
+  return prisma.category.findFirst({ where, select: { id: true } });
 };
 
 const buildCategoryTree = (categories: CategoryRecord[]): CategoryBranch[] => {
@@ -292,18 +274,11 @@ export const listAdminCategories = async (query: ListAdminCategoriesQuery) => {
 
 export const getCategoryBySlug = async (slug: string, includeInactive: boolean = false) => {
   const path = parseCategoryPath(slug).join("/");
-  const resolved = await resolveCategoryByPath(path, includeInactive);
-
-  if (!resolved) {
-    throw new AppError("Category not found", 404);
-  }
+  const where = categoryPathWhere(parseCategoryPath(path), includeInactive);
+  if (!where) throw new AppError("Category not found", 404);
 
   const category = await prisma.category.findFirst({
-    where: {
-      id: resolved.id,
-      deletedAt: null,
-      ...(includeInactive ? {} : { isActive: true }),
-    },
+    where,
     select: {
       ...categoryFields,
       parent: {

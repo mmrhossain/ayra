@@ -139,7 +139,16 @@ export function CheckoutSelect({
                 name={`${id}-option`}
                 value={option.value}
                 checked={option.value === value}
-                onChange={() => onValueChange(option.value)}
+                onChange={() => {
+                  onValueChange(option.value);
+                  setOpen(false);
+                  trigger.current?.focus();
+                }}
+                onClick={() => {
+                  if (option.value !== value) return;
+                  setOpen(false);
+                  trigger.current?.focus();
+                }}
                 className="sr-only"
               />
               <span>{option.label}</span>

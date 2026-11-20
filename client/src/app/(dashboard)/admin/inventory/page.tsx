@@ -1,4 +1,5 @@
-import { requireAdminPageAccess } from "@/lib/api/auth/server";
+import { requireAdminPageAccess, toAdminAccess } from "@/lib/api/auth/server";
+import { hasAdminAction } from "@/lib/admin-permissions";
 import {
   fetchInventoryList,
   toInventoryErrorMessage,
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export default async function AdminInventoryPage({ searchParams }: Props) {
-  await requireAdminPageAccess("/admin/inventory");
+  const session = await requireAdminPageAccess("/admin/inventory");
   const { variantId, search } = await searchParams;
   let initial;
   let error: string | null = null;
@@ -46,6 +47,7 @@ export default async function AdminInventoryPage({ searchParams }: Props) {
           initialData={initial}
           initialVariantId={variantId}
           initialSearch={search}
+          canAdjust={hasAdminAction(toAdminAccess(session.user), "inventory:adjust")}
         />
       )}
     </section>

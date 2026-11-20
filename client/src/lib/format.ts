@@ -58,7 +58,3 @@ export function dateToIsoEnd(value: string): string | undefined {
   if (!value) return undefined;
   return new Date(`${value}T23:59:59.999Z`).toISOString();
 }
-
-export function stripHtml(value: string): string {
-  return value.replace(/<[^>]*>?/gm, "");
-}

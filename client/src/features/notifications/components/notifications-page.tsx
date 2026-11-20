@@ -1,5 +1,6 @@
 "use client";
 
+import { notificationHref } from "@/features/notifications/utils/notification-href";
 import { Bell, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -132,7 +133,7 @@ export function NotificationsPage({
                   )}
                 >
                   {item.href ? (
-                    <Link href={item.href} className="block">
+                    <Link href={notificationHref(item.href)!} className="block">
                       {inner}
                     </Link>
                   ) : (

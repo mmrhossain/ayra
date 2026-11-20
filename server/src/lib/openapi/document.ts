@@ -1,8 +1,9 @@
 import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { z } from "zod";
 import { env } from "../../config/env.ts";
 import { registry } from "./registry.ts";
 import "./security.ts";
-import "./common-schemas.ts";
+import { jsonContent } from "./common-schemas.ts";
 
 import "../../modules/auth/auth.openapi.ts";
 import "../../modules/catalog/category/category.openapi.ts";
@@ -14,6 +15,7 @@ import "../../modules/warehouse/warehouse.openapi.ts";
 import "../../modules/shipping/shipping.openapi.ts";
 import "../../modules/catalog/attribute/attribute.openapi.ts";
 import "../../modules/cart/cart.openapi.ts";
+import "../../modules/tax/tax.openapi.ts";
 import "../../modules/order/order.openapi.ts";
 import "../../modules/payment/payment.openapi.ts";
 import "../../modules/settings/settings.openapi.ts";
@@ -38,6 +40,30 @@ import "../../modules/courier/courier.openapi.ts";
 import "../../modules/audit/admin-audit.openapi.ts";
 import "../../modules/notification/in-app.openapi.ts";
 
+registry.registerPath({
+  method: "get",
+  path: "/health",
+  tags: ["Operations"],
+  summary: "Check HTTP server liveness",
+  responses: {
+    200: {
+      description: "Server is running",
+      ...jsonContent(z.object({ success: z.literal(true), message: z.string(), timestamp: z.string().datetime() })),
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/ready",
+  tags: ["Operations"],
+  summary: "Check PostgreSQL and Redis readiness",
+  responses: {
+    200: { description: "Ready", ...jsonContent(z.object({ success: z.literal(true), message: z.string() })) },
+    503: { description: "Dependency unavailable", ...jsonContent(z.object({ success: z.literal(false), message: z.string() })) },
+  },
+});
+
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
 
@@ -47,7 +73,7 @@ export function generateOpenApiDocument() {
       title: `${env.BETTER_AUTH_APP_NAME} API`,
       version: "1.0.0",
       description:
-        `HTTP API for the ${env.BETTER_AUTH_APP_NAME} e-commerce backend. Authenticate with a Better Auth bearer token unless a route is public or webhook-signed.`,
+        `HTTP API for the ${env.BETTER_AUTH_APP_NAME} e-commerce backend. Protected operations use a Better Auth session cookie. Browser clients should sign in on the same origin before trying protected operations.`,
     },
     servers: [{ url: "/", description: "Current host" }],
   });

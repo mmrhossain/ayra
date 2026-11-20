@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/deferred-rich-text-editor";
 import { useFaqItemFormMutation } from "@/features/dashboard/admin/faqs/hooks/use-faq-mutations";
 import { faqItemFormSchema, type FaqItemFormValues } from "@/features/dashboard/admin/faqs/schemas";
 import type { FaqItemFormDialogProps } from "@/features/dashboard/admin/faqs/types";

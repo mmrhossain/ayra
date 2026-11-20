@@ -126,6 +126,14 @@ function mapAuthCart(data: unknown): CartSnapshot {
   };
 }
 
+function mutationResult(res: Envelope<unknown>, fallback: string) {
+  customerCartRequest.invalidate();
+  return {
+    message: res.message || fallback,
+    snapshot: res.data === undefined ? undefined : mapAuthCart(res.data),
+  };
+}
+
 export function isCartUnauthorized(err: unknown): boolean {
   return err instanceof DashboardApiError && err.status === 401;
 }
@@ -137,50 +145,45 @@ export async function fetchAuthCartSnapshot(): Promise<CartSnapshot> {
 export async function addAuthCartItem(
   variantId: string,
   quantity: number,
-): Promise<{ message: string }> {
+) {
   const res = await dashboardApi.post<Envelope<unknown>>("/cart/items", {
     body: { variantId, quantity },
   });
-  customerCartRequest.invalidate();
-  return { message: res.message || "Item added to cart" };
+  return mutationResult(res, "Item added to cart");
 }
 
 export async function updateAuthCartItem(
   variantId: string,
   quantity: number,
-): Promise<{ message: string }> {
+) {
   const res = await dashboardApi.put<Envelope<unknown>>(
     `/cart/items/${variantId}`,
     { body: { quantity } },
   );
-  customerCartRequest.invalidate();
-  return { message: res.message || "Cart item updated" };
+  return mutationResult(res, "Cart item updated");
 }
 
 export async function removeAuthCartItem(
   variantId: string,
-): Promise<{ message: string }> {
+) {
   const res = await dashboardApi.delete<Envelope<unknown>>(
     `/cart/items/${variantId}`,
   );
-  customerCartRequest.invalidate();
-  return { message: res.message || "Item removed from cart" };
+  return mutationResult(res, "Item removed from cart");
 }
 
 export async function applyCartCoupon(
   code: string,
-): Promise<{ message: string }> {
+) {
   const res = await dashboardApi.post<Envelope<unknown>>("/cart/coupon", {
     body: { code: code.trim() },
   });
-  customerCartRequest.invalidate();
-  return { message: res.message || "Coupon applied" };
+  return mutationResult(res, "Coupon applied");
 }
 
-export async function removeCartCoupon(): Promise<{ message: string }> {
+export async function removeCartCoupon() {
   const res = await dashboardApi.delete<Envelope<unknown>>("/cart/coupon");
-  customerCartRequest.invalidate();
-  return { message: res.message || "Coupon removed" };
+  return mutationResult(res, "Coupon removed");
 }
 
 export async function mergeGuestCartOnLogin(

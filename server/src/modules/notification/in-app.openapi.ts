@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { paginationQuerySchema } from "../../common/validators/pagination.ts";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   successResponse,
@@ -18,7 +18,7 @@ registry.registerPath({
   path: "/api/v1/notifications",
   tags: [TAG],
   summary: "List in-app notifications",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listQuery },
   responses: {
     200: successResponse("Notifications fetched"),
@@ -31,7 +31,7 @@ registry.registerPath({
   path: "/api/v1/notifications/unread-count",
   tags: [TAG],
   summary: "Get unread in-app notification count",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Unread count fetched"),
     ...errorResponses(401),
@@ -43,7 +43,7 @@ registry.registerPath({
   path: "/api/v1/notifications/read-all",
   tags: [TAG],
   summary: "Mark all in-app notifications as read",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Notifications marked read"),
     ...errorResponses(401),
@@ -55,7 +55,7 @@ registry.registerPath({
   path: "/api/v1/notifications/{id}/read",
   tags: [TAG],
   summary: "Mark one in-app notification as read",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Notification marked read"),

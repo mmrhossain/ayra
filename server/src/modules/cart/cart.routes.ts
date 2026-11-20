@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { requireAuth, requireCustomer } from "../../common/middleware/auth.middleware.ts";
-import { checkoutLimiter } from "../../common/middleware/rate-limit.middleware.ts";
 
 import {
   getCartHandler,
@@ -14,7 +13,6 @@ import {
   getAvailableCartCouponsHandler,
   removeCouponHandler,
 } from "./cart.controller.ts";
-import { checkoutHandler } from "../order/controllers/order.controller.ts";
 
 const router = Router();
 
@@ -31,6 +29,5 @@ router.post("/cart/guest/merge", ...customerOnly, mergeGuestCartHandler);
 router.get("/cart/coupons", ...customerOnly, getAvailableCartCouponsHandler);
 router.post("/cart/coupon", ...customerOnly, applyCouponHandler);
 router.delete("/cart/coupon", ...customerOnly, removeCouponHandler);
-router.post("/cart/checkout", ...customerOnly, checkoutLimiter, checkoutHandler);
 
 export default router;

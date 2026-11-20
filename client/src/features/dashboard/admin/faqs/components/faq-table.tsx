@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { FaqCategoryDeleteDialog } from "@/features/dashboard/admin/faqs/components/faq-category-delete-dialog";
 import { FaqCategoryFormDialog } from "@/features/dashboard/admin/faqs/components/faq-category.dialog";
@@ -62,11 +62,11 @@ export function FaqTable({ initialCategories, initialItems }: Props) {
     initialItems,
     categoryFilter,
   });
-  const categoryNameById = useMemo(() => {
+  const categoryNameById = (() => {
     const map = new Map<string, string>();
     for (const category of categories) map.set(category.id, category.name);
     return map;
-  }, [categories]);
+  })();
 
   const categoriesSection = (
     <div className="space-y-4">

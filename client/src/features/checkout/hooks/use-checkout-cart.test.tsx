@@ -4,6 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ fetchMyCart: vi.fn() }));
 vi.mock("@/features/checkout/api", () => mocks);
+vi.mock("@/hooks/useStorefrontCounts", () => ({
+  useStorefrontOwner: () => ({ ownerId: "customer", ownerReady: true }),
+}));
 import { useCheckoutCart } from "./use-checkout-cart";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 function Consumer() {
@@ -34,13 +37,13 @@ describe("checkout request ownership", () => {
     expect(mocks.fetchMyCart).toHaveBeenCalledTimes(1);
     await act(async () => { render(4); });
     expect(mocks.fetchMyCart).toHaveBeenCalledTimes(1);
-    expect(client.getQueryData(["checkout-cart"])).toMatchObject({ grandTotal: 115 });
+    expect(client.getQueryData(["checkout-cart", "customer"])).toMatchObject({ grandTotal: 115 });
   });
   it("discards totals when checkout unmounts and fetches again on re-entry", async () => {
     await act(async () => { render(1); });
     await act(async () => { root.render(null); });
     await new Promise(done => setTimeout(done, 5));
-    expect(client.getQueryData(["checkout-cart"])).toBeUndefined();
+    expect(client.getQueryData(["checkout-cart", "customer"])).toBeUndefined();
     await act(async () => { render(1); });
     expect(mocks.fetchMyCart).toHaveBeenCalledTimes(2);
   });

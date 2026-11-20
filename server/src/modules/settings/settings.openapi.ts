@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -77,7 +77,7 @@ registry.registerPath({
   path: "/api/v1/admin/settings",
   tags: [TAG],
   summary: "List admin settings grouped by section",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Settings fetched", z.array(settingGroupSchema)),
     ...errorResponses(401, 403, 500),
@@ -89,7 +89,7 @@ registry.registerPath({
   path: "/api/v1/admin/settings/audit",
   tags: [TAG],
   summary: "List platform setting audit entries",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: paginationQuerySchema },
   responses: {
     200: successResponse("Settings audit fetched"),
@@ -102,7 +102,7 @@ registry.registerPath({
   path: "/api/v1/admin/settings/{group}",
   tags: [TAG],
   summary: "Update one settings group",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ group: z.string().min(1) }),
     body: jsonBody(updateSettingsSchema),

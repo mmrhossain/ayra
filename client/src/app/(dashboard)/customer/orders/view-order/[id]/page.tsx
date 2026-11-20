@@ -1,3 +1,4 @@
+import { requireCustomer } from "@/lib/api/auth/server";
 import { OrderDetail } from "@/features/dashboard/customer/orders/components/order-detail";
 import {
   fetchMyOrder,
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export default async function CustomerOrderDetailPage({ params }: Props) {
+  await requireCustomer();
   const { id } = await params;
   let initial;
   let error: string | null = null;

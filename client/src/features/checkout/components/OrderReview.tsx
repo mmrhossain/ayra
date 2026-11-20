@@ -47,7 +47,7 @@ const OrderReview = ({
   void _paymentMethod;
   const { formState } = locationStore();
   const { checkout } = usePublicSettings();
-  const { cartQuery, optionsQuery } = useCheckoutShipping(formState.district, formState.districtCode);
+  const { cartQuery, optionsQuery } = useCheckoutShipping();
   const cart = cartQuery.data;
   const items = cart?.items ?? [];
   const subtotal = Number(cart?.subtotal ?? 0);

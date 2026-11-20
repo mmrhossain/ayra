@@ -23,7 +23,7 @@ type BottomNavbar = {
   icon: ReactNode;
 };
 
-export const footerNavigationItems: BottomNavbar[] = [
+const footerNavigationItems: BottomNavbar[] = [
   { label: "Home", path: "/", icon: <Home size={20} /> },
   { label: "Shop", path: "/shop", icon: <Store size={20} /> },
   { label: "Categories", path: "#", icon: <LayoutGrid size={20} /> },
@@ -139,7 +139,7 @@ const FooterNavigationMenu = ({ categories = [], initialIsCustomer }: FooterNavi
                     href={href}
                     onClick={closeDrawer}
                     aria-current={isActive ? "page" : undefined}
-                    aria-label={isWishlist ? wishBadge.loading ? "Wishlist, loading item count" : `Wishlist, ${wishBadge.count} items` : undefined}
+                    aria-label={isWishlist ? wishBadge.loading ? "Wishlist, loading item count" : wishBadge.count === null ? "Wishlist" : `Wishlist, ${wishBadge.count} items` : undefined}
                     className={itemClass}
                   >
                     {content}

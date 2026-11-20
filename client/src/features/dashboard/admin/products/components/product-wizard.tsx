@@ -1,9 +1,10 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import {
   typedSkuError,
 } from "@/features/dashboard/admin/products/utils/sku-generator";
 import type { ImageUploadHandle } from "@/features/dashboard/admin/shared/components/image-upload";
+import { confirmProductLeave } from "../utils/product-leave";
 import { useProductEditorClose } from "./product-wizard-sheet";
 import { ProductWizardDetails } from "./product-wizard-details";
 import { ProductWizardStock } from "./product-wizard-stock";
@@ -180,13 +182,9 @@ export function ProductWizard({
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [hasUnsavedChanges]);
-  const confirmLeave = useCallback(() => {
-    if (isSaving) return false;
-    if (!hasUnsavedChanges) return true;
-    return window.confirm("Leave without saving? Unsaved changes will be lost.");
-  }, [isSaving, hasUnsavedChanges]);
-
-  useEffect(() => editorClose?.registerGuard(confirmLeave), [editorClose, confirmLeave]);
+  useEffect(() => editorClose?.registerGuard(() => (
+    confirmProductLeave(isSaving, hasUnsavedChanges)
+  )), [editorClose, isSaving, hasUnsavedChanges]);
 
   const setRowsDirty = (next: VariantRow[]) => {
     setVariantsDirty(true);
@@ -203,7 +201,7 @@ export function ProductWizard({
       editorClose.requestClose();
       return;
     }
-    if (!confirmLeave()) return;
+    if (!confirmProductLeave(isSaving, hasUnsavedChanges)) return;
     router.push("/admin/products");
   };
 

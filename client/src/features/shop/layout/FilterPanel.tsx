@@ -38,7 +38,7 @@ const FilterPanel = ({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">Filters</h3>
         <button
@@ -51,16 +51,16 @@ const FilterPanel = ({
       </div>
 
       {priceBuckets.length > 0 && (
-        <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+        <div className="space-y-2 rounded-md border border-gray-200 p-4">
           <h4 className="text-sm font-semibold text-slate-900">Price</h4>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {priceBuckets.map((bucket) => {
               const checked =
                 selectedBucket?.from === bucket.from && selectedBucket?.to === bucket.to;
               return (
                 <label
                   key={`${bucket.from}-${bucket.to}`}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
+                  className="flex min-h-9 cursor-pointer items-center gap-2 text-sm text-foreground"
                 >
                   <input
                     type="radio"
@@ -78,13 +78,13 @@ const FilterPanel = ({
       )}
 
       {categories.length > 0 && (
-        <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+        <div className="space-y-2 rounded-md border border-gray-200 p-4">
           <h4 className="text-sm font-semibold text-slate-900">Category</h4>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {categories.map((category) => (
               <label
                 key={category.id}
-                className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
+                className="flex min-h-9 cursor-pointer items-center gap-2 text-sm text-foreground"
               >
                 <input
                   type="checkbox"
@@ -104,14 +104,14 @@ const FilterPanel = ({
         return (
           <div
             key={attribute.attributeId}
-            className="space-y-3 rounded-xl border border-gray-200 p-4"
+            className="space-y-2 rounded-md border border-gray-200 p-4"
           >
             <h4 className="text-sm font-semibold text-slate-900">{attribute.name}</h4>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {attribute.options.map((option) => (
                 <label
                   key={option.valueId}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground"
+                  className="flex min-h-9 cursor-pointer items-center gap-2 text-sm text-foreground"
                 >
                   <input
                     type="checkbox"
@@ -121,7 +121,7 @@ const FilterPanel = ({
                   />
                   {option.color ? (
                     <span
-                      className="inline-block h-3 w-3 rounded-full border border-gray-200"
+                      className="inline-block h-3 w-3 rounded-md border border-gray-200"
                       style={{ backgroundColor: option.color }}
                     />
                   ) : null}

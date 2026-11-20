@@ -2,11 +2,9 @@
 
 import EmptyState from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { addCartItem, toCartErrorMessage } from "@/features/cart/api";
 import StoreImage from "@/components/shared/store-image";
 import {
   productCardBody,
-  productCardCta,
   productCardIconBtn,
   productCardImage,
   productCardMedia,
@@ -18,7 +16,6 @@ import { useWishlist } from "@/features/dashboard/customer/wishlist/hooks/use-wi
 import { useRemoveWishlistMutation } from "@/features/dashboard/customer/wishlist/hooks/use-wishlist-mutations";
 import WishListSkeleton from "@/features/dashboard/customer/wishlist/skeleton/WishListSkeleton";
 import type {
-  WishlistGridProps,
   WishlistItem,
 } from "@/features/dashboard/customer/wishlist/types";
 import {
@@ -29,20 +26,16 @@ import {
   wishlistItemPrice,
   wishlistItemSlug,
 } from "@/features/dashboard/customer/wishlist/utils";
-import { errorToast, formatPrice, successToast } from "@/helpers";
-import { useCartStore } from "@/stores/useCartStore";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { formatPrice, successToast } from "@/helpers";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-export function WishlistGrid({ initialData }: WishlistGridProps) {
-  const { query, items, pagination } = useWishlist({ initialData });
+export function WishlistGrid() {
+  const { query, items, count: wishCount } = useWishlist();
   const removeMutation = useRemoveWishlistMutation();
-  const [movingId, setMovingId] = useState<string | null>(null);
   const [pendingRemove, setPendingRemove] = useState<WishlistItem | null>(null);
 
-  const loading = query.isFetching && items.length === 0;
-  const wishCount = pagination.total;
 
   const handleWishRemove = async () => {
     if (!pendingRemove?.variantId) return;
@@ -56,37 +49,7 @@ export function WishlistGrid({ initialData }: WishlistGridProps) {
     }
   };
 
-  const handleMoveToCart = async (item: WishlistItem): Promise<void> => {
-    if (!item.variantId) {
-      errorToast("Product not found");
-      return;
-    }
-    const inStock = wishlistItemInStock(item);
-    if (inStock === false) {
-      errorToast("Out of stock");
-      return;
-    }
-    try {
-      setMovingId(item.variantId);
-      const result = await addCartItem(item.variantId, 1, {
-        productName: wishlistItemName(item),
-        productSlug: wishlistItemSlug(item),
-        productImage: wishlistItemImage(item),
-        sku: item.variant?.sku ?? undefined,
-        unitPrice: wishlistItemPrice(item) ?? undefined,
-      });
-      await useCartStore.getState().fetchCart();
-      await removeMutation.mutateAsync(item.variantId);
-      successToast(result.message);
-    } catch (err) {
-      errorToast(toCartErrorMessage(err));
-    } finally {
-      setMovingId(null);
-    }
-  };
-
-  if (loading) return <WishListSkeleton />;
-  if (query.isError) {
+  if (!items && query.isError) {
     return (
       <div
         role="alert"
@@ -96,11 +59,24 @@ export function WishlistGrid({ initialData }: WishlistGridProps) {
         <p className="mt-1 text-sm text-muted-foreground">
           {toWishlistErrorMessage(query.error)}
         </p>
+        <button type="button" className="mt-3 text-sm underline" onClick={() => void query.refetch()}>
+          Try again
+        </button>
       </div>
     );
   }
+  if (!items) return <WishListSkeleton />;
   if (wishCount === 0) {
-    return <EmptyState text="wishlist" title="আপনার wishlist খালি" />;
+    return (
+      <EmptyState
+        className="min-h-[min(28rem,60svh)]"
+        title={"আপনার wishlist খালি"}
+        description="Discover our curated heritage collection and fill your wishlist with pieces you'll cherish forever."
+        actionLabel="Continue Shopping"
+        actionHref="/shop"
+        footerText="Handcrafted with heritage"
+      />
+    );
   }
 
   return (
@@ -121,7 +97,6 @@ export function WishlistGrid({ initialData }: WishlistGridProps) {
           const href = slug
             ? `/product-details/${slug}?from_source=wishlist`
             : "/shop";
-          const isMoving = movingId === item.variantId;
 
           return (
             <article
@@ -166,24 +141,7 @@ export function WishlistGrid({ initialData }: WishlistGridProps) {
                     {inStock ? "In stock" : "Out of stock"}
                   </p>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => handleMoveToCart(item)}
-                  disabled={!item.variantId || isMoving || inStock === false}
-                  className={productCardCta({
-                    state:
-                      !item.variantId || isMoving || inStock === false
-                        ? "disabled"
-                        : "default",
-                  })}
-                >
-                  {inStock === false ? null : <ShoppingCart size={16} />}
-                  {isMoving
-                    ? "Moving..."
-                    : inStock === false
-                      ? "Out of stock"
-                      : "Move to cart"}
-                </button>
+                
               </div>
             </article>
           );

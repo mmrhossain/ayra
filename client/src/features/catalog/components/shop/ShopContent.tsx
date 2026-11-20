@@ -1,6 +1,5 @@
 import {
   fetchProducts,
-  getCategoryBySlug,
   parseAttributesParam,
   parseCategoriesParam,
   type ProductSort,
@@ -11,11 +10,13 @@ import CursorProductList from "@/features/catalog/components/shop/CursorProductL
 import Pagination from "@/features/catalog/components/shop/Pagination";
 import { notFound } from "next/navigation";
 import { ApiError } from "@/lib/api/store-front";
+import type { CategoryListItem } from "@/features/catalog/types";
 
 const SHOP_PAGE_SIZE = 12;
 
 interface ShopContentProps {
   slug?: string[];
+  categoryDetails: CategoryListItem | null;
   collection?: string;
   sp: {
     page?: string;
@@ -34,6 +35,7 @@ interface ShopContentProps {
 
 export default async function ShopContent({
   slug,
+  categoryDetails,
   sp,
   sort,
   minPrice,
@@ -50,12 +52,7 @@ export default async function ShopContent({
   const attributes = parseAttributesParam(sp.attrs);
   const selectedCategories = parseCategoriesParam(sp.categories);
 
-  const categoryDetailsPromise = routeCategoryPath
-    ? getCategoryBySlug(routeCategoryPath)
-    : Promise.resolve(null);
-
-  const [productResult, categoryDetails] = await Promise.all([
-    fetchProducts({
+  const productResult = await fetchProducts({
       ...(page === undefined ? {} : { page }),
       limit: SHOP_PAGE_SIZE,
       category: categorySlug,
@@ -69,13 +66,7 @@ export default async function ShopContent({
     }).catch(error => {
       if (collection && error instanceof ApiError && error.status === 404) notFound();
       throw error;
-    }),
-    categoryDetailsPromise,
-  ]);
-
-  if (routeCategoryPath && !categoryDetails) {
-    return notFound();
-  }
+    });
 
   const items = productResult?.items ?? [];
   const pagination = productResult?.pagination;
@@ -96,7 +87,7 @@ export default async function ShopContent({
   };
 
   return (
-    <div className="container storefront-page-start">
+    <div className="container storefront-page-start min-h-[calc(100svh-var(--header-height,112px))]">
       {search ? (
         <div className="mb-5 sm:mb-6">
           <h1 className="text-2xl leading-tight font-semibold tracking-tight lg:text-3xl">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,9 @@ export function ShipmentsTable({
 }) {
   const [page, setPage] = useState(initialData.pagination.page);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [status, setStatus] = useState<ShipmentStatus | "">("");
   const [courierProvider, setCourierProvider] = useState<CourierProvider | "">(
     "",
@@ -60,17 +62,9 @@ export function ShipmentsTable({
   const [detailOpen, setDetailOpen] = useState(false);
   const bookMutation = useBookCourierMutation();
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => window.clearTimeout(timeout);
-  }, [searchInput]);
-
   const { query, items, pagination } = useShipmentList({
     initialData,
-    page,
+    page: queryPage,
     status,
     courierProvider,
     search,
@@ -82,7 +76,10 @@ export function ShipmentsTable({
         <div className="grid flex-1 gap-3 sm:grid-cols-3">
           <Input
             value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
+            onChange={(event) => {
+              setSearchInput(event.target.value);
+              setPage(1);
+            }}
             placeholder="Search shipment, tracking, order"
             aria-label="Search shipments"
           />

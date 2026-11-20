@@ -15,7 +15,7 @@ export const isTransientDbError = (error: unknown): boolean => {
   const code = String(e.code ?? "");
   if (TRANSIENT_DB_CODES.has(code)) return true;
 
-  const message = (e.message ?? "").toLowerCase();
+  const message = typeof e.message === "string" ? e.message.toLowerCase() : "";
   return (
     message.includes("can't reach database server") ||
     message.includes("connection terminated") ||

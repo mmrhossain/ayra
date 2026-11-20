@@ -13,7 +13,6 @@ const WishListSkeleton = () => {
             <Skeleton className="aspect-[4/5] w-full" />
             <Skeleton height={16} className="mt-3 mb-2" />
             <Skeleton height={14} width="50%" className="mb-3" />
-            <Skeleton height={44} />
           </div>
         ))}
       </div>

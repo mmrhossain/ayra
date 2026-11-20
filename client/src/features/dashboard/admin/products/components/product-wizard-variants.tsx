@@ -172,7 +172,7 @@ export function ProductWizardVariants({
   rows,
   onRowsChange,
 }: Props) {
-  const selectedIds = useMemo(() => new Set(selected.map((s) => s.attributeId)), [selected]);
+  const selectedIds = new Set(selected.map((s) => s.attributeId));
   const previousSkuContext = useRef<string | null>(null);
   const skuContext = `${brandName ?? ""}|${categoryName}`;
   const valuesById = useMemo(() => new Map(attributes.flatMap(attribute =>

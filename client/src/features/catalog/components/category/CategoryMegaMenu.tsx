@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import {
+  ChevronRight } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import Link from "@/components/shared/intent-link";
+import { useState } from "react";
 import { CategoryListItem } from "../../types";
 
 interface CategoryMegaMenuProps {
@@ -62,8 +63,7 @@ function CategoryTree({ categories, allCategories, onSelect, level = 0 }: Catego
 
         return (
           <div key={category?.id}>
-            <Link prefetch={false}
-              href={categoryHref(allCategories, category)}
+            <Link href={categoryHref(allCategories, category)}
               onClick={() => onSelect(category?.name)}
               className="flex items-center justify-between gap-2 rounded-sm px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-primary/5 hover:text-primary"
             >
@@ -110,14 +110,14 @@ function CategoryTree({ categories, allCategories, onSelect, level = 0 }: Catego
 export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaMenuProps) {
   const [activeId, setActiveId] = useState<string | null>(categories[0]?.id ?? null);
 
-  const { active, children } = useMemo(() => {
+  const { active, children } = (() => {
     const foundActive = categories.find((category) => category.id === activeId) ?? categories[0];
 
     return {
       active: foundActive,
       children: foundActive?.children ?? [],
     };
-  }, [categories, activeId]);
+  })();
 
   return (
     <div className="absolute top-full left-0 z-40 pt-2 opacity-0 invisible translate-y-1 transition-all duration-200 ease-out group-hover/cat:opacity-100 group-hover/cat:visible group-hover/cat:translate-y-0 group-focus-within/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:translate-y-0">
@@ -128,8 +128,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
             Collections
           </p>
 
-          <Link prefetch={false}
-            href="/shop"
+          <Link href="/shop"
             onClick={() => onSelect("All Categories")}
             className="mx-2 mb-1 flex items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-white"
           >
@@ -140,8 +139,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
             const isActive = cat.id === active?.id;
 
             return (
-              <Link prefetch={false}
-                key={cat.id}
+              <Link key={cat.id}
                 href={categoryHref(categories, cat)}
                 onMouseEnter={() => setActiveId(cat.id)}
                 onFocus={() => setActiveId(cat.id)}
@@ -198,8 +196,7 @@ export default function CategoryMegaMenu({ categories, onSelect }: CategoryMegaM
                   </h3>
                 </div>
 
-                <Link prefetch={false}
-                  href={categoryHref(categories, active)}
+                <Link href={categoryHref(categories, active)}
                   onClick={() => onSelect(active.name)}
                   className="text-xs font-bold uppercase tracking-wider text-primary hover:underline shrink-0"
                 >

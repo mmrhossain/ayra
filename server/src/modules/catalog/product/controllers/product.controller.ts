@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../../../common/utils/asyncHandler.ts";
+import { withDbRetry } from "../../../../common/utils/db-retry.ts";
 import { requireParam } from "../../../../common/utils/requireParam.ts";
 import { successResponse } from "../../../../common/utils/response.ts";
-import { isStaffRole } from "../../../../common/utils/roles.ts";
+import { hasAdminPermission } from "../../../../common/utils/admin-permissions.ts";
 import {
   createProductSchema,
   updateProductSchema,
@@ -27,15 +28,15 @@ import { bulkUpdateProducts } from "../services/product-bulk.service.ts";
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const query = listProductsQuerySchema.parse(req.query);
-  const isStaff = isStaffRole(req.auth?.user.role);
+  const isStaff = hasAdminPermission(req.auth?.user ?? {}, "catalog");
 
   successResponse(
     res,
-    await listProducts({
+    await withDbRetry(() => listProducts({
       ...query,
       includeInactive: query.includeInactive === true && isStaff,
       status: isStaff ? query.status : undefined,
-    }),
+    }), 2),
     "Products fetched"
   );
 });
@@ -43,24 +44,25 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 export const getProductFacetsHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const query = listProductsQuerySchema.parse(req.query);
-    const isStaff = isStaffRole(req.auth?.user.role);
+    const isStaff = hasAdminPermission(req.auth?.user ?? {}, "catalog");
 
     successResponse(
       res,
-      await getProductFacets({
+    await withDbRetry(() => getProductFacets({
         ...query,
         includeInactive: query.includeInactive === true && isStaff,
         status: isStaff ? query.status : undefined,
-      }),
+    }), 2),
       "Facets fetched"
     );
   }
 );
 
 export const getProduct = asyncHandler(async (req: Request, res: Response) => {
+  const slug = requireParam(req.params.slug, "slug");
   successResponse(
     res,
-    await getProductBySlug(requireParam(req.params.slug, "slug"), false),
+    await withDbRetry(() => getProductBySlug(slug, false), 2),
     "Product fetched"
   );
 });

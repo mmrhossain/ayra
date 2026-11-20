@@ -4,28 +4,25 @@ import { useEffect } from "react";
 
 export default function HeaderHeightObserver() {
   useEffect(() => {
+    const header = document.querySelector("header");
+    const navbar = document.querySelector("nav");
+    let previousTotal = -1;
+    let previousNavbar = -1;
     const updateHeight = () => {
-      const header = document.querySelector("header");
-      const navbar = document.querySelector("nav");
-
-      const headerHeight = header ? header.offsetHeight : 0;
       const navbarHeight = navbar ? navbar.offsetHeight : 0;
-      const totalHeight = headerHeight + navbarHeight;
-
-      document.documentElement.style.setProperty(
-        "--header-height",
-        `${totalHeight}px`,
-      );
-      document.documentElement.style.setProperty(
-        "--navbar-height",
-        `${navbarHeight}px`,
-      );
+      const totalHeight = (header ? header.offsetHeight : 0) + navbarHeight;
+      if (totalHeight !== previousTotal) {
+        document.documentElement.style.setProperty("--header-height", totalHeight + "px");
+        previousTotal = totalHeight;
+      }
+      if (navbarHeight !== previousNavbar) {
+        document.documentElement.style.setProperty("--navbar-height", navbarHeight + "px");
+        previousNavbar = navbarHeight;
+      }
     };
-
     const observer = new ResizeObserver(updateHeight);
-    for (const element of document.querySelectorAll("header, nav")) {
-      observer.observe(element);
-    }
+    if (header) observer.observe(header);
+    if (navbar) observer.observe(navbar);
     updateHeight();
     window.addEventListener("resize", updateHeight);
     return () => {
@@ -33,6 +30,5 @@ export default function HeaderHeightObserver() {
       window.removeEventListener("resize", updateHeight);
     };
   }, []);
-
   return null;
 }

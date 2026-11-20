@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -50,7 +50,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff",
   tags: [TAG],
   summary: "List staff (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: staffListQuerySchema },
   responses: {
     200: successResponse("Staff fetched"),
@@ -63,7 +63,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/invitations",
   tags: [TAG],
   summary: "List staff invitations (super admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: invitationListQuerySchema },
   responses: {
     200: successResponse("Invitations fetched"),
@@ -76,7 +76,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/invitations",
   tags: [TAG],
   summary: "Invite staff (super admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(inviteStaffSchema) },
   responses: {
     201: successResponse("Invitation created"),
@@ -89,7 +89,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/invitations/{id}/resend",
   tags: [TAG],
   summary: "Resend a staff invitation (super admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Invitation resent"),
@@ -102,7 +102,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/invitations/{id}/revoke",
   tags: [TAG],
   summary: "Revoke a staff invitation (super admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Invitation revoked"),
@@ -115,7 +115,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/{id}/access",
   tags: [TAG],
   summary: "Update staff permissions (super admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: idParam,
     body: jsonBody(updateStaffAccessSchema),
@@ -131,7 +131,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/{id}/suspend",
   tags: [TAG],
   summary: "Suspend a staff member (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Staff suspended"),
@@ -144,7 +144,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/{id}/reactivate",
   tags: [TAG],
   summary: "Reactivate a suspended staff member (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Staff reactivated"),
@@ -157,7 +157,7 @@ registry.registerPath({
   path: "/api/v1/admin/staff/{id}/offboard",
   tags: [TAG],
   summary: "Offboard a staff member (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Staff offboarded"),

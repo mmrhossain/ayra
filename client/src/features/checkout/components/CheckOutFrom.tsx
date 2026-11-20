@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type CheckOutFormProps = {
+  cartReady: boolean;
   onContinue: (next: CheckoutStep) => void;
 };
 
@@ -32,7 +33,7 @@ const pickSavedAddress = (addresses: SavedAddress[]): SavedAddress | null => {
   );
 };
 
-const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
+const CheckOutForm = ({ cartReady, onContinue }: CheckOutFormProps) => {
   const initialName = splitFullName(locationStore.getState().formState.name);
   const [firstName, setFirstName] = useState(initialName.firstName);
   const [lastName, setLastName] = useState(initialName.lastName);
@@ -45,7 +46,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
   const userEmail = user?.email ?? "";
 
   const [hydrated, setHydrated] = useState(false);
-  const formBusy = sessionPending || !hydrated;
+  const formBusy = !cartReady || sessionPending || !hydrated;
 
   const {
     formState,
@@ -59,7 +60,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
   } = locationStore();
 
   useEffect(() => {
-    if (sessionPending) return;
+    if (!cartReady || sessionPending) return;
     if (!userId) {
       queueMicrotask(() => setHydrated(true));
       return;
@@ -69,15 +70,10 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
 
     const hydrate = async () => {
       try {
-        await fetchDivisionList();
-        if (cancelled) return;
-
-        let saved: SavedAddress | null = null;
-        try {
-          saved = pickSavedAddress(await fetchMyAddresses());
-        } catch {
-          saved = null;
-        }
+        const [saved] = await Promise.all([
+          fetchMyAddresses().then(pickSavedAddress).catch(() => null),
+          fetchDivisionList(),
+        ]);
 
         if (cancelled) return;
 
@@ -147,6 +143,7 @@ const CheckOutForm = ({ onContinue }: CheckOutFormProps) => {
       cancelled = true;
     };
   }, [
+    cartReady,
     userId,
     sessionPending,
     userName,

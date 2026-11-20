@@ -58,7 +58,7 @@ const MobileNavbar = ({ actions }: { actions?: ReactNode }) => {
         <Link prefetch={false}
           href={cartHref}
           className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100/80 text-slate-700 transition-all active:scale-95"
-          aria-label={cartBadge.loading ? "Cart, loading item count" : `Cart, ${cartBadge.count} items`}
+          aria-label={cartBadge.loading ? "Cart, loading item count" : cartBadge.count === null ? "Cart" : `Cart, ${cartBadge.count} items`}
         >
           <ShoppingBag size={19} strokeWidth={2} />
           <NavbarCountBadge {...cartBadge} className="-top-0.5 -right-0.5 ring-2 ring-white" />

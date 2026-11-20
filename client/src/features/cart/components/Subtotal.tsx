@@ -25,8 +25,8 @@ const Subtotal = () => {
     queryKey: ["available-cart-coupons", data?.user?.id, cart?.map(item => [item.variantId, item.quantity, item.unitPrice])],
     queryFn: ({ signal }) => fetchAvailableCartCoupons(signal),
     enabled: isLogin && Boolean(cart?.length),
-    staleTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
   });
 
   const couponCards = (availableCoupons.data ?? []).map(coupon => ({

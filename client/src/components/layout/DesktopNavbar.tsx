@@ -3,7 +3,7 @@
 import { ChevronDown, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import SearchBox from "@/components/shared/SearchBox";
@@ -36,9 +36,14 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
   const cartBadge = useStorefrontCountBadge("cart");
   const wishBadge = useStorefrontCountBadge("wishlist", initialIsCustomer);
   const router = useRouter();
+  const pathname = usePathname();
 
   const [selectedCatName, setSelectedCatName] = useState("All Categories");
-  const [categoryMenuReady, setCategoryMenuReady] = useState(false);
+  const [categoryMenu, setCategoryMenu] = useState({ pathname, ready: false });
+  if (categoryMenu.pathname !== pathname) {
+    setCategoryMenu({ pathname, ready: false });
+  }
+  const categoryMenuReady = categoryMenu.pathname === pathname && categoryMenu.ready;
 
   const { data, isPending } = authClient.useSession();
   const user = data?.user;
@@ -74,7 +79,7 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
             unoptimized={Boolean(store.logoUrl && !isCloudinaryUrl(store.logoUrl))}
             fill
             priority
-            sizes="120px"
+            sizes="(min-width: 1280px) 130px, 120px"
             className="object-contain object-left"
           />
         </Link>
@@ -85,8 +90,8 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
         <div className="flex h-12 items-center rounded-sm border border-gray-200">
           {/* Category Selector */}
           <div
-            onPointerEnter={() => setCategoryMenuReady(true)}
-            onFocusCapture={() => setCategoryMenuReady(true)}
+            onPointerEnter={() => setCategoryMenu({ pathname, ready: true })}
+            onFocusCapture={() => setCategoryMenu({ pathname, ready: true })}
             className="group/cat relative h-full w-[140px] min-w-0 shrink-0 border-r border-gray-200 bg-white xl:w-[180px]"
           >
             <button
@@ -101,7 +106,10 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
               />
             </button>
 
-            {categoryMenuReady && <CategoryMegaMenu categories={categories ?? []} onSelect={setSelectedCatName} />}
+            {categoryMenuReady && <CategoryMegaMenu categories={categories ?? []} onSelect={name => {
+              setSelectedCatName(name);
+              setCategoryMenu({ pathname, ready: false });
+            }} />}
           </div>
 
           {/* Search Input */}
@@ -117,7 +125,7 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
         <Link prefetch={false}
           href={shoppingHref ?? "/customer/wish-list"}
           className="group relative flex items-center gap-2"
-          aria-label={wishBadge.loading ? "Wishlist, loading item count" : `Wishlist, ${wishBadge.count} items`}
+          aria-label={wishBadge.loading ? "Wishlist, loading item count" : wishBadge.count === null ? "Wishlist" : `Wishlist, ${wishBadge.count} items`}
         >
           <div className="relative p-2">
             <Heart
@@ -131,7 +139,7 @@ const DeskTopNavbar = ({ categories, actions, initialIsCustomer }: {
 
         {/* Cart */}
         <Link prefetch={false} href={shoppingHref ?? "/cart"} className="group flex items-center gap-3"
-          aria-label={cartBadge.loading ? "Cart, loading item count" : `Cart, ${cartBadge.count} items`}>
+          aria-label={cartBadge.loading ? "Cart, loading item count" : cartBadge.count === null ? "Cart" : `Cart, ${cartBadge.count} items`}>
           <div className="relative p-2">
             <ShoppingBag
               size={24}

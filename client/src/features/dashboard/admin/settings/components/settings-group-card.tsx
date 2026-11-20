@@ -194,8 +194,10 @@ function FieldControl({
 
 export function SettingsGroupCard({
   group,
+  canEdit = false,
 }: {
   group: AdminSettingGroup;
+  canEdit?: boolean;
 }) {
   const queryClient = useQueryClient();
   const [values, setValues] = useState<FieldValues>(() =>
@@ -263,7 +265,7 @@ export function SettingsGroupCard({
               field={field}
               value={values[field.key]}
               secretValue={secrets[field.key] ?? ""}
-              disabled={mutation.isPending}
+              disabled={!canEdit || mutation.isPending}
               onChange={(value) =>
                 setValues((current) => ({ ...current, [field.key]: value }))
               }
@@ -294,7 +296,7 @@ export function SettingsGroupCard({
         <Button
           type="button"
           onClick={() => mutation.mutate()}
-          disabled={mutation.isPending}
+          disabled={!canEdit || mutation.isPending}
         >
           {mutation.isPending ? "Saving…" : "Save changes"}
         </Button>

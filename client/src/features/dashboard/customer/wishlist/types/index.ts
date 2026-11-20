@@ -1,4 +1,4 @@
-import type { WishlistItem, WishlistListResult } from "./models";
+import type { WishlistItem } from "./models";
 
 export type {
   Envelope,
@@ -9,10 +9,6 @@ export type {
   WishlistVariantImage,
 } from "./models";
 
-export type WishlistGridProps = {
-  initialData: WishlistListResult;
-};
-
 export type WishItem = WishlistItem;
 
 export type WishState = {
@@ -22,7 +18,7 @@ export type WishState = {
   setWishListLoading: (value: boolean) => void;
   wishes: WishlistItem[] | null;
   wishCount: number;
-  fetchWishList: () => Promise<void>;
+  fetchWishList: (reportError?: boolean) => Promise<void>;
   addToWish: (variantId: string) => Promise<{ message: string }>;
   removeFromWishList: (variantId: string) => Promise<{ message: string }>;
   clearWish: () => void;

@@ -20,7 +20,7 @@ import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import StoreImage from "@/components/shared/store-image";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/shared/intent-link";
 
 function imageSrc(item: ProductListItem): string {
   const url = item?.images?.[0]?.imageUrl;
@@ -44,14 +44,15 @@ export default function ProductCard({
 
   return (
     <div className={productCardShell}>
-      <Link prefetch={false} href={href} className="relative block h-full w-full">
+      <Link href={href} className="relative block h-full w-full">
         <div className={productCardMedia}>
           <StoreImage
             src={imageSrc(product)}
             alt={product?.name ?? "Product image"}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
             loading={eagerImage ? "eager" : "lazy"}
+            fetchPriority={eagerImage ? "high" : "auto"}
             className={productCardImage}
           />
           <div className="absolute top-2 right-2 z-[5] flex flex-col items-end gap-1.5 sm:top-3 sm:right-3 sm:gap-2">
@@ -66,6 +67,7 @@ export default function ProductCard({
                 void toggleWishlist();
               }}
               disabled={wishBusy || !variantId}
+              aria-busy={wishBusy}
               className={cn(
                 productCardIconBtn({ tone: inWish ? "active" : "default" }),
                 "flex h-10 w-10 min-h-10 min-w-10 items-center justify-center p-0 disabled:opacity-50 sm:h-11 sm:w-11 sm:min-h-11 sm:min-w-11"
@@ -73,11 +75,15 @@ export default function ProductCard({
               aria-label={inWish ? "Remove from wishlist" : "Add to wishlist"}
               aria-pressed={inWish}
             >
-              <Heart
-                size={16}
-                className="h-4 w-4 sm:h-[18px] sm:w-[18px]"
-                fill={inWish ? "currentColor" : "none"}
-              />
+              {wishBusy ? (
+                <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent sm:size-[18px]" />
+              ) : (
+                <Heart
+                  size={16}
+                  className="h-4 w-4 sm:h-[18px] sm:w-[18px]"
+                  fill={inWish ? "currentColor" : "none"}
+                />
+              )}
             </button>
           </div>
         </div>

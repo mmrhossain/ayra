@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export function useUrlParam<T extends string>(
@@ -16,8 +16,7 @@ export function useUrlParam<T extends string>(
   const value =
     raw && (allowed as readonly string[]).includes(raw) ? (raw as T) : fallback;
 
-  const setValue = useCallback(
-    (next: T) => {
+  const setValue = (next: T) => {
       const params = new URLSearchParams(searchParams.toString());
       if (next === fallback) {
         params.delete(key);
@@ -28,9 +27,7 @@ export function useUrlParam<T extends string>(
       router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
       });
-    },
-    [fallback, key, pathname, router, searchParams],
-  );
+    };
 
   return [value, setValue] as const;
 }

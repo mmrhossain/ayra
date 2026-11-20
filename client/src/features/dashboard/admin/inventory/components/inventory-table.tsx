@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,25 +32,20 @@ import { warehouseLabel } from "@/features/dashboard/admin/warehouses/api/wareho
 
 export function InventoryTable({
   initialData,
+  canAdjust,
   initialVariantId = "",
   initialSearch = "",
 }: InventoryTableProps) {
   const [page, setPage] = useState(initialData.pagination.page);
   const [searchInput, setSearchInput] = useState(initialSearch);
-  const [search, setSearch] = useState(initialSearch);
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [warehouseId, setWarehouseId] = useState("");
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustItem, setAdjustItem] = useState<InventoryListItem | null>(null);
   const variantId = initialVariantId;
-
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => window.clearTimeout(t);
-  }, [searchInput]);
 
   const {
     query,
@@ -60,7 +55,7 @@ export function InventoryTable({
     lowStockThreshold,
   } = useInventoryList({
     initialData,
-    page,
+    page: queryPage,
     warehouseId,
     lowStockOnly,
     search,
@@ -75,7 +70,10 @@ export function InventoryTable({
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
           <Input
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search product or SKU"
             aria-label="Search inventory"
             className="max-w-sm"
@@ -221,6 +219,7 @@ export function InventoryTable({
                           type="button"
                           variant="outline"
                           size="sm"
+                          disabled={!canAdjust}
                           onClick={() => {
                             setAdjustItem(item);
                             setAdjustOpen(true);
@@ -264,11 +263,11 @@ export function InventoryTable({
         </div>
       </div>
 
-      <StockAdjustDialog
+      {canAdjust && <StockAdjustDialog
         open={adjustOpen}
         onOpenChange={setAdjustOpen}
         item={adjustItem}
-      />
+      />}
     </div>
   );
 }

@@ -144,7 +144,7 @@ export function AccountEditDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gender</FormLabel>
-                  <Select value={field.value || undefined} onValueChange={field.onChange}>
+                  <Select value={field.value ?? ""} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full h-11 rounded-xl">
                         <SelectValue placeholder="Select gender" />

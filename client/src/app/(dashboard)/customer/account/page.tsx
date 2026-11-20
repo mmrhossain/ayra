@@ -1,3 +1,4 @@
+import { requireCustomer } from "@/lib/api/auth/server";
 import { AccountCard } from "@/features/dashboard/customer/account/components/account-card";
 import {
   fetchCustomerProfile,
@@ -8,6 +9,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CustomerAccountPage() {
+  await requireCustomer();
   let initial;
   let preferences;
   let error: string | null = null;

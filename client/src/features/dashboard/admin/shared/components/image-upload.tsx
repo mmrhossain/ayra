@@ -1,11 +1,17 @@
 "use client";
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Images, Loader2, Upload, X } from "lucide-react";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient } from "@tanstack/react-query";
+import { Images,
+  Loader2,
+  Upload,
+  X } from "lucide-react";
 import Image from "next/image";
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useId,
   useImperativeHandle,
@@ -216,14 +222,14 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
     // Revokes any deferred object URLs and drops their previews. Used on
     // unmount, on replace (single mode), and when picking an already-uploaded
     // library asset so a raw File value and an existing URL never coexist.
-    const clearPending = useCallback(() => {
+    const clearPending = () => {
       const pending = pendingFiles.current;
       if (pending.length === 0) return;
       const ids = new Set(pending.map((item) => item.previewId));
       pending.forEach((item) => URL.revokeObjectURL(item.url));
       pendingFiles.current = [];
       setPreviews((prev) => prev.filter((p) => !ids.has(p.id)));
-    }, []);
+    };
 
     useEffect(() => {
       return () => {
@@ -232,8 +238,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
       };
     }, []);
 
-    const applyResults = useCallback(
-      (results: UploadedImage[]) => {
+    const applyResults = (results: UploadedImage[]) => {
         const variantIndex = props.mode === "single" ? props.variantIndex : undefined;
         if (props.mode === "single") {
           const result = results[0];
@@ -252,12 +257,9 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
           assets.push(asset);
         }
         emit(props, urls, assets);
-      },
-      [committed, maxFiles, props]
-    );
+      };
 
-    const handleFiles = useCallback(
-      (list: FileList | File[]) => {
+    const handleFiles = (list: FileList | File[]) => {
         if (!canAdd) return;
         const incoming = Array.from(list);
         const accepted: File[] = [];
@@ -313,11 +315,9 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
             toast.error(toUploadErrorMessage(err));
           },
         });
-      },
-      [applyResults, canAdd, clearPending, deferUpload, maxFiles, mode, mutation, slotsLeft]
-    );
+      };
 
-    const flush = useCallback(async () => {
+    const flush = async () => {
       const pending = [...pendingFiles.current];
       if (pending.length === 0) return;
       const ids = new Set(pending.map((item) => item.previewId));
@@ -368,9 +368,9 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
         toast.error(firstError);
         throw new Error(firstError);
       }
-    }, [applyResults, type]);
+    };
 
-    useImperativeHandle(ref, () => ({ flush }), [flush]);
+    useImperativeHandle(ref, () => ({ flush }));
 
     const removeItem = (item: {
       id: string;

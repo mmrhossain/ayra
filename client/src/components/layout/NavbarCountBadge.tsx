@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 export function NavbarCountBadge({ count, loading, className }: {
-  count: number;
+  count: number | null;
   loading: boolean;
   className?: string;
 }) {
@@ -13,7 +13,7 @@ export function NavbarCountBadge({ count, loading, className }: {
       )} />
     );
   }
-  if (count === 0) return null;
+  if (count === null || count === 0) return null;
   return (
     <span aria-hidden="true" className={cn(
       "absolute grid min-h-4 min-w-4 place-items-center rounded-full bg-ink px-1 text-xs font-semibold leading-4 text-white",

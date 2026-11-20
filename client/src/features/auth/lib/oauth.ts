@@ -5,22 +5,22 @@ export function safeRedirectPath(raw: string | null | undefined): string {
 
   let decoded: string;
   try {
-    decoded = decodeURIComponent(raw);
+    decoded = decodeURIComponent(raw.split(/[?#]/, 1)[0]);
   } catch {
     return "/";
   }
 
   if (
+    !raw.startsWith("/") ||
     !decoded.startsWith("/") ||
     decoded.startsWith("//") ||
-    decoded.includes("://") ||
     decoded.includes("\\") ||
-    /[\u0000-\u001F\u007F]/.test(decoded)
+    /[\u0000-\u001F\u007F]/.test(raw + decoded)
   ) {
     return "/";
   }
 
-  return decoded;
+  return raw;
 }
 
 function clientOrigin(): string {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+
 import CustomButton from "@/components/shared/CustomButton";
 import FancyHeading from "@/components/shared/FancyHeading";
 import ProductGrid from "@/features/catalog/components/product/ProductGrid";
@@ -24,10 +24,7 @@ export default function HomeProductSection({
   seeMorePath: string;
   seeMoreText: string;
 }) {
-  const loadPage = useCallback(
-    (cursor: string) => fetchHomeSectionProducts(sectionId, cursor),
-    [sectionId]
-  );
+  const loadPage = (cursor: string) => fetchHomeSectionProducts(sectionId, cursor);
   const { items, cursor, loading, error, sentinelRef, loadMore } = useInfiniteProductList({
     initialItems: products,
     initialCursor,

@@ -8,6 +8,7 @@ const ProductNotFound = ({ slug }: { slug?: string }) => {
     const router = useRouter();
 
     return (
+      <div className="min-h-[calc(100svh-var(--header-height,112px))]">
         <div className="flex min-h-64 flex-col items-center justify-center px-4 py-6 text-center sm:py-8">
             {/* Icon */}
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
@@ -49,6 +50,7 @@ const ProductNotFound = ({ slug }: { slug?: string }) => {
                 </button>
             </div>
         </div>
+      </div>
     );
 };
 

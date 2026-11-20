@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,23 +48,17 @@ export function RefundTable({ initialData }: Props) {
   const [method, setMethod] = useState<PaymentMethodFilter | "">("");
   const [manual, setManual] = useState<"" | "true" | "false">("");
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [completeOpen, setCompleteOpen] = useState(false);
   const [selected, setSelected] = useState<RefundQueueItem | null>(null);
 
   const mutation = useUpdateRefundStatusMutation();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
   const { query, items, pagination } = useRefundList({
     initialData,
-    page,
+    page: queryPage,
     status,
     method,
     search,
@@ -89,7 +83,10 @@ export function RefundTable({ initialData }: Props) {
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <Input
             value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
+            onChange={(event) => {
+              setSearchInput(event.target.value);
+              setPage(1);
+            }}
             placeholder="Refund, order #, customer"
             aria-label="Search refunds"
             className="w-full sm:w-64"

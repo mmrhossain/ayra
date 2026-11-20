@@ -1,3 +1,4 @@
+import { heroFrameClass } from "@/features/slider/components/hero-layout";
 import CategoriesGrid from "@/features/catalog/components/category/CategoriesGrid";
 import HomeProductSection from "@/features/catalog/components/product/HomeProductSection";
 import SliderCarousel from "@/features/slider/components/SliderCarousel";
@@ -19,7 +20,7 @@ export default function HomePage({
             <SliderCarousel sliders={data.sliders} />
           </div>
         ) : (
-          <div className="flex relative h-[60svh] min-h-[350px] w-full overflow-hidden sm:h-[calc(100dvh-var(--header-height,120px))] sm:min-h-[500px] items-center justify-center bg-gray-100 text-gray-400">
+          <div className={heroFrameClass + " relative flex w-full items-center justify-center overflow-hidden bg-gray-100 text-gray-400"}>
             No banners available
           </div>
         )}

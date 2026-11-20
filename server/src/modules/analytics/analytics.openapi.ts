@@ -1,5 +1,5 @@
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   successResponse,
@@ -18,7 +18,7 @@ registry.registerPath({
   path: "/api/v1/admin/analytics/overview",
   tags: [TAG],
   summary: "Admin dashboard overview metrics",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: overviewQueryOpenApiSchema },
   responses: {
     200: successResponse("Analytics overview"),
@@ -31,7 +31,7 @@ registry.registerPath({
   path: "/api/v1/admin/analytics/sales",
   tags: [TAG],
   summary: "Sales trend time-series",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: salesQueryOpenApiSchema },
   responses: {
     200: successResponse("Sales trend"),
@@ -44,7 +44,7 @@ registry.registerPath({
   path: "/api/v1/admin/analytics/top-products",
   tags: [TAG],
   summary: "Top products by revenue or quantity",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: topProductsQueryOpenApiSchema },
   responses: {
     200: successResponse("Top products"),
@@ -57,7 +57,7 @@ registry.registerPath({
   path: "/api/v1/admin/analytics/orders-by-status",
   tags: [TAG],
   summary: "Order count breakdown by status",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: ordersByStatusQueryOpenApiSchema },
   responses: {
     200: successResponse("Orders by status"),

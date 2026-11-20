@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+
 
 import { NumberInput } from "@/components/ui/number-input";
 import type { VariantRow } from "@/features/dashboard/admin/products/types";
@@ -23,7 +23,7 @@ function priceOf(value: string): number {
 }
 
 export function ProductWizardStock({ rows, onRowsChange }: Props) {
-  const totals = useMemo(() => {
+  const totals = (() => {
     return rows.reduce(
       (acc, row) => {
         const qty = qtyOf(row.initialQty);
@@ -33,7 +33,7 @@ export function ProductWizardStock({ rows, onRowsChange }: Props) {
       },
       { stock: 0, amount: 0 },
     );
-  }, [rows]);
+  })();
 
   const updateQty = (key: string, qty: string) => {
     onRowsChange(

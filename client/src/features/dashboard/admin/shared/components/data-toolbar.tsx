@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Input } from "@/components/ui/input";
-import { useDebouncedValue } from "@/features/dashboard/admin/shared/hooks/use-debounced-value";
 
 export function DataToolbar({
   initialValue = "",
@@ -13,7 +12,6 @@ export function DataToolbar({
   countLabel,
   filters,
   actions,
-  debounceMs = 300,
 }: {
   initialValue?: string;
   onValueChange: (value: string) => void;
@@ -22,12 +20,11 @@ export function DataToolbar({
   countLabel?: string;
   filters?: ReactNode;
   actions?: ReactNode;
-  debounceMs?: number;
 }) {
   const [value, setValue] = useState(initialValue);
-  const debounced = useDebouncedValue(value, debounceMs);
+  const deferredValue = useDeferredValue(value.trim());
   const callback = useRef(onValueChange);
-  const mounted = useRef(false);
+  const lastValue = useRef(initialValue.trim());
 
   useEffect(() => {
     callback.current = onValueChange;
@@ -37,12 +34,10 @@ export function DataToolbar({
     // Skip the initial value: the caller's list is already filtered by it, and
     // emitting on mount would reset pagination every time the section remounts
     // (for example when switching away from and back to a tab).
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
-    callback.current(debounced.trim());
-  }, [debounced]);
+    if (lastValue.current === deferredValue) return;
+    lastValue.current = deferredValue;
+    callback.current(deferredValue);
+  }, [deferredValue]);
 
   return (
     <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">

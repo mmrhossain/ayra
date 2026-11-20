@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,14 +40,10 @@ export function ReturnRequestDialog({
   const [reason, setReason] = useState<string>("");
   const [quantities, setQuantities] = useState<Record<string, string>>({});
 
-  const selectedCount = useMemo(
-    () =>
-      Object.values(quantities).filter((qty) => {
+  const selectedCount = Object.values(quantities).filter((qty) => {
         const n = Number(qty);
         return Number.isFinite(n) && n > 0;
-      }).length,
-    [quantities],
-  );
+      }).length;
 
   const mutation = useReturnRequestMutation({
     orderId,

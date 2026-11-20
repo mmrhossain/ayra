@@ -1,23 +1,27 @@
 "use client";
 
-import { cartCouponCode } from "@/features/checkout/api";
+import {
+  cartCouponCode } from "@/features/checkout/api";
 import { useCheckoutCart } from "./use-checkout-cart";
+import { storefrontCountKey } from "@/hooks/useStorefrontCounts";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   initiatePayment,
   pickGatewayUrl,
   toCheckoutApiError,
   type CheckoutPayload,
-} from "@/features/checkout/api";
+  } from "@/features/checkout/api";
 import type { CustomerOrder } from "@/features/dashboard/customer/orders/types";
 import { DashboardApiError } from "@/lib/api/dashboard";
 import { authClient } from "@/lib/api/auth/auth-client";
-import { errorToast, successToast } from "@/helpers";
+import { errorToast,
+  successToast } from "@/helpers";
 import { bdPhoneSchema } from "@/lib/validators/bangladesh";
 import { locationStore } from "@/stores/location.store";
 import { useOrderStore } from "@/stores/useOrderStore";
 import type { PlaceOrderInput } from "@/features/checkout/types";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 const CHECKOUT_CONFLICT_RETRY_MS = 1_500;
 
@@ -52,6 +56,7 @@ export function usePlaceOrder(
   const { createOrder, loading } = useOrderStore();
   const { formState } = locationStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data } = authClient.useSession();
   const user = data?.user;
   const [placing, setPlacing] = useState(false);
@@ -63,7 +68,7 @@ export function usePlaceOrder(
   const acceptPriceChangeRef = useRef(false);
   const inFlightRef = useRef(false);
 
-  const placeOrder = useCallback(async () => {
+  const placeOrder = async () => {
     const {
       name,
       phone,
@@ -148,6 +153,7 @@ export function usePlaceOrder(
 
     try {
       const result = await submit();
+      void queryClient.invalidateQueries({ queryKey: storefrontCountKey("cart", user.id), exact: true });
       idempotencyKeyRef.current = null;
       acceptPriceChangeRef.current = false;
       setPriceChange(null);
@@ -199,28 +205,20 @@ export function usePlaceOrder(
       inFlightRef.current = false;
       setPlacing(false);
     }
-  }, [
-    couponCode,
-    createOrder,
-    expectedSubtotal,
-    formState,
-    paymentMethod,
-    router,
-    user,
-  ]);
+  };
 
-  const confirmPriceChange = useCallback(() => {
+  const confirmPriceChange = () => {
     if (inFlightRef.current) return;
     acceptPriceChangeRef.current = true;
     idempotencyKeyRef.current = newIdempotencyKey();
     setPriceChange(null);
     void placeOrder();
-  }, [placeOrder]);
+  };
 
-  const dismissPriceChange = useCallback(() => {
+  const dismissPriceChange = () => {
     acceptPriceChangeRef.current = false;
     setPriceChange(null);
-  }, []);
+  };
 
   return {
     placeOrder,

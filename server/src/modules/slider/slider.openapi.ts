@@ -1,5 +1,5 @@
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -41,7 +41,7 @@ registry.registerPath({
   path: "/api/v1/admin/sliders",
   tags: [TAG],
   summary: "List sliders (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listSlidersQuerySchema },
   responses: {
     200: successResponse("Sliders fetched"),
@@ -54,7 +54,7 @@ registry.registerPath({
   path: "/api/v1/admin/sliders/{id}",
   tags: [TAG],
   summary: "Get slider (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: sliderIdParamSchema },
   responses: {
     200: successResponse("Slider fetched"),
@@ -69,7 +69,7 @@ registry.registerPath({
   summary: "Create slider (admin)",
   description:
     "Create a slider from a previously uploaded Cloudinary image. Upload once via POST /api/v1/media/upload?type=slider. The response variants array is [desktop 1920x720, mobile 1080x1350]; use variants[0] as imageUrl and variants[1] as mobileImageUrl.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createSliderSchema) },
   responses: {
     201: successResponse("Slider created"),
@@ -82,7 +82,7 @@ registry.registerPath({
   path: "/api/v1/admin/sliders/{id}",
   tags: [TAG],
   summary: "Update slider (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: sliderIdParamSchema,
     body: jsonBody(updateSliderSchema),
@@ -98,7 +98,7 @@ registry.registerPath({
   path: "/api/v1/admin/sliders/{id}",
   tags: [TAG],
   summary: "Delete slider (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: sliderIdParamSchema },
   responses: {
     200: successResponse("Slider deleted"),

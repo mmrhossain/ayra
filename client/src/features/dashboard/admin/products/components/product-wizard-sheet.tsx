@@ -5,9 +5,13 @@ import {
   SheetContent,
   SheetDescription,
   SheetTitle,
-} from "@/components/ui/sheet";
+  } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react";
+import { createContext,
+  useContext,
+  useRef,
+  type ReactNode,
+} from "react";
 
 type EditorClose = {
   requestClose: () => void;
@@ -19,17 +23,17 @@ export const useProductEditorClose = () => useContext(ProductEditorCloseContext)
 export function ProductWizardSheet({ children }: { children: ReactNode }) {
   const router = useRouter();
   const closeGuard = useRef<(() => boolean) | undefined>(undefined);
-  const registerGuard = useCallback((guard: () => boolean) => {
+  const registerGuard = (guard: () => boolean) => {
     closeGuard.current = guard;
     return () => {
       if (closeGuard.current === guard) closeGuard.current = undefined;
     };
-  }, []);
-  const requestClose = useCallback(() => {
+  };
+  const requestClose = () => {
     if (closeGuard.current && !closeGuard.current()) return;
     router.back();
-  }, [router]);
-  const close = useMemo(() => ({ requestClose, registerGuard }), [requestClose, registerGuard]);
+  };
+  const close = { requestClose, registerGuard };
 
   return (
     <ProductEditorCloseContext.Provider value={close}>

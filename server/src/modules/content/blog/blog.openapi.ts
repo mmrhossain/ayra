@@ -1,5 +1,5 @@
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -47,7 +47,7 @@ registry.registerPath({
   path: "/api/v1/admin/blog-categories",
   tags: [TAG],
   summary: "List blog categories (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Blog categories fetched"),
     ...errorResponses(401, 403),
@@ -59,7 +59,7 @@ registry.registerPath({
   path: "/api/v1/admin/blog-categories",
   tags: [TAG],
   summary: "Create blog category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createBlogCategorySchema) },
   responses: {
     201: successResponse("Blog category created"),
@@ -72,7 +72,7 @@ registry.registerPath({
   path: "/api/v1/admin/blog-categories/{id}",
   tags: [TAG],
   summary: "Update blog category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: blogIdParamSchema,
     body: jsonBody(updateBlogCategorySchema),
@@ -88,7 +88,7 @@ registry.registerPath({
   path: "/api/v1/admin/blog-categories/{id}",
   tags: [TAG],
   summary: "Delete blog category (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: blogIdParamSchema },
   responses: {
     200: successResponse("Blog category deleted"),
@@ -101,7 +101,7 @@ registry.registerPath({
   path: "/api/v1/admin/blogs",
   tags: [TAG],
   summary: "List blog posts (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listAdminBlogsQuerySchema },
   responses: {
     200: successResponse("Blogs fetched"),
@@ -114,7 +114,7 @@ registry.registerPath({
   path: "/api/v1/admin/blogs",
   tags: [TAG],
   summary: "Create blog post draft (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createBlogSchema) },
   responses: {
     201: successResponse("Blog created"),
@@ -127,7 +127,7 @@ registry.registerPath({
   path: "/api/v1/admin/blogs/{id}",
   tags: [TAG],
   summary: "Update blog post (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: blogIdParamSchema,
     body: jsonBody(updateBlogSchema),
@@ -143,7 +143,7 @@ registry.registerPath({
   path: "/api/v1/admin/blogs/{id}/publish",
   tags: [TAG],
   summary: "Publish blog post (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: blogIdParamSchema },
   responses: {
     200: successResponse("Blog published"),
@@ -156,7 +156,7 @@ registry.registerPath({
   path: "/api/v1/admin/blogs/{id}",
   tags: [TAG],
   summary: "Soft-delete blog post (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: blogIdParamSchema },
   responses: {
     200: successResponse("Blog deleted"),

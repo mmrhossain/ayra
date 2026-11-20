@@ -6,8 +6,6 @@ const globalForRedis = globalThis as unknown as {
   redis: Redis | null | undefined;
 };
 
-const MAX_RETRY_ATTEMPTS = 3;
-
 function isRedisUrl(value: string): boolean {
   return value.startsWith("redis://") || value.startsWith("rediss://");
 }
@@ -31,12 +29,8 @@ function createRedisClient(): Redis | null {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: true,
       connectTimeout: 10_000,
-      retryStrategy: (times) => {
-        if (times > MAX_RETRY_ATTEMPTS) {
-          return null;
-        }
-        return Math.min(500 * 2 ** (times - 1), 4000);
-      },
+      // Keep reconnecting after outages; individual commands still have bounded retries.
+      retryStrategy: (times) => Math.min(500 * 2 ** Math.min(times - 1, 3), 4000),
       ...(useTls ? { tls: {} } : {}),
     });
 
@@ -48,6 +42,7 @@ function createRedisClient(): Redis | null {
     });
 
     client.on("ready", () => {
+      errorLogged = false;
       logger.info("Redis connected");
     });
 

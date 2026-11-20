@@ -1,77 +1,91 @@
-"use client";
+﻿"use client";
 
 import { authClient } from "@/lib/api/auth/auth-client";
 import { isStaffRole } from "@/lib/api/auth/roles";
 import { useCartStore } from "@/stores/useCartStore";
 import { useWishStore } from "@/stores/useWishStore";
-import { useIsFetching, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { create } from "zustand";
 
-export function useStorefrontCountBadge(kind: "cart" | "wishlist", initialIsCustomer = false) {
+type CountKind = "cart" | "wishlist";
+const useCountOwner = create<{ id: string | null | undefined }>(() => ({ id: undefined }));
+
+export const storefrontCountKey = (kind: CountKind, ownerId: string | null) =>
+  [`storefront-${kind}`, ownerId] as const;
+
+function useCountQuery(kind: CountKind, ownerId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: storefrontCountKey(kind, ownerId),
+    queryFn: async () => {
+      if (kind === "cart") await useCartStore.getState().fetchCart(ownerId ? "customer" : "guest");
+      else await useWishStore.getState().fetchWishList(true);
+      return true;
+    },
+    enabled,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+    throwOnError: false,
+  });
+}
+
+export function useStorefrontOwner() {
+  const { data: session, isPending } = authClient.useSession();
+  const ownerId = session?.user?.id ?? null;
+  const activeOwner = useCountOwner(state => state.id);
+  return { ownerId, ownerReady: !isPending && activeOwner === ownerId };
+}
+
+export function useStorefrontCountQuery(kind: CountKind) {
+  const { ownerId, ownerReady } = useStorefrontOwner();
+  const query = useCountQuery(kind, ownerId, false);
+  return { query, ownerReady };
+}
+
+export function useStorefrontCountBadge(kind: CountKind, initialIsCustomer = false) {
   const { data: session, isPending } = authClient.useSession();
   const ownerId = session?.user?.id ?? null;
   const staff = isStaffRole(session?.user?.role);
+  const activeOwner = useCountOwner(state => state.id);
   const cartCount = useCartStore(state =>
     kind === "cart" && state.cart !== null ? state.cartCount : null);
   const wishCount = useWishStore(state =>
     kind === "wishlist" && state.wishes !== null ? state.wishCount : null);
   const count = kind === "cart" ? cartCount : wishCount;
-  const queryKey = kind === "cart" ? ["storefront-cart", ownerId ?? "guest"] : ["storefront-wishlist", ownerId];
-  const fetching = useIsFetching({
-    queryKey,
-    exact: true,
-    predicate: query => query.state.data === undefined,
-  }) > 0;
+  const query = useCountQuery(kind, ownerId, false);
   const expected = !staff && (kind === "cart" || Boolean(ownerId) || (isPending && initialIsCustomer));
 
   return {
-    count: expected ? count ?? 0 : 0,
-    loading: expected && (count === null || fetching),
+    count: expected && activeOwner === ownerId ? count : null,
+    loading: expected && (activeOwner !== ownerId || count === null) && !query.isError,
   };
 }
 
 export function useStorefrontCounts() {
   const { data: session, isPending } = authClient.useSession();
-  const loggedIn = Boolean(session?.user);
   const staff = isStaffRole(session?.user?.role);
   const ownerId = session?.user?.id ?? null;
-  const previousOwner = useRef<string | null | undefined>(undefined);
+  const client = useQueryClient();
+  const activeOwner = useCountOwner(state => state.id);
 
   useEffect(() => {
     if (isPending) return;
-    if (previousOwner.current !== undefined && previousOwner.current !== ownerId) {
+    if (useCountOwner.getState().id !== ownerId) {
       useCartStore.getState().clearCart();
+      useCartStore.setState({ cart: null });
       useWishStore.getState().clearWish();
+      useWishStore.setState({ wishes: null });
+      client.removeQueries({
+        predicate: ({ queryKey }) =>
+          (queryKey[0] === "storefront-cart" || queryKey[0] === "storefront-wishlist") &&
+          queryKey[1] !== ownerId,
+      });
+      useCountOwner.setState({ id: ownerId });
     }
-    previousOwner.current = ownerId;
-  }, [isPending, ownerId]);
-  const fetchCart = useCartStore((s) => s.fetchCart);
-  const fetchWishList = useWishStore((s) => s.fetchWishList);
+  }, [client, isPending, ownerId]);
 
-  // ১. কার্ট সবসময় ফেচ হবে (লগইন থাকুক বা না থাকুক / গেস্ট কার্ট হোক)
-  useQuery({
-    queryKey: ["storefront-cart", ownerId ?? "guest"],
-    queryFn: async () => {
-      await fetchCart();
-      return true;
-    },
-    enabled: !isPending && !staff,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
-
-  useQuery({
-    queryKey: ["storefront-wishlist", ownerId],
-    queryFn: async () => {
-      await fetchWishList();
-      return true;
-    },
-    enabled: !isPending && loggedIn && !staff,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  const enabled = !isPending && !staff && activeOwner === ownerId;
+  useCountQuery("cart", ownerId, enabled);
+  useCountQuery("wishlist", ownerId, enabled && Boolean(ownerId));
 }

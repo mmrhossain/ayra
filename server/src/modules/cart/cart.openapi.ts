@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -9,7 +9,6 @@ import {
 import {
   addItemSchema,
   applyCouponSchema,
-  checkoutSchema,
   mergeGuestCartSchema,
   updateItemSchema,
 } from "./cart.validator.ts";
@@ -17,11 +16,37 @@ import {
 const TAG = "Cart";
 
 registry.registerPath({
+  method: "post",
+  path: "/api/v1/cart/guest/quote",
+  tags: [TAG],
+  summary: "Estimate guest cart totals",
+  description: "Uses current prices and tax for active variants. Unavailable variants are omitted.",
+  request: { body: { ...jsonBody(mergeGuestCartSchema), required: true } },
+  responses: {
+    200: successResponse("Cart estimated", z.object({
+      items: z.array(z.object({
+        variantId: z.string(),
+        quantity: z.number().int(),
+        unitPrice: z.number(),
+        subtotal: z.number(),
+      })),
+      subtotal: z.number(),
+      discountAmount: z.number(),
+      taxAmount: z.number(),
+      shippingAmount: z.number(),
+      grandTotal: z.number(),
+      taxRates: z.array(z.number()).optional(),
+    })),
+    ...errorResponses(400, 429),
+  },
+});
+
+registry.registerPath({
   method: "get",
   path: "/api/v1/cart",
   tags: [TAG],
   summary: "Get authenticated cart",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Cart fetched"),
     ...errorResponses(401),
@@ -33,7 +58,7 @@ registry.registerPath({
   path: "/api/v1/cart/items",
   tags: [TAG],
   summary: "Add item to cart",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(addItemSchema) },
   responses: {
     200: successResponse("Item added to cart"),
@@ -46,7 +71,7 @@ registry.registerPath({
   path: "/api/v1/cart/items/{variantId}",
   tags: [TAG],
   summary: "Update cart item quantity",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ variantId: z.string().min(1) }),
     body: jsonBody(updateItemSchema),
@@ -62,7 +87,7 @@ registry.registerPath({
   path: "/api/v1/cart/items/{variantId}",
   tags: [TAG],
   summary: "Remove cart item",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ variantId: z.string().min(1) }) },
   responses: {
     200: successResponse("Item removed from cart"),
@@ -75,7 +100,7 @@ registry.registerPath({
   path: "/api/v1/cart",
   tags: [TAG],
   summary: "Clear cart",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Cart cleared"),
     ...errorResponses(401),
@@ -87,7 +112,7 @@ registry.registerPath({
   path: "/api/v1/cart/guest/merge",
   tags: [TAG],
   summary: "Merge local guest cart items into authenticated cart",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(mergeGuestCartSchema) },
   responses: {
     200: successResponse("Guest cart merged"),
@@ -100,7 +125,7 @@ registry.registerPath({
   path: "/api/v1/cart/coupons",
   tags: [TAG],
   summary: "List available coupons for the customer's cart",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Available coupons fetched", z.array(z.object({
       code: z.string(),
@@ -117,7 +142,7 @@ registry.registerPath({
   path: "/api/v1/cart/coupon",
   tags: [TAG],
   summary: "Apply coupon to cart",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(applyCouponSchema) },
   responses: {
     200: successResponse("Coupon applied"),
@@ -130,23 +155,10 @@ registry.registerPath({
   path: "/api/v1/cart/coupon",
   tags: [TAG],
   summary: "Remove coupon from cart",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Coupon removed"),
     ...errorResponses(401),
-  },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/v1/cart/checkout",
-  tags: [TAG],
-  summary: "Checkout authenticated cart",
-  security: bearerAuth,
-  request: { body: jsonBody(checkoutSchema) },
-  responses: {
-    201: successResponse("Order created"),
-    ...errorResponses(400, 401, 429),
   },
 });
 

@@ -1,6 +1,6 @@
 import { fetchProducts } from "@/features/catalog/api";
 import { Tag } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/shared/intent-link";
 import ProductGrid from "./ProductGrid";
 
 const RelatedProduct = async ({

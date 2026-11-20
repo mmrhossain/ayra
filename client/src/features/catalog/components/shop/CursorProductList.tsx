@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+
 import ProductGrid from "@/features/catalog/components/product/ProductGrid";
 import { useInfiniteProductList } from "@/features/catalog/hooks/use-infinite-product-list";
 import {
@@ -18,10 +18,7 @@ export default function CursorProductList({
   initialCursor: string | null;
   query: ProductListParams;
 }) {
-  const loadPage = useCallback(
-    (cursor: string) => fetchProductList({ ...query, cursor }),
-    [query]
-  );
+  const loadPage = (cursor: string) => fetchProductList({ ...query, cursor });
   const { items, cursor, loading, error, sentinelRef, loadMore } = useInfiniteProductList({
     initialItems,
     initialCursor,

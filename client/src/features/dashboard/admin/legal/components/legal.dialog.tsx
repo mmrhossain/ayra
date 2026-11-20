@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/deferred-rich-text-editor";
 import { useLegalFormMutation } from "@/features/dashboard/admin/legal/hooks/use-legal-mutations";
 import { legalFormSchema, type LegalFormValues } from "@/features/dashboard/admin/legal/schemas";
 import {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -19,7 +19,7 @@ registry.registerPath({
   path: "/api/v1/addresses",
   tags: [TAG],
   summary: "Create address",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createAddressSchema) },
   responses: {
     201: successResponse("Address created"),
@@ -32,7 +32,7 @@ registry.registerPath({
   path: "/api/v1/addresses",
   tags: [TAG],
   summary: "List my addresses",
-  security: bearerAuth,
+  security: sessionAuth,
   responses: {
     200: successResponse("Addresses fetched"),
     ...errorResponses(401),
@@ -44,7 +44,7 @@ registry.registerPath({
   path: "/api/v1/addresses/{id}",
   tags: [TAG],
   summary: "Get address by id",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Address fetched"),
@@ -57,7 +57,7 @@ registry.registerPath({
   path: "/api/v1/addresses/{id}",
   tags: [TAG],
   summary: "Update address",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam, body: jsonBody(updateAddressSchema) },
   responses: {
     200: successResponse("Address updated"),
@@ -70,7 +70,7 @@ registry.registerPath({
   path: "/api/v1/addresses/{id}",
   tags: [TAG],
   summary: "Delete address",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: idParam },
   responses: {
     200: successResponse("Address deleted"),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -29,7 +29,7 @@ registry.registerPath({
   path: "/api/v1/admin/brands",
   tags: [TAG],
   summary: "List brands (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listAdminBrandsQuerySchema },
   responses: {
     200: successResponse("Admin brands fetched"),
@@ -42,7 +42,7 @@ registry.registerPath({
   path: "/api/v1/admin/brands",
   tags: [TAG],
   summary: "Create brand (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createBrandSchema) },
   responses: {
     201: successResponse("Brand created"),
@@ -55,7 +55,7 @@ registry.registerPath({
   path: "/api/v1/admin/brands/{id}",
   tags: [TAG],
   summary: "Update brand (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateBrandSchema),
@@ -71,7 +71,7 @@ registry.registerPath({
   path: "/api/v1/admin/brands/{id}",
   tags: [TAG],
   summary: "Delete brand (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Brand deleted"),

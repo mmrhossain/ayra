@@ -1,24 +1,27 @@
 "use client";
 
-import { STAFF_CANNOT_SHOP_MESSAGE, STAFF_SHOPPING_NOTICE } from "@/lib/api/auth/roles";
+import {
+  STAFF_CANNOT_SHOP_MESSAGE,
+  STAFF_SHOPPING_NOTICE } from "@/lib/api/auth/roles";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useRouter,
+  useSearchParams } from "next/navigation";
+
 
 export function StaffShoppingNotice() {
   const params = useSearchParams();
   const router = useRouter();
   const visible = params.get("notice") === STAFF_SHOPPING_NOTICE;
 
-  const dismiss = useCallback(() => {
+  const dismiss = () => {
     const next = new URLSearchParams(params.toString());
     next.delete("notice");
     const query = next.toString();
     router.replace(query ? `?${query}` : "?", { scroll: false });
-  }, [params, router]);
+  };
 
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
@@ -26,7 +29,7 @@ export function StaffShoppingNotice() {
         },
       },
     });
-  }, [router]);
+  };
 
   if (!visible) return null;
 

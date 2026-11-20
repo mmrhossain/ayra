@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import {
+  useQuery } from "@tanstack/react-query";
+
 
 import { fetchAttributeList } from "@/features/dashboard/admin/attributes/api/attributes";
 import { fetchWarehouseList } from "@/features/dashboard/admin/warehouses/api/warehouses";
@@ -33,10 +34,7 @@ export function useProductWizardOptions() {
     staleTime: 60_000,
   });
 
-  const categories = useMemo(
-    () => flattenCategories(categoriesQuery.data ?? []),
-    [categoriesQuery.data],
-  );
+  const categories = flattenCategories(categoriesQuery.data ?? []);
 
   return {
     categoriesQuery,

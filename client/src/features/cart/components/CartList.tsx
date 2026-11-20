@@ -2,6 +2,7 @@
 
 import EmptyState from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { Button } from "@/components/ui/button";
 import PageBreadcrumb from "@/components/shared/page-breadcrumb";
 import { toCartErrorMessage } from "@/features/cart/api";
 import CartItemRow from "@/features/cart/components/CartItemRow";
@@ -9,19 +10,17 @@ import Subtotal from "@/features/cart/components/Subtotal";
 import CartListSkeleton from "@/features/cart/skeleton/CartListSkeleton";
 import { CartItem } from "@/features/cart/types";
 import { errorToast, successToast } from "@/helpers";
+import { useStorefrontCountQuery } from "@/hooks/useStorefrontCounts";
 import { useCartStore } from "@/stores/useCartStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const CartList = () => {
-  const { cart, cartCount, cartLoading, setCartLoading, removeFromCart, updateCart, fetchCart } =
+  const { cart, cartCount, cartLoading, setCartLoading, removeFromCart, updateCart } =
     useCartStore();
+  const { query: cartQuery, ownerReady } = useStorefrontCountQuery("cart");
 
   const [pendingRemove, setPendingRemove] = useState<CartItem | null>(null);
   const [removing, setRemoving] = useState(false);
-
-  useEffect(() => {
-    void fetchCart();
-  }, [fetchCart]);
 
   const handleCartRemove = async () => {
     if (!pendingRemove) return;
@@ -49,8 +48,25 @@ const CartList = () => {
     }
   };
 
+  if (!ownerReady) return <CartListSkeleton />;
+  if (!cart && cartQuery.isError) {
+    return (
+      <div className="container storefront-page-start space-y-3 text-center">
+        <p role="alert">{toCartErrorMessage(cartQuery.error)}</p>
+        <Button type="button" onClick={() => void cartQuery.refetch()}>Try again</Button>
+      </div>
+    );
+  }
   if (!cart) return <CartListSkeleton />;
-  if (cartCount === 0) return <EmptyState text="cart" />;
+  if (cartCount === 0) return (
+    <EmptyState
+      title="Your cart is empty"
+      description="Discover our curated heritage collection and fill your cart with pieces you'll cherish forever."
+      actionLabel="Continue Shopping"
+      actionHref="/shop"
+      footerText="Handcrafted with heritage"
+    />
+  );
 
   return (
     <section className="container storefront-page-start mx-auto min-w-0 max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem]">

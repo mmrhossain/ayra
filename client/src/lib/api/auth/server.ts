@@ -1,6 +1,6 @@
 import "server-only";
 
-import { SESSION_COOKIE } from "@/config/public";
+import { AUTH_RETURN_PATH_HEADER, SESSION_COOKIE } from "@/config/public";
 import { BACKEND_API_ORIGIN } from "@/config/server";
 import { safeRedirectPath } from "@/features/auth/lib/oauth";
 import {
@@ -10,7 +10,7 @@ import {
   type AuthRole,
 } from "@/lib/api/auth/roles";
 import { resolveAdminRedirect } from "@/lib/admin-navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { cache } from "react";
 
@@ -62,6 +62,11 @@ export const getUserSession = cache(async (): Promise<UserSession> => {
 
 const STAFF_DISABLED_STATUSES = new Set(["SUSPENDED", "OFFBOARDED"]);
 
+async function redirectToLogin(): Promise<never> {
+  const intended = safeRedirectPath((await headers()).get(AUTH_RETURN_PATH_HEADER));
+  redirect(intended === "/" ? "/login" : `/login?${new URLSearchParams({ redirect: intended })}`);
+}
+
 function isStaffDisabled(session: UserSession): boolean {
   const role = normalizeRole(session?.user?.role);
   if (role !== "ADMIN") return false;
@@ -75,9 +80,8 @@ export async function requireRole(
   const session = await getUserSession();
   const role = normalizeRole(session?.user?.role);
 
-  if (!role) {
-    redirect("/login");
-  }
+  if (!session?.user) return redirectToLogin();
+  if (!role) redirect("/unauthorized");
 
   if (session?.user?.banned || isStaffDisabled(session)) {
     redirect("/account-suspended");
@@ -145,7 +149,9 @@ export async function redirectSignedInFromAuthPage(
 ): Promise<UserSession> {
   const session = await getUserSession();
   const role = normalizeRole(session?.user?.role);
-  if (!role) return session;
+  if (!session?.user) return session;
+  if (!role) redirect("/unauthorized");
+  if (session.user.banned || isStaffDisabled(session)) redirect("/account-suspended");
 
   const intended = safeRedirectPath(rawRedirect);
 
@@ -167,9 +173,8 @@ export async function requireCustomer(): Promise<NonNullable<UserSession>> {
   const session = await getUserSession();
   const role = normalizeRole(session?.user?.role);
 
-  if (!role) {
-    redirect("/login");
-  }
+  if (!session?.user) return redirectToLogin();
+  if (!role) redirect("/unauthorized");
 
   if (session?.user?.banned || isStaffDisabled(session)) {
     redirect("/account-suspended");

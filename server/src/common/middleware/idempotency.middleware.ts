@@ -7,9 +7,9 @@ import { Prisma } from "../../generated/prisma/client.ts";
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 
-const fingerprint = (req: Request): string =>
+const fingerprint = (req: Request, canonicalUrl?: string): string =>
   createHash("sha256")
-    .update(`${req.method}:${req.originalUrl}:${JSON.stringify(req.body ?? {})}`)
+    .update(`${req.method}:${canonicalUrl ?? req.originalUrl}:${JSON.stringify(req.body ?? {})}`)
     .digest("hex");
 
 /**
@@ -22,7 +22,7 @@ const fingerprint = (req: Request): string =>
  * Must be mounted after auth so `req.auth.user.id` is available.
  */
 export const idempotency =
-  (scope: string) =>
+  (scope: string, canonicalUrl?: string) =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const key = req.header("Idempotency-Key")?.trim();
     if (!key || !req.auth) {
@@ -31,7 +31,7 @@ export const idempotency =
     }
 
     const userId = req.auth.user.id;
-    const requestHash = fingerprint(req);
+    const requestHash = fingerprint(req, canonicalUrl);
     const where = { userId_scope_key: { userId, scope, key } };
     const expiresAt = new Date(Date.now() + TTL_MS);
 
@@ -112,3 +112,5 @@ export const idempotency =
 
     next();
   };
+
+export const checkoutIdempotency = idempotency("checkout", "/api/v1/checkout");

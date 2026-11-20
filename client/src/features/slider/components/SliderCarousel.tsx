@@ -1,18 +1,23 @@
 "use client";
 
+import { heroFrameClass } from "./hero-layout";
 import CustomButton from "@/components/shared/CustomButton";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from "@/components/ui/carousel";
+  } from "@/components/ui/carousel";
 import type { SliderListItem } from "@/features/dashboard/admin/sliders/api/slider";
 import { cn } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
 import { ArrowRight } from "lucide-react";
-import Image, { getImageProps } from "next/image";
-import React, { useEffect, useMemo, useState } from "react";
+import Image,
+  { getImageProps } from "next/image";
+import React,
+  { useEffect,
+  useState,
+} from "react";
 
 interface HeroSliderProps {
   sliders: SliderListItem[];
@@ -24,16 +29,11 @@ interface HeroSliderProps {
 
 const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className, showContent = true, showControls = true, variant = "hero" }) => {
   const isBanner = variant === "banner";
-  const autoplay = useMemo(
-    () =>
-      Autoplay({
-        delay: 5000,
-        stopOnInteraction: false,
-        stopOnMouseEnter: true,
-      }),
-    []
-  );
-
+  const [autoplay] = useState(() => Autoplay({
+    delay: 5000,
+    stopOnInteraction: false,
+    stopOnMouseEnter: true,
+  }));
 
   const [api, setApi] = useState<CarouselApi>();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -62,7 +62,7 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className, showCon
       aria-label={isBanner ? "Customer dashboard banners" : undefined}
       className={cn(
         "@container relative w-full overflow-hidden",
-        isBanner ? "aspect-[16/5] sm:aspect-[1920/480]" : "md:landscape:h-[calc(100svh-var(--header-height,112px))]",
+        isBanner ? "aspect-[16/5] sm:aspect-[1920/480]" : heroFrameClass,
         className
       )}
     >
@@ -78,12 +78,13 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className, showCon
         <CarouselContent className={cn("ml-0 flex items-start", isBanner ? "h-full" : "md:landscape:h-full")}>
           {sliders.map((slider, index) => {
             const isActive = activeIndex === index;
+            const eagerImage = index === 0 || isActive;
             const mobileImage = getImageProps({
               src: slider.mobileImageUrl || slider.imageUrl || "",
               alt: slider.title || "Hero Banner",
               width: 1080, height: 1350, sizes: "100vw",
-              loading: index === 0 ? "eager" : "lazy",
-              fetchPriority: index === 0 ? "high" : "auto",
+              loading: eagerImage ? "eager" : "lazy",
+              fetchPriority: eagerImage ? "high" : "auto",
             }).props;
             const desktopImage = getImageProps({
               src: slider.imageUrl || "", alt: slider.title || "Hero Banner",
@@ -101,8 +102,8 @@ const SliderCarousel: React.FC<HeroSliderProps> = ({ sliders, className, showCon
                     <Image
                       src={slider.imageUrl || ""}
                       alt={slider.title || "Hero Banner"}
-                      loading={index === 0 ? "eager" : "lazy"}
-                      fetchPriority={index === 0 ? "high" : "auto"}
+                      loading={eagerImage ? "eager" : "lazy"}
+                      fetchPriority={eagerImage ? "high" : "auto"}
                       width={1920} height={720} sizes="100vw"
                       className="block h-full w-full object-cover object-top"
                     />

@@ -45,7 +45,11 @@ it("loads coupons on entry, applies the clicked card, and removes it with its cr
   const client = new QueryClient({
     defaultOptions: { queries: { staleTime: 5 * 60 * 1000 } },
   });
-  client.setQueryData(["available-cart-coupons", "customer-1", [["variant", 1, 500]]], []);
+  client.setQueryData(
+    ["available-cart-coupons", "customer-1", [["variant", 1, 500]]],
+    [],
+    { updatedAt: Date.now() - 30_000 },
+  );
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

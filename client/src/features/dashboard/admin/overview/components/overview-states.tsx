@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AttentionStripSkeleton } from "./attention-strip";
 
 function SkeletonCard({
   children,
@@ -33,20 +34,6 @@ export function HeadlineSkeleton() {
               {index === 1 ? <Skeleton className="h-3 w-full" /> : null}
             </div>
           </SkeletonCard>
-        ))}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={index}
-            className="flex min-w-0 items-center gap-3 rounded-xl border bg-card p-4"
-          >
-            <Skeleton className="size-5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Skeleton className="h-6 w-12" />
-              <Skeleton className="h-3 w-32 max-w-full" />
-            </div>
-          </div>
         ))}
       </div>
     </div>
@@ -233,6 +220,7 @@ export function OverviewPageSkeleton() {
         <Skeleton className="h-4 w-96 max-w-full" />
       </div>
       <HeadlineSkeleton />
+      <AttentionStripSkeleton />
       <div className="grid min-w-0 gap-4 lg:grid-cols-2">
         <ChartSkeleton />
         <RecentOrdersSkeleton />

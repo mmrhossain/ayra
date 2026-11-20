@@ -1,5 +1,5 @@
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -31,7 +31,7 @@ registry.registerPath({
   path: "/api/v1/admin/contact-messages",
   tags: [TAG],
   summary: "List contact messages (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listContactMessagesQuerySchema },
   responses: {
     200: successResponse("Contact messages fetched"),
@@ -44,7 +44,7 @@ registry.registerPath({
   path: "/api/v1/admin/contact-messages/{id}",
   tags: [TAG],
   summary: "Update contact message status (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: contactMessageIdParamSchema,
     body: jsonBody(updateContactMessageSchema),

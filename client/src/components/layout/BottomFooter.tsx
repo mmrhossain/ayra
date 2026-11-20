@@ -19,11 +19,12 @@ const BottomFooter = () => {
           <div className="w-full max-w-4xl flex items-center justify-center">
             <div className="relative w-full">
               <Image
-                width={1200}
-                height={500}
+                width={1634}
+                height={113}
                 src="https://res.cloudinary.com/dw0ojh7h8/image/upload/v1791299182/payment_lz9mxo.png"
                 alt="Accepted payment methods"
-                className="w-full h-auto object-contain"
+                sizes="(max-width: 896px) 100vw, 896px"
+                className="aspect-[1634/113] w-full h-auto object-contain"
               />
             </div>
           </div>

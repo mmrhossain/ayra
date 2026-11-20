@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, useSyncExternalStore } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   Download,
@@ -218,16 +218,12 @@ export function SalesChart({
   const data = query.data ?? initialData;
   const granularity = (data.groupBy as Granularity) ?? "day";
 
-  const series = useMemo(
-    () =>
-      data.series.map((point) => ({
+  const series = data.series.map((point) => ({
         ...point,
         label: formatPeriodLabel(point.period, granularity, data.timezone),
-      })),
-    [data.series, granularity, data.timezone],
-  );
+      }));
 
-  const stats = useMemo(() => {
+  const stats = (() => {
     const totalSales = series.reduce((sum, p) => sum + p.netProductSales, 0);
     const totalOrders = series.reduce((sum, p) => sum + p.orders, 0);
     const peak = series.reduce<(typeof series)[number] | null>(
@@ -242,7 +238,7 @@ export function SalesChart({
       average: series.length > 0 ? totalSales / series.length : 0,
       peak,
     };
-  }, [series]);
+  })();
 
   const money = moneyFormatter(data.currency);
   const hasVisibleSeries = visible.sales || visible.orders;

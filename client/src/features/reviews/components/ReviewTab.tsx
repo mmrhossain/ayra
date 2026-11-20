@@ -18,7 +18,7 @@ import {
 import { formatLongDate } from "@/lib/format";
 import { Rating, Star } from "@smastrom/react-rating";
 import "@smastrom/react-rating/style.css";
-import { BadgeCheck, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { BadgeCheck, ChevronDown, MessageSquare, PenLine } from "lucide-react";
 import Link from "next/link";
 
 const starStyles = {
@@ -29,6 +29,7 @@ const starStyles = {
 
 const ReviewTab = ({
   productId,
+  averageRating,
   reviewCount,
 }: {
   productId: string;
@@ -44,10 +45,11 @@ const ReviewTab = ({
     sort,
     setSort,
     loading,
+    loadError,
+    retryReviews,
     loadingMore,
     hasMore,
-    page,
-    loadReviews,
+    loadMore,
     onSubmit,
     sortedReviews,
     reviewDisplayName,
@@ -56,124 +58,130 @@ const ReviewTab = ({
   const count = Number(reviewCount) || 0;
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6 md:mb-8">
-        <h2 className="text-base font-bold text-foreground sm:text-lg md:text-xl">
-          All Reviews
-          <span className="ml-1.5 text-sm font-normal text-sky-color sm:text-base">({count})</span>
-        </h2>
-
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="Sort reviews"
-                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-primary text-foreground transition-colors hover:bg-border-color sm:hidden"
-              >
-                <SlidersHorizontal size={16} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[140px] sm:hidden">
-              <DropdownMenuRadioGroup
-                value={sort}
-                onValueChange={(value) => setSort(value as SortKey)}
-              >
-                <DropdownMenuRadioItem value="latest">Latest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="highest">Highest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="lowest">Lowest</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="hidden h-10 min-w-[108px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-bg-primary px-4 text-sm font-medium text-foreground transition-colors hover:bg-border-color sm:inline-flex sm:h-11"
-              >
-                {sortLabel(sort)}
-                <ChevronDown size={14} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[140px]">
-              <DropdownMenuRadioGroup
-                value={sort}
-                onValueChange={(value) => setSort(value as SortKey)}
-              >
-                <DropdownMenuRadioItem value="latest">Latest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="highest">Highest</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="lowest">Lowest</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <button
-            type="button"
-            onClick={() => setWriteOpen(true)}
-            className="h-10 cursor-pointer rounded-full bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-primary sm:h-11 sm:px-5"
-          >
-            Write a Review
-          </button>
+    <section aria-label="Customer reviews" className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <header className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-muted/40 p-4 sm:p-6 lg:flex-col lg:items-stretch">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">Customer reviews</h2>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground lg:items-start">
+            {count > 0 && averageRating != null && (
+              <>
+                <span className="text-3xl font-semibold leading-none tracking-tight tabular-nums text-foreground">{Number(averageRating).toFixed(1)}<span className="ml-1 text-sm font-normal text-muted-foreground">/ 5</span></span>
+                <div className="self-center"><Rating value={Number(averageRating)} readOnly style={{ width: 84 }} itemStyles={starStyles} /></div>
+              </>
+            )}
+            <span className="basis-full">{count === 1 ? "1 review" : `${count.toLocaleString()} reviews`}</span>
+          </div>
         </div>
-      </div>
+        <button
+          type="button"
+          onClick={() => setWriteOpen(true)}
+          className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-primary"
+        >
+          <PenLine size={15} aria-hidden="true" />
+          Write a review
+        </button>
+      </header>
 
-      {loading ? (
-        <p className="text-sm text-sky-color">Loading reviews...</p>
-      ) : sortedReviews.length === 0 ? (
-        <p className="text-sm text-foreground">
-          No reviews yet. Be the first to review this product.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:gap-5">
-          {sortedReviews.map((review) => (
-            <article
-              key={review.id}
-              className="flex flex-col rounded-md border border-border-color p-4 sm:p-5 md:p-6"
+      <div className="min-w-0">
+        {sortedReviews.length > 0 && (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">Showing {sortedReviews.length}{count > sortedReviews.length ? ` of ${count.toLocaleString()}` : ""}</p>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={`Sort reviews, ${sortLabel(sort)}`}
+                  className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  {sortLabel(sort)}
+                  <ChevronDown size={14} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[140px]">
+                <DropdownMenuRadioGroup
+                  value={sort}
+                  onValueChange={(value) => setSort(value as SortKey)}
+                >
+                  <DropdownMenuRadioItem value="latest">Latest</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="highest">Highest</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="lowest">Lowest</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+          </div>
+        )}
+
+        {loading ? (
+          <div role="status" className="space-y-3 rounded-xl border border-border p-5">
+            <span className="sr-only">Loading reviews</span>
+            <div aria-hidden="true" className="h-4 w-28 rounded bg-muted motion-safe:animate-pulse" />
+            <div aria-hidden="true" className="h-4 w-3/4 rounded bg-muted motion-safe:animate-pulse" />
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-xl border border-border px-4 py-9 text-center">
+            <p className="font-medium text-foreground">Couldn&apos;t load reviews</p>
+            <button type="button" onClick={retryReviews} className="mt-2 cursor-pointer text-sm font-medium text-primary underline underline-offset-4">Try again</button>
+          </div>
+        ) : sortedReviews.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border px-4 py-9 text-center">
+            <MessageSquare size={22} className="mx-auto text-muted-foreground" aria-hidden="true" />
+            <p className="mt-2 font-medium text-foreground">No reviews yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">Be the first to review this product.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+            {sortedReviews.map((review) => {
+              const name = reviewDisplayName(review);
+              const initials = name.trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join("");
+
+              return (
+                <li key={review.id} className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
+                  <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold uppercase text-foreground sm:size-10">
+                    {initials}
+                  </span>
+                  <article className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                      <h3 className="min-w-0 break-words text-sm font-semibold text-foreground sm:text-base">{name}</h3>
+                      <time dateTime={review.createdAt} className="text-xs text-muted-foreground sm:text-sm">
+                        {formatLongDate(review.createdAt)}
+                      </time>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <Rating value={review.rating} readOnly style={{ width: 84 }} itemStyles={starStyles} />
+                      {review.verifiedPurchase && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                          <BadgeCheck size={14} aria-hidden="true" />
+                          Verified purchase
+                        </span>
+                      )}
+                    </div>
+                    {review.comment && (
+                      <p className="mt-2.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground sm:text-base">
+                        {review.comment}
+                      </p>
+                    )}
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {hasMore && (
+          <div className="mt-6 flex justify-center sm:mt-8">
+            <button
+              type="button"
+              disabled={loadingMore}
+              onClick={loadMore}
+              className="h-11 min-w-[200px] cursor-pointer rounded-full border border-border-color bg-white px-8 text-sm font-medium text-foreground transition-colors hover:bg-bg-primary disabled:opacity-60 sm:h-12"
             >
-              <Rating
-                value={review.rating}
-                readOnly
-                style={{ maxWidth: 108 }}
-                itemStyles={starStyles}
-              />
-              <h3 className="mt-3 flex items-center gap-1.5 text-base font-bold text-foreground sm:text-lg">
-                {reviewDisplayName(review)}
-                {review.verifiedPurchase ? (
-                  <BadgeCheck
-                    size={18}
-                    className="shrink-0 fill-[#01AB31] text-white"
-                    aria-label="Verified purchase"
-                  />
-                ) : null}
-              </h3>
-              {review.comment ? (
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-foreground sm:text-base">
-                  &ldquo;{review.comment}&rdquo;
-                </p>
-              ) : null}
-              <p className="mt-4 text-xs font-medium text-foreground sm:text-sm">
-                Posted on {formatLongDate(review.createdAt)}
-              </p>
-            </article>
-          ))}
-        </div>
-      )}
-
-      {hasMore && (
-        <div className="mt-6 flex justify-center sm:mt-8">
-          <button
-            type="button"
-            disabled={loadingMore}
-            onClick={() => void loadReviews(page + 1, true)}
-            className="h-11 min-w-[200px] cursor-pointer rounded-full border border-border-color bg-white px-8 text-sm font-medium text-foreground transition-colors hover:bg-bg-primary disabled:opacity-60 sm:h-12"
-          >
-            {loadingMore ? "Loading..." : "Load More Reviews"}
-          </button>
-        </div>
-      )}
+              {loadingMore ? "Loading..." : "Load More Reviews"}
+            </button>
+          </div>
+        )}
+      </div>
 
       <Dialog open={writeOpen} onOpenChange={setWriteOpen} modal={false}>
         <DialogContent
@@ -247,7 +255,7 @@ const ReviewTab = ({
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 };
 

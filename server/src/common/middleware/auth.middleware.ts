@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma.ts";
 import { AppError } from "../errors/AppError.ts";
 import type { AuthRole } from "../types/auth.ts";
 import { asyncHandler } from "../utils/asyncHandler.ts";
+import { withDbRetry } from "../utils/db-retry.ts";
 import {
   isStaffRole,
   normalizeRole,
@@ -48,7 +49,7 @@ const STAFF_DISABLED_STATUSES = new Set(["SUSPENDED", "OFFBOARDED"]);
  * the very next request, even when session revocation itself failed.
  */
 export const loadFreshAuthorizationUser = async (userId: string) => {
-  const user = await prisma.user.findUnique({
+  const user = await withDbRetry(() => prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -65,7 +66,7 @@ export const loadFreshAuthorizationUser = async (userId: string) => {
       banExpires: true,
       deletedAt: true,
     },
-  });
+  }), 2);
 
   return user;
 };

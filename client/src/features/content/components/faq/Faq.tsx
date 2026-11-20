@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Plus, Minus, Search, HelpCircle } from "lucide-react";
 
@@ -23,23 +23,16 @@ const FAQPage = ({ categories }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const categoryNames = useMemo(
-    () => ["All", ...categories.map((category) => category.name)],
-    [categories]
-  );
+  const categoryNames = ["All", ...categories.map((category) => category.name)];
 
-  const faqs = useMemo<FaqRow[]>(
-    () =>
-      categories.flatMap((category) =>
+  const faqs = (categories.flatMap((category) =>
         category.items.map((item) => ({
           id: item.id,
           category: category.name,
           question: item.question,
           answer: item.answer,
         }))
-      ),
-    [categories]
-  );
+      )) satisfies FaqRow[];
 
   const filteredFaqs = faqs.filter((faq) => {
     const q = searchTerm.toLowerCase();

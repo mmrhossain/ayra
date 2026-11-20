@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import {
+  useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,10 +41,7 @@ export function BulkActionBar({ ids, onClear }: BulkActionBarProps) {
     queryFn: () => fetchCategoryList(),
     staleTime: 60_000,
   });
-  const categories = useMemo(
-    () => flattenCategories(categoriesQuery.data ?? []),
-    [categoriesQuery.data]
-  );
+  const categories = flattenCategories(categoriesQuery.data ?? []);
   const mutation = useProductBulkMutation({
     onSuccess: () => {
       setConfirmOpen(false);
@@ -166,7 +164,7 @@ export function BulkActionBar({ ids, onClear }: BulkActionBarProps) {
               Select the category every chosen product should belong to.
             </DialogDescription>
           </DialogHeader>
-          <Select value={categoryId || undefined} onValueChange={setCategoryId}>
+          <Select value={categoryId} onValueChange={setCategoryId}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>

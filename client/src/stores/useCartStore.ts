@@ -1,4 +1,5 @@
 import {
+  addCartItem,
   applyCartCoupon,
   fetchCartSnapshot,
   removeCartCoupon,
@@ -6,12 +7,52 @@ import {
   updateCartItem,
 } from "@/features/cart/api";
 import { customerCartRequest } from "@/features/cart/cart-request";
-import { CartState } from "@/features/cart/types";
+import type { CartMutationResult, CartSnapshot, CartState } from "@/features/cart/types";
 import { create } from "zustand";
 
 let cartFetchVersion = 0;
+let resolvedOwner: "guest" | "customer" | undefined;
+const newMutationBatch = () => ({ pending: 0, overlapped: false, refresh: false });
+let mutationBatch = newMutationBatch();
 
-export const useCartStore = create<CartState>((set, get) => ({
+function snapshotState(snapshot: CartSnapshot) {
+  return {
+    cart: snapshot.items,
+    cartCount: snapshot.items.reduce((sum, item) => sum + item.quantity, 0),
+    totalAmount: snapshot.subtotal,
+    discountAmount: snapshot.discountAmount,
+    vatAmount: snapshot.taxAmount,
+    taxRates: snapshot.taxRates ?? [],
+    payableAmount: snapshot.grandTotal,
+    couponCode: snapshot.couponCode,
+  };
+}
+
+async function mutateCart(mutation: () => Promise<CartMutationResult>) {
+  const batch = mutationBatch;
+  batch.pending += 1;
+  if (batch.pending > 1) batch.overlapped = true;
+  try {
+    const result = await mutation();
+    if (batch === mutationBatch) {
+      if (batch.overlapped || !result.snapshot) {
+        batch.refresh = true;
+      } else {
+        cartFetchVersion += 1;
+        useCartStore.setState(snapshotState(result.snapshot));
+      }
+    }
+    return { message: result.message };
+  } finally {
+    batch.pending -= 1;
+    if (batch === mutationBatch && batch.pending === 0) {
+      mutationBatch = newMutationBatch();
+      if (batch.refresh) await useCartStore.getState().fetchCart();
+    }
+  }
+}
+
+export const useCartStore = create<CartState>((set) => ({
   cart: null,
   totalAmount: 0,
   discount: 0,
@@ -31,62 +72,30 @@ export const useCartStore = create<CartState>((set, get) => ({
       },
     })),
 
-  fetchCart: async () => {
+  fetchCart: async (owner) => {
+    if (owner) resolvedOwner = owner;
     const version = ++cartFetchVersion;
     try {
-      const snapshot = await fetchCartSnapshot();
+      const snapshot = await fetchCartSnapshot(resolvedOwner);
       if (version !== cartFetchVersion) return;
-      set({
-        cart: snapshot.items,
-        cartCount: snapshot.items.reduce((sum, item) => sum + item.quantity, 0),
-        totalAmount: snapshot.subtotal,
-        discountAmount: snapshot.discountAmount,
-        vatAmount: snapshot.taxAmount,
-        taxRates: snapshot.taxRates ?? [],
-        payableAmount: snapshot.grandTotal,
-        couponCode: snapshot.couponCode,
-      });
-    } catch {
-      if (version !== cartFetchVersion) return;
-      set({
-        cart: [],
-        cartCount: 0,
-        totalAmount: 0,
-        discountAmount: 0,
-        vatAmount: 0,
-        taxRates: [],
-        payableAmount: 0,
-        couponCode: null,
-      });
+      set(snapshotState(snapshot));
+    } catch (error) {
+      if (version === cartFetchVersion && owner) throw error;
     }
   },
 
-  updateCart: async (variantId: string, quantity: number) => {
-    const res = await updateCartItem(variantId, quantity);
-    await get().fetchCart();
-    return res;
-  },
-
-  removeFromCart: async (variantId: string) => {
-    const res = await removeCartItem(variantId);
-    await get().fetchCart();
-    return res;
-  },
-
-  applyCoupon: async (code: string) => {
-    const res = await applyCartCoupon(code);
-    await get().fetchCart();
-    return res;
-  },
-
-  removeCoupon: async () => {
-    const res = await removeCartCoupon();
-    await get().fetchCart();
-    return res;
-  },
+  addToCart: (variantId, quantity, snapshot) =>
+    mutateCart(() => addCartItem(variantId, quantity, snapshot, resolvedOwner)),
+  updateCart: (variantId, quantity) =>
+    mutateCart(() => updateCartItem(variantId, quantity, resolvedOwner)),
+  removeFromCart: (variantId) => mutateCart(() => removeCartItem(variantId, resolvedOwner)),
+  applyCoupon: (code) => mutateCart(() => applyCartCoupon(code)),
+  removeCoupon: () => mutateCart(removeCartCoupon),
 
   clearCart: () => {
     cartFetchVersion += 1;
+    resolvedOwner = undefined;
+    mutationBatch = newMutationBatch();
     customerCartRequest.invalidate();
     set({
       cart: [],

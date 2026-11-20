@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -20,7 +20,7 @@ registry.registerPath({
   path: "/api/v1/coupons/validate",
   tags: [TAG],
   summary: "Validate a coupon code",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     query: validateCouponSchema.extend({
       subtotal: z.coerce.number().optional(),
@@ -37,7 +37,7 @@ registry.registerPath({
   path: "/api/v1/admin/coupons",
   tags: [TAG],
   summary: "List coupons (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listCouponsQuerySchema },
   responses: {
     200: successResponse("Coupons fetched"),
@@ -50,7 +50,7 @@ registry.registerPath({
   path: "/api/v1/admin/coupons",
   tags: [TAG],
   summary: "Create coupon (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createCouponSchema) },
   responses: {
     201: successResponse("Coupon created"),
@@ -63,7 +63,7 @@ registry.registerPath({
   path: "/api/v1/admin/coupons/{id}",
   tags: [TAG],
   summary: "Update coupon (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateCouponSchema),
@@ -79,7 +79,7 @@ registry.registerPath({
   path: "/api/v1/admin/coupons/{id}",
   tags: [TAG],
   summary: "Delete coupon (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Coupon deleted"),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -36,7 +36,7 @@ registry.registerPath({
   path: "/api/v1/products/{productId}/reviews",
   tags: [TAG],
   summary: "Create product review",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ productId: z.string().min(1) }),
     body: jsonBody(createReviewSchema),
@@ -52,7 +52,7 @@ registry.registerPath({
   path: "/api/v1/reviews/{id}",
   tags: [TAG],
   summary: "Update own review",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateReviewSchema),
@@ -68,7 +68,7 @@ registry.registerPath({
   path: "/api/v1/reviews/{id}",
   tags: [TAG],
   summary: "Delete review (owner or admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Review deleted"),
@@ -81,7 +81,7 @@ registry.registerPath({
   path: "/api/v1/admin/reviews",
   tags: [TAG],
   summary: "List reviews (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: adminListReviewsQuerySchema },
   responses: {
     200: successResponse("Reviews fetched"),
@@ -94,7 +94,7 @@ registry.registerPath({
   path: "/api/v1/admin/reviews/{id}/approve",
   tags: [TAG],
   summary: "Approve review (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Review approved"),
@@ -107,7 +107,7 @@ registry.registerPath({
   path: "/api/v1/admin/reviews/{id}/reject",
   tags: [TAG],
   summary: "Reject review (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(rejectReviewSchema),

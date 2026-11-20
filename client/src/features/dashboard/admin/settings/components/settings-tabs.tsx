@@ -8,7 +8,11 @@ import { useUrlParam } from "@/features/dashboard/admin/shared/hooks/use-url-par
 const GROUP_KEYS = ["store", "payment", "checkout"] as const;
 type GroupKey = (typeof GROUP_KEYS)[number];
 
-export function SettingsTabs({ groups }: { groups: AdminSettingGroup[] }) {
+export function SettingsTabs({ groups, canWrite = false, canEditPayment = false }: {
+  groups: AdminSettingGroup[];
+  canWrite?: boolean;
+  canEditPayment?: boolean;
+}) {
   const [requested, setTab] = useUrlParam<GroupKey>("tab", GROUP_KEYS, "store");
   const available = groups.map((group) => group.key as GroupKey);
   const tab = available.includes(requested)
@@ -44,7 +48,7 @@ export function SettingsTabs({ groups }: { groups: AdminSettingGroup[] }) {
           forceMount
           className="data-[state=inactive]:hidden"
         >
-          <SettingsGroupCard group={group} />
+          <SettingsGroupCard group={group} canEdit={canWrite && (group.key !== "payment" || canEditPayment)} />
         </TabsContent>
       ))}
     </Tabs>

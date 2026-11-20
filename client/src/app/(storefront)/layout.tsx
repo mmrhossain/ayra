@@ -12,16 +12,15 @@ import { redirectStaffFromStorefront } from "@/lib/api/auth/server";
 import { normalizeRole } from "@/lib/api/auth/roles";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  const session = await redirectStaffFromStorefront();
-  const initialIsCustomer = normalizeRole(session?.user?.role) === "CUSTOMER";
-
   const categoriesPromise = getCategories()
     .then((data) => (Array.isArray(data) ? data : []))
     .catch((): CategoryListItem[] => []);
-  const [categories, publicSettings] = await Promise.all([
+  const [session, categories, publicSettings] = await Promise.all([
+    redirectStaffFromStorefront(),
     categoriesPromise,
     fetchPublicSettingsOrDefault(),
   ]);
+  const initialIsCustomer = normalizeRole(session?.user?.role) === "CUSTOMER";
 
   return (
     <StorefrontProvider initialPublicSettings={publicSettings}>
@@ -30,7 +29,9 @@ export default async function StorefrontLayout({ children }: { children: React.R
         <Header />
         <Navbar categories={categories} initialIsCustomer={initialIsCustomer} />
         <StorefrontDeferredWidgets />
-        {children}
+        <div className="min-h-[calc(100svh-var(--header-height,112px))]" data-storefront-content>
+          {children}
+        </div>
         <Footer />
         <FooterNavigationMenu categories={categories} initialIsCustomer={initialIsCustomer} />
       </div>

@@ -70,10 +70,11 @@ export function AccountCard({
           <button
             type="button"
             onClick={() => setEditOpen(true)}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-primary/90"
+            aria-label="Edit profile"
+            title="Edit profile"
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors hover:bg-primary/15"
           >
-            <Pencil size={14} aria-hidden />
-            Edit
+            <Pencil size={12} aria-hidden />
           </button>
         </div>
       </div>

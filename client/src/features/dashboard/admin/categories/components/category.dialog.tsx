@@ -1,8 +1,12 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -68,10 +72,7 @@ export function CategoryFormDialog({
     form.reset(categoryFormDefaults(initialData));
   }, [open, mode, initialData, form]);
 
-  const parentOptions = useMemo(
-    () => parentCategoryOptions(categories, initialData?.id),
-    [categories, initialData?.id]
-  );
+  const parentOptions = parentCategoryOptions(categories, initialData?.id);
 
   const mutation = useCategoryFormMutation({
     mode,

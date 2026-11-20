@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,9 @@ export function WarehouseTable({ initialData }: WarehouseTableProps) {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(initialData.pagination.page);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<DialogMode>("create");
   const [editing, setEditing] = useState<WarehouseListItem | undefined>();
@@ -54,17 +56,9 @@ export function WarehouseTable({ initialData }: WarehouseTableProps) {
     }
   }, [createRequested, router]);
 
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => window.clearTimeout(t);
-  }, [searchInput]);
-
   const { query, items, pagination } = useWarehouseList({
     initialData,
-    page,
+    page: queryPage,
     search,
   });
 
@@ -73,7 +67,10 @@ export function WarehouseTable({ initialData }: WarehouseTableProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search by name or code"
           aria-label="Search warehouses by name or code"
           className="max-w-sm"

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { expect, it } from "vitest";
 import { CheckoutSelect } from "./checkout-ui";
 
-it("keeps checkout options open after selection without locking page scroll", async () => {
+it("closes checkout options after selection and reselection without locking page scroll", async () => {
   const environment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
   const previous = environment.IS_REACT_ACT_ENVIRONMENT;
   environment.IS_REACT_ACT_ENVIRONMENT = true;
@@ -37,11 +37,15 @@ it("keeps checkout options open after selection without locking page scroll", as
     await act(async () => (option as HTMLInputElement).click());
     expect((option as HTMLInputElement).checked).toBe(true);
     expect(trigger.textContent).toContain("Dhaka");
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
     expect(document.body.hasAttribute("data-scroll-locked")).toBe(false);
     expect(container.querySelector("nav")?.closest('[aria-hidden="true"]')).toBeNull();
     await act(async () => (trigger as HTMLButtonElement).click());
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    await act(async () => (option as HTMLInputElement).click());
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
     await act(async () => container.querySelectorAll("button")[1]!.click());
     expect(trigger.textContent).toContain("Select district");
   } finally {

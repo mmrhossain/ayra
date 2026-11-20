@@ -24,14 +24,8 @@ export default function ShopPagination({
   filters: Record<string, string | undefined>;
   basePath?: string;
 }) {
-  const { page, totalPages, total } = pagination;
-  if (totalPages <= 1) {
-    return (
-      <p className="mt-8 text-center text-sm text-zinc-500">
-        {total} product{total === 1 ? "" : "s"}
-      </p>
-    );
-  }
+  const { page, totalPages } = pagination;
+  if (totalPages <= 1) return null;
 
   const prev = page > 1 ? page - 1 : null;
   const next = page < totalPages ? page + 1 : null;
@@ -42,7 +36,7 @@ export default function ShopPagination({
       aria-label="Product pagination"
     >
       <p className="text-sm text-zinc-500">
-        Page {page} of {totalPages} ({total} products)
+        Page {page} of {totalPages}
       </p>
       <div className="flex items-center gap-3">
         {prev ? (

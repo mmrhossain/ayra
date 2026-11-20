@@ -10,7 +10,7 @@ export function useProductSelection(product: ProductDetail) {
 
   const attributeGroups = attributeGroupsFrom(variants);
 
-  const [quantity, setQuantity] = useState(1);
+  const [requestedQuantity, setQuantity] = useState(1);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
 
   const isComplete = attributeGroups.every((group) => Boolean(selectedValues[group.attributeId]));
@@ -37,7 +37,8 @@ export function useProductSelection(product: ProductDetail) {
   const compareAt = num(active?.compareAtPrice);
   const hasDiscount = compareAt > price && price > 0;
   const discountPct = hasDiscount ? Math.round((1 - price / compareAt) * 100) : 0;
-  const stock = num(active?.availableStock);
+  const stock = Math.max(0, Math.floor(num(selected?.availableStock)));
+  const quantity = Math.min(Math.max(1, Math.floor(num(requestedQuantity))), Math.max(1, stock));
   const canAddToCart = Boolean(selected) && stock > 0;
 
   const galleryImages = product.images ?? [];

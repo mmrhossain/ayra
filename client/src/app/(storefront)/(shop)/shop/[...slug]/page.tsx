@@ -1,6 +1,5 @@
 import Features from "@/components/shared/Features";
 import {
-  fetchProductFacets,
   getCategoryBySlug,
   parseAttributesParam,
   parseCategoriesParam,
@@ -13,9 +12,11 @@ import ProductsSkeleton from "@/features/catalog/skeleton/ProductsSkeleton";
 import SubcategoriesSkeleton from "@/features/catalog/skeleton/SubcategoriesSkeleton";
 import { PUBLIC_SITE_URL, SITE_NAME } from "@/config/site";
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
+import { notFound } from "next/navigation";
 
 const SORTS = new Set<ProductSort>(["newest", "price_asc", "price_desc", "popular"]);
+const loadCategory = cache(getCategoryBySlug);
 
 type SearchParams = {
   collection?: string;
@@ -50,7 +51,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const categoryPath = slug?.join("/");
-  const category = categoryPath ? await getCategoryBySlug(categoryPath) : null;
+  const category = categoryPath ? await loadCategory(categoryPath) : null;
   const isFiltered = Object.keys(query).some((key) => INDEXING_FILTERS.has(key));
   const canonicalPath = categoryPath ? `/shop/${categoryPath}` : "/shop";
 
@@ -99,7 +100,7 @@ function ShopFilterBar({
   attrs?: string;
   categories?: string;
 }) {
-  const facets = fetchProductFacets({
+  return <DynamicFilterBar facetParams={{
     category,
     collection,
     search,
@@ -107,9 +108,7 @@ function ShopFilterBar({
     maxPrice,
     attributes: parseAttributesParam(attrs),
     categories: parseCategoriesParam(categories),
-  }).catch(() => null);
-
-  return <DynamicFilterBar facets={facets} />;
+  }} />;
 }
 
 export default async function ShopPage({
@@ -126,8 +125,9 @@ export default async function ShopPage({
   const routeCategoryPath = slug?.length ? slug.join("/") : undefined;
 
   const categoryDetails = routeCategoryPath
-    ? await getCategoryBySlug(routeCategoryPath)
+    ? await loadCategory(routeCategoryPath)
     : null;
+  if (routeCategoryPath && !categoryDetails) notFound();
 
   const children = categoryDetails?.children ?? [];
   const hasChildren = children.length > 0;
@@ -179,7 +179,7 @@ export default async function ShopPage({
               </div>
             }
           >
-            <ShopContent slug={slug} sp={sp} sort={sort} minPrice={minPrice} maxPrice={maxPrice} collection={collection} />
+            <ShopContent slug={slug} categoryDetails={categoryDetails} sp={sp} sort={sort} minPrice={minPrice} maxPrice={maxPrice} collection={collection} />
           </Suspense>
         </>
       )}

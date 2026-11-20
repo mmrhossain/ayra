@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -19,7 +19,7 @@ registry.registerPath({
   path: "/api/v1/admin/warehouses",
   tags: [TAG],
   summary: "List warehouses (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listWarehousesQuerySchema },
   responses: {
     200: successResponse("Warehouses fetched"),
@@ -32,7 +32,7 @@ registry.registerPath({
   path: "/api/v1/admin/warehouses",
   tags: [TAG],
   summary: "Create warehouse (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createWarehouseSchema) },
   responses: {
     201: successResponse("Warehouse created"),
@@ -45,7 +45,7 @@ registry.registerPath({
   path: "/api/v1/admin/warehouses/{id}",
   tags: [TAG],
   summary: "Get warehouse by id (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Warehouse fetched"),
@@ -58,7 +58,7 @@ registry.registerPath({
   path: "/api/v1/admin/warehouses/{id}",
   tags: [TAG],
   summary: "Update warehouse (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(updateWarehouseSchema),
@@ -74,7 +74,7 @@ registry.registerPath({
   path: "/api/v1/admin/warehouses/{id}",
   tags: [TAG],
   summary: "Delete warehouse (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Warehouse deleted"),

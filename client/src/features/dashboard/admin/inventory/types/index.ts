@@ -23,6 +23,7 @@ export type StockAdjustDialogProps = {
 };
 
 export type InventoryTableProps = {
+  canAdjust: boolean;
   initialData: InventoryListResult;
   initialVariantId?: string;
   initialSearch?: string;

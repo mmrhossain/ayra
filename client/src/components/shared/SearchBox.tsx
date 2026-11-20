@@ -4,37 +4,20 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, {
-  useDeferredValue,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import React, { useDeferredValue, useEffect, useId, useRef, useState } from "react";
 
+import StoreImage from "@/components/shared/store-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import StoreImage from "@/components/shared/store-image";
-import {
-  fetchProductList,
-  productPrice,
-  toCatalogErrorMessage,
-} from "@/features/catalog/api";
+import { fetchProductList, productPrice, toCatalogErrorMessage } from "@/features/catalog/api";
 import type { ProductListItem } from "@/features/catalog/types";
 import { formatPrice } from "@/helpers";
 
 const MIN_QUERY_LENGTH = 2;
 const SUGGESTION_LIMIT = 6;
 
-const SearchBox = ({
-  className = "",
-  onClose,
-}: {
-  className?: string;
-  onClose?: () => void;
-}) => {
+const SearchBox = ({ className = "", onClose }: { className?: string; onClose?: () => void }) => {
   const [searchValue, setSearchValue] = useState("");
-  const [debouncedValue, setDebouncedValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const router = useRouter();
@@ -44,66 +27,43 @@ const SearchBox = ({
   const normalizedValue = searchValue.trim();
   const deferredValue = useDeferredValue(normalizedValue);
 
-  useEffect(() => {
-    if (deferredValue.length < MIN_QUERY_LENGTH) return;
-
-    const timeout = window.setTimeout(
-      () => setDebouncedValue(deferredValue),
-      250,
-    );
-    return () => window.clearTimeout(timeout);
-  }, [deferredValue]);
-
-  const queryValue =
-    normalizedValue.length >= MIN_QUERY_LENGTH &&
-    normalizedValue === deferredValue &&
-    deferredValue === debouncedValue
-      ? debouncedValue
-      : "";
+  const isDeferred = normalizedValue !== deferredValue;
+  const queryValue = isDeferred ? "" : deferredValue;
 
   const suggestionsQuery = useQuery({
     queryKey: ["storefront-product-search-suggestions", queryValue],
-    queryFn: () =>
-      fetchProductList({
-        page: 1,
-        limit: SUGGESTION_LIMIT,
-        search: queryValue,
-        includeInactive: false,
-      }),
-    enabled: queryValue.length >= MIN_QUERY_LENGTH,
+    queryFn: ({ signal }) =>
+      fetchProductList(
+        {
+          page: 1,
+          limit: SUGGESTION_LIMIT,
+          search: queryValue,
+          includeInactive: false,
+        },
+        signal
+      ),
+    enabled: isFocused && queryValue.length >= MIN_QUERY_LENGTH,
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
     retry: 0,
   });
 
-  const suggestions =
-    queryValue === normalizedValue
-      ? (suggestionsQuery.data?.items ?? [])
-      : [];
-  const isOpen =
-    isFocused && normalizedValue.length >= MIN_QUERY_LENGTH;
-  const isWaitingForDebounce =
-    normalizedValue.length >= MIN_QUERY_LENGTH &&
-    normalizedValue !== queryValue;
-  const isLoading =
-    isWaitingForDebounce ||
-    (suggestionsQuery.isFetching && !suggestionsQuery.data);
+  const suggestions = queryValue === normalizedValue ? (suggestionsQuery.data?.items ?? []) : [];
+  const isOpen = isFocused && normalizedValue.length >= MIN_QUERY_LENGTH;
+  const isLoading = isDeferred || (suggestionsQuery.isFetching && !suggestionsQuery.data);
 
   useEffect(() => {
     if (!isFocused) return;
 
     const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (
-        event.target instanceof Node &&
-        !rootRef.current?.contains(event.target)
-      ) {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
         setIsFocused(false);
         setActiveIndex(-1);
       }
     };
 
     document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () =>
-      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [isFocused]);
 
   const closeSearch = () => {
@@ -127,9 +87,7 @@ const SearchBox = ({
     router.push(`/product-details/${product.slug}`);
   };
 
-  const handleInputKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Escape") {
       setIsFocused(false);
       setActiveIndex(-1);
@@ -186,9 +144,7 @@ const SearchBox = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={
-            isOpen && activeIndex >= 0
-              ? `${listboxId}-option-${activeIndex}`
-              : undefined
+            isOpen && activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
           }
           placeholder="Search products..."
           className="h-11 min-h-11 border-0 bg-transparent py-0 pr-12 pl-11 text-base placeholder:font-normal focus-visible:ring-0 xl:pl-12"
@@ -211,7 +167,7 @@ const SearchBox = ({
       </form>
 
       {isOpen ? (
-        <div className="absolute inset-x-0 top-full z-[100] mt-1 overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-xl">
+        <div className="absolute inset-x-0 top-full z-[100] mt-1 overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-xl">
           <div
             id={listboxId}
             role="listbox"
@@ -219,16 +175,9 @@ const SearchBox = ({
             className="max-h-[min(60dvh,22rem)] overflow-y-auto p-2"
           >
             {isLoading ? (
-              <div
-                className="space-y-2 p-1"
-                role="status"
-                aria-label="Loading product suggestions"
-              >
+              <div className="space-y-2 p-1" role="status" aria-label="Loading product suggestions">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 rounded-lg p-2"
-                  >
+                  <div key={index} className="flex items-center gap-3 rounded-lg p-2">
                     <div className="size-12 shrink-0 animate-pulse rounded-md bg-muted" />
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/shared/intent-link";
 import { CategoryListItem } from "../../types";
 import { categoryShopHref } from "../../utils/category-href";
 
@@ -17,7 +17,7 @@ const CategoryCard = ({ category }: { category: CategoryListItem }) => {
 
   return (
     <div className="group relative w-full">
-      <Link prefetch={false} href={targetHref} className="block w-full">
+      <Link href={targetHref} className="block w-full">
         <Card className="flex w-full flex-col gap-0 overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-md">
           {/* Image */}
           <div className="relative overflow-hidden">

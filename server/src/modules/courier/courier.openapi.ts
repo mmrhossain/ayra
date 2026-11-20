@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   successResponse,
@@ -13,7 +13,7 @@ registry.registerPath({
   path: "/api/v1/admin/shipments/{id}/courier",
   tags: [TAG],
   summary: "Book a courier for a shipment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Courier booked"),
@@ -25,7 +25,7 @@ registry.registerPath({
   method: "post",
   path: "/api/v1/webhooks/couriers/{provider}",
   tags: [TAG],
-  summary: "Courier status webhook (HMAC or shared-secret, no bearer auth)",
+  summary: "Courier status webhook (HMAC or shared secret)",
   description:
     "provider is PATHAO or STEADFAST (case-insensitive). Sign the raw JSON body with HMAC-SHA256 in X-PATHAO-SIGNATURE / X-STEADFAST-SIGNATURE, or send the shared secret in X-WEBHOOK-SECRET.",
   security: [],

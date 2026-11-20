@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ export function CouponIdPicker({
   const [query, setQuery] = useState("");
   const selected = new Set(value);
 
-  const visible = useMemo(() => {
+  const visible = (() => {
     const q = query.trim().toLowerCase();
     if (onSearchChange || !q) return options;
     return options.filter(
@@ -46,7 +46,7 @@ export function CouponIdPicker({
         option.label.toLowerCase().includes(q) ||
         option.hint?.toLowerCase().includes(q),
     );
-  }, [onSearchChange, options, query]);
+  })();
 
   const toggle = (id: string, checked: boolean) => {
     if (checked) {

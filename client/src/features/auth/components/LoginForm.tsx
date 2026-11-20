@@ -22,8 +22,6 @@ import { mergeGuestCartOnLogin, toCartErrorMessage } from "@/features/cart/api";
 import { errorToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
 import { isStaffRole, staffDashboardPath } from "@/lib/api/auth/roles";
-import { useCartStore } from "@/stores/useCartStore";
-import { useWishStore } from "@/stores/useWishStore";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -83,10 +81,6 @@ const LoginForm: React.FC = () => {
       if (!isStaffRole(role)) {
         try {
           await mergeGuestCartOnLogin();
-          await Promise.all([
-            useCartStore.getState().fetchCart(),
-            useWishStore.getState().fetchWishList(),
-          ]);
         } catch (mergeErr) {
           console.error(toCartErrorMessage(mergeErr));
         }

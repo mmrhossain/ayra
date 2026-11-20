@@ -561,6 +561,34 @@ describe("Catalog authorization", () => {
     expect(item?.variants[0]?.availableStock).toBe(4);
   });
 
+  it("restricts draft rows and facets to active staff with catalog access", async () => {
+    const product = await createTestProduct(tracker, { price: 80 });
+    await prisma.product.update({ where: { id: product.product.id }, data: { status: "DRAFT" } });
+    const customer = await createTestUser(tracker);
+    const ordersStaff = await createTestUser(tracker, { role: "ADMIN", adminPermissions: ["orders"] });
+    const catalogStaff = await createTestUser(tracker, { role: "ADMIN", adminPermissions: ["catalog"] });
+    const owner = await createTestUser(tracker, { role: "ADMIN" });
+
+    const check = async (cookie: string, allowed: boolean) => {
+      const query = { search: product.product.slug, includeInactive: true, status: "DRAFT" };
+      const list = await api().get("/api/v1/products").set("Cookie", cookie).query(query);
+      const facets = await api().get("/api/v1/products/facets").set("Cookie", cookie).query(query);
+      expect(list.status).toBe(200);
+      expect(list.body.data.items.some((item: { id: string }) => item.id === product.product.id)).toBe(allowed);
+      expect(facets.status).toBe(200);
+      expect(facets.body.data.price.min).toBe(allowed ? 80 : null);
+    };
+
+    await check(customer.cookie, false);
+    await check(ordersStaff.cookie, false);
+    await check(catalogStaff.cookie, true);
+    await check(owner.cookie, true);
+    await prisma.user.update({ where: { id: catalogStaff.id }, data: { staffStatus: "SUSPENDED" } });
+    await check(catalogStaff.cookie, false);
+    await prisma.user.update({ where: { id: catalogStaff.id }, data: { staffStatus: "ACTIVE", banned: true } });
+    await check(catalogStaff.cookie, false);
+  });
+
   it("admin GET product by id includes variant attributes", async () => {
     const admin = await createTestUser(tracker, {
       role: "ADMIN",

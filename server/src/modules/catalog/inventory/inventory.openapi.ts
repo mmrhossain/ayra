@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../../lib/openapi/security.ts";
+import { sessionAuth } from "../../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -26,7 +26,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory",
   tags: [TAG],
   summary: "List inventory (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: listInventoryQuerySchema },
   responses: {
     200: successResponse("Inventory fetched"),
@@ -41,7 +41,7 @@ registry.registerPath({
   summary: "Set inventory stock levels (admin)",
   description:
     "Idempotent bulk set of target quantities (not deltas). Applied auto-approved with an audit row.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(setStockLevelsSchema) },
   responses: {
     200: successResponse("Stock levels updated"),
@@ -54,7 +54,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/adjustments",
   tags: [TAG],
   summary: "List inventory adjustments (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: pageLimitQuery },
   responses: {
     200: successResponse("Adjustments fetched"),
@@ -67,7 +67,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/adjustments",
   tags: [TAG],
   summary: "Create inventory adjustment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createInventoryAdjustmentSchema) },
   responses: {
     201: successResponse("Inventory adjustment created"),
@@ -80,7 +80,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/adjustments/{id}/approve",
   tags: [TAG],
   summary: "Approve or reject inventory adjustment (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     params: z.object({ id: z.string().min(1) }),
     body: jsonBody(approveInventoryAdjustmentSchema),
@@ -96,7 +96,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/transfers",
   tags: [TAG],
   summary: "List inventory transfers (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { query: pageLimitQuery },
   responses: {
     200: successResponse("Transfers fetched"),
@@ -109,7 +109,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/transfers",
   tags: [TAG],
   summary: "Create inventory transfer (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(createInventoryTransferSchema) },
   responses: {
     201: successResponse("Inventory transfer created"),
@@ -122,7 +122,7 @@ registry.registerPath({
   path: "/api/v1/admin/inventory/transfers/{id}/complete",
   tags: [TAG],
   summary: "Complete inventory transfer (admin)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { params: z.object({ id: z.string().min(1) }) },
   responses: {
     200: successResponse("Inventory transfer completed"),

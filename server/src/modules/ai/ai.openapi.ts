@@ -1,5 +1,5 @@
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   jsonBody,
@@ -14,7 +14,7 @@ registry.registerPath({
   path: "/api/v1/ai/chat",
   tags: [TAG],
   summary: "Chat with store assistant (optional auth)",
-  security: bearerAuth,
+  security: sessionAuth,
   request: { body: jsonBody(chatSchema) },
   responses: {
     200: successResponse("AI response"),

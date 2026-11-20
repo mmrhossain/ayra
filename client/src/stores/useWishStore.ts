@@ -10,6 +10,7 @@ import type { WishState } from "@/features/dashboard/customer/wishlist/types";
 import { create } from "zustand";
 
 let wishlistGeneration = 0;
+let wishlistOwnerGeneration = 0;
 
 export const useWishStore = create<WishState>((set, get) => ({
   wishListLoading: false,
@@ -30,7 +31,7 @@ export const useWishStore = create<WishState>((set, get) => ({
   wishes: null,
   wishCount: 0,
 
-  fetchWishList: async () => {
+  fetchWishList: async (reportError = false) => {
     const generation = ++wishlistGeneration;
     try {
       const result = await fetchWishlistItems({ page: 1, limit: 50 });
@@ -39,6 +40,7 @@ export const useWishStore = create<WishState>((set, get) => ({
       set({ wishes: data, wishCount: result.pagination?.total ?? data.length });
     } catch (err) {
       if (generation !== wishlistGeneration) return;
+      if (reportError) throw err;
       if (
         err instanceof DashboardApiError &&
         (err.status === 401 || err.status === 403)
@@ -47,12 +49,13 @@ export const useWishStore = create<WishState>((set, get) => ({
         return;
       }
       console.error("Fetch wishList error", err);
-      set({ wishes: [], wishCount: 0 });
     }
   },
 
   addToWish: async (variantId: string) => {
+    const owner = wishlistOwnerGeneration;
     const res = await addWishlistItem(variantId);
+    if (owner !== wishlistOwnerGeneration) return res;
     wishlistGeneration += 1;
     wishlistRequest.invalidate();
     await get().fetchWishList();
@@ -60,7 +63,9 @@ export const useWishStore = create<WishState>((set, get) => ({
   },
 
   removeFromWishList: async (variantId: string) => {
+    const owner = wishlistOwnerGeneration;
     const res = await removeWishlistItem(variantId);
+    if (owner !== wishlistOwnerGeneration) return res;
     wishlistGeneration += 1;
     wishlistRequest.invalidate();
     await get().fetchWishList();
@@ -68,6 +73,7 @@ export const useWishStore = create<WishState>((set, get) => ({
   },
 
   clearWish: () => {
+    wishlistOwnerGeneration += 1;
     wishlistGeneration += 1;
     wishlistRequest.invalidate();
     set({ wishes: [], wishCount: 0 });

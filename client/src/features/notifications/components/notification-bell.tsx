@@ -1,5 +1,6 @@
 "use client";
 
+import { notificationHref } from "@/features/notifications/utils/notification-href";
 import { Bell, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -68,7 +69,7 @@ export function NotificationBell({
   const badge = unreadCount > 9 ? "9+" : String(unreadCount);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
@@ -184,7 +185,7 @@ export function NotificationBell({
                   asChild={Boolean(item.href)}
                 >
                   {item.href ? (
-                    <Link href={item.href}>{content}</Link>
+                    <Link href={notificationHref(item.href)!}>{content}</Link>
                   ) : (
                     content
                   )}

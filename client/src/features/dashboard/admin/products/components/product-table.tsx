@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,23 +54,16 @@ function defaultVariantId(product: ProductListItem): string | undefined {
 export function ProductTable({ initialData }: ProductTableProps) {
   const [page, setPage] = useState(initialData.pagination.page);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const normalizedSearch = searchInput.trim();
+  const search = useDeferredValue(normalizedSearch);
+  const queryPage = useDeferredValue(page);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
-      setSelected(new Set());
-    }, 300);
-    return () => window.clearTimeout(t);
-  }, [searchInput]);
-
   const { query, items, pagination, hasCategories } = useProductList({
     initialData,
-    page,
+    page: queryPage,
     search,
   });
 
@@ -106,7 +99,11 @@ export function ProductTable({ initialData }: ProductTableProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+            setPage(1);
+            setSelected(new Set());
+          }}
           placeholder="Search products"
           aria-label="Search products"
           className="max-w-sm"

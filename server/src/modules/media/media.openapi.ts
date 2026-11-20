@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { registry } from "../../lib/openapi/registry.ts";
-import { bearerAuth } from "../../lib/openapi/security.ts";
+import { sessionAuth } from "../../lib/openapi/security.ts";
 import {
   errorResponses,
   successResponse,
@@ -76,7 +76,7 @@ registry.registerPath({
   summary: "List media library images",
   description:
     "Returns Cloudinary CDN images of one type for the admin gallery. Images remain on Cloudinary; this lists unique public ids already uploaded. Excludes SOFT_DELETED. Newest first. Role-gated by type, same as upload.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     query: listMediaQuerySchema,
   },
@@ -104,7 +104,7 @@ registry.registerPath({
   summary: "Upload a single image",
   description:
     "Streams one image from disk after magic-byte validation. Role-gated by type: store logo and Open Graph images require the settings permission; product/category/slider/blog require their matching admin permission; customer_avatar requires CUSTOMER or ADMIN. Product bulk uploads must use /media/uploads. Delivery URLs are generated on the fly (f_auto, q_auto). Cloudinary failures return 502 or 504 with { success: false, message }.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     query: singleUploadQuerySchema,
     body: multipartBody(singleImageBodySchema),
@@ -122,7 +122,7 @@ registry.registerPath({
   summary: "Upload multiple product images",
   description:
     "Uploads 1–5 product images after magic-byte validation. ADMIN only. Other image types are rejected.",
-  security: bearerAuth,
+  security: sessionAuth,
   request: {
     query: multipleUploadQuerySchema,
     body: multipartBody(multipleImagesBodySchema),

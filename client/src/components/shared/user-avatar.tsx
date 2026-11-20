@@ -1,10 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import {
+  cn } from "@/lib/utils";
 import { profileImageUrl } from "@/lib/profile-image";
 import { UserRound } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type UserAvatarProps = {
   src?: string | null;
@@ -33,9 +34,9 @@ export function UserAvatar({
 }: UserAvatarProps) {
   const [imageError, setImageError] = useState(false);
 
-  const initials = useMemo(() => {
+  const initials = (() => {
     return showInitials ? getInitials(name) : "";
-  }, [showInitials, name]);
+  })();
 
   const hasValidImage = Boolean(src) && !imageError;
 

@@ -1,15 +1,17 @@
 "use client";
 
-import { CheckoutBack } from "@/features/checkout/components/checkout-ui";
+import {
+  CheckoutBack } from "@/features/checkout/components/checkout-ui";
 import CheckoutPayment from "@/features/checkout/components/CheckoutPayment";
 import CheckoutShipping from "@/features/checkout/components/CheckoutShipping";
 import EmptyState from "@/features/checkout/components/EmptyState";
 import OrderReview from "@/features/checkout/components/OrderReview";
-import { StepBreadcrumb, type CheckoutStep } from "@/features/checkout/components/StepBreadcrumb";
+import { StepBreadcrumb,
+  type CheckoutStep } from "@/features/checkout/components/StepBreadcrumb";
 import { useCheckoutCart } from "@/features/checkout/hooks/use-checkout-cart";
 import type { CheckoutPayload } from "@/features/checkout/types";
 import { cn } from "@/lib/utils";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import CheckOutForm from "./CheckOutFrom";
@@ -26,10 +28,10 @@ const CheckOut = () => {
   const cartError = cartQuery.error?.message;
   const [step, setStep] = useState<CheckoutStep>("information");
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPayload["paymentMethod"]>("COD");
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     if (step === "shipping") setStep("information");
     else if (step === "payment") setStep("shipping");
-  }, [step]);
+  };
 
   if (cartStatus === "empty") {
     return <EmptyState />;
@@ -73,7 +75,7 @@ const CheckOut = () => {
             </div>
 
             <div className={step === "payment" ? "contents" : "min-w-0"}>
-              {step === "information" && <CheckOutForm onContinue={setStep} />}
+              {step === "information" && <CheckOutForm cartReady={cartStatus === "success"} onContinue={setStep} />}
               {step === "shipping" && <CheckoutShipping onContinue={setStep} />}
               {step === "payment" && (
                 <CheckoutPayment
