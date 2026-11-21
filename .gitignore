@@ -19,3 +19,5 @@ coverage/
 # Generated local performance reports
 /client/reports/lighthouse/
 /docs
+
+/logs
