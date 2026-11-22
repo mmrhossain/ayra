@@ -36,7 +36,6 @@ export function DashboardTopbar() {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
 
-  // কোনো useState / useEffect ছাড়াই safe mounted চেক
   const mounted = useIsMounted();
 
   const { data } = authClient.useSession();
@@ -59,7 +58,7 @@ export function DashboardTopbar() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border/70 bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <SidebarTrigger className="size-9" aria-label="Toggle sidebar" />
+      <SidebarTrigger className="size-8" aria-label="Toggle sidebar" />
       <Separator orientation="vertical" className="h-6" />
       <div className="ml-auto flex min-w-0 items-center gap-2">
         <NotificationBell viewAllHref="/admin/notifications" />
@@ -100,9 +99,7 @@ export function DashboardTopbar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
             <DropdownMenuLabel className="flex flex-col gap-0.5">
-              <span className="truncate text-sm font-semibold">
-                {user?.name || "Account"}
-              </span>
+              <span className="truncate text-sm font-semibold">{user?.name || "Account"}</span>
               <span className="truncate text-xs font-normal text-muted-foreground">
                 {user?.email || "Signed in"}
               </span>

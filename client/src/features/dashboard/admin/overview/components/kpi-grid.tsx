@@ -132,7 +132,7 @@ export function KpiGrid({
                     <Icon className="size-4" />
                   </span>
                 </div>
-                <p className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl">
+                <p className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl xl:text-xl 2xl:text-3xl">
                   {formatMetric(kpi.value, kpi.format, data.currency)}
                 </p>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">

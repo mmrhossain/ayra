@@ -30,7 +30,7 @@ export function HeadlineSkeleton() {
                 <Skeleton className="h-4 w-28" />
                 <Skeleton className="size-8 rounded-lg" />
               </div>
-              <Skeleton className="h-8 w-36" />
+              <Skeleton className="h-8 w-36 xl:h-6 xl:w-28 2xl:h-8 2xl:w-36" />
               <Skeleton className="h-3 w-32" />
               {index === 1 ? <Skeleton className="h-3 w-full" /> : null}
             </div>
@@ -56,7 +56,7 @@ export function ChartSkeleton() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="min-w-0 space-y-1.5">
               <Skeleton className="h-3 w-16 max-w-full" />
-              <Skeleton className="h-6 w-24 max-w-full" />
+              <Skeleton className="h-6 w-24 max-w-full xl:h-5 xl:w-20 2xl:h-6 2xl:w-24" />
               <Skeleton className="h-3 w-16 max-w-full" />
             </div>
           ))}
@@ -219,11 +219,11 @@ export function OverviewPageSkeleton() {
       <OverviewHeader loading />
       <HeadlineSkeleton />
       <AttentionStripSkeleton />
-      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <ChartSkeleton />
         <RecentOrdersSkeleton />
       </div>
-      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <OrdersStatusSkeleton />
         <TopProductsSkeleton />
       </div>

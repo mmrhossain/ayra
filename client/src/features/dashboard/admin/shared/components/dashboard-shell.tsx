@@ -67,6 +67,39 @@ export function DashboardShell({
       storageKey="dashboard-theme"
     >
       <AdminThemeScope />
+      <style jsx global>{`
+        @keyframes admin-sidebar-enter-left {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+        @keyframes admin-sidebar-exit-left {
+          from { transform: translateX(0); }
+          to { transform: translateX(-100%); }
+        }
+        @keyframes admin-sidebar-enter-right {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        @keyframes admin-sidebar-exit-right {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
+        }
+        .admin-mobile-sidebar[data-state="open"][data-side="left"] {
+          animation: admin-sidebar-enter-left 200ms ease-out both;
+        }
+        .admin-mobile-sidebar[data-state="closed"][data-side="left"] {
+          animation: admin-sidebar-exit-left 180ms ease-in both;
+        }
+        .admin-mobile-sidebar[data-state="open"][data-side="right"] {
+          animation: admin-sidebar-enter-right 200ms ease-out both;
+        }
+        .admin-mobile-sidebar[data-state="closed"][data-side="right"] {
+          animation: admin-sidebar-exit-right 180ms ease-in both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .admin-mobile-sidebar { animation: none !important; }
+        }
+      `}</style>
       <DashboardQueryProvider>
         <PublicSettingsProvider initialSettings={initialPublicSettings}>
           <SidebarProvider defaultOpen={defaultOpen} className="bg-background text-foreground">

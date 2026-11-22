@@ -171,7 +171,7 @@ function Stat({
       <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="text-lg leading-snug font-semibold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-xl">
+      <dd className="text-lg leading-snug font-semibold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-xl xl:text-base 2xl:text-xl">
         {value}
       </dd>
       {hint ? (

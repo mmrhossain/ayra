@@ -184,13 +184,13 @@ export default async function AdminOverviewPage({ searchParams }: Props) {
 
       {headline}
 
-      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         {sales}
 
         {recentOrders}
       </div>
 
-      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         {ordersStatus}
 
         {topProducts}
