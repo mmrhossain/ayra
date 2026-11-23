@@ -1,13 +1,14 @@
 import { requireAdminPageAccess } from "@/lib/api/auth/server";
 import Link from "next/link";
 import { ProductWizard } from "@/features/dashboard/admin/products/components/product-wizard";
+import { ProductWizardSheet } from "@/features/dashboard/admin/products/components/product-wizard-sheet";
+import { ProductIndexContent } from "@/features/dashboard/admin/products/components/product-index-content";
 import type { WizardStep } from "@/features/dashboard/admin/products/types";
 import {
   fetchAdminProduct,
   toErrorMessage,
 } from "@/features/dashboard/admin/products/api/products";
 import { PageError } from "@/features/dashboard/admin/shared/components/page-error";
-import { PageHeader } from "@/features/dashboard/admin/shared/components/page-header";
 
 export const dynamic = "force-dynamic";
 
@@ -36,22 +37,33 @@ export default async function AdminEditProductPage({
 
   if (error || !product) {
     return (
-      <section className="space-y-6">
-        <PageHeader title="Edit product" />
-        <PageError
-          title="Could not load product"
-          message={error ?? "Unknown error"}
-          action={
-            <Link href="/admin/products" className="text-sm underline">
-              Back to products
-            </Link>
-          }
-        />
-      </section>
+      <>
+        <ProductIndexContent />
+        <ProductWizardSheet fallbackHref="/admin/products">
+          <PageError
+            title="Could not load product"
+            message={error ?? "Unknown error"}
+            action={
+              <Link href="/admin/products" className="text-sm underline">
+                Back to products
+              </Link>
+            }
+          />
+        </ProductWizardSheet>
+      </>
     );
   }
 
   return (
-    <ProductWizard mode="edit" product={product} initialStep={initialStep} />
+    <>
+      <ProductIndexContent />
+      <ProductWizardSheet fallbackHref="/admin/products">
+        <ProductWizard
+          mode="edit"
+          product={product}
+          initialStep={initialStep}
+        />
+      </ProductWizardSheet>
+    </>
   );
 }

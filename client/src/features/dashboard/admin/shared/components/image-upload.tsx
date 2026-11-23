@@ -58,6 +58,7 @@ type BaseProps = {
   label?: string;
   disabled?: boolean;
   className?: string;
+  singlePreviewClassName?: string;
   /**
    * When true the component only previews locally selected files; the actual
    * upload is deferred until the parent calls `flush()` (typically on submit).
@@ -546,6 +547,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
             <div
               className={cn(
                 "relative aspect-[1200/630] w-full overflow-hidden rounded-lg border",
+                props.singlePreviewClassName,
                 isSiteLogo ? "bg-white" : "bg-muted/30"
               )}
             >

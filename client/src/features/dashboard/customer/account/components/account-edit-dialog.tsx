@@ -112,6 +112,7 @@ export function AccountEditDialog({
                       deferUpload
                       mode="single"
                       folder="profiles"
+                      singlePreviewClassName="aspect-square max-w-xs"
                       value={profileImageUrl(field.value ?? "", 768)}
                       onChange={field.onChange}
                     />
