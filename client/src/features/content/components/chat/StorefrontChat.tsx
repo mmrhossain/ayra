@@ -1,6 +1,7 @@
 "use client";
 
 import { CHAT_MAX_MESSAGE } from "@/features/content/api/chat";
+import { Textarea } from "@/components/ui/textarea";
 import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import Link from "next/link";
@@ -151,7 +152,7 @@ export default function StorefrontChat() {
             <label htmlFor="storefront-chat-input" className="sr-only">
               Message
             </label>
-            <textarea
+            <Textarea
               id="storefront-chat-input"
               ref={inputRef}
               rows={1}
@@ -165,7 +166,7 @@ export default function StorefrontChat() {
                 }
               }}
               placeholder="Ask about products…"
-              className="max-h-24 min-h-11 flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2.5 text-base text-slate-800 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="max-h-24 min-h-11 flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2.5 text-base text-slate-800 placeholder:text-muted-foreground placeholder:text-xs outline-none focus-visible:ring-0"
             />
             <button
               type="submit"

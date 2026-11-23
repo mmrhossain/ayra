@@ -82,7 +82,7 @@ export function DashboardTopbar() {
           )}
         </Button>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"

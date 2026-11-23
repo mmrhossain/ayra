@@ -255,7 +255,7 @@ export function SettingsGroupCard({
           <div
             key={field.key}
             className={
-              field.type === "multiselect" || field.type === "image"
+              field.type === "multiselect"
                 ? "space-y-2 sm:col-span-2"
                 : "space-y-2"
             }

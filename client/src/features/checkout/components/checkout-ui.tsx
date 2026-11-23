@@ -8,7 +8,7 @@ import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 import { useId, useRef, useState } from "react";
 
 export const checkoutControlClass =
-  "h-11 w-full min-w-0 rounded-[3px] border-border bg-white px-3.5 text-base shadow-none placeholder:text-muted-foreground focus-visible:border-neutral-500 focus-visible:ring-0 sm:h-12";
+  "h-11 w-full min-w-0 rounded-[3px] border-border bg-white px-3.5 text-base shadow-none placeholder:text-muted-foreground focus-visible:border-neutral-500 focus-visible:ring-[1px] focus-visible:ring-ring/50 sm:h-12";
 
 export function CheckoutSection({
   title,
@@ -116,7 +116,7 @@ export function CheckoutSelect({
           className={cn(
             checkoutControlClass,
             "flex items-center justify-between gap-2 border text-left focus-visible:outline focus-visible:outline-offset-2 data-[invalid=true]:border-danger disabled:cursor-not-allowed disabled:opacity-50",
-            !selected && "text-muted-foreground",
+            !selected && "text-muted-foreground text-xs",
           )}
         >
           <span id={`${id}-label`} className="sr-only">{label}</span>

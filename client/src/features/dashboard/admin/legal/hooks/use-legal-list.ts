@@ -11,7 +11,7 @@ import type {
 const PAGE_SIZE = 20;
 const EMPTY_LEGAL_LIST: LegalListResult = {
   items: [],
-  meta: { page: 1, limit: PAGE_SIZE, total: 0, totalPages: 0 },
+  pagination: { page: 1, limit: PAGE_SIZE, total: 0, totalPages: 0 },
 };
 
 export function useLegalList({
@@ -32,11 +32,11 @@ export function useLegalList({
         type: type || undefined,
       }),
     initialData:
-      page === initialData?.meta?.page && type === "" ? initialData : undefined,
+      page === initialData?.pagination?.page && type === "" ? initialData : undefined,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
 
   const data = query.data ?? initialData ?? EMPTY_LEGAL_LIST;
-  return { query, data, items: data.items, pagination: data.meta };
+  return { query, data, items: data.items, pagination: data.pagination };
 }

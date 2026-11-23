@@ -147,7 +147,7 @@ const SearchBox = ({ className = "", onClose }: { className?: string; onClose?: 
             isOpen && activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
           }
           placeholder="Search products..."
-          className="h-11 min-h-11 border-0 bg-transparent py-0 pr-12 pl-11 text-base placeholder:font-normal focus-visible:ring-0 xl:pl-12"
+          className="h-11 min-h-11 border-0 bg-transparent py-0 pr-12 pl-11 text-base placeholder:font-normal focus-visible:ring-[1px] focus-visible:ring-ring/50 xl:pl-12"
         />
 
         {searchValue ? (

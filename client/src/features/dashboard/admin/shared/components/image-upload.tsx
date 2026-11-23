@@ -1,23 +1,9 @@
 "use client";
 
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient } from "@tanstack/react-query";
-import { Images,
-  Loader2,
-  Upload,
-  X } from "lucide-react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Images, Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
-import {
-  forwardRef,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -198,6 +184,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
     const inputId = useId();
     const type = resolveImageType(folder);
     const isOgImage = type === "og_image";
+    const isSiteLogo = type === "site_logo";
     const useGallery = GALLERY_TYPES.has(type);
     const [dragOver, setDragOver] = useState(false);
     const [previews, setPreviews] = useState<PreviewItem[]>([]);
@@ -210,8 +197,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
       ...committed.map((url) => ({ id: url, url, uploading: false, pending: false })),
       ...previews,
     ];
-    const activePreview =
-      visible.find((item) => item.id === activePreviewId) ?? visible[0];
+    const activePreview = visible.find((item) => item.id === activePreviewId) ?? visible[0];
     const slotsLeft = Math.max(0, maxFiles - committed.length - previews.length);
     const canAdd = !disabled && !uploading && slotsLeft > 0;
 
@@ -239,83 +225,83 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
     }, []);
 
     const applyResults = (results: UploadedImage[]) => {
-        const variantIndex = props.mode === "single" ? props.variantIndex : undefined;
-        if (props.mode === "single") {
-          const result = results[0];
-          if (!result) return;
-          const asset = toAsset(result, variantIndex);
-          emit(props, [asset.url], [asset]);
-          return;
-        }
-        const assets: UploadedAsset[] = [];
-        const urls = [...committed];
-        for (const result of results) {
-          const asset = toAsset(result, variantIndex);
-          if (urls.includes(asset.url)) continue;
-          if (urls.length >= maxFiles) break;
-          urls.push(asset.url);
-          assets.push(asset);
-        }
-        emit(props, urls, assets);
-      };
+      const variantIndex = props.mode === "single" ? props.variantIndex : undefined;
+      if (props.mode === "single") {
+        const result = results[0];
+        if (!result) return;
+        const asset = toAsset(result, variantIndex);
+        emit(props, [asset.url], [asset]);
+        return;
+      }
+      const assets: UploadedAsset[] = [];
+      const urls = [...committed];
+      for (const result of results) {
+        const asset = toAsset(result, variantIndex);
+        if (urls.includes(asset.url)) continue;
+        if (urls.length >= maxFiles) break;
+        urls.push(asset.url);
+        assets.push(asset);
+      }
+      emit(props, urls, assets);
+    };
 
     const handleFiles = (list: FileList | File[]) => {
-        if (!canAdd) return;
-        const incoming = Array.from(list);
-        const accepted: File[] = [];
+      if (!canAdd) return;
+      const incoming = Array.from(list);
+      const accepted: File[] = [];
 
-        for (const file of incoming) {
-          const error = validateImageFile(file);
-          if (error) {
-            toast.error(error);
-            continue;
-          }
-          if (accepted.length >= slotsLeft) {
-            toast.error(`A maximum of ${maxFiles} images is allowed`);
-            break;
-          }
-          accepted.push(file);
+      for (const file of incoming) {
+        const error = validateImageFile(file);
+        if (error) {
+          toast.error(error);
+          continue;
         }
-
-        if (accepted.length === 0) return;
-
-        // In single mode a fresh selection replaces the current deferred file.
-        if (deferUpload && mode === "single") clearPending();
-
-        const local: PreviewItem[] = accepted.map((file) => ({
-          id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
-          url: URL.createObjectURL(file),
-          uploading: !deferUpload,
-        }));
-
-        if (deferUpload) {
-          pendingFiles.current = [
-            ...pendingFiles.current,
-            ...accepted.map((file, index) => ({
-              file,
-              previewId: local[index]!.id,
-              url: local[index]!.url,
-            })),
-          ];
-          setPreviews((prev) => [...prev, ...local.map((item) => ({ ...item, pending: true }))]);
-          return;
+        if (accepted.length >= slotsLeft) {
+          toast.error(`A maximum of ${maxFiles} images is allowed`);
+          break;
         }
+        accepted.push(file);
+      }
 
-        setPreviews((prev) => [...prev, ...local]);
+      if (accepted.length === 0) return;
 
-        mutation.mutate(accepted, {
-          onSuccess: (results) => {
-            local.forEach((item) => URL.revokeObjectURL(item.url));
-            setPreviews((prev) => prev.filter((p) => !local.some((l) => l.id === p.id)));
-            applyResults(results);
-          },
-          onError: (err) => {
-            local.forEach((item) => URL.revokeObjectURL(item.url));
-            setPreviews((prev) => prev.filter((p) => !local.some((l) => l.id === p.id)));
-            toast.error(toUploadErrorMessage(err));
-          },
-        });
-      };
+      // In single mode a fresh selection replaces the current deferred file.
+      if (deferUpload && mode === "single") clearPending();
+
+      const local: PreviewItem[] = accepted.map((file) => ({
+        id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
+        url: URL.createObjectURL(file),
+        uploading: !deferUpload,
+      }));
+
+      if (deferUpload) {
+        pendingFiles.current = [
+          ...pendingFiles.current,
+          ...accepted.map((file, index) => ({
+            file,
+            previewId: local[index]!.id,
+            url: local[index]!.url,
+          })),
+        ];
+        setPreviews((prev) => [...prev, ...local.map((item) => ({ ...item, pending: true }))]);
+        return;
+      }
+
+      setPreviews((prev) => [...prev, ...local]);
+
+      mutation.mutate(accepted, {
+        onSuccess: (results) => {
+          local.forEach((item) => URL.revokeObjectURL(item.url));
+          setPreviews((prev) => prev.filter((p) => !local.some((l) => l.id === p.id)));
+          applyResults(results);
+        },
+        onError: (err) => {
+          local.forEach((item) => URL.revokeObjectURL(item.url));
+          setPreviews((prev) => prev.filter((p) => !local.some((l) => l.id === p.id)));
+          toast.error(toUploadErrorMessage(err));
+        },
+      });
+    };
 
     const flush = async () => {
       const pending = [...pendingFiles.current];
@@ -463,9 +449,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
               >
                 {visible.map((item, index) => {
                   const isPrimary =
-                    !item.uploading &&
-                    !item.pending &&
-                    props.primaryUrl === item.url;
+                    !item.uploading && !item.pending && props.primaryUrl === item.url;
                   const isActive = activePreview?.id === item.id;
 
                   return (
@@ -474,7 +458,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
                       className={cn(
                         "relative aspect-square w-14 shrink-0 overflow-hidden rounded-md border bg-muted/30 sm:w-16 lg:w-full",
                         isPrimary && "ring-2 ring-primary ring-offset-1",
-                        isActive && !isPrimary && "ring-2 ring-foreground/50 ring-offset-1",
+                        isActive && !isPrimary && "ring-2 ring-foreground/50 ring-offset-1"
                       )}
                     >
                       <button
@@ -522,7 +506,7 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
                           onClick={() => props.onPrimaryChange?.(item.url)}
                           className={cn(
                             "absolute inset-x-0 bottom-0 z-20 truncate bg-black/60 px-1 py-1 text-[10px] font-medium text-white",
-                            isPrimary ? "bg-primary/90" : "hover:bg-black/75",
+                            isPrimary ? "bg-primary/90" : "hover:bg-black/75"
                           )}
                         >
                           {isPrimary ? "Primary" : "Set primary"}
@@ -561,18 +545,16 @@ export const ImageUpload = forwardRef<ImageUploadHandle, ImageUploadProps>(
           ) : (
             <div
               className={cn(
-                "relative w-full overflow-hidden rounded-lg border bg-muted/30",
-                isOgImage
-                  ? "mx-auto aspect-[1200/630] max-w-[720px]"
-                  : "aspect-square max-h-[320px] sm:max-h-[380px]"
+                "relative aspect-[1200/630] w-full overflow-hidden rounded-lg border",
+                isSiteLogo ? "bg-white" : "bg-muted/30"
               )}
             >
               <Image
                 src={visible[0]!.url}
                 alt=""
                 fill
-                sizes="(max-width: 640px) 100vw, 380px"
-                className={isOgImage ? "object-contain" : "object-cover"}
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className={isOgImage || isSiteLogo ? "object-contain" : "object-cover"}
                 loading="eager"
               />
               {visible[0]!.uploading ? (
@@ -666,7 +648,7 @@ function MediaLibraryDialog({
   const toggle = (item: MediaLibraryItem) => {
     setSelected((prev) => {
       const selectedIndex = prev.findIndex(
-        (selectedItem) => selectedItem.publicId === item.publicId,
+        (selectedItem) => selectedItem.publicId === item.publicId
       );
       if (selectedIndex >= 0) {
         return prev.filter((selectedItem) => selectedItem.publicId !== item.publicId);
@@ -776,7 +758,7 @@ function MediaLibraryDialog({
             <ul className="grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto xs:grid-cols-3 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5">
               {items.map((item) => {
                 const isSelected = selected.some(
-                  (selectedItem) => selectedItem.publicId === item.publicId,
+                  (selectedItem) => selectedItem.publicId === item.publicId
                 );
                 return (
                   <li key={item.publicId}>

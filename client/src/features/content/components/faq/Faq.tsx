@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Plus, Minus, Search, HelpCircle } from "lucide-react";
 
 import { RichTextContent } from "@/components/shared/rich-text-content";
+import { Input } from "@/components/ui/input";
 import type { PublicFaqCategory } from "@/features/content/api";
 
 type FaqRow = {
@@ -63,10 +64,10 @@ const FAQPage = ({ categories }: Props) => {
 
           <div className="mt-8 md:mt-12 max-w-2xl mx-auto relative">
             <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <input
+            <Input
               type="text"
               placeholder="Search for a topic"
-              className="h-12 w-full rounded-md border border-slate-200 pr-4 pl-12 text-base shadow-sm transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none md:h-14 md:pr-6 md:pl-14"
+              className="h-12 w-full border-slate-200 pr-4 pl-12 text-base placeholder:text-xs shadow-sm transition-all focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500/20 focus-visible:outline-none md:h-14 md:pr-6 md:pl-14"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>

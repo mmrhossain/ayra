@@ -27,7 +27,7 @@ export type LegalPagination = {
 
 export type LegalListResult = {
   items: LegalDocumentItem[];
-  meta: LegalPagination;
+  pagination: LegalPagination;
 };
 
 export type LegalListParams = {

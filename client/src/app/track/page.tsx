@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Input } from "@/components/ui/input";
 import { StatusBadge, type StatusBadgeVariant } from "@/components/ui/status-badge";
 
 import {
@@ -57,12 +58,12 @@ export default async function TrackPage({
       </div>
 
       <form action="/track" method="get" className="flex flex-col gap-2 sm:flex-row">
-        <input
+        <Input
           name="number"
           defaultValue={shipmentNumber ?? ""}
           placeholder="SHP-XXXXXX-XXXXXX"
           aria-label="Shipment number"
-          className="h-10 flex-1 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          className="h-10 flex-1 placeholder:text-xs"
         />
         <button
           type="submit"

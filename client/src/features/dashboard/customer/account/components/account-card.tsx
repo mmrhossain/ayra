@@ -4,6 +4,7 @@ import { Calendar, Mail, Pencil, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { AccountEditDialog } from "@/features/dashboard/customer/account/components/account-edit-dialog";
 import {
@@ -86,7 +87,7 @@ export function AccountCard({
           </label>
           <div className="relative">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <input
+            <Input
               type="text"
               value={name}
               readOnly
@@ -101,7 +102,7 @@ export function AccountCard({
           </label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <input
+            <Input
               type="email"
               value={email}
               readOnly

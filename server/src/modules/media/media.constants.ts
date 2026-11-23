@@ -59,7 +59,7 @@ export const IMAGE_TYPE_PRESETS: Record<ImageType, UploadPreset> = {
   },
   site_logo: {
     folder: `${CLOUDINARY_ROOT_FOLDER}/site/logo`,
-    variants: [{ width: 250, height: 250, crop: "fit" }],
+    variants: [{ width: 500, height: 160, crop: "fit" }],
     maxFiles: 1,
     allowMultiple: false,
   },
