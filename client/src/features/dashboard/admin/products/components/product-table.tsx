@@ -8,13 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BulkActionBar } from "@/features/dashboard/admin/products/components/bulk-actions.bar";
 import { DeleteDialog } from "@/features/dashboard/admin/products/components/delete.dialog";
 import { useProductList } from "@/features/dashboard/admin/products/hooks/use-product-list";
@@ -70,8 +64,7 @@ export function ProductTable({ initialData }: ProductTableProps) {
   // Selection only spans the current page; it is cleared whenever the page or
   // search changes so ids from a previous view are never acted on.
   const pageIds = items.map((product) => product.id);
-  const allSelected =
-    pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const allSelected = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
   const someSelected = pageIds.some((id) => selected.has(id));
 
   const toggleAll = () => {
@@ -226,7 +219,9 @@ export function ProductTable({ initialData }: ProductTableProps) {
                           <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                             Featured
                           </span>
-                        ) : null}
+                        ) : (
+                          "N/A"
+                        )}
                       </TableCell>
                       <TableCell className="text-right" data-label="Actions">
                         <RowActions

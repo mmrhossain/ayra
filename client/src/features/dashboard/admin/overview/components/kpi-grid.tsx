@@ -12,10 +12,7 @@ import {
 
 import { Card, CardContent } from "@/components/ui/card";
 import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/analytics";
-import {
-  formatDelta,
-  percentChange,
-} from "@/features/dashboard/admin/overview/utils/delta";
+import { formatDelta, percentChange } from "@/features/dashboard/admin/overview/utils/delta";
 import { formatMetric } from "@/features/dashboard/admin/overview/utils/format";
 
 type Kpi = {
@@ -102,14 +99,13 @@ export function KpiGrid({
         {new Date(data.dateTo).toLocaleDateString("en-GB", {
           timeZone: data.timezone,
         })}
-        . Sales use delivery date; returns use approval date; cash uses payment
-        and refund dates. Timezone: {data.timezone}. Data as of {generatedAt}.
+        . Sales use delivery date; returns use approval date; cash uses payment and refund dates.
+        Timezone: {data.timezone}. Data as of {generatedAt}.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         {kpis.map((kpi) => {
           const delta = percentChange(kpi.value, kpi.previous);
-          const good =
-            delta !== null && (kpi.invertDelta ? delta <= 0 : delta >= 0);
+          const good = delta !== null && (kpi.invertDelta ? delta <= 0 : delta >= 0);
           const Icon = kpi.icon;
           return (
             <Card
@@ -123,40 +119,32 @@ export function KpiGrid({
               />
               <CardContent className="relative space-y-3">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {kpi.label}
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">{kpi.label}</p>
                   <span
                     className={`grid size-8 shrink-0 place-items-center rounded-lg bg-background/80 ring-1 ring-border/70 ${kpi.accent}`}
                   >
                     <Icon className="size-4" />
                   </span>
                 </div>
-                <p className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl xl:text-xl 2xl:text-3xl">
+                <p className="text-2xl font-semibold tabular-nums tracking-tight">
                   {formatMetric(kpi.value, kpi.format, data.currency)}
                 </p>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   {delta !== null && delta !== 0 ? (
                     delta > 0 ? (
                       <ArrowUpRight
-                        className={`size-3.5 ${
-                          good ? "text-emerald-600" : "text-destructive"
-                        }`}
+                        className={`size-3.5 ${good ? "text-emerald-600" : "text-destructive"}`}
                       />
                     ) : (
                       <ArrowDownRight
-                        className={`size-3.5 ${
-                          good ? "text-emerald-600" : "text-destructive"
-                        }`}
+                        className={`size-3.5 ${good ? "text-emerald-600" : "text-destructive"}`}
                       />
                     )
                   ) : null}
                   <span className="tabular-nums">{formatDelta(delta)}</span>
                   <span>vs previous period</span>
                 </p>
-                {kpi.note ? (
-                  <p className="text-xs text-muted-foreground">{kpi.note}</p>
-                ) : null}
+                {kpi.note ? <p className="text-xs text-muted-foreground">{kpi.note}</p> : null}
               </CardContent>
             </Card>
           );

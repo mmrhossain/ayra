@@ -1,13 +1,8 @@
+import { AlertTriangle, CheckCircle2, CreditCard, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CreditCard,
-  RotateCcw,
-} from "lucide-react";
 
-import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { OverviewMetrics } from "@/features/dashboard/admin/overview/api/analytics";
 import { canAccessAdminPath } from "@/lib/admin-navigation";
 import type { AdminAccess } from "@/lib/admin-permissions";
 
@@ -35,16 +30,14 @@ const ITEMS = [
   },
 ];
 
-const QUEUE_CARD = "flex min-w-0 items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2.5";
+const QUEUE_CARD =
+  "flex min-w-0 items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2.5";
 const QUEUE_LABEL = "flex min-w-0 items-center gap-2.5";
 const QUEUE_COUNT = "size-6 shrink-0 rounded-full";
 
 function queueGrid(count: number) {
-  const columns = count >= 3
-    ? "sm:grid-cols-2 xl:grid-cols-3"
-    : count === 2
-      ? "sm:grid-cols-2"
-      : "grid-cols-1";
+  const columns =
+    count >= 3 ? "sm:grid-cols-2 xl:grid-cols-3" : count === 2 ? "sm:grid-cols-2" : "grid-cols-1";
   return `grid gap-2.5 ${columns}`;
 }
 
@@ -64,13 +57,7 @@ export function AttentionStripSkeleton() {
   );
 }
 
-export function AttentionStrip({
-  data,
-  access,
-}: {
-  data: OverviewMetrics;
-  access: AdminAccess;
-}) {
+export function AttentionStrip({ data, access }: { data: OverviewMetrics; access: AdminAccess }) {
   const visible = ITEMS.filter((item) => canAccessAdminPath(access, item.href));
 
   if (visible.length === 0) return null;
@@ -104,7 +91,9 @@ export function AttentionStrip({
             <item.icon className={`size-4 shrink-0 ${item.tone}`} />
             <span className="truncate text-sm font-medium">{item.label}</span>
           </span>
-          <span className={`grid ${QUEUE_COUNT} place-items-center bg-muted text-xs font-semibold tabular-nums`}>
+          <span
+            className={`grid ${QUEUE_COUNT} place-items-center bg-muted text-xs font-semibold tabular-nums`}
+          >
             {data[item.key]}
           </span>
         </Link>
