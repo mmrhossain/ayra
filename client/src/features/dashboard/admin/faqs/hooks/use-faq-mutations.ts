@@ -41,7 +41,6 @@ export function useFaqCategoryFormMutation({
     mutationFn: async (values: FaqCategoryFormValues) => {
       const body = {
         name: values.name.trim(),
-        slug: values.slug.trim(),
         sortOrder: values.sortOrder,
         isActive: values.isActive,
       };

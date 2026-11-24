@@ -2,22 +2,11 @@ import { DashboardApiError } from "@/lib/api/dashboard";
 import type { FaqCategoryFormValues } from "@/features/dashboard/admin/faqs/schemas";
 import type { FaqCategoryListItem } from "@/features/dashboard/admin/faqs/types";
 
-export function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 export function faqCategoryFormDefaults(
   initialData?: FaqCategoryListItem,
 ): FaqCategoryFormValues {
   return {
     name: initialData?.name ?? "",
-    slug: initialData?.slug ?? "",
     sortOrder: initialData?.sortOrder ?? (undefined as unknown as number),
     isActive: initialData?.isActive ?? true,
   };

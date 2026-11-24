@@ -14,13 +14,11 @@ export const blogContentStatusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]
 
 export const createBlogCategorySchema = z.object({
   name: z.string().trim().min(1).max(200),
-  slug: slugSchema,
 });
 
 export const updateBlogCategorySchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
-    slug: slugSchema.optional(),
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: "At least one field is required",
@@ -28,7 +26,6 @@ export const updateBlogCategorySchema = z
 
 export const createBlogSchema = z.object({
   title: z.string().trim().min(1).max(200),
-  slug: slugSchema,
   excerpt: z.string().trim().max(500).optional(),
   content: z.string().trim().min(1).max(200000),
   featuredImage: optionalCloudinaryImageUrlSchema,
@@ -42,7 +39,6 @@ export const createBlogSchema = z.object({
 export const updateBlogSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
-    slug: slugSchema.optional(),
     excerpt: z.string().trim().max(500).nullable().optional(),
     content: z.string().trim().min(1).max(200000).optional(),
     featuredImage: nullableCloudinaryImageUrlSchema,

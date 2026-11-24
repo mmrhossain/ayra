@@ -1,6 +1,7 @@
 import { prisma } from "../../../../lib/prisma.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { paginated } from "../../../../common/utils/paginate.ts";
+import { generateSlug } from "../../../../common/utils/slug.ts";
 import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
 import { sanitizeHtml } from "../../../../common/utils/sanitize-html.ts";
 import { resolveImagePublicId } from "../../../../common/utils/cloudinary-public-id.ts";
@@ -101,9 +102,12 @@ export const listBlogCategories = async () => {
 };
 
 export const createBlogCategory = async (input: CreateBlogCategoryInput) => {
+  const name = input.name.trim();
+  const slug = generateSlug(name, "Blog category name");
+
   try {
     return await prisma.blogCategory.create({
-      data: { name: input.name, slug: input.slug },
+      data: { name, slug },
     });
   } catch (err) {
     if (isPrismaCode(err, "P2002")) {
@@ -120,12 +124,18 @@ export const updateBlogCategory = async (
   const existing = await prisma.blogCategory.findUnique({ where: { id } });
   if (!existing) throw new AppError("Blog category not found", 404);
 
+  const nextName = input.name?.trim() ?? existing.name;
+  const nameChanged = nextName !== existing.name;
+  const nextSlug = nameChanged
+    ? generateSlug(nextName, "Blog category name")
+    : existing.slug;
+
   try {
     return await prisma.blogCategory.update({
       where: { id },
       data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.slug !== undefined && { slug: input.slug }),
+        ...(input.name !== undefined && { name: nextName }),
+        ...(nameChanged && { slug: nextSlug }),
       },
     });
   } catch (err) {
@@ -191,12 +201,14 @@ const assertCategory = async (categoryId: string | null | undefined) => {
 
 export const createBlog = async (input: CreateBlogInput) => {
   await assertCategory(input.categoryId);
+  const title = input.title.trim();
+  const slug = generateSlug(title, "Blog title");
 
   try {
     const created = await prisma.blog.create({
       data: {
-        title: input.title,
-        slug: input.slug,
+        title,
+        slug,
         excerpt: input.excerpt ?? null,
         content: sanitizeHtml(input.content),
         featuredImage: input.featuredImage ?? null,
@@ -236,6 +248,10 @@ export const updateBlog = async (id: string, input: UpdateBlogInput) => {
     await assertCategory(input.categoryId);
   }
 
+  const nextTitle = input.title?.trim() ?? existing.title;
+  const titleChanged = nextTitle !== existing.title;
+  const nextSlug = titleChanged ? generateSlug(nextTitle, "Blog title") : existing.slug;
+
   const nextStatus = input.status ?? existing.status;
   const publishedAt =
     nextStatus === "PUBLISHED"
@@ -265,8 +281,8 @@ export const updateBlog = async (id: string, input: UpdateBlogInput) => {
     const updated = await prisma.blog.update({
       where: { id },
       data: {
-        ...(input.title !== undefined && { title: input.title }),
-        ...(input.slug !== undefined && { slug: input.slug }),
+        ...(input.title !== undefined && { title: nextTitle }),
+        ...(titleChanged && { slug: nextSlug }),
         ...(input.excerpt !== undefined && { excerpt: input.excerpt }),
         ...(input.content !== undefined && { content: sanitizeHtml(input.content) }),
         ...((input.featuredImage !== undefined ||

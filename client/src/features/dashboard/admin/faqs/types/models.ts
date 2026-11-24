@@ -24,7 +24,6 @@ export type FaqItemListItem = {
 
 export type CreateFaqCategoryBody = {
   name: string;
-  slug: string;
   sortOrder: number;
   isActive: boolean;
 };

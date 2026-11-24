@@ -1,5 +1,7 @@
 import RegistrationForm from "@/features/auth/components/RegistrationForm";
 import { redirectSignedInFromAuthPage } from "@/lib/api/auth/server";
+import { fetchPublishedLegal } from "@/features/content/api";
+import type { PublishedLegalDocument } from "@/features/content/types";
 import { Suspense } from "react";
 
 type Props = {
@@ -10,9 +12,16 @@ export default async function RegisterPage({ searchParams }: Props) {
   const { redirect } = await searchParams;
   await redirectSignedInFromAuthPage(redirect);
 
+  let terms: PublishedLegalDocument | null = null;
+  try {
+    terms = await fetchPublishedLegal("TERMS");
+  } catch {
+    terms = null;
+  }
+
   return (
     <Suspense fallback={null}>
-      <RegistrationForm />
+      <RegistrationForm terms={terms} />
     </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 import { prisma } from "../../../../lib/prisma.ts";
 import { AppError } from "../../../../common/errors/AppError.ts";
 import { isPrismaCode } from "../../../../common/utils/prisma-error.ts";
+import { generateSlug } from "../../../../common/utils/slug.ts";
 import { sanitizeHtml } from "../../../../common/utils/sanitize-html.ts";
 import type {
   CreateFaqCategoryInput,
@@ -56,11 +57,13 @@ export const listFaqCategories = async () => {
 };
 
 export const createFaqCategory = async (input: CreateFaqCategoryInput) => {
+  const name = input.name.trim();
+  const slug = generateSlug(name, "FAQ category name");
   try {
     return await prisma.faqCategory.create({
       data: {
-        name: input.name,
-        slug: input.slug,
+        name,
+        slug,
         sortOrder: input.sortOrder,
         isActive: input.isActive,
       },
@@ -80,12 +83,18 @@ export const updateFaqCategory = async (
   const existing = await prisma.faqCategory.findUnique({ where: { id } });
   if (!existing) throw new AppError("FAQ category not found", 404);
 
+  const nextName = input.name?.trim() ?? existing.name;
+  const nameChanged = nextName !== existing.name;
+  const nextSlug = nameChanged
+    ? generateSlug(nextName, "FAQ category name")
+    : existing.slug;
+
   try {
     return await prisma.faqCategory.update({
       where: { id },
       data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.slug !== undefined && { slug: input.slug }),
+        ...(input.name !== undefined && { name: nextName }),
+        ...(nameChanged && { slug: nextSlug }),
         ...(input.sortOrder !== undefined && { sortOrder: input.sortOrder }),
         ...(input.isActive !== undefined && { isActive: input.isActive }),
       },

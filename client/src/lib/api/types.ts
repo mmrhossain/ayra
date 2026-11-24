@@ -11288,7 +11288,6 @@ export type paths = {
                 content: {
                     "application/json": {
                         name: string;
-                        slug: string;
                         /** @default 0 */
                         sortOrder?: number;
                         /** @default true */
@@ -11377,7 +11376,6 @@ export type paths = {
                 content: {
                     "application/json": {
                         name?: string;
-                        slug?: string;
                         sortOrder?: number;
                         isActive?: boolean;
                     };

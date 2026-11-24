@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import {
   type FaqCategoryFormValues,
 } from "@/features/dashboard/admin/faqs/schemas";
 import type { FaqCategoryFormDialogProps } from "@/features/dashboard/admin/faqs/types";
-import { faqCategoryFormDefaults, slugify } from "@/features/dashboard/admin/faqs/utils";
+import { faqCategoryFormDefaults } from "@/features/dashboard/admin/faqs/utils";
 
 const FAQ_CATEGORY_FORM_ID = "faq-category-form";
 
@@ -42,8 +42,6 @@ export function FaqCategoryFormDialog({
   mode,
   initialData,
 }: FaqCategoryFormDialogProps) {
-  const slugManual = useRef(false);
-
   const form = useForm<FaqCategoryFormValues>({
     resolver: zodResolver(faqCategoryFormSchema) as Resolver<FaqCategoryFormValues>,
     defaultValues: faqCategoryFormDefaults(initialData),
@@ -52,7 +50,6 @@ export function FaqCategoryFormDialog({
   // Dialog খোলা হলে বা initialData বদলালে Form Reset
   useEffect(() => {
     if (!open) return;
-    slugManual.current = mode === "edit";
     form.reset(faqCategoryFormDefaults(initialData));
   }, [open, mode, initialData, form]);
 
@@ -89,37 +86,6 @@ export function FaqCategoryFormDialog({
                       autoComplete="off"
                       placeholder="Orders & Shipping"
                       disabled={mutation.isPending}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        // ✅ Event-Driven Slug Update: useEffect এবং extra re-render বন্ধ করে
-                        if (!slugManual.current) {
-                          form.setValue("slug", slugify(e.target.value), {
-                            shouldValidate: false,
-                          });
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      autoComplete="off"
-                      placeholder="orders-shipping"
-                      disabled={mutation.isPending}
-                      onChange={(e) => {
-                        slugManual.current = true;
-                        field.onChange(e);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />

@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-export const slugSchema = z
-  .string()
-  .min(1, "Slug is required")
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug format");
-
 const optionalSortOrder = z.preprocess((v) => {
   if (v === "" || v === undefined || v === null) return undefined;
   const n = typeof v === "number" ? v : Number(v);
@@ -13,7 +8,6 @@ const optionalSortOrder = z.preprocess((v) => {
 
 export const faqCategoryFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
-  slug: slugSchema,
   sortOrder: optionalSortOrder,
   isActive: z.boolean(),
 });

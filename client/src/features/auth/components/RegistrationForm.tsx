@@ -9,6 +9,15 @@ import { useForm } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { RichTextContent } from "@/components/shared/rich-text-content";
+import type { PublishedLegalDocument } from "@/features/content/types";
 
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 
@@ -27,7 +36,8 @@ import { authClient } from "@/lib/api/auth/auth-client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const RegistrationForm: React.FC = () => {
+const RegistrationForm: React.FC<{ terms: PublishedLegalDocument | null }> = ({ terms }) => {
+  const [termsOpen, setTermsOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -205,7 +215,7 @@ const RegistrationForm: React.FC = () => {
             render={({ field }) => (
               <FormItem className="flex min-w-0 flex-row items-start gap-1 space-y-0 pt-1 sm:gap-2 sm:pt-2">
                 <FormControl>
-                  <span className="flex size-11 shrink-0 items-center justify-center sm:size-5 sm:mt-0.5">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center">
                     <Checkbox
                       id="terms"
                       className="size-5 rounded border-gray-300 touch-manipulation data-[state=checked]:bg-primary data-[state=checked]:border-primary sm:size-4"
@@ -214,20 +224,19 @@ const RegistrationForm: React.FC = () => {
                     />
                   </span>
                 </FormControl>
-                <div className="min-w-0 flex-1 pt-2.5 sm:pt-0">
-                  <Label
-                    htmlFor="terms"
-                    className="block min-w-0 text-slate-600 text-sm font-normal leading-5 cursor-pointer select-none whitespace-normal break-words [display:block]"
-                  >
-                    I have read and agree to the{" "}
-                    <Link
-                      href="/terms"
-                      className="inline text-primary underline-offset-2 hover:underline"
-                      onClick={(event) => event.stopPropagation()}
+                <div className="min-w-0 flex-1">
+                  <div className="block min-w-0 text-slate-600 text-sm font-normal leading-5 whitespace-normal break-words">
+                    <label htmlFor="terms" className="cursor-pointer select-none">
+                      I have read and agree to the{" "}
+                    </label>
+                    <button
+                      type="button"
+                      className="inline cursor-pointer text-primary underline-offset-2 hover:underline"
+                      onClick={() => setTermsOpen(true)}
                     >
                       terms & conditions
-                    </Link>
-                  </Label>
+                    </button>
+                  </div>
                   <FormMessage className="text-danger" />
                 </div>
               </FormItem>
@@ -246,6 +255,26 @@ const RegistrationForm: React.FC = () => {
           </button>
         </form>
       </Form>
+
+      <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+        <DialogContent className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
+          <DialogHeader className="shrink-0 border-b px-5 py-4 text-left sm:px-6">
+            <DialogTitle>{terms?.title ?? "Terms of Service"}</DialogTitle>
+            <DialogDescription>
+              Please read these terms carefully before creating your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+            {terms ? (
+              <RichTextContent html={terms.body} className="text-sm leading-6 text-slate-600" />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Terms and conditions are currently unavailable. Please try again later.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="relative my-5">
         <div className="absolute inset-0 flex items-center">

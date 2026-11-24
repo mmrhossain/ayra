@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Plus, Minus, Search, HelpCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, CircleHelp, Mail, Search, ShoppingBag, X } from "lucide-react";
+import Link from "next/link";
 
 import { RichTextContent } from "@/components/shared/rich-text-content";
 import { Input } from "@/components/ui/input";
+import { SUPPORT_EMAIL } from "@/config/site";
 import type { PublicFaqCategory } from "@/features/content/api";
 
 type FaqRow = {
   id: string;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   question: string;
   answer: string;
 };
@@ -20,157 +22,216 @@ type Props = {
 };
 
 const FAQPage = ({ categories }: Props) => {
-  const shouldReduceMotion = useReducedMotion();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("all");
 
-  const categoryNames = ["All", ...categories.map((category) => category.name)];
-
-  const faqs = (categories.flatMap((category) =>
+  const faqs = useMemo(
+    () =>
+      categories.flatMap((category) =>
         category.items.map((item) => ({
           id: item.id,
-          category: category.name,
+          categoryId: category.id,
+          categoryName: category.name,
           question: item.question,
           answer: item.answer,
-        }))
-      )) satisfies FaqRow[];
+        })),
+      ),
+    [categories],
+  );
 
-  const filteredFaqs = faqs.filter((faq) => {
-    const q = searchTerm.toLowerCase();
-    const matchesSearch =
-      faq.question.toLowerCase().includes(q) ||
-      faq.answer.toLowerCase().includes(q);
-    const matchesCategory =
-      activeCategory === "All" || faq.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredFaqs = useMemo(() => {
+    const query = searchTerm.trim().toLocaleLowerCase();
+    return faqs.filter((faq) => {
+      const matchesCategory = activeCategory === "all" || faq.categoryId === activeCategory;
+      const matchesSearch =
+        !query ||
+        faq.question.toLocaleLowerCase().includes(query) ||
+        faq.answer.toLocaleLowerCase().includes(query) ||
+        faq.categoryName.toLocaleLowerCase().includes(query);
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, faqs, searchTerm]);
 
   return (
-    <div className="bg-[#FAF9F6] min-h-screen pb-20 md:pb-24">
-      <section className="pt-20 md:pt-28 pb-12 md:pb-16 bg-white border-b border-slate-100 px-4 sm:px-6">
-        <div className="container mx-auto text-center">
-          <motion.div
-            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.35 }}
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-7xl font-black tracking-tight sm:tracking-tighter uppercase mb-6">
-              How can we <span className="text-primary italic font-serif text-4xl md:text-8xl block md:inline">Help?</span>
-            </h1>
-            <p className="text-slate-500 max-w-xl mx-auto font-medium text-sm md:text-base">
-              Find answers to common questions about our heritage, our craft, and your journey with the House of Color.
-            </p>
-          </motion.div>
+    <main className="min-h-[60vh] bg-muted/30 pb-16 sm:pb-20">
+      <section className="border-b bg-background">
+        <div className="container mx-auto max-w-6xl px-4 py-9 sm:py-14">
+          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-xs text-muted-foreground">
+            <Link href="/" className="transition-colors hover:text-foreground">Home</Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-foreground">Help Center</span>
+          </nav>
 
-          <div className="mt-8 md:mt-12 max-w-2xl mx-auto relative">
-            <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <Input
-              type="text"
-              placeholder="Search for a topic"
-              className="h-12 w-full border-slate-200 pr-4 pl-12 text-base placeholder:text-xs shadow-sm transition-all focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500/20 focus-visible:outline-none md:h-14 md:pr-6 md:pl-14"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <CircleHelp className="size-6" />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Customer care</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              How can we help?
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+              Find quick answers about shopping, orders, delivery, returns, and your account.
+            </p>
+
+            <div className="relative mx-auto mt-7 max-w-2xl text-left sm:mt-9">
+              <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search questions, orders, delivery..."
+                aria-label="Search frequently asked questions"
+                className="h-12 rounded-xl border-border bg-background pl-11 pr-11 text-sm shadow-sm placeholder:text-xs focus-visible:ring-1"
+              />
+              {searchTerm ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-10 md:mb-16">
-          {categoryNames.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 sm:px-6 md:px-8 h-10 md:h-11 rounded-md text-xs md:text-xs font-black uppercase tracking-[0.08em] md:tracking-widest transition-all ${
-                activeCategory === cat
-                  ? "bg-primary text-white shadow-lg shadow-teal-600/20"
-                  : "bg-white text-slate-500 border border-slate-200 hover:border-primary"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="max-w-3xl mx-auto space-y-3 md:space-y-4">
-          <AnimatePresence mode="popLayout">
-            {filteredFaqs.map((faq) => (
-              <FAQItem key={faq.id} faq={faq} />
-            ))}
-          </AnimatePresence>
-
-          {filteredFaqs.length === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 md:py-20">
-              <HelpCircle className="mx-auto w-12 h-12 text-slate-200 mb-4" />
-              <p className="text-slate-400 font-medium">No results found for your search.</p>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      <section className="container mt-8 md:mt-12">
-        <div className="bg-slate-900 rounded-md p-6 sm:p-10 md:p-12 text-center text-white relative overflow-hidden">
-          <div className="relative">
-            <h3 className="text-2xl md:text-3xl font-black mb-3 md:mb-4">Still have questions?</h3>
-            <p className="text-slate-400 mb-6 md:mb-8 max-w-md mx-auto text-sm md:text-base">
-              If you could not find what you were looking for, our team is ready to assist you personally.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-              <a
-                href="/contact"
-                className="bg-primary hover:bg-primary/80 text-white px-6 md:px-10 h-11 md:h-12 rounded-md font-black uppercase text-xs tracking-[0.08em] md:tracking-widest transition-all inline-flex items-center"
+      <section className="container mx-auto max-w-6xl px-4 py-8 sm:py-10">
+        <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
+          <aside aria-label="FAQ categories" className="min-w-0">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Browse by topic</h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+              <button
+                type="button"
+                onClick={() => setActiveCategory("all")}
+                aria-pressed={activeCategory === "all"}
+                className={`flex shrink-0 items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors lg:w-full ${
+                  activeCategory === "all"
+                    ? "border-primary/30 bg-primary/5 font-medium text-primary"
+                    : "border-transparent bg-background text-muted-foreground hover:border-border hover:text-foreground"
+                }`}
               >
-                Contact Support
+                <span className="flex items-center gap-2.5"><ShoppingBag className="size-4" /> All questions</span>
+                <span className="text-xs tabular-nums">{faqs.length}</span>
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setActiveCategory(category.id)}
+                  aria-pressed={activeCategory === category.id}
+                  className={`flex shrink-0 items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors lg:w-full ${
+                    activeCategory === category.id
+                      ? "border-primary/30 bg-primary/5 font-medium text-primary"
+                      : "border-transparent bg-background text-muted-foreground hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5"><CircleHelp className="size-4" /> {category.name}</span>
+                  <span className="text-xs tabular-nums">{category.items.length}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 hidden rounded-xl border bg-background p-4 lg:block">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <Mail className="size-4" />
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-foreground">Still need help?</h3>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">Our support team is happy to help with your order.</p>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
+                Email support <ArrowRight className="size-3.5" />
+              </a>
+            </div>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="mb-4 flex min-h-8 items-center justify-between gap-3">
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">
+                {activeCategory === "all"
+                  ? "Frequently asked questions"
+                  : categories.find((category) => category.id === activeCategory)?.name ?? "Frequently asked questions"}
+              </h2>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {filteredFaqs.length} {filteredFaqs.length === 1 ? "answer" : "answers"}
+              </span>
+            </div>
+
+            {filteredFaqs.length ? (
+              <div className="overflow-hidden rounded-xl border bg-background shadow-sm">
+                {filteredFaqs.map((faq, index) => (
+                  <FAQItem key={faq.id} faq={faq} isLast={index === filteredFaqs.length - 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed bg-background px-6 py-12 text-center">
+                <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <Search className="size-5" />
+                </span>
+                <h3 className="mt-4 text-sm font-semibold text-foreground">No answers found</h3>
+                <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">Try a different search or choose another topic.</p>
+                <button
+                  type="button"
+                  onClick={() => { setSearchTerm(""); setActiveCategory("all"); }}
+                  className="mt-4 text-sm font-medium text-primary hover:underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-xl border bg-background p-5 shadow-sm sm:p-6 lg:hidden">
+          <div className="flex items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Mail className="size-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold text-foreground">Still have a question?</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Our support team is happy to help with your order.</p>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                Contact support <ArrowRight className="size-4" />
               </a>
             </div>
           </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl -mr-20 -mt-20" />
         </div>
       </section>
-    </div>
+    </main>
   );
 };
 
-const FAQItem = ({ faq }: { faq: { question: string; answer: string } }) => {
-  const shouldReduceMotion = useReducedMotion();
+function FAQItem({ faq, isLast }: { faq: FaqRow; isLast: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const answerId = `faq-answer-${faq.id}`;
 
   return (
-    <motion.div
-      layout
-      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
-      className={`border rounded-md transition-all duration-300 ${isOpen ? "bg-white border-primary shadow-xl" : "bg-transparent border-slate-200"}`}
-    >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 md:px-8 py-4 md:py-6 min-h-11 flex items-center justify-between text-left"
-      >
-        <span className={`text-base md:text-lg font-bold tracking-tight ${isOpen ? "text-teal-900" : "text-slate-800"}`}>
-          {faq.question}
-        </span>
-        <div className={`flex-shrink-0 ml-3 md:ml-4 p-2 rounded-md transition-colors ${isOpen ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"}`}>
-          {isOpen ? <Minus size={18} /> : <Plus size={18} />}
+    <section className={!isLast ? "border-b" : undefined}>
+      <h3>
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls={answerId}
+          onClick={() => setIsOpen((open) => !open)}
+          className="flex min-h-14 w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-muted/30 sm:px-6"
+        >
+          <span className="text-sm font-medium leading-6 text-foreground sm:text-base">{faq.question}</span>
+          <span className={`flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-colors ${isOpen ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+            {isOpen ? "−" : "+"}
+          </span>
+        </button>
+      </h3>
+      {isOpen ? (
+        <div id={answerId} className="px-4 pb-5 sm:px-6 sm:pb-6">
+          <div className="border-l-2 border-primary/20 pl-4 text-sm leading-6 text-muted-foreground sm:pl-5 sm:text-[15px] sm:leading-7">
+            <RichTextContent html={faq.answer} />
+          </div>
         </div>
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={shouldReduceMotion ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={shouldReduceMotion ? { height: 0, opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 md:px-8 pb-5 md:pb-8 text-slate-500 leading-relaxed font-medium text-sm md:text-base border-t border-slate-50 pt-4">
-              <RichTextContent html={faq.answer} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      ) : null}
+    </section>
   );
-};
+}
 
 export default FAQPage;
