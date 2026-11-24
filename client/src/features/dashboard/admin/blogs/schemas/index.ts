@@ -1,18 +1,11 @@
 import { z } from "zod";
 
-export const slugSchema = z
-  .string()
-  .min(1, "Slug is required")
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug format");
-
 export const blogCategoryFormSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
-  slug: slugSchema,
+  name: z.string().trim().min(1, "Name is required").max(200),
 });
 
 export const blogFormSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200),
-  slug: slugSchema,
+  title: z.string().trim().min(1, "Title is required").max(200),
   excerpt: z.string().max(500).optional(),
   content: z.string().min(1, "Content is required").max(200000),
   featuredImage: z.string().optional(),

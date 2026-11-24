@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ import {
   type BlogCategoryFormValues,
 } from "@/features/dashboard/admin/blogs/schemas";
 import type { BlogCategoryFormDialogProps } from "@/features/dashboard/admin/blogs/types";
-import { blogCategoryFormDefaults, slugify } from "@/features/dashboard/admin/blogs/utils";
+import { blogCategoryFormDefaults } from "@/features/dashboard/admin/blogs/utils";
 
 const BLOG_CATEGORY_FORM_ID = "blog-category-form";
 
@@ -44,19 +45,17 @@ export function BlogCategoryDialog({
     defaultValues: blogCategoryFormDefaults(initialData),
   });
 
+  useEffect(() => {
+    if (open) form.reset(blogCategoryFormDefaults(initialData));
+  }, [form, initialData, open]);
+
   const mutation = useBlogCategoryFormMutation({
     mode,
     initialData,
     onSuccess: () => onOpenChange(false),
   });
 
-  const onSubmit = (values: BlogCategoryFormValues) => {
-    const payload = {
-      ...values,
-      slug: slugify(values.name),
-    };
-    mutation.mutate(payload);
-  };
+  const onSubmit = (values: BlogCategoryFormValues) => mutation.mutate(values);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -42,7 +42,6 @@ export function useBlogCategoryFormMutation({
     mutationFn: async (values: BlogCategoryFormValues) => {
       const body = {
         name: values.name.trim(),
-        slug: values.slug.trim(),
       };
       if (mode === "edit") {
         if (!initialData) throw new Error("Missing category");
@@ -102,7 +101,6 @@ export function useBlogFormMutation({
     mutationFn: async (values: BlogFormValues) => {
       const body = {
         title: values.title.trim(),
-        slug: values.slug.trim(),
         excerpt: values.excerpt?.trim() || undefined,
         content: values.content.trim(),
         featuredImage: values.featuredImage?.trim() || undefined,

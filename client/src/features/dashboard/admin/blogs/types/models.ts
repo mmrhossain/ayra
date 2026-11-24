@@ -60,12 +60,10 @@ export type BlogListParams = {
 
 export type CreateBlogCategoryBody = {
   name: string;
-  slug: string;
 };
 
 export type CreateBlogBody = {
   title: string;
-  slug: string;
   excerpt?: string;
   content: string;
   featuredImage?: string;
@@ -78,7 +76,6 @@ export type CreateBlogBody = {
 
 export type UpdateBlogBody = {
   title?: string;
-  slug?: string;
   excerpt?: string | null;
   content?: string;
   featuredImage?: string | null;

@@ -20,14 +20,12 @@ export function blogCategoryFormDefaults(
 ): BlogCategoryFormValues {
   return {
     name: initialData?.name ?? "",
-    slug: initialData?.slug ?? "",
   };
 }
 
 export function blogFormDefaults(initialData?: BlogListItem): BlogFormValues {
   return {
     title: initialData?.title ?? "",
-    slug: initialData?.slug ?? "",
     excerpt: initialData?.excerpt ?? "",
     content: initialData?.content ?? "",
     featuredImage: initialData?.featuredImage ?? "",

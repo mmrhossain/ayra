@@ -1,4 +1,5 @@
 import { dashboardApi } from "@/lib/api/dashboard";
+import { slugify } from "@/features/dashboard/admin/blogs/utils";
 import type {
   BlogCategoryListItem,
   BlogListItem,
@@ -39,7 +40,7 @@ export async function createBlogCategory(
 ): Promise<BlogCategoryListItem> {
   const res = await dashboardApi.post<Envelope<BlogCategoryListItem>>(
     "/admin/blog-categories",
-    { body },
+    { body: { ...body, slug: slugify(body.name) } },
   );
   return res.data;
 }
@@ -77,7 +78,7 @@ export async function fetchBlogList(
 
 export async function createBlog(body: CreateBlogBody): Promise<BlogListItem> {
   const res = await dashboardApi.post<Envelope<BlogListItem>>("/admin/blogs", {
-    body,
+    body: { ...body, slug: slugify(body.title) },
   });
   return res.data;
 }

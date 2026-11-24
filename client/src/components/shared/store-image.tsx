@@ -1,3 +1,4 @@
+"use client";
 import { cloudinaryLoader, isCloudinaryUrl } from "@/helpers/cloudinary";
 import Image, { type ImageProps } from "next/image";
 

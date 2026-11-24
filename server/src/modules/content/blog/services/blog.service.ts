@@ -90,7 +90,7 @@ export const getPublicBlogBySlug = async (slug: string) => {
 
 export const listBlogCategories = async () => {
   const categories = await prisma.blogCategory.findMany({
-    orderBy: { name: "asc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     include: { _count: { select: { blogs: { where: { deletedAt: null } } } } },
   });
 

@@ -1,13 +1,11 @@
-import StoreImage from "@/components/shared/store-image";
 import { RichTextContent } from "@/components/shared/rich-text-content";
+import StoreImage from "@/components/shared/store-image";
 import type { PublicBlogPost } from "@/features/content/types";
 
 const PLACEHOLDER = "/images/placeholder/placeholder.png";
 
 const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
-  const dateLabel = blog.publishedAt
-    ? new Date(blog.publishedAt).toLocaleDateString()
-    : null;
+  const dateLabel = blog.publishedAt ? new Date(blog.publishedAt).toLocaleDateString() : null;
   const categoryName = blog.category?.name;
 
   return (
@@ -35,9 +33,7 @@ const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
                       <span className="font-semibold text-slate-800 uppercase tracking-wider">
                         In:
                       </span>
-                      <span className="text-primary ml-1 font-medium">
-                        {categoryName}
-                      </span>
+                      <span className="text-primary ml-1 font-medium">{categoryName}</span>
                     </p>
                   </>
                 ) : null}
@@ -50,7 +46,7 @@ const BlogDetails = ({ blog }: { blog: PublicBlogPost }) => {
                 alt={blog.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-contain"
+                className="object-cover"
                 priority
               />
             </div>
