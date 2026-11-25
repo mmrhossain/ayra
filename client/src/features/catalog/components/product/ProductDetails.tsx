@@ -309,13 +309,13 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Store benefits">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2" aria-label="Store benefits">
               {features.slice(0, 2).map(({ id, title, description, icon: Icon }) => (
                 <div key={id} className="flex min-w-0 items-start gap-2 border border-border-color p-2.5">
                   <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold leading-tight text-foreground">{title}</p>
-                    <p className="mt-1 text-[11px] leading-snug text-sky-color">{description}</p>
+                    <p className="break-words text-xs font-semibold leading-tight text-foreground">{title}</p>
+                    <p className="mt-1 break-words text-[11px] leading-snug text-sky-color">{description}</p>
                   </div>
                 </div>
               ))}
