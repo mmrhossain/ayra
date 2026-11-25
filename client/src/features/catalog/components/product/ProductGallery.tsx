@@ -7,8 +7,8 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import type { GalleryImage } from "@/features/catalog/types";
 import { productDetailsLayout } from "@/features/catalog/components/product/product-details-layout";
+import type { GalleryImage } from "@/features/catalog/types";
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
@@ -68,7 +68,12 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
   return (
     <div className="w-full min-w-0">
       <div className={productDetailsLayout.gallery}>
-        <div className={cn(productDetailsLayout.thumbnailRail, "scrollbar-hide overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto")}>
+        <div
+          className={cn(
+            productDetailsLayout.thumbnailRail,
+            "scrollbar-hide overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto"
+          )}
+        >
           {list.map((image, index) => (
             <button
               key={`thumb-${image.id ?? index}`}
@@ -97,7 +102,11 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
 
         {/* মেইন কারূসল ইমেজ */}
         <div className="relative min-w-0 flex-1">
-          <Carousel setApi={setApi} className="w-full" opts={{ align: "start", loop: true }}>
+          <Carousel
+            setApi={setApi}
+            className="w-full aspect-square"
+            opts={{ align: "start", loop: true }}
+          >
             <CarouselContent>
               {list.map((image, index) => (
                 <CarouselItem key={image.id ?? index}>
@@ -120,7 +129,10 @@ const ProductGallery: React.FC<{ images: GalleryImage[] }> = ({ images }) => {
                     onPointerLeave={() => setMagnifier(null)}
                     onPointerDown={() => setMagnifier(null)}
                     onPointerCancel={() => setMagnifier(null)}
-                    className={cn(productDetailsLayout.galleryImage, "relative mx-auto overflow-hidden bg-gray-50 shadow-sm dark:bg-zinc-900")}
+                    className={cn(
+                      productDetailsLayout.galleryImage,
+                      "relative mx-auto overflow-hidden bg-gray-50 shadow-sm dark:bg-zinc-900"
+                    )}
                   >
                     <StoreImage
                       src={resolveSrc(image)}

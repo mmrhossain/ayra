@@ -13,20 +13,10 @@ import { errorToast, successToast } from "@/helpers/index";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { features } from "@/constants/features";
 import { ChevronDown, Heart, Share2 } from "lucide-react";
 import { Popover } from "radix-ui";
 import React, { useRef, useState } from "react";
-
-function excerptFromHtml(html: string | null | undefined, max = 220): string {
-  const text = (html ?? "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!text) return "";
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).replace(/\s+\S*$/, "")}…`;
-}
 
 const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
   const {
@@ -56,7 +46,6 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
   const missingAttributes = attributeGroups.filter(group => !selectedValues[group.attributeId]);
   const sku = selected?.sku || product.sku || "";
   const brandName = product.brand?.name;
-  const descriptionExcerpt = excerptFromHtml(product.description);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -129,7 +118,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               {product.name}
             </h1>
 
-            <div className="mt-3 flex min-h-8 flex-wrap items-center gap-2 sm:mt-4 sm:min-h-9 sm:gap-3">
+            <div className="mt-2 flex min-h-8 flex-wrap items-center gap-2 sm:mt-3 sm:min-h-9 sm:gap-3">
               {active && price > 0 ? (
                 <>
                   <span className="text-lg font-normal tabular-nums tracking-tight text-foreground">
@@ -159,7 +148,7 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
               )}
             </div>
 
-            <dl className="mt-4 grid min-h-[3.25rem] grid-cols-2 gap-x-4 gap-y-2 text-sm sm:mt-5">
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:mt-4">
               <div>
                 <dt className="text-xs uppercase tracking-wide text-sky-color">SKU</dt>
                 <dd className="mt-0.5 min-h-5 font-medium text-foreground">{sku || "—"}</dd>
@@ -182,12 +171,6 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                 </dd>
               </div>
             </dl>
-
-            {!hasAttributes && descriptionExcerpt ? (
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-sky-color sm:mt-5 sm:text-base">
-                {descriptionExcerpt}
-              </p>
-            ) : null}
 
             <div className={productDetailsLayout.controls}>
               <div className={productDetailsLayout.quantity}>
@@ -324,6 +307,18 @@ const ProductDetails: React.FC<{ product: ProductDetail }> = ({ product }) => {
                >
                 <Share2 size={20} />
               </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Store benefits">
+              {features.slice(0, 2).map(({ id, title, description, icon: Icon }) => (
+                <div key={id} className="flex min-w-0 items-start gap-2 border border-border-color p-2.5">
+                  <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold leading-tight text-foreground">{title}</p>
+                    <p className="mt-1 text-[11px] leading-snug text-sky-color">{description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

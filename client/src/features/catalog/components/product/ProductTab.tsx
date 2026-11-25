@@ -3,7 +3,6 @@
 import { RichTextContent } from "@/components/shared/rich-text-content";
 import type { ProductDetail } from "@/features/catalog/api";
 import ReviewTab from "@/features/reviews/components/ReviewTab";
-import { usePublicSettings } from "@/features/settings/public-settings-provider";
 import { formatPrice } from "@/helpers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -17,7 +16,6 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const ProductTabs = ({ product }: { product: ProductDetail }) => {
-  const { store } = usePublicSettings();
   const [activeTab, setActiveTab] = useState<TabId>("description");
   const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
   const price = Number(defaultVariant?.price ?? 0);
@@ -27,11 +25,11 @@ const ProductTabs = ({ product }: { product: ProductDetail }) => {
     { label: "Price", value: price ? formatPrice(price) : "—" },
     { label: "SKU", value: defaultVariant?.sku || product.sku || "—" },
     { label: "Category", value: product.category?.name || "—" },
-    { label: "Brand", value: product.brand?.name || store.name },
+    ...(product.brand?.name ? [{ label: "Brand", value: product.brand.name }] : []),
   ];
 
   return (
-    <div className="container storefront-section-start mx-auto max-w-6xl xl:max-w-7xl">
+    <div className="container storefront-section-start mx-auto max-w-6xl">
       <div className="relative flex items-stretch border-b border-border-color">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;

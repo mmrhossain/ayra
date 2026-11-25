@@ -13,7 +13,7 @@ const SocialContact = dynamic(
 
 export default function StorefrontDeferredWidgets() {
   const pathname = usePathname();
-  const hidden = pathname.startsWith("/checkout") || pathname.startsWith("/cart");
+  const hidden = pathname !== "/";
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
