@@ -11,8 +11,13 @@ import {
   flattenCategories,
 } from "@/features/dashboard/admin/categories/api/categories";
 import { fetchBrands } from "@/features/catalog/api";
+import { authClient } from "@/lib/api/auth/auth-client";
+import { hasAdminPermission } from "@/lib/admin-permissions";
 
 export function useProductWizardOptions() {
+  const { data: session } = authClient.useSession();
+  const canManageInventory = hasAdminPermission(session?.user ?? {}, "inventory");
+
   const categoriesQuery = useQuery({
     queryKey: ["admin-categories", "options"],
     queryFn: () => fetchCategoryList(),
@@ -29,9 +34,10 @@ export function useProductWizardOptions() {
     staleTime: 60_000,
   });
   const warehousesQuery = useQuery({
-    queryKey: ["admin-warehouses", "options", "active"],
+    queryKey: ["admin-warehouses", "options", "active", canManageInventory],
     queryFn: () => fetchWarehouseList({ page: 1, limit: 100, isActive: true }),
     staleTime: 60_000,
+    enabled: canManageInventory,
   });
 
   const categories = flattenCategories(categoriesQuery.data ?? []);
@@ -42,5 +48,6 @@ export function useProductWizardOptions() {
     attributesQuery,
     warehousesQuery,
     categories,
+    canManageInventory,
   };
 }

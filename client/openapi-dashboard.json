@@ -22066,10 +22066,11 @@
                         "analytics",
                         "settings",
                         "audit",
+                        "notifications",
                         "staff"
                       ]
                     },
-                    "maxItems": 11,
+                    "maxItems": 12,
                     "default": []
                   },
                   "isSuperAdmin": {
@@ -22388,10 +22389,11 @@
                         "analytics",
                         "settings",
                         "audit",
+                        "notifications",
                         "staff"
                       ]
                     },
-                    "maxItems": 11
+                    "maxItems": 12
                   },
                   "actions": {
                     "type": "array",

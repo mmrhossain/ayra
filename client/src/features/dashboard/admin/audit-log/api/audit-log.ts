@@ -21,6 +21,8 @@ export type {
 } from "@/features/dashboard/admin/audit-log/types/models";
 
 export {
+  auditDateToIsoEnd,
+  auditDateToIsoStart,
   formatAuditActor,
   formatAuditDuration,
   formatAuditEntity,

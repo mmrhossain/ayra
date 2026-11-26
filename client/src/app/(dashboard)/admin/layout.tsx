@@ -1,6 +1,5 @@
 import { DashboardShell } from "@/features/dashboard/admin/shared/components/dashboard-shell";
 import { fetchPublicSettingsOrDefault } from "@/features/settings/server";
-import { getFirstPermittedAdminHref } from "@/lib/admin-navigation";
 import { requireRole, toAdminAccess } from "@/lib/api/auth/server";
 import {
   SIDEBAR_COOKIE_NAME,
@@ -29,7 +28,7 @@ export default async function AdminAreaLayout({
   const defaultOpen = parseSidebarOpen(
     cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
   );
-  const homeHref = getFirstPermittedAdminHref(access) ?? "/unauthorized";
+  const homeHref = "/admin/welcome";
 
   return (
     <DashboardShell

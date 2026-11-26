@@ -27,7 +27,7 @@ function statusVariant(statusCode: number) {
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-2 text-sm">
+    <div className="grid grid-cols-[6rem_minmax(0,1fr)] gap-3 py-2 text-sm sm:grid-cols-[7.5rem_minmax(0,1fr)]">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="min-w-0 break-words">{children}</dd>
     </div>
@@ -92,7 +92,7 @@ export function AuditLogDetailSheet({
 
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Metadata</h3>
-              <pre className="max-h-80 overflow-auto rounded-xl border bg-muted/40 p-3 text-xs">
+              <pre className="max-h-80 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-xl border bg-muted/40 p-3 text-xs">
                 {formatAuditMetadata(item.metadata)}
               </pre>
             </div>

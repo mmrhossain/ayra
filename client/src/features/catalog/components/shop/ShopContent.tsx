@@ -4,8 +4,8 @@ import {
   parseCategoriesParam,
   type ProductSort,
 } from "@/features/catalog/api";
-import ProductNotFound from "@/features/catalog/components/product/ProductNotFound";
 import ProductGrid from "@/features/catalog/components/product/ProductGrid";
+import EmptyState from "@/components/shared/EmptyState";
 import CursorProductList from "@/features/catalog/components/shop/CursorProductList";
 import Pagination from "@/features/catalog/components/shop/Pagination";
 import { notFound } from "next/navigation";
@@ -134,7 +134,12 @@ export default async function ShopContent({
           )}
         </div>
       ) : (
-        <ProductNotFound />
+        <EmptyState
+          title="No products found"
+          description="Try adjusting your search or filters, or browse all available products."
+          actionLabel="Browse all products"
+          actionHref="/shop"
+        />
       )}
 
       {pagination && hasProducts && page !== undefined ? (

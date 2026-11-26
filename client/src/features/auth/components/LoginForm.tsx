@@ -73,8 +73,7 @@ const LoginForm: React.FC = () => {
       const dashboard = staffDashboardPath(role);
 
       if (dashboard) {
-        const intended = safeRedirectPath(redirect);
-        router.push(intended.startsWith("/admin") ? intended : dashboard);
+        router.push(dashboard);
         return;
       }
 

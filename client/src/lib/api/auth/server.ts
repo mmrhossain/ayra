@@ -140,7 +140,7 @@ export async function redirectStaffFromStorefront(): Promise<UserSession> {
 
 /**
  * Sends an already signed-in visitor away from an auth page (login/register).
- * Admins land on their dashboard; customers keep the originally intended
+ * Admins land on the staff welcome page; customers keep the originally intended
  * destination. Resolved server-side so admins never bounce through the
  * storefront root first.
  */
@@ -156,7 +156,7 @@ export async function redirectSignedInFromAuthPage(
   const intended = safeRedirectPath(rawRedirect);
 
   if (role === "ADMIN") {
-    redirect(intended.startsWith("/admin") ? intended : "/admin");
+    redirect("/admin/welcome");
   }
 
   redirect(intended.startsWith("/admin") ? "/" : intended);

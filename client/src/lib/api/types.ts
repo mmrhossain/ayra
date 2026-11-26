@@ -14597,7 +14597,7 @@ export type paths = {
                         email: string;
                         name: string;
                         /** @default [] */
-                        permissions?: ("catalog" | "inventory" | "orders" | "customers" | "content" | "marketing" | "shipping" | "analytics" | "settings" | "audit" | "staff")[];
+                        permissions?: ("catalog" | "inventory" | "orders" | "customers" | "content" | "marketing" | "shipping" | "analytics" | "settings" | "audit" | "notifications" | "staff")[];
                         /** @default false */
                         isSuperAdmin?: boolean;
                     };
@@ -14846,7 +14846,7 @@ export type paths = {
             requestBody?: {
                 content: {
                     "application/json": {
-                        permissions: ("catalog" | "inventory" | "orders" | "customers" | "content" | "marketing" | "shipping" | "analytics" | "settings" | "audit" | "staff")[];
+                        permissions: ("catalog" | "inventory" | "orders" | "customers" | "content" | "marketing" | "shipping" | "analytics" | "settings" | "audit" | "notifications" | "staff")[];
                         actions?: ("customers:read" | "customers:manage" | "refunds:read" | "refunds:create" | "refunds:approve" | "inventory:adjust" | "inventory:approve" | "settings:read" | "settings:write" | "settings:secrets" | "staff:read" | "staff:manage" | "audit:read")[];
                         isSuperAdmin?: boolean;
                     };

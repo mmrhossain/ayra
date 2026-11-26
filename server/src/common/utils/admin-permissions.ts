@@ -16,6 +16,7 @@ export const ADMIN_PERMISSIONS = [
   "analytics",
   "settings",
   "audit",
+  "notifications",
   "staff",
 ] as const;
 
@@ -107,6 +108,7 @@ const PATH_PERMISSIONS: Record<string, AdminPermission> = {
   analytics: "analytics",
   shipping: "shipping",
   "audit-log": "audit",
+  notifications: "notifications",
   staff: "staff",
 };
 

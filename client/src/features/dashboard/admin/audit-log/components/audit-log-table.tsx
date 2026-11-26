@@ -24,6 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  auditDateToIsoEnd,
+  auditDateToIsoStart,
   downloadAuditLogCsv,
   formatAuditActor,
   formatAuditDuration,
@@ -44,7 +46,6 @@ import type {
   AuditLogOutcome,
   AuditLogSource,
 } from "@/features/dashboard/admin/audit-log/types/models";
-import { dateToIsoEnd, dateToIsoStart } from "@/lib/format";
 
 const METHODS: AuditLogMethod[] = ["POST", "PUT", "PATCH", "DELETE"];
 const SOURCES: AuditLogSource[] = ["APP", "STAFF", "AUTH", "SYSTEM"];
@@ -90,8 +91,8 @@ export function AuditLogTable({
       method,
       source,
       outcome,
-      from: dateToIsoStart(fromDate) ?? "",
-      to: dateToIsoEnd(toDate) ?? "",
+      from: auditDateToIsoStart(fromDate) ?? "",
+      to: auditDateToIsoEnd(toDate) ?? "",
     }) satisfies AuditLogFilters;
 
   const filterKey = JSON.stringify(filters);
@@ -152,10 +153,37 @@ export function AuditLogTable({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="space-y-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative w-full lg:max-w-sm">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <p className="text-sm whitespace-nowrap text-muted-foreground">
+              {pagination.total} entries
+            </p>
+            {hasFilters ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+              >
+                Clear
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={isExporting}
+            >
+              <Download className="size-4" />
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </Button>
+          </div>
+          <div className="min-w-0 flex-1 overflow-x-auto pb-1">
+            <div className="flex w-max min-w-full items-center gap-2">
+          <div className="relative w-64 shrink-0">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
@@ -165,7 +193,7 @@ export function AuditLogTable({
               className="pl-9"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <Select
               value={method || "__all__"}
               onValueChange={(value) =>
@@ -233,69 +261,43 @@ export function AuditLogTable({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2 lg:ml-auto">
-            <p className="text-sm whitespace-nowrap text-muted-foreground">
-              {pagination.total} entries
-            </p>
-            {hasFilters ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={resetFilters}
-              >
-                Clear
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              disabled={isExporting}
-            >
-              <Download className="size-4" />
-              {isExporting ? "Exporting..." : "Export CSV"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           <Input
             value={actorEmail}
             onChange={(event) => setActorEmail(event.target.value)}
             placeholder="Actor email"
             aria-label="Filter audit logs by actor email"
-            className="h-9"
+            className="h-9 w-40 shrink-0"
           />
           <Input
             value={action}
             onChange={(event) => setAction(event.target.value)}
             placeholder="Action"
             aria-label="Filter audit logs by action"
-            className="h-9"
+            className="h-9 w-36 shrink-0"
           />
           <Input
             value={entityType}
             onChange={(event) => setEntityType(event.target.value)}
             placeholder="Entity type"
             aria-label="Filter audit logs by entity type"
-            className="h-9"
+            className="h-9 w-36 shrink-0"
           />
           <Input
             type="date"
             value={fromDate}
             onChange={(event) => setFromDate(event.target.value)}
             aria-label="From date"
-            className="h-9"
+            className="h-9 w-40 shrink-0"
           />
           <Input
             type="date"
             value={toDate}
             onChange={(event) => setToDate(event.target.value)}
             aria-label="To date"
-            className="h-9"
+            className="h-9 w-40 shrink-0"
           />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -305,7 +307,7 @@ export function AuditLogTable({
         </div>
       ) : null}
 
-      <div className="rounded-xl border">
+      <div className="hidden min-w-0 rounded-xl border lg:block">
         {query.isFetching && !query.isFetched && items.length === 0 ? (
           <div className="space-y-2 p-4">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -313,10 +315,10 @@ export function AuditLogTable({
             ))}
           </div>
         ) : (
-          <Table>
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Time</TableHead>
+                <TableHead>Date &amp; Time</TableHead>
                 <TableHead>Actor</TableHead>
                 <TableHead>Action</TableHead>
                 <TableHead>Entity</TableHead>
@@ -408,24 +410,96 @@ export function AuditLogTable({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="space-y-3 lg:hidden">
+        {query.isFetching && !query.isFetched && items.length === 0 ? (
+          Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="space-y-3 rounded-xl border p-4">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ))
+        ) : items.length === 0 ? (
+          <div className="rounded-xl border p-6 text-center text-sm text-muted-foreground">
+            No audit log entries found.
+          </div>
+        ) : (
+          items.map((item) => (
+            <article key={item.id} className="min-w-0 space-y-3 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{formatAuditTimestamp(item.createdAt)}</p>
+                  <p className="mt-1 break-words text-sm font-semibold">{formatAuditActor(item)}</p>
+                  {item.actorRole ? <p className="text-xs text-muted-foreground">{item.actorRole}</p> : null}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => setSelected(item)}
+                  aria-label={`View audit entry ${item.id}`}
+                >
+                  View
+                </Button>
+              </div>
+
+              <div className="min-w-0 space-y-1 border-t pt-3">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="w-fit shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs font-semibold">
+                    {item.method}
+                  </span>
+                  <span className="min-w-0 break-words text-sm font-medium">{item.action ?? "-"}</span>
+                </div>
+                <p className="break-all font-mono text-xs text-muted-foreground">{item.path}</p>
+              </div>
+
+              <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-3 border-t pt-3 text-sm">
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Entity</p>
+                  <p className="mt-1 break-words">{formatAuditEntity(item)}</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    <StatusBadge variant={statusVariant(item.statusCode)}>{item.statusCode}</StatusBadge>
+                    {item.outcome === "FAILURE" ? <StatusBadge variant="danger">FAILED</StatusBadge> : null}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Duration</p>
+                  <p className="mt-1 tabular-nums">{formatAuditDuration(item.durationMs)}</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Source</p>
+                  <p className="mt-1 break-words">{item.source}</p>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Page {pagination.page} of {Math.max(pagination.totalPages, 1)}
         </p>
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="flex-1 sm:flex-none"
             disabled={page <= 1 || query.isFetching}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
           >
-            Previous
+            <span className="sm:inline">Previous</span>
           </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="flex-1 sm:flex-none"
             disabled={page >= pagination.totalPages || query.isFetching}
             onClick={() =>
               setPage((current) =>
@@ -433,7 +507,7 @@ export function AuditLogTable({
               )
             }
           >
-            Next
+            <span className="sm:inline">Next</span>
           </Button>
         </div>
       </div>

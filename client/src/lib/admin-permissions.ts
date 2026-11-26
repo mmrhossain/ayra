@@ -9,6 +9,7 @@ export const ADMIN_PERMISSIONS = [
   "analytics",
   "settings",
   "audit",
+  "notifications",
   "staff",
 ] as const;
 
@@ -25,6 +26,7 @@ export const ADMIN_PERMISSION_LABELS: Record<AdminPermission, string> = {
   analytics: "Analytics",
   settings: "Settings",
   audit: "Audit log",
+  notifications: "Notifications",
   staff: "Staff",
 };
 

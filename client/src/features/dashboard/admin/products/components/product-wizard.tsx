@@ -140,8 +140,16 @@ export function ProductWizard({
     defaultValues: detailsFromProduct(product),
   });
 
-  const { categoriesQuery, brandsQuery, attributesQuery, warehousesQuery, categories } =
+  const {
+    categoriesQuery,
+    brandsQuery,
+    attributesQuery,
+    warehousesQuery,
+    categories,
+    canManageInventory,
+  } =
     useProductWizardOptions();
+  const maxStep = mode === "edit" && canManageInventory ? 3 : 2;
 
   // React Compiler Safe: form.watch() এর জায়গায় useWatch হুক ব্যবহার করা হয়েছে
   const nameValue = useWatch({
@@ -320,7 +328,7 @@ export function ProductWizard({
         requestAnimationFrame(focusFirstInvalid);
         return;
       }
-      if (mode === "edit") setStep(3);
+      if (mode === "edit" && canManageInventory) setStep(3);
     }
   };
 
@@ -349,7 +357,7 @@ export function ProductWizard({
       </div>
 
       <ol className="flex flex-wrap gap-2 overflow-x-auto" aria-label="Wizard steps">
-        {STEPS.filter((item) => mode === "edit" || item.id !== 3).map((item) => {
+        {STEPS.filter((item) => item.id !== 3 || (mode === "edit" && canManageInventory)).map((item) => {
           const active = step === item.id;
           const done = step > item.id;
           return (
@@ -407,7 +415,7 @@ export function ProductWizard({
               onRowsChange={setRowsDirty}
             />
           ) : null}
-          {mode === "edit" && step === 3 ? (
+          {mode === "edit" && canManageInventory && step === 3 ? (
             <ProductWizardStock
               rows={rows}
               onRowsChange={(next) => {
@@ -456,7 +464,7 @@ export function ProductWizard({
               )}
             </Button>
           ) : null}
-          {step < (mode === "edit" ? 3 : 2) ? (
+          {step < maxStep ? (
             <Button
               type="button"
               variant="default"

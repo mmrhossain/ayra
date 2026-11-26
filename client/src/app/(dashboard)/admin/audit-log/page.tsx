@@ -23,7 +23,7 @@ export default async function AdminAuditLogPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="min-w-0 space-y-6">
       <PageHeader
         title="Audit log"
         description="Write actions performed by staff in the admin dashboard."

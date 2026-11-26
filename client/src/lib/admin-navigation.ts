@@ -1,5 +1,6 @@
 import {
   Building2,
+  Bell,
   CircleHelp,
   CreditCard,
   FolderTree,
@@ -219,6 +220,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     id: "system",
     label: "System",
     items: [
+      {
+        href: "/admin/notifications",
+        label: "Notifications",
+        icon: Bell,
+        permission: "notifications",
+      },
       {
         href: "/admin/staff",
         label: "Staff",

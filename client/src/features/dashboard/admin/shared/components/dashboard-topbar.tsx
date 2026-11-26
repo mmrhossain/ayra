@@ -21,6 +21,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { successToast } from "@/helpers";
 import { authClient } from "@/lib/api/auth/auth-client";
+import { hasAdminPermission } from "@/lib/admin-permissions";
 
 // Hydration Mismatch ও useEffect-এর setState এরর ছাড়া mounted ট্র্যাক করার নিয়ম
 const emptySubscribe = () => () => {};
@@ -40,6 +41,7 @@ export function DashboardTopbar() {
 
   const { data } = authClient.useSession();
   const user = data?.user;
+  const canViewNotifications = hasAdminPermission(user ?? {}, "notifications");
 
   const [passwordOpen, setPasswordOpen] = React.useState(false);
 
@@ -61,7 +63,9 @@ export function DashboardTopbar() {
       <SidebarTrigger className="size-8" aria-label="Toggle sidebar" />
       <Separator orientation="vertical" className="h-6" />
       <div className="ml-auto flex min-w-0 items-center gap-2">
-        <NotificationBell viewAllHref="/admin/notifications" />
+        {canViewNotifications ? (
+          <NotificationBell viewAllHref="/admin/notifications" />
+        ) : null}
         <Button
           type="button"
           variant="outline"

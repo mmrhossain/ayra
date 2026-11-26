@@ -10,7 +10,35 @@ export function toAuditLogErrorMessage(err: unknown): string {
 export function formatAuditTimestamp(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const formatted = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Dhaka",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).format(date);
+  return formatted;
+}
+
+function auditDateBoundary(value: string, end: boolean): string | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return undefined;
+
+  const [, year, month, day] = match;
+  const nextDay = Number(day) + (end ? 1 : 0);
+  const timestamp = Date.UTC(Number(year), Number(month) - 1, nextDay, -6, 0, 0, 0) - (end ? 1 : 0);
+  return new Date(timestamp).toISOString();
+}
+
+export function auditDateToIsoStart(value: string): string | undefined {
+  return auditDateBoundary(value, false);
+}
+
+export function auditDateToIsoEnd(value: string): string | undefined {
+  return auditDateBoundary(value, true);
 }
 
 export function formatAuditDuration(value: number | null): string {

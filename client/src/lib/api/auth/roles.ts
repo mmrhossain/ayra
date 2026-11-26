@@ -15,7 +15,7 @@ export function isStaffRole(role: string | null | undefined): boolean {
 
 export function staffDashboardPath(role: string | null | undefined): string | null {
   const normalized = normalizeRole(role);
-  if (normalized === "ADMIN") return "/admin";
+  if (normalized === "ADMIN") return "/admin/welcome";
   return null;
 }
 
