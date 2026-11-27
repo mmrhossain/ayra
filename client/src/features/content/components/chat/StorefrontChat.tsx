@@ -8,6 +8,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { useStorefrontChat } from "./use-storefront-chat";
+import StoreImage from "@/components/shared/store-image";
+import { formatPrice } from "@/lib/format";
 
 const HIDDEN_ROUTES = ["/checkout", "/cart"];
 
@@ -78,6 +80,7 @@ export default function StorefrontChat() {
   return (
     <div
       data-storefront-chat
+      data-chat-open={open}
       className={`fixed right-4 z-40 md:right-6 bottom-[calc(var(--bottom-nav-space)_+_var(--sticky-cart-space)_+_5rem)] lg:bottom-24 transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
       }`}
@@ -87,9 +90,9 @@ export default function StorefrontChat() {
           role="dialog"
           aria-modal="false"
           aria-labelledby={titleId}
-          className="mb-3 flex h-[min(28rem,calc(100dvh-var(--bottom-nav-space)-var(--sticky-cart-space)-10rem))] w-[min(calc(100vw-2rem),24rem)] flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
+          className="mb-3 flex h-[min(28rem,calc(100dvh-var(--bottom-nav-space)-var(--sticky-cart-space)-10rem))] w-[min(calc(100vw-2rem),24rem)] flex-col overflow-hidden rounded-md border border-border bg-white shadow-2xl"
         >
-          <div className="flex items-center justify-between gap-3 border-b border-border bg-slate-900 px-4 py-3 text-white">
+          <div className="flex items-center justify-between gap-3 border-b border-primary/20 bg-primary/10 px-4 py-3 text-foreground">
             <p id={titleId} className="text-sm font-semibold">
               Ask {store.name}
             </p>
@@ -97,7 +100,7 @@ export default function StorefrontChat() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close chat"
-              className="flex size-11 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex size-11 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-900/10 hover:text-slate-900"
             >
               <X size={18} />
             </button>
@@ -114,13 +117,48 @@ export default function StorefrontChat() {
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                  className={`${message.products?.length ? "max-w-[94%]" : "max-w-[85%]"} rounded-md px-3 py-2 text-sm leading-relaxed ${
                     message.role === "user"
-                      ? "bg-slate-900 text-white"
+                      ? "bg-primary/10 text-foreground"
                       : "bg-white text-slate-800 shadow-sm"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.text}</p>
+                  {message.text && !message.products?.length ? (
+                    <p className="whitespace-pre-wrap">{message.text}</p>
+                  ) : null}
+                  {message.products?.length ? (
+                    <div className="mt-2 space-y-2">
+                      {message.products.map((product) => (
+                        <Link
+                          key={product.id}
+                          href={`/product-details/${encodeURIComponent(product.slug)}`}
+                          className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-white p-2 text-slate-800 transition-colors hover:border-primary"
+                        >
+                          <div className="relative size-14 shrink-0 overflow-hidden rounded-md bg-slate-100">
+                            {product.imageUrl ? (
+                              <StoreImage
+                                src={product.imageUrl}
+                                alt={product.name}
+                                fill
+                                sizes="56px"
+                                className="object-contain"
+                              />
+                            ) : (
+                              <div className="flex size-full items-center justify-center text-[10px] text-slate-400">
+                                No image
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-xs font-medium leading-snug">{product.name}</p>
+                            {product.price !== null ? (
+                              <p className="mt-1 text-xs font-semibold text-primary">{formatPrice(product.price)}</p>
+                            ) : null}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
                   {message.loginCta ? (
                     <Link
                       href={loginHref}
@@ -134,7 +172,7 @@ export default function StorefrontChat() {
             ))}
             {sending ? (
               <div className="flex justify-start">
-                <div className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm text-slate-500 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-slate-500 shadow-sm">
                   <Loader2 size={14} className="animate-spin" />
                   Thinking…
                 </div>
@@ -166,36 +204,38 @@ export default function StorefrontChat() {
                 }
               }}
               placeholder="Ask about products…"
-              className="max-h-24 min-h-11 flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2.5 text-base text-slate-800 placeholder:text-muted-foreground placeholder:text-xs outline-none focus-visible:ring-0"
+              className="max-h-24 min-h-11 flex-1 resize-none rounded-md border border-border bg-white px-3 py-2.5 text-base text-slate-800 placeholder:text-muted-foreground placeholder:text-xs outline-none focus-visible:ring-0"
             />
             <button
               type="submit"
               disabled={!canSend}
               aria-label="Send message"
-              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white transition-opacity hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              <Send size={16} />
             </button>
           </form>
         </div>
       ) : null}
 
-      <div className="group relative flex justify-end">
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          aria-label={open ? "Close chat" : "Ask us"}
-          aria-expanded={open}
-          className="relative flex size-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-slate-800 active:scale-95"
-        >
-          {open ? <X size={22} /> : <MessageCircle size={22} />}
-        </button>
-        {!open ? (
-          <span className="pointer-events-none absolute right-16 top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white opacity-0 shadow-md transition-opacity duration-300 group-hover:opacity-100 md:block">
+      {open ? (
+        <div className="h-11" aria-hidden="true" />
+      ) : (
+        <div className="group relative flex justify-end">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Ask us"
+            aria-expanded={false}
+            className="relative flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-110 hover:bg-primary/90 active:scale-95"
+          >
+            <MessageCircle size={20} />
+          </button>
+          <span className="pointer-events-none absolute right-16 top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground opacity-0 shadow-md transition-opacity duration-300 group-hover:opacity-100 md:block">
             Ask us
           </span>
-        ) : null}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

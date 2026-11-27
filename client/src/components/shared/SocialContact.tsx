@@ -64,7 +64,7 @@ export default function SocialContact() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
-        className="relative flex items-center justify-center w-14 h-14 rounded-full bg-green-600 hover:bg-green-700 text-white text-2xl shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+        className="relative flex size-11 items-center justify-center rounded-full bg-green-600 text-xl text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-green-700 active:scale-95"
       >
         <FaWhatsapp />
       </a>

@@ -30,13 +30,13 @@ export default function AuthCard({
   backHref?: string;
 }) {
   return (
-    <div className="flex min-h-dvh w-full min-w-0 items-start justify-center overflow-x-hidden px-4 py-6 sm:items-center sm:px-6 sm:py-10 md:py-16">
+    <div className="flex min-h-dvh w-full min-w-0 items-start justify-center overflow-x-hidden px-4 py-6 sm:items-center sm:px-6 sm:py-8 md:py-8">
       <div className="w-full max-w-[min(100%,26.25rem)] min-w-0 rounded-md border border-gray-100 bg-white p-4 shadow-md shadow-gray-100/50 xs:p-6 md:p-8">
         {showBack ? (
-          <div className="mb-4 sm:mb-5">
+          <div>
             <Link
               href={backHref}
-              className="inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-primary"
+              className="inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-primary"
             >
               <ArrowLeft size={16} />
               <span>Back</span>

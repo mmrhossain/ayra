@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { submitContactMessage } from "@/features/content/api";
 import { ContactFormData, contactFormSchema } from "@/features/content/schemas";
 import { errorToast, successToast } from "@/helpers";
-import { submitContactMessage } from "@/features/content/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -65,7 +65,7 @@ const ContactForm: React.FC = () => {
                     <FormControl>
                       <Input
                         placeholder={`Enter ${formatLabel(name)}`}
-                        className="h-11 rounded-none border-0 border-b-2 border-gray-100 px-0 text-base font-normal text-foreground transition-all placeholder:text-muted-foreground placeholder:text-xs focus-visible:border-primary focus-visible:ring-[1px] focus-visible:ring-primary/50 sm:h-12"
+                        className="h-11 rounded-none border-0 border-b-2 border-gray-100 px-3 py-2 text-base font-normal text-foreground transition-all placeholder:text-muted-foreground placeholder:text-xs focus-visible:border-primary focus-visible:ring-[1px] focus-visible:ring-primary/50 sm:h-12"
                         {...field}
                       />
                     </FormControl>
@@ -87,7 +87,7 @@ const ContactForm: React.FC = () => {
                 <FormControl>
                   <Textarea
                     placeholder="Write your message here..."
-                    className="min-h-[140px] resize-none rounded-2xl border-2 border-gray-100 bg-gray-50/50 p-4 text-base font-normal text-foreground transition-all placeholder:text-muted-foreground placeholder:text-xs focus-visible:border-primary focus-visible:ring-0 sm:min-h-[150px] sm:p-5"
+                    className="min-h-[140px] resize-none rounded-md border-1 border-gray-100 bg-gray-50/50 p-4 text-base font-normal text-foreground transition-all placeholder:text-muted-foreground placeholder:text-xs focus-visible:border-primary focus-visible:ring-0 sm:min-h-[150px] sm:p-5"
                     {...field}
                   />
                 </FormControl>

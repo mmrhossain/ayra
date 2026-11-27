@@ -182,7 +182,7 @@
   }
 
   @media (width >= 64rem) {
-    max-width: 64rem;
+    max-width: 80rem;
     padding-inline: 2rem;
   }
 
@@ -195,6 +195,11 @@
     max-width: 96rem;
     padding-inline: 2rem;
   }
+}
+
+body:has([data-storefront-chat][data-chat-open="true"]) [data-scroll-to-top] {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 @layer base {

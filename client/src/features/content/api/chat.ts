@@ -2,7 +2,7 @@ import { api } from "@/lib/api/store-front";
 import type { Envelope } from "@/features/content/types";
 
 export const CHAT_FALLBACK_MESSAGE =
-  "এই মুহূর্তে সাড়া দিতে সমস্যা হচ্ছে, একটু পরে চেষ্টা করুন";
+  "The AI chat is temporarily unavailable. Please try again in a little while.";
 
 export const CHAT_MAX_MESSAGE = 500;
 
@@ -10,6 +10,14 @@ export type ChatResult = {
   answer: string;
   cached: boolean;
   conversationId?: string;
+  productCount?: number;
+  products?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    imageUrl: string | null;
+    price: number | null;
+  }>;
 };
 
 export async function postChat(

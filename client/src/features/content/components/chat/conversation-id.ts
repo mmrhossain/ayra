@@ -1,4 +1,5 @@
 const STORAGE_KEY = "ayra-ai-conversation-id";
+const MESSAGES_STORAGE_PREFIX = "ayra-ai-chat-messages";
 
 export function getConversationId(): string {
   if (typeof window === "undefined") return "";
@@ -9,4 +10,8 @@ export function getConversationId(): string {
   const id = crypto.randomUUID();
   sessionStorage.setItem(STORAGE_KEY, id);
   return id;
+}
+
+export function getConversationMessagesKey(conversationId: string): string {
+  return `${MESSAGES_STORAGE_PREFIX}:${conversationId}`;
 }

@@ -213,7 +213,6 @@ export const aiChatLimiter = createLimiter({
 });
 
 export const searchLimiter = perEndpointLimiter(60 * 1000, 40, "search", "search:rl:", clientIp, true);
-
 export const cartLimiter = perEndpointLimiter(15 * 60 * 1000, 80, "cart changes", "cart:rl:");
 export const cartReadLimiter = perEndpointLimiter(60_000, 120, "cart reads", "cart:read:rl:", identityKey, true);
 export const orderLimiter = perEndpointLimiter(15 * 60 * 1000, 40, "order changes", "order:rl:");

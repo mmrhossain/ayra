@@ -14,6 +14,7 @@ export const ScrollToTop: React.FC = () => {
   return (
     <button
       type="button"
+      data-scroll-to-top
       aria-label="Scroll to top"
       aria-hidden={!show}
       tabIndex={show ? 0 : -1}

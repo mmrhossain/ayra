@@ -4,7 +4,7 @@ import { isStaffRole, STAFF_CANNOT_SHOP_MESSAGE } from "../../../common/utils/ro
 import { prisma } from "../../../lib/prisma.ts";
 
 const FALLBACK_MESSAGE =
-  "এই মুহূর্তে সাড়া দিতে সমস্যা হচ্ছে, একটু পরে চেষ্টা করুন";
+  "The AI chat is temporarily unavailable. Please try again in a little while.";
 
 const ORDER_LIMIT = 8;
 

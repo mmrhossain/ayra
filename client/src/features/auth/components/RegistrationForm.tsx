@@ -70,14 +70,16 @@ const RegistrationForm: React.FC<{ terms: PublishedLegalDocument | null }> = ({ 
       });
 
       if (error) {
-        setFormError(error.message ?? "নিবন্ধন ব্যর্থ হয়েছে");
+        setFormError(error.message ?? "Registration failed.");
         return;
       }
-      successToast("Please check your email to verify your account.");
+      successToast(
+        "If registration can be completed, you’ll receive an email with next steps. If you already have an account, sign in or reset your password.",
+      );
       router.push(redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login");
       router.refresh();
     } catch {
-      setFormError("সার্ভারে যোগাযোগ করা যায়নি। আবার চেষ্টা করুন।");
+      setFormError("Could not connect to the server. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -14,4 +14,14 @@ export type ChatResult = {
   answer: string;
   cached: boolean;
   conversationId?: string;
+  products?: ChatProduct[];
+  productCount?: number;
+};
+
+export type ChatProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  price: number | null;
 };
